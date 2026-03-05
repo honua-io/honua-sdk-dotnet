@@ -72,12 +72,29 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
         var call = _client.QueryFeaturesStream(protoRequest, _metadata, cancellationToken: ct);
         try
         {
-            await foreach (var protoPage in call.ResponseStream.ReadAllAsync(ct))
+            while (true)
             {
+                Honua.Server.Features.Grpc.Proto.FeaturePage protoPage;
+                try
+                {
+                    if (!await call.ResponseStream.MoveNext(ct).ConfigureAwait(false))
+                    {
+                        yield break;
+                    }
+
+                    protoPage = call.ResponseStream.Current;
+                }
+                catch (RpcException ex)
+                {
+                    throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+                }
+
                 var page = ProtoAdapter.FromProtoPage(protoPage);
                 yield return page;
                 if (protoPage.IsLastPage)
+                {
                     yield break;
+                }
             }
         }
         finally

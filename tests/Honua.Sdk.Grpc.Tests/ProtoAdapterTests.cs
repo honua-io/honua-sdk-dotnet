@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using Honua.Sdk.Grpc.Conversion;
 using Honua.Sdk.Grpc.Models;
 using Proto = Honua.Server.Features.Grpc.Proto;
@@ -140,6 +141,42 @@ public class ProtoAdapterTests
         Assert.Equal(Proto.SpatialRelationship.Within, proto.SpatialFilter.SpatialRelationship);
         Assert.Equal(4326, proto.SpatialFilter.SpatialReference.Wkid);
         Assert.Equal(Proto.Geometry.ShapeOneofCase.Point, proto.SpatialFilter.Geometry.ShapeCase);
+    }
+
+    [Fact]
+    public void ToProtoRequest_WithSpatialFilterGeometryJsonElements_MapsCorrectly()
+    {
+        using var geometryDoc = JsonDocument.Parse("""
+            {
+              "points": [[1.25, 2.5, 3.75], [4.5, 5.75]],
+              "spatialReference": { "wkid": 4326 }
+            }
+            """);
+
+        var request = new QueryFeaturesRequest
+        {
+            ServiceId = "svc",
+            LayerId = 1,
+            SpatialFilter = new SpatialFilter
+            {
+                Geometry = new Dictionary<string, object?>
+                {
+                    ["points"] = geometryDoc.RootElement.GetProperty("points"),
+                    ["spatialReference"] = geometryDoc.RootElement.GetProperty("spatialReference")
+                },
+                SpatialRelationship = Models.SpatialRelationship.Intersects
+            }
+        };
+
+        var proto = ProtoAdapter.ToProtoRequest(request);
+
+        Assert.NotNull(proto.SpatialFilter);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.MultiPoint, proto.SpatialFilter.Geometry.ShapeCase);
+        Assert.Equal(2, proto.SpatialFilter.Geometry.MultiPoint.Points.Count);
+        Assert.Equal(1.25, proto.SpatialFilter.Geometry.MultiPoint.Points[0].X);
+        Assert.Equal(2.5, proto.SpatialFilter.Geometry.MultiPoint.Points[0].Y);
+        Assert.Equal(3.75, proto.SpatialFilter.Geometry.MultiPoint.Points[0].Z);
+        Assert.Equal(4326, proto.SpatialFilter.SpatialReference.Wkid);
     }
 
     [Fact]

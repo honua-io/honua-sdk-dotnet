@@ -11,6 +11,16 @@ namespace Honua.Sdk.Admin.Tests;
 
 public sealed class HonuaAdminClientTests
 {
+    private const string ConnectionId = "11111111-1111-1111-1111-111111111111";
+
+    [Fact]
+    public void Options_DefaultBaseAddress_UsesHttps()
+    {
+        var options = new HonuaAdminClientOptions();
+
+        Assert.Equal(Uri.UriSchemeHttps, options.BaseAddress.Scheme);
+    }
+
     [Fact]
     public async Task AuthHandler_AddsApiKeyHeader()
     {
@@ -120,6 +130,30 @@ public sealed class HonuaAdminClientTests
     }
 
     [Fact]
+    public async Task AuthHandler_RejectsCredentialsOverRemoteHttp()
+    {
+        var options = Options.Create(new HonuaAdminClientOptions
+        {
+            BaseAddress = new Uri("http://example.com"),
+            ApiKey = "admin-key",
+        });
+
+        var authHandler = new HonuaAdminAuthHandler(options)
+        {
+            InnerHandler = new MockHttpHandler(_ => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())))
+        };
+
+        var httpClient = new HttpClient(authHandler)
+        {
+            BaseAddress = new Uri("http://example.com")
+        };
+
+        var client = new HonuaAdminClient(httpClient);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.ListServicesAsync());
+    }
+
+    [Fact]
     public async Task Error400_ThrowsHonuaAdminApiException()
     {
         var client = TestHelpers.CreateClient(_ =>
@@ -153,7 +187,7 @@ public sealed class HonuaAdminClientTests
             Task.FromResult(TestHelpers.CreateErrorResponse(HttpStatusCode.Conflict, "Resource conflict")));
 
         var ex = await Assert.ThrowsAsync<HonuaAdminApiException>(
-            () => client.DeleteConnectionAsync("some-id"));
+            () => client.DeleteConnectionAsync(ConnectionId));
 
         Assert.Equal(HttpStatusCode.Conflict, ex.StatusCode);
         Assert.Equal("Resource conflict", ex.Message);
@@ -222,5 +256,20 @@ public sealed class HonuaAdminClientTests
         var result = await client.GetConfigAsync();
 
         Assert.Equal(JsonValueKind.Object, result.ValueKind);
+    }
+
+    [Fact]
+    public async Task EnvelopeSuccessFalse_On2xx_ThrowsHonuaAdminApiException()
+    {
+        var client = TestHelpers.CreateClient(_ => Task.FromResult(
+            TestHelpers.CreateJsonEnvelopeResponse(
+                new { services = Array.Empty<object>() },
+                success: false,
+                message: "Operation failed.")));
+
+        var ex = await Assert.ThrowsAsync<HonuaAdminApiException>(() => client.ListServicesAsync());
+
+        Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
+        Assert.Equal("Operation failed.", ex.Message);
     }
 }

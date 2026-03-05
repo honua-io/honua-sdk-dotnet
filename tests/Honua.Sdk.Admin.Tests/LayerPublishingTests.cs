@@ -188,4 +188,20 @@ public sealed class LayerPublishingTests
 
         Assert.NotNull(result);
     }
+
+    [Fact]
+    public async Task DiscoverTablesAsync_InvalidConnectionId_ThrowsBeforeSendingRequest()
+    {
+        var requestSent = false;
+        var client = TestHelpers.CreateClient(_ =>
+        {
+            requestSent = true;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(new { tables = Array.Empty<object>() }));
+        });
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => client.DiscoverTablesAsync("bad-id"));
+
+        Assert.Equal("connectionId", ex.ParamName);
+        Assert.False(requestSent);
+    }
 }

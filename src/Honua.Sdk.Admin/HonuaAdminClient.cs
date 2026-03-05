@@ -131,6 +131,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         var resource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null metadata resource.", "GetMetadataResource");
@@ -171,6 +172,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         return envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateMetadataResource");
@@ -190,6 +192,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
     }
 
     // ── Manifests ────────────────────────────────────────────────────────
@@ -252,8 +255,9 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<SecureConnectionDetail> GetConnectionAsync(string id, CancellationToken ct = default)
     {
+        var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await GetAsync<SecureConnectionDetail>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(id)}",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}",
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionDetail,
             ct).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null connection.", "GetConnection");
@@ -286,8 +290,9 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<SecureConnectionSummary> UpdateConnectionAsync(string id, UpdateSecureConnectionRequest request, CancellationToken ct = default)
     {
+        var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PutAsync<SecureConnectionSummary>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(id)}",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}",
             request,
             HonuaAdminJsonContext.Default.UpdateSecureConnectionRequest,
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionSummary,
@@ -298,8 +303,9 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<ConnectionTestResult> TestConnectionAsync(string id, CancellationToken ct = default)
     {
+        var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PostAsync<ConnectionTestResult>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(id)}/test",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/test",
             (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseConnectionTestResult,
             ct).ConfigureAwait(false);
@@ -309,10 +315,12 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task DeleteConnectionAsync(string id, CancellationToken ct = default)
     {
+        var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         using var response = await _http.DeleteAsync(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(id)}", ct).ConfigureAwait(false);
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}", ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
     }
 
     /// <inheritdoc />
@@ -342,9 +350,10 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(string connectionId, string? serviceName = null, CancellationToken ct = default)
     {
+        var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
         var data = await GetAsync<PublishedLayerSummary[]>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/layers/{query}",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/{query}",
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
             ct).ConfigureAwait(false);
         return data ?? [];
@@ -353,8 +362,9 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<PublishedLayerSummary> PublishLayerAsync(string connectionId, PublishLayerRequest request, CancellationToken ct = default)
     {
+        var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var data = await PostAsync<PublishedLayerSummary>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/layers/",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/",
             request,
             HonuaAdminJsonContext.Default.PublishLayerRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummary,
@@ -365,10 +375,11 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<PublishedLayerSummary> SetLayerEnabledAsync(string connectionId, int layerId, bool enabled, string? serviceName = null, CancellationToken ct = default)
     {
+        var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
         var body = new LayerEnabledRequest { Enabled = enabled };
         var data = await PutAsync<PublishedLayerSummary>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/layers/{layerId}/enabled{query}",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/{layerId}/enabled{query}",
             body,
             HonuaAdminJsonContext.Default.LayerEnabledRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummary,
@@ -379,10 +390,11 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<IReadOnlyList<PublishedLayerSummary>> SetServiceLayersEnabledAsync(string connectionId, bool enabled, string? serviceName = null, CancellationToken ct = default)
     {
+        var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
         var body = new LayerEnabledRequest { Enabled = enabled };
         var data = await PutAsync<PublishedLayerSummary[]>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/layers/enabled{query}",
+            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/enabled{query}",
             body,
             HonuaAdminJsonContext.Default.LayerEnabledRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
@@ -395,7 +407,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<TableDiscoveryResponse> DiscoverTablesAsync(string connectionId, CancellationToken ct = default)
     {
-        var url = $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/tables";
+        var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
+        var url = $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/tables";
         using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
@@ -451,6 +464,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, typeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -480,6 +494,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             using var response = await _http.PostAsync(url, content, ct).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+            EnsureEnvelopeSucceeded(response, body);
 
             var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
             return envelope is not null ? envelope.Data : default;
@@ -497,6 +512,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.PostAsync(url, content, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -513,6 +529,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.PutAsync(url, content, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -527,6 +544,34 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         var message = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "Request failed";
         throw new HonuaAdminApiException(response.StatusCode, message, body);
+    }
+
+    private static void EnsureEnvelopeSucceeded(HttpResponseMessage response, string body)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (doc.RootElement.TryGetProperty("success", out var success) &&
+                success.ValueKind == JsonValueKind.False)
+            {
+                var message = TryExtractErrorMessage(body) ?? "API response indicated failure.";
+                throw new HonuaAdminApiException(response.StatusCode, message, body);
+            }
+        }
+        catch (JsonException)
+        {
+            // Not JSON or invalid JSON envelope, ignore.
+        }
     }
 
     private static string? TryExtractErrorMessage(string body)
@@ -575,5 +620,20 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         }
 
         return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
+    }
+
+    private static string NormalizeSecureConnectionId(string id, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            throw new ArgumentException("Connection ID is required.", parameterName);
+        }
+
+        if (!Guid.TryParse(id, out var parsed))
+        {
+            throw new ArgumentException("Connection ID must be a valid GUID.", parameterName);
+        }
+
+        return parsed.ToString("D");
     }
 }

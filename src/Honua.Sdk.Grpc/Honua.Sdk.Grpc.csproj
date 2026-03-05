@@ -29,8 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\..\proto\honua\v1\feature_service.proto"
-              GrpcServices="Client" ProtoRoot="..\..\..\proto" />
+    <Protobuf Include="..\..\proto\honua\v1\feature_service.proto"
+              GrpcServices="Client" ProtoRoot="..\..\proto" />
   </ItemGroup>
 
 </Project>

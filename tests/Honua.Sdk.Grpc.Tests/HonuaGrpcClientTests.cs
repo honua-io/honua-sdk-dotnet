@@ -114,6 +114,40 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task QueryFeaturesStreamAsync_RpcException_WrappedInHonuaGrpcException()
+    {
+        var rpcException = new RpcException(new Status(StatusCode.Unavailable, "Stream unavailable"));
+
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesStream(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateFaultedAsyncServerStreamingCall<Proto.FeaturePage>(rpcException));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+        var request = new Models.QueryFeaturesRequest
+        {
+            ServiceId = "test-svc",
+            LayerId = 0,
+        };
+
+        async Task Run()
+        {
+            await foreach (var _ in client.QueryFeaturesStreamAsync(request))
+            {
+            }
+        }
+
+        var ex = await Assert.ThrowsAsync<HonuaGrpcException>(Run);
+
+        Assert.Equal(StatusCode.Unavailable, ex.StatusCode);
+        Assert.Contains("Stream unavailable", ex.Message);
+    }
+
+    [Fact]
     public void Metadata_IncludesApiKey_WhenConfigured()
     {
         var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
@@ -200,6 +234,17 @@ public class HonuaGrpcClientTests
             () => { });
     }
 
+    private static AsyncServerStreamingCall<T> CreateFaultedAsyncServerStreamingCall<T>(RpcException exception)
+    {
+        var stream = new ThrowingAsyncStreamReader<T>(exception);
+        return new AsyncServerStreamingCall<T>(
+            stream,
+            Task.FromResult(new Metadata()),
+            () => exception.Status,
+            () => new Metadata(),
+            () => { });
+    }
+
     private sealed class TestAsyncStreamReader<T> : IAsyncStreamReader<T>
     {
         private readonly IEnumerator<T> _enumerator;
@@ -215,5 +260,13 @@ public class HonuaGrpcClientTests
         {
             return Task.FromResult(_enumerator.MoveNext());
         }
+    }
+
+    private sealed class ThrowingAsyncStreamReader<T>(RpcException exception) : IAsyncStreamReader<T>
+    {
+        public T Current => default!;
+
+        public Task<bool> MoveNext(CancellationToken cancellationToken)
+            => Task.FromException<bool>(exception);
     }
 }

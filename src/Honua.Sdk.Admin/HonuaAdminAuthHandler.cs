@@ -20,11 +20,20 @@ internal sealed class HonuaAdminAuthHandler : DelegatingHandler
     public HonuaAdminAuthHandler(IOptions<HonuaAdminClientOptions> options)
     {
         _options = options.Value;
+        HonuaAdminClientOptions.ValidateBaseAddress(_options.BaseAddress);
     }
 
     /// <inheritdoc />
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var hasCredentials = !string.IsNullOrEmpty(_options.ApiKey) || !string.IsNullOrEmpty(_options.BearerToken);
+        if (hasCredentials && HonuaAdminClientOptions.RequiresHttpsForAuthentication(request.RequestUri))
+        {
+            throw new InvalidOperationException(
+                "Refusing to send admin credentials over an insecure connection. Use HTTPS, " +
+                "or use loopback HTTP only for local development.");
+        }
+
         if (!string.IsNullOrEmpty(_options.ApiKey))
         {
             request.Headers.TryAddWithoutValidation("X-API-Key", _options.ApiKey);

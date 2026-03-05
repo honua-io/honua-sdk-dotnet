@@ -27,12 +27,19 @@ internal static class TestHelpers
     }
 
     public static HttpResponseMessage CreateJsonResponse<T>(T data, HttpStatusCode statusCode = HttpStatusCode.OK)
+        => CreateJsonEnvelopeResponse(data, success: true, message: null, statusCode);
+
+    public static HttpResponseMessage CreateJsonEnvelopeResponse<T>(
+        T data,
+        bool success,
+        string? message,
+        HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var envelope = new
         {
-            success = true,
+            success,
             data,
-            message = (string?)null,
+            message,
             timestamp = DateTimeOffset.UtcNow
         };
 

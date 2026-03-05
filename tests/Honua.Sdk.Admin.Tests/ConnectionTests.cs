@@ -236,4 +236,20 @@ public sealed class ConnectionTests
         Assert.Equal(1, result.PreviousKeyVersion);
         Assert.Equal(2, result.NewKeyVersion);
     }
+
+    [Fact]
+    public async Task GetConnectionAsync_InvalidGuid_ThrowsBeforeSendingRequest()
+    {
+        var requestSent = false;
+        var client = TestHelpers.CreateClient(_ =>
+        {
+            requestSent = true;
+            return Task.FromResult(TestHelpers.CreateJsonResponse(CreateConnectionSummary()));
+        });
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => client.GetConnectionAsync("not-a-guid"));
+
+        Assert.Equal("id", ex.ParamName);
+        Assert.False(requestSent);
+    }
 }

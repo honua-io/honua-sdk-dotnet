@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Collections;
+using System.Text.Json;
 using Proto = Honua.Server.Features.Grpc.Proto;
 
 namespace Honua.Sdk.Grpc.Conversion;
@@ -556,6 +557,12 @@ internal static class ProtoAdapter
 
     private static bool TryAsEnumerable(object? value, out IEnumerable<object?> result)
     {
+        if (value is JsonElement element && element.ValueKind == JsonValueKind.Array)
+        {
+            result = element.EnumerateArray().Select(UnwrapJsonValue).ToList();
+            return true;
+        }
+
         if (value is IEnumerable enumerable && value is not string)
         {
             result = enumerable.Cast<object?>();
@@ -568,6 +575,18 @@ internal static class ProtoAdapter
 
     private static bool TryAsDictionary(object? value, out IReadOnlyDictionary<string, object?> result)
     {
+        if (value is JsonElement element && element.ValueKind == JsonValueKind.Object)
+        {
+            var jsonObject = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var property in element.EnumerateObject())
+            {
+                jsonObject[property.Name] = UnwrapJsonValue(property.Value);
+            }
+
+            result = jsonObject;
+            return true;
+        }
+
         if (value is IReadOnlyDictionary<string, object?> readOnlyDictionary)
         {
             result = readOnlyDictionary;
@@ -615,6 +634,10 @@ internal static class ProtoAdapter
             case null:
                 result = 0;
                 return false;
+            case JsonElement element when element.ValueKind == JsonValueKind.Number:
+                return element.TryGetDouble(out result);
+            case JsonElement element when element.ValueKind == JsonValueKind.String:
+                return double.TryParse(element.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out result);
             case double d:
                 result = d;
                 return true;
@@ -660,6 +683,29 @@ internal static class ProtoAdapter
                 result = 0;
                 return false;
         }
+    }
+
+    private static object? UnwrapJsonValue(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.Null => null,
+            JsonValueKind.Undefined => null,
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.TryGetInt64(out var i64)
+                ? i64
+                : element.TryGetDouble(out var dbl)
+                    ? dbl
+                    : (object?)element.GetRawText(),
+            JsonValueKind.Array => element.EnumerateArray().Select(UnwrapJsonValue).ToList(),
+            JsonValueKind.Object => element.EnumerateObject().ToDictionary(
+                prop => prop.Name,
+                prop => UnwrapJsonValue(prop.Value),
+                StringComparer.OrdinalIgnoreCase),
+            _ => element.GetRawText()
+        };
     }
 
     private static Proto.Coordinate CreateCoordinate(double x, double y)

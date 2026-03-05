@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<IHonuaAdminClient, HonuaAdminClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
+            HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
             client.BaseAddress = options.BaseAddress;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
