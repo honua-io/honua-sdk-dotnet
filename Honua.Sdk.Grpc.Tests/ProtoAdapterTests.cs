@@ -62,6 +62,22 @@ public class ProtoAdapterTests
             GroupBy = ["region"],
             GeometryPrecision = 6,
             MaxAllowableOffset = 0.001,
+            SpatialFilter = new SpatialFilter
+            {
+                Geometry = new Dictionary<string, object?>
+                {
+                    ["xmin"] = -120.0,
+                    ["ymin"] = 30.0,
+                    ["xmax"] = -110.0,
+                    ["ymax"] = 40.0,
+                    ["spatialReference"] = new Dictionary<string, object?> { ["wkid"] = 4326 }
+                },
+                SpatialRelationship = Models.SpatialRelationship.Intersects,
+                Distance = 1000,
+                DistanceUnit = Models.DistanceUnit.Meters,
+                NearestCount = 5,
+                ReturnDistance = true
+            }
         };
 
         var proto = ProtoAdapter.ToProtoRequest(request);
@@ -88,6 +104,42 @@ public class ProtoAdapterTests
         Assert.Equal(["region"], proto.GroupBy);
         Assert.Equal(6, proto.GeometryPrecision);
         Assert.Equal(0.001, proto.MaxAllowableOffset);
+        Assert.NotNull(proto.SpatialFilter);
+        Assert.Equal(Proto.SpatialRelationship.Intersects, proto.SpatialFilter.SpatialRelationship);
+        Assert.Equal(1000, proto.SpatialFilter.Distance);
+        Assert.Equal(Proto.DistanceUnit.Meters, proto.SpatialFilter.DistanceUnit);
+        Assert.Equal(5, proto.SpatialFilter.NearestCount);
+        Assert.True(proto.SpatialFilter.ReturnDistance);
+        Assert.Equal(4326, proto.SpatialFilter.SpatialReference.Wkid);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.Polygon, proto.SpatialFilter.Geometry.ShapeCase);
+    }
+
+    [Fact]
+    public void ToProtoRequest_WithSpatialFilterGeometryAndExplicitSpatialReference_PrefersExplicitSpatialReference()
+    {
+        var request = new QueryFeaturesRequest
+        {
+            ServiceId = "svc",
+            LayerId = 1,
+            SpatialFilter = new SpatialFilter
+            {
+                Geometry = new Dictionary<string, object?>
+                {
+                    ["x"] = -122.4,
+                    ["y"] = 37.7,
+                    ["spatialReference"] = new Dictionary<string, object?> { ["wkid"] = 3857 }
+                },
+                SpatialReference = new Models.SpatialReference { Wkid = 4326 },
+                SpatialRelationship = Models.SpatialRelationship.Within
+            }
+        };
+
+        var proto = ProtoAdapter.ToProtoRequest(request);
+
+        Assert.NotNull(proto.SpatialFilter);
+        Assert.Equal(Proto.SpatialRelationship.Within, proto.SpatialFilter.SpatialRelationship);
+        Assert.Equal(4326, proto.SpatialFilter.SpatialReference.Wkid);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.Point, proto.SpatialFilter.Geometry.ShapeCase);
     }
 
     [Fact]
@@ -436,6 +488,47 @@ public class ProtoAdapterTests
         var first = (List<object?>)points[0]!;
         Assert.Equal(1.0, first[0]);
         Assert.Equal(2.0, first[1]);
+    }
+
+    [Fact]
+    public void ConvertGeometry_MultiPointWithM_PreservesMCoordinate()
+    {
+        var geom = new Proto.Geometry
+        {
+            MultiPoint = new Proto.MultiPointGeometry(),
+        };
+        geom.MultiPoint.Points.Add(new Proto.PointGeometry { X = 1, Y = 2, M = 7 });
+
+        var result = ProtoAdapter.ConvertGeometry(geom);
+
+        Assert.NotNull(result);
+        var points = (List<object?>)result["points"]!;
+        var first = (List<object?>)points[0]!;
+        Assert.Equal(4, first.Count);
+        Assert.Null(first[2]);
+        Assert.Equal(7.0, first[3]);
+    }
+
+    [Fact]
+    public void ConvertGeometry_PolylineWithM_PreservesMCoordinate()
+    {
+        var path = new Proto.CoordinateSequence();
+        path.Coords.Add(new Proto.Coordinate { X = 0, Y = 0, M = 5 });
+        var geom = new Proto.Geometry
+        {
+            Polyline = new Proto.PolylineGeometry(),
+        };
+        geom.Polyline.Paths.Add(path);
+
+        var result = ProtoAdapter.ConvertGeometry(geom);
+
+        Assert.NotNull(result);
+        var paths = (List<object?>)result["paths"]!;
+        var coords = (List<object?>)paths[0]!;
+        var first = (List<object?>)coords[0]!;
+        Assert.Equal(4, first.Count);
+        Assert.Null(first[2]);
+        Assert.Equal(5.0, first[3]);
     }
 
     [Fact]

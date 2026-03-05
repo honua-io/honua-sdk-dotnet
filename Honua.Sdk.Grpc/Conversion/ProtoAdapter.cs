@@ -1,6 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Globalization;
+using System.Collections;
 using Proto = Honua.Server.Features.Grpc.Proto;
 
 namespace Honua.Sdk.Grpc.Conversion;
@@ -68,6 +70,11 @@ internal static class ProtoAdapter
         if (request.GroupBy is not null)
         {
             proto.GroupBy.AddRange(request.GroupBy);
+        }
+
+        if (request.SpatialFilter is not null)
+        {
+            proto.SpatialFilter = ConvertSpatialFilter(request.SpatialFilter);
         }
 
         return proto;
@@ -176,7 +183,17 @@ internal static class ProtoAdapter
         {
             var coords = new List<object?> { p.X, p.Y };
             if (p.HasZ)
+            {
                 coords.Add(p.Z);
+            }
+            else if (p.HasM)
+            {
+                coords.Add(null);
+            }
+            if (p.HasM)
+            {
+                coords.Add(p.M);
+            }
             points.Add(coords);
         }
         return new Dictionary<string, object?> { ["points"] = points };
@@ -192,7 +209,17 @@ internal static class ProtoAdapter
             {
                 var coord = new List<object?> { c.X, c.Y };
                 if (c.HasZ)
+                {
                     coord.Add(c.Z);
+                }
+                else if (c.HasM)
+                {
+                    coord.Add(null);
+                }
+                if (c.HasM)
+                {
+                    coord.Add(c.M);
+                }
                 coords.Add(coord);
             }
             paths.Add(coords);
@@ -210,7 +237,17 @@ internal static class ProtoAdapter
             {
                 var coord = new List<object?> { c.X, c.Y };
                 if (c.HasZ)
+                {
                     coord.Add(c.Z);
+                }
+                else if (c.HasM)
+                {
+                    coord.Add(null);
+                }
+                if (c.HasM)
+                {
+                    coord.Add(c.M);
+                }
                 coords.Add(coord);
             }
             rings.Add(coords);
@@ -230,7 +267,17 @@ internal static class ProtoAdapter
                 {
                     var coord = new List<object?> { c.X, c.Y };
                     if (c.HasZ)
+                    {
                         coord.Add(c.Z);
+                    }
+                    else if (c.HasM)
+                    {
+                        coord.Add(null);
+                    }
+                    if (c.HasM)
+                    {
+                        coord.Add(c.M);
+                    }
                     coords.Add(coord);
                 }
                 rings.Add(coords);
@@ -238,6 +285,385 @@ internal static class ProtoAdapter
         }
         return new Dictionary<string, object?> { ["rings"] = rings };
     }
+
+    private static Proto.SpatialFilter ConvertSpatialFilter(Models.SpatialFilter spatialFilter)
+    {
+        var proto = new Proto.SpatialFilter
+        {
+            SpatialRelationship = (Proto.SpatialRelationship)spatialFilter.SpatialRelationship,
+            Distance = spatialFilter.Distance,
+            DistanceUnit = (Proto.DistanceUnit)spatialFilter.DistanceUnit,
+            NearestCount = spatialFilter.NearestCount,
+            ReturnDistance = spatialFilter.ReturnDistance
+        };
+
+        Proto.SpatialReference? geometrySpatialReference = null;
+        if (spatialFilter.Geometry is not null)
+        {
+            var conversion = ConvertGeometryToProto(spatialFilter.Geometry);
+            proto.Geometry = conversion.Geometry;
+            geometrySpatialReference = conversion.SpatialReference;
+        }
+
+        if (spatialFilter.SpatialReference is not null)
+        {
+            proto.SpatialReference = new Proto.SpatialReference
+            {
+                Wkid = spatialFilter.SpatialReference.Wkid,
+                LatestWkid = spatialFilter.SpatialReference.LatestWkid,
+                Wkt = spatialFilter.SpatialReference.Wkt ?? string.Empty
+            };
+        }
+        else if (geometrySpatialReference is not null)
+        {
+            proto.SpatialReference = geometrySpatialReference;
+        }
+
+        return proto;
+    }
+
+    private static (Proto.Geometry Geometry, Proto.SpatialReference? SpatialReference) ConvertGeometryToProto(
+        IReadOnlyDictionary<string, object?> geometry)
+    {
+        var proto = new Proto.Geometry();
+        var spatialReference = TryGetSpatialReference(geometry);
+
+        if (TryGetNumber(geometry, "x", out var x) && TryGetNumber(geometry, "y", out var y))
+        {
+            var point = new Proto.PointGeometry
+            {
+                X = x,
+                Y = y
+            };
+            if (TryGetNumber(geometry, "z", out var z))
+            {
+                point.Z = z;
+            }
+
+            if (TryGetNumber(geometry, "m", out var m))
+            {
+                point.M = m;
+            }
+
+            proto.Point = point;
+            return (proto, spatialReference);
+        }
+
+        if (TryGetNumber(geometry, "xmin", out var xmin) &&
+            TryGetNumber(geometry, "ymin", out var ymin) &&
+            TryGetNumber(geometry, "xmax", out var xmax) &&
+            TryGetNumber(geometry, "ymax", out var ymax))
+        {
+            var polygon = new Proto.PolygonGeometry();
+            polygon.Rings.Add(new Proto.CoordinateSequence
+            {
+                Coords =
+                {
+                    CreateCoordinate(xmin, ymin),
+                    CreateCoordinate(xmax, ymin),
+                    CreateCoordinate(xmax, ymax),
+                    CreateCoordinate(xmin, ymax),
+                    CreateCoordinate(xmin, ymin)
+                }
+            });
+            proto.Polygon = polygon;
+            return (proto, spatialReference);
+        }
+
+        if (TryGetEnumerable(geometry, "points", out var points))
+        {
+            var multipoint = new Proto.MultiPointGeometry();
+            foreach (var pointValue in points)
+            {
+                multipoint.Points.Add(CreatePointGeometry(pointValue, "points"));
+            }
+
+            proto.MultiPoint = multipoint;
+            return (proto, spatialReference);
+        }
+
+        if (TryGetEnumerable(geometry, "paths", out var paths))
+        {
+            var polyline = new Proto.PolylineGeometry();
+            foreach (var path in paths)
+            {
+                polyline.Paths.Add(CreateCoordinateSequence(path, "paths"));
+            }
+
+            proto.Polyline = polyline;
+            return (proto, spatialReference);
+        }
+
+        if (TryGetEnumerable(geometry, "rings", out var rings))
+        {
+            var polygon = new Proto.PolygonGeometry();
+            foreach (var ring in rings)
+            {
+                polygon.Rings.Add(CreateCoordinateSequence(ring, "rings"));
+            }
+
+            proto.Polygon = polygon;
+            return (proto, spatialReference);
+        }
+
+        throw new ArgumentException("Unsupported geometry shape for gRPC spatial filter.");
+    }
+
+    private static Proto.PointGeometry CreatePointGeometry(object? pointValue, string context)
+    {
+        if (!TryAsEnumerable(pointValue, out var values))
+        {
+            throw new ArgumentException($"Invalid coordinate array in {context}.");
+        }
+
+        var list = values.ToList();
+        if (list.Count < 2)
+        {
+            throw new ArgumentException($"Invalid coordinate array in {context}.");
+        }
+
+        var point = new Proto.PointGeometry
+        {
+            X = ConvertToDouble(list[0], context),
+            Y = ConvertToDouble(list[1], context)
+        };
+
+        if (list.Count > 2 && list[2] is not null)
+        {
+            point.Z = ConvertToDouble(list[2], context);
+        }
+
+        if (list.Count > 3 && list[3] is not null)
+        {
+            point.M = ConvertToDouble(list[3], context);
+        }
+
+        return point;
+    }
+
+    private static Proto.CoordinateSequence CreateCoordinateSequence(object? sequenceValue, string context)
+    {
+        if (!TryAsEnumerable(sequenceValue, out var values))
+        {
+            throw new ArgumentException($"Invalid coordinate sequence in {context}.");
+        }
+
+        var sequence = new Proto.CoordinateSequence();
+        foreach (var coordinate in values)
+        {
+            sequence.Coords.Add(CreateCoordinate(coordinate, context));
+        }
+
+        return sequence;
+    }
+
+    private static Proto.Coordinate CreateCoordinate(object? coordinateValue, string context)
+    {
+        if (!TryAsEnumerable(coordinateValue, out var values))
+        {
+            throw new ArgumentException($"Invalid coordinate in {context}.");
+        }
+
+        var list = values.ToList();
+        if (list.Count < 2)
+        {
+            throw new ArgumentException($"Invalid coordinate in {context}.");
+        }
+
+        var coordinate = new Proto.Coordinate
+        {
+            X = ConvertToDouble(list[0], context),
+            Y = ConvertToDouble(list[1], context)
+        };
+
+        if (list.Count > 2 && list[2] is not null)
+        {
+            coordinate.Z = ConvertToDouble(list[2], context);
+        }
+
+        if (list.Count > 3 && list[3] is not null)
+        {
+            coordinate.M = ConvertToDouble(list[3], context);
+        }
+
+        return coordinate;
+    }
+
+    private static Proto.SpatialReference? TryGetSpatialReference(IReadOnlyDictionary<string, object?> geometry)
+    {
+        if (!TryGetValue(geometry, "spatialReference", out var spatialReferenceValue) ||
+            !TryAsDictionary(spatialReferenceValue, out var sr))
+        {
+            return null;
+        }
+
+        var proto = new Proto.SpatialReference();
+
+        if (TryGetNumber(sr, "wkid", out var wkid))
+        {
+            proto.Wkid = (int)wkid;
+        }
+
+        if (TryGetNumber(sr, "latestWkid", out var latestWkid))
+        {
+            proto.LatestWkid = (int)latestWkid;
+        }
+
+        if (TryGetValue(sr, "wkt", out var wkt) && wkt is string wktText)
+        {
+            proto.Wkt = wktText;
+        }
+
+        return proto.Wkid == 0 && proto.LatestWkid == 0 && string.IsNullOrWhiteSpace(proto.Wkt)
+            ? null
+            : proto;
+    }
+
+    private static bool TryGetValue(IReadOnlyDictionary<string, object?> values, string key, out object? value)
+    {
+        if (values.TryGetValue(key, out value))
+        {
+            return true;
+        }
+
+        foreach (var pair in values)
+        {
+            if (!string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            value = pair.Value;
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    private static bool TryGetEnumerable(IReadOnlyDictionary<string, object?> values, string key, out IEnumerable<object?> result)
+    {
+        if (TryGetValue(values, key, out var value) &&
+            TryAsEnumerable(value, out var enumerable))
+        {
+            result = enumerable;
+            return true;
+        }
+
+        result = Array.Empty<object?>();
+        return false;
+    }
+
+    private static bool TryAsEnumerable(object? value, out IEnumerable<object?> result)
+    {
+        if (value is IEnumerable enumerable && value is not string)
+        {
+            result = enumerable.Cast<object?>();
+            return true;
+        }
+
+        result = Array.Empty<object?>();
+        return false;
+    }
+
+    private static bool TryAsDictionary(object? value, out IReadOnlyDictionary<string, object?> result)
+    {
+        if (value is IReadOnlyDictionary<string, object?> readOnlyDictionary)
+        {
+            result = readOnlyDictionary;
+            return true;
+        }
+
+        if (value is IDictionary<string, object?> dictionary)
+        {
+            result = new Dictionary<string, object?>(dictionary, StringComparer.OrdinalIgnoreCase);
+            return true;
+        }
+
+        result = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        return false;
+    }
+
+    private static bool TryGetNumber(IReadOnlyDictionary<string, object?> values, string key, out double result)
+    {
+        if (TryGetValue(values, key, out var value))
+        {
+            if (TryConvertToDouble(value, out result))
+            {
+                return true;
+            }
+        }
+
+        result = 0;
+        return false;
+    }
+
+    private static double ConvertToDouble(object? value, string context)
+    {
+        if (TryConvertToDouble(value, out var result))
+        {
+            return result;
+        }
+
+        throw new ArgumentException($"Coordinate value in {context} is not a number.");
+    }
+
+    private static bool TryConvertToDouble(object? value, out double result)
+    {
+        switch (value)
+        {
+            case null:
+                result = 0;
+                return false;
+            case double d:
+                result = d;
+                return true;
+            case float f:
+                result = f;
+                return true;
+            case decimal dec:
+                result = (double)dec;
+                return true;
+            case byte b:
+                result = b;
+                return true;
+            case short s:
+                result = s;
+                return true;
+            case int i:
+                result = i;
+                return true;
+            case long l:
+                result = l;
+                return true;
+            case string str:
+                return double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+            default:
+                if (value is IConvertible convertible)
+                {
+                    try
+                    {
+                        result = convertible.ToDouble(CultureInfo.InvariantCulture);
+                        return true;
+                    }
+                    catch (FormatException)
+                    {
+                    }
+                    catch (InvalidCastException)
+                    {
+                    }
+                    catch (OverflowException)
+                    {
+                    }
+                }
+
+                result = 0;
+                return false;
+        }
+    }
+
+    private static Proto.Coordinate CreateCoordinate(double x, double y)
+        => new() { X = x, Y = y };
 
     private static Models.SpatialReference ConvertSpatialReference(Proto.SpatialReference sr)
     {

@@ -61,4 +61,7 @@ public sealed class QueryFeaturesRequest
 
     /// <summary>Maximum allowable offset for geometry generalization.</summary>
     public double MaxAllowableOffset { get; set; }
+
+    /// <summary>Optional spatial filter for geometry-constrained queries.</summary>
+    public SpatialFilter? SpatialFilter { get; set; }
 }
