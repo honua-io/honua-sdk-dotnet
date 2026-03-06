@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Grpc.Core;
+using Microsoft.Extensions.Options;
 using Moq;
 using Proto = Honua.Server.Features.Grpc.Proto;
 
@@ -148,7 +149,7 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
-    public void Metadata_IncludesApiKey_WhenConfigured()
+    public async Task Metadata_IncludesApiKey_WhenConfigured()
     {
         var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
         Metadata? capturedMetadata = null;
@@ -167,7 +168,7 @@ public class HonuaGrpcClientTests
         var metadata = new Metadata { { "x-api-key", "my-key" } };
         var client = new HonuaGrpcClient(mockClient.Object, metadata);
 
-        _ = client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
 
         Assert.NotNull(capturedMetadata);
         var apiKeyEntry = capturedMetadata!.FirstOrDefault(e => e.Key == "x-api-key");
@@ -176,7 +177,7 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
-    public void Metadata_IncludesBearerToken_WhenConfigured()
+    public async Task Metadata_IncludesBearerToken_WhenConfigured()
     {
         var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
         Metadata? capturedMetadata = null;
@@ -195,12 +196,37 @@ public class HonuaGrpcClientTests
         var metadata = new Metadata { { "authorization", "Bearer my-token" } };
         var client = new HonuaGrpcClient(mockClient.Object, metadata);
 
-        _ = client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
 
         Assert.NotNull(capturedMetadata);
         var authEntry = capturedMetadata!.FirstOrDefault(e => e.Key == "authorization");
         Assert.NotNull(authEntry);
         Assert.Equal("Bearer my-token", authEntry.Value);
+    }
+
+    [Fact]
+    public void Constructor_WithCredentialsAndRemoteHttpAddress_Throws()
+    {
+        var options = Options.Create(new HonuaGrpcClientOptions
+        {
+            Address = "http://example.com:5000",
+            ApiKey = "my-key"
+        });
+
+        var ex = Assert.Throws<InvalidOperationException>(() => new HonuaGrpcClient(options));
+        Assert.Contains("Refusing to send gRPC credentials over an insecure connection", ex.Message);
+    }
+
+    [Fact]
+    public void Constructor_WithCredentialsAndLoopbackHttpAddress_DoesNotThrow()
+    {
+        var options = Options.Create(new HonuaGrpcClientOptions
+        {
+            Address = "http://localhost:5000",
+            BearerToken = "my-token"
+        });
+
+        using var client = new HonuaGrpcClient(options);
     }
 
     [Fact]

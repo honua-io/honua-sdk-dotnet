@@ -32,4 +32,51 @@ public sealed class HonuaGrpcClientOptions
     /// Accepted gRPC compression algorithms advertised to the server.
     /// </summary>
     public string AcceptedCompressionEncodings { get; set; } = "gzip,identity";
+
+    internal static Uri ParseAndValidateAddress(string? address)
+    {
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            throw new InvalidOperationException("Honua gRPC address must be configured.");
+        }
+
+        if (!Uri.TryCreate(address, UriKind.Absolute, out var uri))
+        {
+            throw new InvalidOperationException("Honua gRPC address must be an absolute URI.");
+        }
+
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Honua gRPC address must use HTTP or HTTPS.");
+        }
+
+        return uri;
+    }
+
+    internal static bool RequiresHttpsForAuthentication(Uri? uri)
+    {
+        if (uri is null)
+        {
+            return true;
+        }
+
+        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !IsLocalDevelopmentHttp(uri);
+    }
+
+    internal static bool IsLocalDevelopmentHttp(Uri uri)
+    {
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return uri.IsLoopback ||
+               string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
+    }
 }

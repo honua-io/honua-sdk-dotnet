@@ -25,7 +25,16 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
     public HonuaGrpcClient(IOptions<HonuaGrpcClientOptions> options)
     {
         var opts = options.Value;
-        _ownedChannel = GrpcChannel.ForAddress(opts.Address);
+        var address = HonuaGrpcClientOptions.ParseAndValidateAddress(opts.Address);
+        ValidateAuthenticationTransport(opts, address);
+
+        var channelOptions = new GrpcChannelOptions
+        {
+            UnsafeUseInsecureChannelCallCredentials =
+                HasCredentials(opts) && HonuaGrpcClientOptions.IsLocalDevelopmentHttp(address)
+        };
+
+        _ownedChannel = GrpcChannel.ForAddress(address, channelOptions);
         _client = new Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient(_ownedChannel);
         _metadata = BuildMetadata(opts);
     }
@@ -120,4 +129,22 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
             metadata.Add("grpc-accept-encoding", opts.AcceptedCompressionEncodings);
         return metadata;
     }
+
+    private static void ValidateAuthenticationTransport(HonuaGrpcClientOptions opts, Uri address)
+    {
+        if (!HasCredentials(opts))
+        {
+            return;
+        }
+
+        if (HonuaGrpcClientOptions.RequiresHttpsForAuthentication(address))
+        {
+            throw new InvalidOperationException(
+                "Refusing to send gRPC credentials over an insecure connection. Use HTTPS, " +
+                "or use loopback HTTP only for local development.");
+        }
+    }
+
+    private static bool HasCredentials(HonuaGrpcClientOptions opts)
+        => !string.IsNullOrWhiteSpace(opts.ApiKey) || !string.IsNullOrWhiteSpace(opts.BearerToken);
 }

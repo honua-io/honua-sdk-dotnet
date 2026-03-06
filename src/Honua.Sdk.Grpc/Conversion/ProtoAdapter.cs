@@ -179,85 +179,78 @@ internal static class ProtoAdapter
 
     private static Dictionary<string, object?> ConvertMultiPoint(Proto.MultiPointGeometry multiPoint)
     {
+        var hasZ = multiPoint.Points.Any(p => p.HasZ);
+        var hasM = multiPoint.Points.Any(p => p.HasM);
         var points = new List<object?>();
         foreach (var p in multiPoint.Points)
         {
-            var coords = new List<object?> { p.X, p.Y };
-            if (p.HasZ)
-            {
-                coords.Add(p.Z);
-            }
-            else if (p.HasM)
-            {
-                coords.Add(null);
-            }
-            if (p.HasM)
-            {
-                coords.Add(p.M);
-            }
+            var coords = CreateCoordinateValue(
+                p.X,
+                p.Y,
+                hasZ,
+                p.HasZ ? p.Z : null,
+                hasM,
+                p.HasM ? p.M : null);
             points.Add(coords);
         }
-        return new Dictionary<string, object?> { ["points"] = points };
+
+        return CreateGeometryResult("points", points, hasZ, hasM);
     }
 
     private static Dictionary<string, object?> ConvertPolyline(Proto.PolylineGeometry polyline)
     {
+        var hasZ = polyline.Paths.SelectMany(path => path.Coords).Any(c => c.HasZ);
+        var hasM = polyline.Paths.SelectMany(path => path.Coords).Any(c => c.HasM);
         var paths = new List<object?>();
         foreach (var path in polyline.Paths)
         {
             var coords = new List<object?>();
             foreach (var c in path.Coords)
             {
-                var coord = new List<object?> { c.X, c.Y };
-                if (c.HasZ)
-                {
-                    coord.Add(c.Z);
-                }
-                else if (c.HasM)
-                {
-                    coord.Add(null);
-                }
-                if (c.HasM)
-                {
-                    coord.Add(c.M);
-                }
+                var coord = CreateCoordinateValue(
+                    c.X,
+                    c.Y,
+                    hasZ,
+                    c.HasZ ? c.Z : null,
+                    hasM,
+                    c.HasM ? c.M : null);
                 coords.Add(coord);
             }
             paths.Add(coords);
         }
-        return new Dictionary<string, object?> { ["paths"] = paths };
+
+        return CreateGeometryResult("paths", paths, hasZ, hasM);
     }
 
     private static Dictionary<string, object?> ConvertPolygon(Proto.PolygonGeometry polygon)
     {
+        var hasZ = polygon.Rings.SelectMany(ring => ring.Coords).Any(c => c.HasZ);
+        var hasM = polygon.Rings.SelectMany(ring => ring.Coords).Any(c => c.HasM);
         var rings = new List<object?>();
         foreach (var ring in polygon.Rings)
         {
             var coords = new List<object?>();
             foreach (var c in ring.Coords)
             {
-                var coord = new List<object?> { c.X, c.Y };
-                if (c.HasZ)
-                {
-                    coord.Add(c.Z);
-                }
-                else if (c.HasM)
-                {
-                    coord.Add(null);
-                }
-                if (c.HasM)
-                {
-                    coord.Add(c.M);
-                }
+                var coord = CreateCoordinateValue(
+                    c.X,
+                    c.Y,
+                    hasZ,
+                    c.HasZ ? c.Z : null,
+                    hasM,
+                    c.HasM ? c.M : null);
                 coords.Add(coord);
             }
             rings.Add(coords);
         }
-        return new Dictionary<string, object?> { ["rings"] = rings };
+
+        return CreateGeometryResult("rings", rings, hasZ, hasM);
     }
 
     private static Dictionary<string, object?> ConvertMultiPolygon(Proto.MultiPolygonGeometry multiPolygon)
     {
+        var hasZ = multiPolygon.Polygons.SelectMany(poly => poly.Rings).SelectMany(ring => ring.Coords).Any(c => c.HasZ);
+        var hasM = multiPolygon.Polygons.SelectMany(poly => poly.Rings).SelectMany(ring => ring.Coords).Any(c => c.HasM);
         var rings = new List<object?>();
         foreach (var poly in multiPolygon.Polygons)
         {
@@ -266,25 +259,20 @@ internal static class ProtoAdapter
                 var coords = new List<object?>();
                 foreach (var c in ring.Coords)
                 {
-                    var coord = new List<object?> { c.X, c.Y };
-                    if (c.HasZ)
-                    {
-                        coord.Add(c.Z);
-                    }
-                    else if (c.HasM)
-                    {
-                        coord.Add(null);
-                    }
-                    if (c.HasM)
-                    {
-                        coord.Add(c.M);
-                    }
+                    var coord = CreateCoordinateValue(
+                        c.X,
+                        c.Y,
+                        hasZ,
+                        c.HasZ ? c.Z : null,
+                        hasM,
+                        c.HasM ? c.M : null);
                     coords.Add(coord);
                 }
                 rings.Add(coords);
             }
         }
-        return new Dictionary<string, object?> { ["rings"] = rings };
+
+        return CreateGeometryResult("rings", rings, hasZ, hasM);
     }
 
     private static Proto.SpatialFilter ConvertSpatialFilter(Models.SpatialFilter spatialFilter)
@@ -328,6 +316,8 @@ internal static class ProtoAdapter
     {
         var proto = new Proto.Geometry();
         var spatialReference = TryGetSpatialReference(geometry);
+        bool? hasZHint = TryGetBoolean(geometry, "hasZ", out var hasZ) ? hasZ : null;
+        bool? hasMHint = TryGetBoolean(geometry, "hasM", out var hasM) ? hasM : null;
 
         if (TryGetNumber(geometry, "x", out var x) && TryGetNumber(geometry, "y", out var y))
         {
@@ -376,7 +366,7 @@ internal static class ProtoAdapter
             var multipoint = new Proto.MultiPointGeometry();
             foreach (var pointValue in points)
             {
-                multipoint.Points.Add(CreatePointGeometry(pointValue, "points"));
+                multipoint.Points.Add(CreatePointGeometry(pointValue, "points", hasZHint, hasMHint));
             }
 
             proto.MultiPoint = multipoint;
@@ -388,7 +378,7 @@ internal static class ProtoAdapter
             var polyline = new Proto.PolylineGeometry();
             foreach (var path in paths)
             {
-                polyline.Paths.Add(CreateCoordinateSequence(path, "paths"));
+                polyline.Paths.Add(CreateCoordinateSequence(path, "paths", hasZHint, hasMHint));
             }
 
             proto.Polyline = polyline;
@@ -400,7 +390,7 @@ internal static class ProtoAdapter
             var polygon = new Proto.PolygonGeometry();
             foreach (var ring in rings)
             {
-                polygon.Rings.Add(CreateCoordinateSequence(ring, "rings"));
+                polygon.Rings.Add(CreateCoordinateSequence(ring, "rings", hasZHint, hasMHint));
             }
 
             proto.Polygon = polygon;
@@ -410,7 +400,11 @@ internal static class ProtoAdapter
         throw new ArgumentException("Unsupported geometry shape for gRPC spatial filter.");
     }
 
-    private static Proto.PointGeometry CreatePointGeometry(object? pointValue, string context)
+    private static Proto.PointGeometry CreatePointGeometry(
+        object? pointValue,
+        string context,
+        bool? hasZHint = null,
+        bool? hasMHint = null)
     {
         if (!TryAsEnumerable(pointValue, out var values))
         {
@@ -429,20 +423,38 @@ internal static class ProtoAdapter
             Y = ConvertToDouble(list[1], context)
         };
 
-        if (list.Count > 2 && list[2] is not null)
+        if (list.Count > 3)
         {
-            point.Z = ConvertToDouble(list[2], context);
-        }
+            if (list[2] is not null)
+            {
+                point.Z = ConvertToDouble(list[2], context);
+            }
 
-        if (list.Count > 3 && list[3] is not null)
+            if (list[3] is not null)
+            {
+                point.M = ConvertToDouble(list[3], context);
+            }
+        }
+        else if (list.Count > 2 && list[2] is not null)
         {
-            point.M = ConvertToDouble(list[3], context);
+            if (ShouldTreatThirdOrdinateAsMeasure(hasZHint, hasMHint))
+            {
+                point.M = ConvertToDouble(list[2], context);
+            }
+            else
+            {
+                point.Z = ConvertToDouble(list[2], context);
+            }
         }
 
         return point;
     }
 
-    private static Proto.CoordinateSequence CreateCoordinateSequence(object? sequenceValue, string context)
+    private static Proto.CoordinateSequence CreateCoordinateSequence(
+        object? sequenceValue,
+        string context,
+        bool? hasZHint = null,
+        bool? hasMHint = null)
     {
         if (!TryAsEnumerable(sequenceValue, out var values))
         {
@@ -452,13 +464,17 @@ internal static class ProtoAdapter
         var sequence = new Proto.CoordinateSequence();
         foreach (var coordinate in values)
         {
-            sequence.Coords.Add(CreateCoordinate(coordinate, context));
+            sequence.Coords.Add(CreateCoordinate(coordinate, context, hasZHint, hasMHint));
         }
 
         return sequence;
     }
 
-    private static Proto.Coordinate CreateCoordinate(object? coordinateValue, string context)
+    private static Proto.Coordinate CreateCoordinate(
+        object? coordinateValue,
+        string context,
+        bool? hasZHint = null,
+        bool? hasMHint = null)
     {
         if (!TryAsEnumerable(coordinateValue, out var values))
         {
@@ -477,17 +493,76 @@ internal static class ProtoAdapter
             Y = ConvertToDouble(list[1], context)
         };
 
-        if (list.Count > 2 && list[2] is not null)
+        if (list.Count > 3)
         {
-            coordinate.Z = ConvertToDouble(list[2], context);
-        }
+            if (list[2] is not null)
+            {
+                coordinate.Z = ConvertToDouble(list[2], context);
+            }
 
-        if (list.Count > 3 && list[3] is not null)
+            if (list[3] is not null)
+            {
+                coordinate.M = ConvertToDouble(list[3], context);
+            }
+        }
+        else if (list.Count > 2 && list[2] is not null)
         {
-            coordinate.M = ConvertToDouble(list[3], context);
+            if (ShouldTreatThirdOrdinateAsMeasure(hasZHint, hasMHint))
+            {
+                coordinate.M = ConvertToDouble(list[2], context);
+            }
+            else
+            {
+                coordinate.Z = ConvertToDouble(list[2], context);
+            }
         }
 
         return coordinate;
+    }
+
+    private static bool ShouldTreatThirdOrdinateAsMeasure(bool? hasZHint, bool? hasMHint)
+        => hasMHint is true && hasZHint is not true;
+
+    private static List<object?> CreateCoordinateValue(
+        double x,
+        double y,
+        bool includeZ,
+        double? zValue,
+        bool includeM,
+        double? mValue)
+    {
+        var coordinate = new List<object?> { x, y };
+        if (includeZ)
+        {
+            coordinate.Add(zValue);
+        }
+
+        if (includeM)
+        {
+            coordinate.Add(mValue);
+        }
+
+        return coordinate;
+    }
+
+    private static Dictionary<string, object?> CreateGeometryResult(
+        string shapeKey,
+        List<object?> shapeValues,
+        bool hasZ,
+        bool hasM)
+    {
+        var result = new Dictionary<string, object?> { [shapeKey] = shapeValues };
+        if (hasZ)
+        {
+            result["hasZ"] = true;
+        }
+
+        if (hasM)
+        {
+            result["hasM"] = true;
+        }
+
+        return result;
     }
 
     private static Proto.SpatialReference? TryGetSpatialReference(IReadOnlyDictionary<string, object?> geometry)
@@ -614,6 +689,52 @@ internal static class ProtoAdapter
         }
 
         result = 0;
+        return false;
+    }
+
+    private static bool TryGetBoolean(IReadOnlyDictionary<string, object?> values, string key, out bool result)
+    {
+        if (TryGetValue(values, key, out var value))
+        {
+            switch (value)
+            {
+                case bool boolValue:
+                    result = boolValue;
+                    return true;
+                case JsonElement element when element.ValueKind == JsonValueKind.True:
+                    result = true;
+                    return true;
+                case JsonElement element when element.ValueKind == JsonValueKind.False:
+                    result = false;
+                    return true;
+                case JsonElement element when element.ValueKind == JsonValueKind.String &&
+                                              bool.TryParse(element.GetString(), out var jsonParsed):
+                    result = jsonParsed;
+                    return true;
+                case string str when bool.TryParse(str, out var parsed):
+                    result = parsed;
+                    return true;
+                case IConvertible convertible:
+                    try
+                    {
+                        result = convertible.ToBoolean(CultureInfo.InvariantCulture);
+                        return true;
+                    }
+                    catch (FormatException)
+                    {
+                    }
+                    catch (InvalidCastException)
+                    {
+                    }
+                    catch (OverflowException)
+                    {
+                    }
+
+                    break;
+            }
+        }
+
+        result = false;
         return false;
     }
 

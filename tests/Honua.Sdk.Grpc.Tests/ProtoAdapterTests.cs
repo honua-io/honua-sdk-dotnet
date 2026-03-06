@@ -180,6 +180,71 @@ public class ProtoAdapterTests
     }
 
     [Fact]
+    public void ToProtoRequest_WithSpatialFilterGeometryHasMOnly_MultiPointThirdOrdinateMapsToM()
+    {
+        var request = new QueryFeaturesRequest
+        {
+            ServiceId = "svc",
+            LayerId = 1,
+            SpatialFilter = new SpatialFilter
+            {
+                Geometry = new Dictionary<string, object?>
+                {
+                    ["points"] = new List<object?>
+                    {
+                        new List<object?> { 1.25, 2.5, 3.75 }
+                    },
+                    ["hasM"] = true
+                },
+                SpatialRelationship = Models.SpatialRelationship.Intersects
+            }
+        };
+
+        var proto = ProtoAdapter.ToProtoRequest(request);
+
+        Assert.NotNull(proto.SpatialFilter);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.MultiPoint, proto.SpatialFilter.Geometry.ShapeCase);
+        var point = proto.SpatialFilter.Geometry.MultiPoint.Points[0];
+        Assert.False(point.HasZ);
+        Assert.True(point.HasM);
+        Assert.Equal(3.75, point.M);
+    }
+
+    [Fact]
+    public void ToProtoRequest_WithSpatialFilterGeometryHasMOnly_PathThirdOrdinateMapsToM()
+    {
+        var request = new QueryFeaturesRequest
+        {
+            ServiceId = "svc",
+            LayerId = 1,
+            SpatialFilter = new SpatialFilter
+            {
+                Geometry = new Dictionary<string, object?>
+                {
+                    ["paths"] = new List<object?>
+                    {
+                        new List<object?>
+                        {
+                            new List<object?> { 0.0, 0.0, 5.0 }
+                        }
+                    },
+                    ["hasM"] = true
+                },
+                SpatialRelationship = Models.SpatialRelationship.Intersects
+            }
+        };
+
+        var proto = ProtoAdapter.ToProtoRequest(request);
+
+        Assert.NotNull(proto.SpatialFilter);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.Polyline, proto.SpatialFilter.Geometry.ShapeCase);
+        var coord = proto.SpatialFilter.Geometry.Polyline.Paths[0].Coords[0];
+        Assert.False(coord.HasZ);
+        Assert.True(coord.HasM);
+        Assert.Equal(5.0, coord.M);
+    }
+
+    [Fact]
     public void FromProtoResponse_StandardFeatures_MapsCorrectly()
     {
         var feature = new Proto.Feature { Id = 42 };
@@ -541,9 +606,10 @@ public class ProtoAdapterTests
         Assert.NotNull(result);
         var points = (List<object?>)result["points"]!;
         var first = (List<object?>)points[0]!;
-        Assert.Equal(4, first.Count);
-        Assert.Null(first[2]);
-        Assert.Equal(7.0, first[3]);
+        Assert.Equal(3, first.Count);
+        Assert.Equal(7.0, first[2]);
+        Assert.Equal(true, result["hasM"]);
+        Assert.False(result.ContainsKey("hasZ"));
     }
 
     [Fact]
@@ -563,9 +629,10 @@ public class ProtoAdapterTests
         var paths = (List<object?>)result["paths"]!;
         var coords = (List<object?>)paths[0]!;
         var first = (List<object?>)coords[0]!;
-        Assert.Equal(4, first.Count);
-        Assert.Null(first[2]);
-        Assert.Equal(5.0, first[3]);
+        Assert.Equal(3, first.Count);
+        Assert.Equal(5.0, first[2]);
+        Assert.Equal(true, result["hasM"]);
+        Assert.False(result.ContainsKey("hasZ"));
     }
 
     [Fact]
