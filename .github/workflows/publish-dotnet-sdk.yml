@@ -65,6 +65,15 @@ jobs:
             exit 1
           fi
 
+      - name: Security audit (NuGet dependencies)
+        run: |
+          dotnet list Honua.Sdk.Admin/Honua.Sdk.Admin.csproj package --vulnerable --include-transitive 2>&1 | tee /tmp/audit-admin.txt
+          dotnet list Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj package --vulnerable --include-transitive 2>&1 | tee /tmp/audit-grpc.txt
+          if grep -qi "has the following vulnerable packages" /tmp/audit-admin.txt /tmp/audit-grpc.txt; then
+            echo "::error::Vulnerable NuGet dependencies detected. Fix before publishing."
+            exit 1
+          fi
+
       - name: Pack NuGet packages
         run: |
           dotnet pack Honua.Sdk.Admin/Honua.Sdk.Admin.csproj --configuration Release --no-build -o ./nupkgs
@@ -78,12 +87,20 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish to GitHub Packages
+      - name: Publish to GitHub Packages (pre-release)
         if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') }}
         run: |
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --skip-duplicate
+
+      - name: Publish to NuGet.org (stable releases only)
+        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') && !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta') }}
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg \
+            --source "https://api.nuget.org/v3/index.json" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
             --skip-duplicate
 
       - name: Dry-run summary
