@@ -11,9 +11,13 @@
     <Description>Admin client SDK for Honua Server</Description>
     <RootNamespace>Honua.Sdk.Admin</RootNamespace>
     <Authors>Honua</Authors>
-    <PackageLicenseExpression>Elastic-2.0</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/honuaio/honua-server</RepositoryUrl>
+    <Copyright>Copyright (c) Honua</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/honua-io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageTags>geospatial;mobile;gis;offline;sync;honua</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
