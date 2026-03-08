@@ -24,10 +24,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build
-        run: dotnet build Honua.Sdk.Admin/Honua.Sdk.Admin.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj --configuration Release /p:TreatWarningsAsErrors=true
 
       - name: Test
-        run: dotnet test Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj --configuration Release
 
   dotnet-grpc-sdk:
     name: .NET gRPC SDK
@@ -41,7 +41,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build
-        run: dotnet build Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj --configuration Release /p:TreatWarningsAsErrors=true
 
       - name: Test
-        run: dotnet test Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj --configuration Release
