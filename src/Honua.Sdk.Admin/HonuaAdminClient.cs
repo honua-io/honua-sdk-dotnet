@@ -218,6 +218,13 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     }
 
     /// <inheritdoc />
+    public async Task<ServerCompatibilityResult> CheckCompatibilityAsync(CancellationToken ct = default)
+    {
+        var capabilities = await GetCapabilitiesAsync(ct).ConfigureAwait(false);
+        return HonuaAdminCompatibility.Evaluate(capabilities);
+    }
+
+    /// <inheritdoc />
     public async Task<MetadataManifest> GetManifestAsync(string? ns = null, CancellationToken ct = default)
     {
         var query = BuildQuery(("namespace", ns));

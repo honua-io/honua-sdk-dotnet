@@ -142,6 +142,13 @@ public interface IHonuaAdminClient
     Task<AdminCapabilitiesResponse> GetCapabilitiesAsync(CancellationToken ct = default);
 
     /// <summary>
+    /// Checks whether the connected server is supported by this SDK baseline.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A compatibility result containing support status and coarse feature metadata.</returns>
+    Task<ServerCompatibilityResult> CheckCompatibilityAsync(CancellationToken ct = default);
+
+    /// <summary>
     /// Exports the metadata manifest.
     /// </summary>
     /// <param name="ns">Optional namespace filter.</param>

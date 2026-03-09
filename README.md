@@ -49,6 +49,51 @@ foreach (var feature in response.Features)
     Console.WriteLine($"{feature.Id}: {feature.Attributes["name"]}");
 ```
 
+## Admin compatibility checks
+
+`Honua.Sdk.Admin` declares a minimum supported server version through
+`HonuaAdminCompatibility.MinimumSupportedServerVersion`, requires at least the
+`preview` server release channel, and can validate a connected server against
+`GET /api/v1/admin/capabilities`.
+
+```csharp
+using Honua.Sdk.Admin;
+using Honua.Sdk.Admin.Models;
+
+var compatibility = await adminClient.CheckCompatibilityAsync();
+
+if (!compatibility.IsSupported)
+{
+    throw new InvalidOperationException(
+        $"Honua Server {compatibility.ServerVersion} is not supported. " +
+        $"Minimum supported version: {compatibility.MinimumSupportedServerVersion}. " +
+        $"{compatibility.UnsupportedReason}");
+}
+
+if (compatibility.Features.ManifestApply && compatibility.Features.ManifestDryRun)
+{
+    var preview = await adminClient.ApplyManifestAsync(new ManifestApplyRequest
+    {
+        DryRun = true,
+        Resources = []
+    });
+}
+
+if (compatibility.Features.MetadataResources)
+{
+    var resources = await adminClient.ListMetadataResourcesAsync();
+}
+```
+
+`CheckCompatibilityAsync()` uses the server's compatibility metadata to verify:
+- the advertised server version is at or above the SDK baseline
+- the advertised release channel is at or above `preview`
+- the control-plane API major version is compatible
+- the control-plane base path still matches `/api/v1/admin`
+
+For lower-level inspection, call `GetCapabilitiesAsync()` directly and read the
+coarse-grained feature flags from `result.Features`.
+
 ## Repository layout
 
 ```
@@ -69,7 +114,7 @@ docs/
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
   features, lists services, and geocodes an address in 5 minutes
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
-  policy
+  policy and server compatibility baseline
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI
   example with offline sync and map views
 - **[gRPC vs Forms](examples/FieldDataCollection/GRPC_FORMS_COMPARISON.md)**

@@ -166,39 +166,3 @@ public sealed class AdminVersionResponse
     [JsonPropertyName("serverTime")]
     public DateTimeOffset ServerTime { get; init; }
 }
-
-/// <summary>
-/// Admin capabilities response payload.
-/// </summary>
-public sealed class AdminCapabilitiesResponse
-{
-    /// <summary>
-    /// Supported metadata API versions.
-    /// </summary>
-    [JsonPropertyName("metadataApiVersions")]
-    public IReadOnlyList<string> MetadataApiVersions { get; init; } = [];
-
-    /// <summary>
-    /// Supported resource kinds.
-    /// </summary>
-    [JsonPropertyName("resourceKinds")]
-    public IReadOnlyList<string> ResourceKinds { get; init; } = [];
-
-    /// <summary>
-    /// Indicates manifest export/apply support.
-    /// </summary>
-    [JsonPropertyName("manifestSupported")]
-    public bool ManifestSupported { get; init; }
-
-    /// <summary>
-    /// Indicates whether dry-run is supported for manifest apply.
-    /// </summary>
-    [JsonPropertyName("manifestDryRunSupported")]
-    public bool ManifestDryRunSupported { get; init; }
-
-    /// <summary>
-    /// Indicates whether prune is supported for manifest apply.
-    /// </summary>
-    [JsonPropertyName("manifestPruneSupported")]
-    public bool ManifestPruneSupported { get; init; }
-}

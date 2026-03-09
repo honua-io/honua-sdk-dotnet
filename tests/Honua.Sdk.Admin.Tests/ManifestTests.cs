@@ -40,7 +40,34 @@ public sealed class ManifestTests
             resourceKinds = new[] { "Layer", "Service" },
             manifestSupported = true,
             manifestDryRunSupported = true,
-            manifestPruneSupported = true
+            manifestPruneSupported = true,
+            compatibility = new
+            {
+                serverVersion = "0.1.0",
+                releaseChannel = "beta",
+                controlPlaneApi = new
+                {
+                    major = 1,
+                    basePath = "/api/v1/admin",
+                    deprecated = false
+                },
+                metadataSchemas = new[]
+                {
+                    new
+                    {
+                        version = "honua.io/v1alpha1",
+                        deprecated = false
+                    }
+                },
+                features = new
+                {
+                    metadataResources = true,
+                    manifestExport = true,
+                    manifestApply = true,
+                    manifestDryRun = true,
+                    manifestPrune = true
+                }
+            }
         };
 
         var client = TestHelpers.CreateClient(req =>
@@ -51,9 +78,17 @@ public sealed class ManifestTests
 
         var result = await client.GetCapabilitiesAsync();
 
+        Assert.Equal("0.1.0", result.ServerVersion);
+        Assert.Equal("beta", result.ReleaseChannel);
         Assert.True(result.ManifestSupported);
         Assert.True(result.ManifestDryRunSupported);
+        Assert.True(result.ManifestPruneSupported);
         Assert.Contains("Layer", result.ResourceKinds);
+        Assert.Equal(1, result.ControlPlaneApi.Major);
+        Assert.True(result.Features.ManifestApply);
+        Assert.True(result.Features.ManifestDryRun);
+        Assert.Single(result.MetadataSchemas);
+        Assert.Equal("honua.io/v1alpha1", result.MetadataSchemas[0].Version);
     }
 
     [Fact]
