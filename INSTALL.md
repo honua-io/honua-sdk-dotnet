@@ -75,3 +75,35 @@ public class MyService(IHonuaGrpcClient client)
 - **Stable** (`1.0.0+`): Published to NuGet.org after validation
 
 All packages follow [Semantic Versioning](https://semver.org/). Major versions are coordinated across all Honua SDKs.
+
+## Server Compatibility Baseline
+
+`Honua.Sdk.Admin` currently requires Honua Server
+`HonuaAdminCompatibility.MinimumSupportedServerVersion` or newer and a minimum
+server release channel baseline of `preview`. The admin client checks this
+baseline against `GET /api/v1/admin/capabilities`, which also advertises coarse
+feature flags for metadata and manifest workflows.
+
+Typical startup flow:
+
+```csharp
+using Honua.Sdk.Admin;
+
+var compatibility = await adminClient.CheckCompatibilityAsync();
+
+if (!compatibility.IsSupported)
+{
+    throw new InvalidOperationException(
+        compatibility.UnsupportedReason ??
+        "The connected Honua Server is not supported by this SDK.");
+}
+
+if (compatibility.Features.ManifestExport)
+{
+    var manifest = await adminClient.GetManifestAsync();
+}
+```
+
+Use `GetCapabilitiesAsync()` directly when you need the raw compatibility
+metadata, including `releaseChannel`, `metadataSchemas`, and the
+`manifestDryRun` / `manifestPrune` feature flags.
