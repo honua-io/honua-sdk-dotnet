@@ -43,24 +43,28 @@ dotnet add package Honua.Sdk.Grpc --prerelease --source honua
 
 ```csharp
 using Honua.Sdk.Grpc;
+using Honua.Sdk.Grpc.Extensions;
+using Honua.Server.Features.Grpc.Proto;
 
 // Register in DI
-builder.Services.AddHonuaGrpcClient(options =>
+builder.Services.AddHonuaGrpc(options =>
 {
-    options.BaseUri = new Uri("https://your-honua-server.com");
+    options.Address = "https://your-honua-server.com";
 });
 
 // Use in a service
-public class MyService(HonuaFeatureClient client)
+public class MyService(IHonuaGrpcClient client)
 {
     public async Task<IReadOnlyList<Feature>> GetFeaturesAsync(int layerId)
     {
-        return await client.QueryFeaturesAsync(new QueryFeaturesRequest
+        var response = await client.QueryFeaturesAsync(new QueryFeaturesRequest
         {
             ServiceId = "my-service",
             LayerId = layerId,
             ReturnGeometry = true,
         });
+
+        return response.Features;
     }
 }
 ```
