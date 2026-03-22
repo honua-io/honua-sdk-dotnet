@@ -116,6 +116,131 @@ internal static class ProtoAdapter
         };
     }
 
+    /// <summary>
+    /// Converts a domain apply-edits request to a proto request.
+    /// </summary>
+    public static Proto.ApplyEditsRequest ToProtoApplyEditsRequest(Models.ApplyEditsRequest request)
+    {
+        var proto = new Proto.ApplyEditsRequest
+        {
+            ServiceId = request.ServiceId,
+            LayerId = request.LayerId,
+            RollbackOnFailure = request.RollbackOnFailure,
+            ForceWrite = request.ForceWrite,
+        };
+
+        if (request.Adds is not null)
+        {
+            foreach (var feature in request.Adds)
+            {
+                proto.Adds.Add(ConvertFeatureToProto(feature));
+            }
+        }
+
+        if (request.Updates is not null)
+        {
+            foreach (var feature in request.Updates)
+            {
+                proto.Updates.Add(ConvertFeatureToProto(feature));
+            }
+        }
+
+        if (request.Deletes is not null)
+        {
+            proto.Deletes.AddRange(request.Deletes);
+        }
+
+        return proto;
+    }
+
+    /// <summary>
+    /// Converts a proto apply-edits response to a domain response.
+    /// </summary>
+    public static Models.ApplyEditsResponse FromProtoApplyEditsResponse(Proto.ApplyEditsResponse response)
+    {
+        return new Models.ApplyEditsResponse
+        {
+            AddResults = response.AddResults.Select(ConvertEditResult).ToList(),
+            UpdateResults = response.UpdateResults.Select(ConvertEditResult).ToList(),
+            DeleteResults = response.DeleteResults.Select(ConvertEditResult).ToList(),
+            Error = response.Error is not null ? ConvertEditError(response.Error) : null,
+        };
+    }
+
+    internal static Proto.Feature ConvertFeatureToProto(Models.Feature feature)
+    {
+        var proto = new Proto.Feature { Id = feature.Id };
+
+        foreach (var kvp in feature.Attributes)
+        {
+            proto.Attributes[kvp.Key] = ConvertAttributeToProto(kvp.Value);
+        }
+
+        if (feature.Geometry is not null)
+        {
+            var conversion = ConvertGeometryToProto(feature.Geometry);
+            proto.Geometry = conversion.Geometry;
+        }
+
+        return proto;
+    }
+
+    internal static Proto.AttributeValue ConvertAttributeToProto(object? value)
+    {
+        var attr = new Proto.AttributeValue();
+        switch (value)
+        {
+            case null:
+                attr.NullValue = Proto.NullValue.NullValue;
+                break;
+            case string s:
+                attr.StringValue = s;
+                break;
+            case int i:
+                attr.Int32Value = i;
+                break;
+            case long l:
+                attr.Int64Value = l;
+                break;
+            case double d:
+                attr.DoubleValue = d;
+                break;
+            case float f:
+                attr.FloatValue = f;
+                break;
+            case bool b:
+                attr.BoolValue = b;
+                break;
+            case byte[] bytes:
+                attr.BytesValue = Google.Protobuf.ByteString.CopyFrom(bytes);
+                break;
+            default:
+                attr.StringValue = value.ToString() ?? string.Empty;
+                break;
+        }
+
+        return attr;
+    }
+
+    private static Models.EditResult ConvertEditResult(Proto.EditResult result)
+    {
+        return new Models.EditResult
+        {
+            ObjectId = result.ObjectId,
+            Success = result.Success,
+            Error = result.Error is not null ? ConvertEditError(result.Error) : null,
+        };
+    }
+
+    private static Models.EditError ConvertEditError(Proto.EditError error)
+    {
+        return new Models.EditError
+        {
+            Code = error.Code,
+            Message = error.Message,
+        };
+    }
+
     internal static Models.Feature ConvertFeature(Proto.Feature feature)
     {
         var attributes = new Dictionary<string, object?>();

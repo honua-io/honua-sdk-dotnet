@@ -25,4 +25,12 @@ public interface IHonuaGrpcClient
     /// <param name="ct">Cancellation token.</param>
     /// <returns>An async enumerable of feature pages.</returns>
     IAsyncEnumerable<FeaturePage> QueryFeaturesStreamAsync(QueryFeaturesRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Applies add, update, and delete edits to a feature layer.
+    /// </summary>
+    /// <param name="request">The edit request containing adds, updates, and deletes.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The edit response containing per-operation results.</returns>
+    Task<ApplyEditsResponse> ApplyEditsAsync(ApplyEditsRequest request, CancellationToken ct = default);
 }

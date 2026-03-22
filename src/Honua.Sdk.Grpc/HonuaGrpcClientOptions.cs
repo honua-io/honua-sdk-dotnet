@@ -33,6 +33,19 @@ public sealed class HonuaGrpcClientOptions
     /// </summary>
     public string AcceptedCompressionEncodings { get; set; } = "gzip,identity";
 
+    /// <summary>
+    /// Enables the default retry policy for transient gRPC failures
+    /// (Unavailable, Internal). Defaults to <c>true</c>.
+    /// </summary>
+    public bool EnableRetry { get; set; } = true;
+
+    /// <summary>
+    /// Maximum number of retry attempts (including the original call).
+    /// Only used when <see cref="EnableRetry"/> is <c>true</c>. Defaults to 3.
+    /// Must be between 2 and 5 inclusive.
+    /// </summary>
+    public int MaxRetryAttempts { get; set; } = 3;
+
     internal static Uri ParseAndValidateAddress(string? address)
     {
         if (string.IsNullOrWhiteSpace(address))

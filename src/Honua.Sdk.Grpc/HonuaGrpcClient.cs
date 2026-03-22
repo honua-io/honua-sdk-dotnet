@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Grpc.Net.Client.Configuration;
 using Honua.Sdk.Grpc.Conversion;
 using Microsoft.Extensions.Options;
 
@@ -31,7 +32,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
         var channelOptions = new GrpcChannelOptions
         {
             UnsafeUseInsecureChannelCallCredentials =
-                HasCredentials(opts) && HonuaGrpcClientOptions.IsLocalDevelopmentHttp(address)
+                HasCredentials(opts) && HonuaGrpcClientOptions.IsLocalDevelopmentHttp(address),
+            ServiceConfig = BuildServiceConfig(opts)
         };
 
         _ownedChannel = GrpcChannel.ForAddress(address, channelOptions);
@@ -66,6 +68,22 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
         {
             var protoResponse = await _client.QueryFeaturesAsync(protoRequest, _metadata, cancellationToken: ct);
             return ProtoAdapter.FromProtoResponse(protoResponse);
+        }
+        catch (RpcException ex)
+        {
+            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Models.ApplyEditsResponse> ApplyEditsAsync(
+        Models.ApplyEditsRequest request, CancellationToken ct = default)
+    {
+        var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
+        try
+        {
+            var protoResponse = await _client.ApplyEditsAsync(protoRequest, _metadata, cancellationToken: ct);
+            return ProtoAdapter.FromProtoApplyEditsResponse(protoResponse);
         }
         catch (RpcException ex)
         {
@@ -116,6 +134,35 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
     public void Dispose()
     {
         _ownedChannel?.Dispose();
+    }
+
+    private static ServiceConfig BuildServiceConfig(HonuaGrpcClientOptions opts)
+    {
+        var serviceConfig = new ServiceConfig();
+
+        if (opts.EnableRetry)
+        {
+            var maxAttempts = Math.Clamp(opts.MaxRetryAttempts, 2, 5);
+
+            serviceConfig.MethodConfigs.Add(new MethodConfig
+            {
+                Names = { MethodName.Default },
+                RetryPolicy = new RetryPolicy
+                {
+                    MaxAttempts = maxAttempts,
+                    InitialBackoff = TimeSpan.FromMilliseconds(500),
+                    MaxBackoff = TimeSpan.FromSeconds(5),
+                    BackoffMultiplier = 2,
+                    RetryableStatusCodes =
+                    {
+                        StatusCode.Unavailable,
+                        StatusCode.Internal
+                    }
+                }
+            });
+        }
+
+        return serviceConfig;
     }
 
     private static Metadata BuildMetadata(HonuaGrpcClientOptions opts)
