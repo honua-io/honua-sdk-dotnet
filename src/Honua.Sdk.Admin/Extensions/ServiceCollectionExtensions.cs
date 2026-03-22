@@ -1,8 +1,10 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
 using Honua.Sdk.Admin.Geocoding;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 
 namespace Honua.Sdk.Admin.Extensions;
@@ -24,13 +26,14 @@ public static class ServiceCollectionExtensions
     {
         services.Configure(configure);
         services.AddTransient<HonuaAdminAuthHandler>();
-        services.AddHttpClient<IHonuaAdminClient, HonuaAdminClient>((sp, client) =>
+        var httpBuilder = services.AddHttpClient<IHonuaAdminClient, HonuaAdminClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
             HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
             client.BaseAddress = options.BaseAddress;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
+        ConfigureResilience(services, httpBuilder, configure);
         return services;
     }
 
@@ -49,13 +52,39 @@ public static class ServiceCollectionExtensions
     {
         services.Configure(configure);
         services.AddTransient<HonuaAdminAuthHandler>();
-        services.AddHttpClient<IHonuaGeocodingClient, HonuaGeocodingClient>((sp, client) =>
+        var httpBuilder = services.AddHttpClient<IHonuaGeocodingClient, HonuaGeocodingClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
             HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
             client.BaseAddress = options.BaseAddress;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
+        ConfigureResilience(services, httpBuilder, configure);
         return services;
+    }
+
+    private static void ConfigureResilience(
+        IServiceCollection services,
+        IHttpClientBuilder httpBuilder,
+        Action<HonuaAdminClientOptions> configure)
+    {
+        var opts = new HonuaAdminClientOptions();
+        configure(opts);
+
+        if (!opts.EnableRetry)
+        {
+            return;
+        }
+
+        httpBuilder.AddStandardResilienceHandler(options =>
+        {
+            options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
+            options.Retry.ShouldHandle = args => ValueTask.FromResult(
+                args.Outcome.Result?.StatusCode is
+                    HttpStatusCode.TooManyRequests or
+                    HttpStatusCode.BadGateway or
+                    HttpStatusCode.ServiceUnavailable);
+            options.Retry.UseJitter = true;
+        });
     }
 }

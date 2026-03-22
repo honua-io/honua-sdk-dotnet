@@ -23,6 +23,24 @@ public sealed class HonuaAdminClientOptions
     /// </summary>
     public string? BearerToken { get; set; }
 
+    /// <summary>
+    /// Whether to enable automatic retry on transient HTTP failures (default: true).
+    /// Retries on 429 (Too Many Requests), 502 (Bad Gateway), and 503 (Service Unavailable).
+    /// </summary>
+    public bool EnableRetry { get; set; } = true;
+
+    /// <summary>
+    /// Maximum number of retry attempts (default: 3, range 2-5).
+    /// Only applies when <see cref="EnableRetry"/> is true.
+    /// </summary>
+    public int MaxRetryAttempts
+    {
+        get => _maxRetryAttempts;
+        set => _maxRetryAttempts = Math.Clamp(value, 2, 5);
+    }
+
+    private int _maxRetryAttempts = 3;
+
     internal static void ValidateBaseAddress(Uri? baseAddress)
     {
         if (baseAddress is null)
