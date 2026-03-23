@@ -461,6 +461,107 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         return JsonSerializer.Deserialize<JsonElement>(body);
     }
 
+    // ── Observability ────────────────────────────────────────────────────
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default)
+    {
+        var query = BuildQuery(("limit", limit?.ToString()));
+        var data = await GetAsync<RecentError[]>(
+            $"{ApiPrefix}/observability/errors{query}",
+            HonuaAdminJsonContext.Default.ApiResponseRecentErrorArray,
+            ct).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<TelemetryStatus> GetTelemetryStatusAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<TelemetryStatus>(
+            $"{ApiPrefix}/observability/telemetry",
+            HonuaAdminJsonContext.Default.ApiResponseTelemetryStatus,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null telemetry status.", "GetTelemetryStatus");
+    }
+
+    /// <inheritdoc />
+    public async Task<MigrationStatus> GetMigrationStatusAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<MigrationStatus>(
+            $"{ApiPrefix}/observability/migrations",
+            HonuaAdminJsonContext.Default.ApiResponseMigrationStatus,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null migration status.", "GetMigrationStatus");
+    }
+
+    // ── Deploy Control ──────────────────────────────────────────────────
+
+    /// <inheritdoc />
+    public async Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<DeployPreflightResult>(
+            $"{ApiPrefix}/deploy/preflight",
+            HonuaAdminJsonContext.Default.ApiResponseDeployPreflightResult,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null preflight result.", "GetDeployPreflight");
+    }
+
+    /// <inheritdoc />
+    public async Task<DeployPlan> CreateDeployPlanAsync(CreateDeployPlanRequest request, CancellationToken ct = default)
+    {
+        var data = await PostAsync<DeployPlan>(
+            $"{ApiPrefix}/deploy/plans",
+            request,
+            HonuaAdminJsonContext.Default.CreateDeployPlanRequest,
+            HonuaAdminJsonContext.Default.ApiResponseDeployPlan,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null deploy plan.", "CreateDeployPlan");
+    }
+
+    /// <inheritdoc />
+    public async Task<DeployOperation> CreateDeployOperationAsync(CreateDeployOperationRequest request, CancellationToken ct = default)
+    {
+        var data = await PostAsync<DeployOperation>(
+            $"{ApiPrefix}/deploy/operations",
+            request,
+            HonuaAdminJsonContext.Default.CreateDeployOperationRequest,
+            HonuaAdminJsonContext.Default.ApiResponseDeployOperation,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "CreateDeployOperation");
+    }
+
+    /// <inheritdoc />
+    public async Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        var data = await GetAsync<DeployOperation>(
+            $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}",
+            HonuaAdminJsonContext.Default.ApiResponseDeployOperation,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "GetDeployOperation");
+    }
+
+    /// <inheritdoc />
+    public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        var data = await PostAsync<DeployOperation>(
+            $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/submit",
+            (object?)null,
+            HonuaAdminJsonContext.Default.ApiResponseDeployOperation,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "SubmitDeployOperation");
+    }
+
+    /// <inheritdoc />
+    public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        var data = await PostAsync<DeployOperation>(
+            $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/rollback",
+            (object?)null,
+            HonuaAdminJsonContext.Default.ApiResponseDeployOperation,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "RollbackDeployOperation");
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private async Task<T?> GetAsync<T>(

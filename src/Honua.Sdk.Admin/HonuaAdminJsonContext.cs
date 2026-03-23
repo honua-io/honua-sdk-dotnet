@@ -31,6 +31,12 @@ namespace Honua.Sdk.Admin;
 [JsonSerializable(typeof(ApiResponse<PublishedLayerSummary[]>))]
 [JsonSerializable(typeof(ApiResponse<PublishedLayerSummary>))]
 [JsonSerializable(typeof(ApiResponse<LayerStyleResponse>))]
+[JsonSerializable(typeof(ApiResponse<RecentError[]>))]
+[JsonSerializable(typeof(ApiResponse<TelemetryStatus>))]
+[JsonSerializable(typeof(ApiResponse<MigrationStatus>))]
+[JsonSerializable(typeof(ApiResponse<DeployPreflightResult>))]
+[JsonSerializable(typeof(ApiResponse<DeployPlan>))]
+[JsonSerializable(typeof(ApiResponse<DeployOperation>))]
 [JsonSerializable(typeof(ApiResponse<object>))]
 [JsonSerializable(typeof(TableDiscoveryResponse))]
 [JsonSerializable(typeof(UpdateProtocolsRequest))]
@@ -45,6 +51,8 @@ namespace Honua.Sdk.Admin;
 [JsonSerializable(typeof(PublishLayerRequest))]
 [JsonSerializable(typeof(LayerEnabledRequest))]
 [JsonSerializable(typeof(LayerStyleUpdateRequest))]
+[JsonSerializable(typeof(CreateDeployPlanRequest))]
+[JsonSerializable(typeof(CreateDeployOperationRequest))]
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class HonuaAdminJsonContext : JsonSerializerContext
 {

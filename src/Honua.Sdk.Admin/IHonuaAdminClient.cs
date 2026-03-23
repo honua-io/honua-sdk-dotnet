@@ -313,4 +313,77 @@ public interface IHonuaAdminClient
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The configuration as a JSON element.</returns>
     Task<JsonElement> GetConfigAsync(CancellationToken ct = default);
+
+    // Observability
+
+    /// <summary>
+    /// Gets recent errors from the server.
+    /// </summary>
+    /// <param name="limit">Optional maximum number of errors to return.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A list of recent errors.</returns>
+    Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the current telemetry subsystem status.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The telemetry status.</returns>
+    Task<TelemetryStatus> GetTelemetryStatusAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the current database migration status.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The migration status.</returns>
+    Task<MigrationStatus> GetMigrationStatusAsync(CancellationToken ct = default);
+
+    // Deploy Control
+
+    /// <summary>
+    /// Runs preflight checks to determine deployment readiness.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The preflight check result.</returns>
+    Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// Creates a new deploy plan.
+    /// </summary>
+    /// <param name="request">The deploy plan creation request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created deploy plan.</returns>
+    Task<DeployPlan> CreateDeployPlanAsync(CreateDeployPlanRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Creates a new deploy operation from a plan.
+    /// </summary>
+    /// <param name="request">The deploy operation creation request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created deploy operation.</returns>
+    Task<DeployOperation> CreateDeployOperationAsync(CreateDeployOperationRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets the status of a deploy operation.
+    /// </summary>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The deploy operation.</returns>
+    Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Submits a deploy operation for execution.
+    /// </summary>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated deploy operation.</returns>
+    Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Rolls back a deploy operation.
+    /// </summary>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated deploy operation.</returns>
+    Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default);
 }
