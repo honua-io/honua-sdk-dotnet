@@ -44,8 +44,6 @@ dotnet add package Honua.Sdk.Grpc --prerelease --source honua
 ```csharp
 using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;
-using Honua.Server.Features.Grpc.Proto;
-
 // Register in DI
 builder.Services.AddHonuaGrpc(options =>
 {
