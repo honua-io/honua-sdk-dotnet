@@ -2,8 +2,8 @@
 
 Official .NET client libraries for [Honua](https://github.com/honua-io/honua-server) --
 an open-source geospatial feature server. The SDK provides typed clients for
-querying and editing features over gRPC, managing services through the Admin REST API,
-and geocoding addresses.
+querying and editing features over gRPC, querying via OGC WFS 2.0, managing
+services through the Admin REST API, and geocoding addresses.
 
 ## Packages
 
@@ -11,6 +11,7 @@ and geocoding addresses.
 |---------|-------------|
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
+| **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
 | *Geocoding* (in Admin) | Forward/reverse geocoding and autocomplete via `IHonuaGeocodingClient` |
 
 ## Install
@@ -18,6 +19,7 @@ and geocoding addresses.
 ```bash
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
+dotnet add package Honua.Sdk.Wfs --prerelease
 ```
 
 Pre-release builds are also available from
@@ -30,11 +32,13 @@ Register the clients with dependency injection and query features:
 ```csharp
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
+using Honua.Sdk.Wfs.Extensions;
 
 // Register clients
 builder.Services.AddHonuaGrpc(o => o.Address = "https://localhost:5001");
 builder.Services.AddHonuaAdmin(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaGeocoding(o => o.BaseAddress = new Uri("https://localhost:5001"));
+builder.Services.AddHonuaWfs(o => o.BaseAddress = new Uri("https://localhost:5001"));
 
 // Query features (injected IHonuaGrpcClient)
 var response = await grpcClient.QueryFeaturesAsync(new QueryFeaturesRequest
@@ -79,8 +83,9 @@ await foreach (var page in grpcClient.QueryFeaturesStreamAsync(request))
 
 ## Retry
 
-The gRPC client retries automatically on transient failures (`Unavailable`,
-`Internal`) with exponential backoff. Configurable:
+The gRPC and WFS clients retry automatically on transient failures with
+exponential backoff and jitter. gRPC retries on `Unavailable` / `Internal`;
+WFS retries on `429`, `502`, `503`. Configurable on both clients:
 
 ```csharp
 builder.Services.AddHonuaGrpc(o =>
@@ -89,6 +94,45 @@ builder.Services.AddHonuaGrpc(o =>
     o.EnableRetry = true;       // default
     o.MaxRetryAttempts = 3;     // default, range 2-5
 });
+
+builder.Services.AddHonuaWfs(o =>
+{
+    o.BaseAddress = new Uri("https://localhost:5001");
+    o.EnableRetry = true;       // default
+    o.MaxRetryAttempts = 3;     // default, range 2-5
+});
+```
+
+## WFS 2.0 queries
+
+Query features via OGC WFS 2.0 with GeoJSON output:
+
+```csharp
+var caps = await wfsClient.GetCapabilitiesAsync();
+Console.WriteLine($"WFS {caps.Version}: {caps.FeatureTypes.Count} feature types");
+
+var result = await wfsClient.GetFeaturesAsync(new GetFeaturesRequest
+{
+    TypeNames = "parcels",
+    Count = 10,
+    Bbox = new WfsBoundingBox { MinX = -122.5, MinY = 37.5, MaxX = -122.0, MaxY = 38.0 },
+});
+
+foreach (var feature in result.Features)
+    Console.WriteLine($"{feature.Id}: {feature.Properties["name"]}");
+```
+
+Auto-paginate large result sets with `IAsyncEnumerable`:
+
+```csharp
+await foreach (var feature in wfsClient.GetFeaturesAsyncEnumerable(new GetFeaturesRequest
+{
+    TypeNames = "parcels",
+    Count = 100,
+}))
+{
+    Console.WriteLine(feature.Id);
+}
 ```
 
 ## Admin compatibility checks
@@ -114,9 +158,11 @@ if (!compatibility.IsSupported)
 src/
   Honua.Sdk.Grpc/          gRPC client package (query, stream, edit)
   Honua.Sdk.Admin/          Admin + Geocoding client package
+  Honua.Sdk.Wfs/           WFS 2.0 read/query client package
 tests/
   Honua.Sdk.Grpc.Tests/     gRPC client tests (42 tests)
   Honua.Sdk.Admin.Tests/    Admin + Geocoding tests (81 tests)
+  Honua.Sdk.Wfs.Tests/      WFS client tests (46 tests)
 examples/
   FieldDataCollection/      .NET MAUI field-data-collection app
 docs/

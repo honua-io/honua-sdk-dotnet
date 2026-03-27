@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>0.1.0-alpha.1</Version>
+    <PackageId>Honua.Sdk.Wfs</PackageId>
+    <Description>WFS 2.0 read/query client SDK for Honua Server</Description>
+    <RootNamespace>Honua.Sdk.Wfs</RootNamespace>
+    <Authors>Honua</Authors>
+    <Copyright>Copyright (c) Honua</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/honua-io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>geospatial;wfs;ogc;gis;honua</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Honua.Sdk.Wfs.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
+  </ItemGroup>
+
+</Project>
