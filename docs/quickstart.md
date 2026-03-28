@@ -3,8 +3,8 @@
 ## What You'll Build
 
 A .NET console app that connects to a Honua server, queries geospatial features
-over gRPC, lists services through the Admin REST API, and forward-geocodes an
-address -- all printed to the console.
+over gRPC, queries via OGC WFS 2.0, lists services through the Admin REST API,
+and forward-geocodes an address -- all printed to the console.
 
 ## Prerequisites
 
@@ -18,21 +18,23 @@ dotnet new console -n HonuaDemo
 cd HonuaDemo
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
+dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
-This pulls in both SDK packages and the Generic Host for dependency injection.
+This pulls in the SDK packages and the Generic Host for dependency injection.
 
 ## Step 2: Configure the client with DI (60 seconds)
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
-up the gRPC, Admin, and Geocoding clients so they can be injected anywhere.
+up the gRPC, Admin, Geocoding, and WFS clients so they can be injected anywhere.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
+using Honua.Sdk.Wfs.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -50,6 +52,12 @@ builder.Services.AddHonuaAdmin(options =>
 
 // Geocoding client -- shares the Admin base address and auth
 builder.Services.AddHonuaGeocoding(options =>
+{
+    options.BaseAddress = new Uri("https://localhost:5001");
+});
+
+// WFS 2.0 client -- OGC feature queries
+builder.Services.AddHonuaWfs(options =>
 {
     options.BaseAddress = new Uri("https://localhost:5001");
 });
@@ -207,6 +215,51 @@ Returned 5 features (geometry type: Point)
 === Geocoding ===
   1600 Pennsylvania Ave NW, Washington, DC 20500
     lat=38.897676, lon=-77.036530, score=100
+```
+
+## Step 6: Query via WFS 2.0 (60 seconds)
+
+Inject `IHonuaWfsClient` and query features using the OGC WFS protocol:
+
+```csharp
+using Honua.Sdk.Wfs;
+using Honua.Sdk.Wfs.Models;
+
+public sealed class DemoWorker(
+    IHonuaGrpcClient grpcClient,
+    IHonuaAdminClient adminClient,
+    IHonuaGeocodingClient geocodingClient,
+    IHonuaWfsClient wfsClient,            // <-- add this
+    IHostApplicationLifetime lifetime) : BackgroundService
+```
+
+Then add:
+
+```csharp
+        // --- 6. WFS 2.0 feature query ---
+        Console.WriteLine("\n=== WFS ===");
+
+        var caps = await wfsClient.GetCapabilitiesAsync(ct);
+        Console.WriteLine($"WFS {caps.Version}: {caps.FeatureTypes.Count} feature types");
+
+        var wfsResult = await wfsClient.GetFeaturesAsync(new GetFeaturesRequest
+        {
+            TypeNames = caps.FeatureTypes[0].Name,
+            Count = 3,
+        }, ct);
+
+        foreach (var feature in wfsResult.Features)
+            Console.WriteLine($"  {feature.Id}");
+```
+
+Expected output:
+
+```
+=== WFS ===
+WFS 2.0.0: 4 feature types
+  parcels.1
+  parcels.2
+  parcels.3
 ```
 
 ## What's Next

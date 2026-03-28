@@ -6,6 +6,7 @@
 |---------|-------------|
 | `Honua.Sdk.Admin` | Admin client for managing services, layers, and configuration |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries and edits |
+| `Honua.Sdk.Wfs` | WFS 2.0 read/query client for GetCapabilities, GetFeature, DescribeFeatureType |
 
 ## Prerequisites
 
@@ -20,6 +21,9 @@ dotnet add package Honua.Sdk.Grpc --prerelease
 
 # Admin client
 dotnet add package Honua.Sdk.Admin --prerelease
+
+# WFS 2.0 client
+dotnet add package Honua.Sdk.Wfs --prerelease
 ```
 
 ## Install from GitHub Packages (pre-release)
