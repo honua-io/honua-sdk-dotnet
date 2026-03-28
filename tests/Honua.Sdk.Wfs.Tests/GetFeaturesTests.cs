@@ -306,6 +306,31 @@ public sealed class GetFeaturesTests
         Assert.Equal("InvalidParameterValue", ex.ExceptionCode);
     }
 
+    [Fact]
+    public async Task GetFeatures_UnexpectedXmlOnSuccess_ThrowsContentTypeMismatch()
+    {
+        // Server returns 200 + XML that is NOT an ExceptionReport (e.g. GML fallback).
+        // Client should throw a clear content-type mismatch rather than a confusing JsonException.
+        var gmlBody = """
+            <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0">
+              <wfs:member><feature id="1"/></wfs:member>
+            </wfs:FeatureCollection>
+            """;
+
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(gmlBody, System.Text.Encoding.UTF8, "application/xml")
+            }));
+
+        var ex = await Assert.ThrowsAsync<HonuaWfsException>(
+            () => client.GetFeaturesAsync(new GetFeaturesRequest { TypeNames = "parcels" }));
+
+        Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
+        Assert.Contains("application/geo+json", ex.Message);
+        Assert.Contains("application/xml", ex.Message);
+    }
+
     // ── OwnsResponseStream contract ───────────────────────────────────────
 
     [Fact]

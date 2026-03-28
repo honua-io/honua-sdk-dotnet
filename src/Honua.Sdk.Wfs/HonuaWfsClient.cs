@@ -327,6 +327,14 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
                     exceptionReport.ExceptionCode);
             }
 
+            if (unexpectedXml)
+            {
+                throw new HonuaWfsException(
+                    response.StatusCode,
+                    $"Expected content type '{requestedMediaType}' but received '{contentType}'.",
+                    body);
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 throw new HonuaWfsException(
