@@ -27,6 +27,9 @@ public sealed class RawStreamHandler : IWfsOutputFormatHandler<Stream>
     public string MediaType => _mediaType;
 
     /// <inheritdoc />
+    public bool OwnsResponseStream => true;
+
+    /// <inheritdoc />
     public Task<Stream> ReadAsync(Stream responseStream, CancellationToken ct = default)
         => Task.FromResult(responseStream);
 }

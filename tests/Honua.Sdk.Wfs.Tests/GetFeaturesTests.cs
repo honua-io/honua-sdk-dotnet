@@ -251,6 +251,97 @@ public sealed class GetFeaturesTests
         Assert.NotNull(stream);
     }
 
+    [Fact]
+    public async Task GetFeatures_WithGmlHandler_DoesNotStringifyXmlBody()
+    {
+        var gmlBody = """
+            <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0">
+              <wfs:member><feature id="1"/></wfs:member>
+            </wfs:FeatureCollection>
+            """;
+
+        var handler = new RawStreamHandler("application/gml+xml; version=3.2");
+
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Contains("OUTPUTFORMAT=application%2Fgml%2Bxml", req.RequestUri!.Query);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(gmlBody, System.Text.Encoding.UTF8, "application/gml+xml")
+            });
+        });
+
+        var stream = await client.GetFeaturesAsync(
+            new GetFeaturesRequest { TypeNames = "parcels" },
+            handler);
+
+        Assert.NotNull(stream);
+        using var reader = new System.IO.StreamReader(stream);
+        var content = await reader.ReadToEndAsync();
+        Assert.Contains("wfs:FeatureCollection", content);
+    }
+
+    [Fact]
+    public async Task GetFeatures_WithGmlHandler_ErrorStillThrows()
+    {
+        var exceptionXml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/1.1" version="2.0.0">
+              <ows:Exception exceptionCode="InvalidParameterValue" locator="TYPENAMES">
+                <ows:ExceptionText>Type not found</ows:ExceptionText>
+              </ows:Exception>
+            </ows:ExceptionReport>
+            """;
+
+        var handler = new RawStreamHandler("application/gml+xml; version=3.2");
+
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(TestHelpers.CreateXmlResponse(exceptionXml, HttpStatusCode.BadRequest)));
+
+        var ex = await Assert.ThrowsAsync<HonuaWfsException>(
+            () => client.GetFeaturesAsync(
+                new GetFeaturesRequest { TypeNames = "bad" },
+                handler));
+
+        Assert.Equal("InvalidParameterValue", ex.ExceptionCode);
+    }
+
+    // ── OwnsResponseStream contract ───────────────────────────────────────
+
+    [Fact]
+    public void GeoJsonHandler_OwnsResponseStream_IsFalse()
+    {
+        IWfsOutputFormatHandler<WfsFeatureCollection> handler = new GeoJsonFeatureCollectionHandler();
+        Assert.False(handler.OwnsResponseStream);
+    }
+
+    [Fact]
+    public void RawStreamHandler_OwnsResponseStream_IsTrue()
+    {
+        IWfsOutputFormatHandler<Stream> handler = new RawStreamHandler();
+        Assert.True(handler.OwnsResponseStream);
+    }
+
+    [Fact]
+    public async Task GetFeatures_RawStreamHandler_StreamRemainsReadable()
+    {
+        var handler = new RawStreamHandler("text/csv");
+
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("id,name\n1,test", System.Text.Encoding.UTF8, "text/csv")
+            }));
+
+        var stream = await client.GetFeaturesAsync(
+            new GetFeaturesRequest { TypeNames = "parcels" },
+            handler);
+
+        using var reader = new System.IO.StreamReader(stream);
+        var content = await reader.ReadToEndAsync();
+        Assert.Contains("id,name", content);
+    }
+
     // ── GetFeatureCountAsync ─────────────────────────────────────────────
 
     [Fact]
@@ -266,7 +357,7 @@ public sealed class GetFeaturesTests
 
         var count = await client.GetFeatureCountAsync("parcels");
 
-        Assert.Equal(150, count);
+        Assert.Equal(150L, count);
     }
 
     [Fact]
@@ -283,7 +374,27 @@ public sealed class GetFeaturesTests
 
         var count = await client.GetFeatureCountAsync("parcels", fesFilter);
 
-        Assert.Equal(5, count);
+        Assert.Equal(5L, count);
+    }
+
+    [Fact]
+    public async Task GetFeatureCount_NumberMatchedUnknown_ReturnsNull()
+    {
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wfs:FeatureCollection
+              xmlns:wfs="http://www.opengis.net/wfs/2.0"
+              timeStamp="2024-01-01T00:00:00Z"
+              numberMatched="unknown"
+              numberReturned="0" />
+            """;
+
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(TestHelpers.CreateXmlResponse(xml)));
+
+        var count = await client.GetFeatureCountAsync("parcels");
+
+        Assert.Null(count);
     }
 
     [Fact]

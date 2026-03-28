@@ -3,8 +3,8 @@
 ## What You'll Build
 
 A .NET console app that connects to a Honua server, queries geospatial features
-over gRPC, lists services through the Admin REST API, and forward-geocodes an
-address -- all printed to the console.
+over gRPC, queries via OGC WFS 2.0, lists services through the Admin REST API,
+and forward-geocodes an address -- all printed to the console.
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ This pulls in the SDK packages and the Generic Host for dependency injection.
 ## Step 2: Configure the client with DI (60 seconds)
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
-up the gRPC, Admin, and Geocoding clients so they can be injected anywhere.
+up the gRPC, Admin, Geocoding, and WFS clients so they can be injected anywhere.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;

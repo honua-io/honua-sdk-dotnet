@@ -44,11 +44,12 @@ public interface IHonuaWfsClient
 
     /// <summary>
     /// Returns the count of features matching the query (RESULTTYPE=hits).
+    /// Returns <c>null</c> if the server reports "unknown".
     /// </summary>
     /// <param name="typeName">The qualified feature type name.</param>
     /// <param name="filter">Optional FES 2.0 XML filter expression.</param>
     /// <param name="ct">Cancellation token.</param>
-    Task<long> GetFeatureCountAsync(string typeName, string? filter = null, CancellationToken ct = default);
+    Task<long?> GetFeatureCountAsync(string typeName, string? filter = null, CancellationToken ct = default);
 
     /// <summary>
     /// Auto-pages through all matching features, yielding each feature as it becomes available.

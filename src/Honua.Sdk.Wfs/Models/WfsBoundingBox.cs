@@ -20,7 +20,12 @@ public sealed class WfsBoundingBox
     /// <summary>Maximum Y (latitude) coordinate.</summary>
     public required double MaxY { get; init; }
 
-    /// <summary>Optional CRS URI (e.g. urn:ogc:def:crs:EPSG::4326).</summary>
+    /// <summary>
+    /// Optional CRS URI (e.g. urn:ogc:def:crs:EPSG::4326).
+    /// Coordinates are always encoded in longitude/latitude (CRS84) axis order regardless
+    /// of the CRS specified here. If your WFS server strictly enforces CRS-native axis
+    /// order, construct coordinates accordingly or omit this property to default to CRS84.
+    /// </summary>
     public string? Crs { get; init; }
 
     /// <summary>

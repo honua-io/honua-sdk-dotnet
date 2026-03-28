@@ -162,7 +162,7 @@ src/
 tests/
   Honua.Sdk.Grpc.Tests/     gRPC client tests (42 tests)
   Honua.Sdk.Admin.Tests/    Admin + Geocoding tests (81 tests)
-  Honua.Sdk.Wfs.Tests/      WFS client tests (46 tests)
+  Honua.Sdk.Wfs.Tests/      WFS client tests (52 tests)
 examples/
   FieldDataCollection/      .NET MAUI field-data-collection app
 docs/
@@ -172,7 +172,7 @@ docs/
 ## Documentation
 
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
-  features, lists services, and geocodes an address in 5 minutes
+  features via gRPC and WFS, lists services, and geocodes an address in 5 minutes
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI

@@ -41,10 +41,10 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         activity?.SetTag("wfs.operation", "GetCapabilities");
 
         var url = BuildWfsUrl("GetCapabilities");
-        var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
-        await EnsureSuccessAsync(response, body, ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return WfsCapabilitiesParser.Parse(body);
     }
@@ -59,10 +59,10 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         activity?.SetTag("wfs.type_name", typeName);
 
         var url = BuildWfsUrl("DescribeFeatureType", ("TYPENAMES", typeName));
-        var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
-        await EnsureSuccessAsync(response, body, ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return WfsDescribeFeatureTypeParser.Parse(body);
     }
@@ -78,9 +78,9 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         activity?.SetTag("wfs.output_format", "application/geo+json");
 
         var url = BuildGetFeatureUrl(request, DefaultGeoJsonHandler.MediaType);
-        var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
 
-        await EnsureGetFeatureSuccessAsync(response, ct).ConfigureAwait(false);
+        await EnsureGetFeatureSuccessAsync(response, DefaultGeoJsonHandler.MediaType, ct).ConfigureAwait(false);
 
         var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
         var result = await DefaultGeoJsonHandler.ReadAsync(stream, ct).ConfigureAwait(false);
@@ -104,16 +104,38 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         activity?.SetTag("wfs.output_format", handler.MediaType);
 
         var url = BuildGetFeatureUrl(request, handler.MediaType);
-        var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureGetFeatureSuccessAsync(response, handler.MediaType, ct).ConfigureAwait(false);
 
-        await EnsureGetFeatureSuccessAsync(response, ct).ConfigureAwait(false);
+            Stream stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
 
-        var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-        return await handler.ReadAsync(stream, ct).ConfigureAwait(false);
+            if (handler.OwnsResponseStream)
+            {
+                // Wrap so disposing the returned stream also disposes the HTTP response,
+                // which is required when using ResponseHeadersRead.
+                stream = new ResponseOwningStream(stream, response);
+            }
+
+            var result = await handler.ReadAsync(stream, ct).ConfigureAwait(false);
+
+            if (!handler.OwnsResponseStream)
+            {
+                response.Dispose();
+            }
+
+            return result;
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public async Task<long> GetFeatureCountAsync(string typeName, string? filter = null, CancellationToken ct = default)
+    public async Task<long?> GetFeatureCountAsync(string typeName, string? filter = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(typeName);
 
@@ -134,10 +156,10 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         }
 
         var url = BuildWfsUrl("GetFeature", parameters.ToArray());
-        var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
-        await EnsureSuccessAsync(response, body, ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return ParseHitsNumberMatched(body);
     }
@@ -148,6 +170,10 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        using var activity = ActivitySource.StartActivity("WFS GetFeaturesAsyncEnumerable");
+        activity?.SetTag("wfs.operation", "GetFeature");
+        activity?.SetTag("wfs.type_name", request.TypeNames);
 
         var startIndex = request.StartIndex ?? 0;
         var pageCount = 0;
@@ -251,7 +277,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
 
     // ── Response validation ──────────────────────────────────────────────
 
-    private static Task EnsureSuccessAsync(HttpResponseMessage response, string body, CancellationToken ct)
+    private static Task EnsureSuccessAsync(HttpResponseMessage response, string body)
     {
         // Check for OGC ExceptionReport even on 200 responses
         var exceptionReport = WfsExceptionParser.TryParse(body);
@@ -275,14 +301,19 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         return Task.CompletedTask;
     }
 
-    private async Task EnsureGetFeatureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
+    private async Task EnsureGetFeatureSuccessAsync(
+        HttpResponseMessage response, string requestedMediaType, CancellationToken ct)
     {
         // WFS servers may return XML ExceptionReport even when GeoJSON was requested.
-        // Check Content-Type to detect this.
+        // Check Content-Type to detect this. When the handler explicitly requested an
+        // XML format (e.g. GML), skip the XML probe on success to avoid materializing
+        // the entire response body as a string just to check for ExceptionReport.
         var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
+        bool requestedXml = requestedMediaType.Contains("xml", StringComparison.OrdinalIgnoreCase);
+        bool unexpectedXml = !requestedXml &&
+            contentType.Contains("xml", StringComparison.OrdinalIgnoreCase);
 
-        if (!response.IsSuccessStatusCode ||
-            contentType.Contains("xml", StringComparison.OrdinalIgnoreCase))
+        if (!response.IsSuccessStatusCode || unexpectedXml)
         {
             var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
@@ -308,16 +339,18 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
 
     // ── Hits response parsing ────────────────────────────────────────────
 
-    private static long ParseHitsNumberMatched(string xml)
+    private static long? ParseHitsNumberMatched(string xml)
     {
         var doc = XDocument.Parse(xml);
         var root = doc.Root;
-        if (root is null) return 0;
+        if (root is null) return null;
 
         var attr = root.Attribute("numberMatched")?.Value;
-        return attr is not null &&
-               long.TryParse(attr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
+        if (attr is null || string.Equals(attr, "unknown", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return long.TryParse(attr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
             ? count
-            : 0;
+            : null;
     }
 }

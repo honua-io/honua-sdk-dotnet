@@ -20,12 +20,16 @@ public sealed class WfsFeatureCollection
     public int NumberReturned { get; init; }
 
     /// <summary>
-    /// Indicates whether additional pages of results are likely available.
+    /// Indicates whether this single page suggests more results may exist.
     /// </summary>
     /// <remarks>
-    /// True when this page contains features and either <see cref="NumberMatched"/> is unknown
-    /// or exceeds <see cref="NumberReturned"/>. For manual paging, callers should track
-    /// cumulative results against <see cref="NumberMatched"/>.
+    /// This is a per-page heuristic: <c>true</c> when features were returned and either
+    /// <see cref="NumberMatched"/> is unknown or exceeds this page's <see cref="NumberReturned"/>.
+    /// It does not track cumulative offset across pages, so manual paging loops should compare
+    /// the running total of fetched features against <see cref="NumberMatched"/> instead of
+    /// relying solely on this property.
+    /// For automatic paging, use <see cref="IHonuaWfsClient.GetFeaturesAsyncEnumerable"/> which
+    /// handles cumulative offset tracking internally.
     /// </remarks>
     public bool HasMoreResults => NumberReturned > 0 &&
         (!NumberMatched.HasValue || NumberMatched.Value > NumberReturned);

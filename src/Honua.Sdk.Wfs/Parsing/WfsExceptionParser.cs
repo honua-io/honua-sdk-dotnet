@@ -15,7 +15,7 @@ internal static class WfsExceptionParser
     /// Attempts to parse an OGC ExceptionReport from the response body.
     /// Returns <c>null</c> if the body is not an ExceptionReport.
     /// </summary>
-    public static WfsExceptionReport? TryParse(string body)
+    public static WfsExceptionReport? TryParse(string? body)
     {
         if (string.IsNullOrWhiteSpace(body))
             return null;

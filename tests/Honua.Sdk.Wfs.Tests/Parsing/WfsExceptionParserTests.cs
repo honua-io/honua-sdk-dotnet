@@ -62,7 +62,7 @@ public sealed class WfsExceptionParserTests
     [Fact]
     public void TryParse_NullString_ReturnsNull()
     {
-        Assert.Null(WfsExceptionParser.TryParse(null!));
+        Assert.Null(WfsExceptionParser.TryParse(null));
     }
 
     [Fact]
