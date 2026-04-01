@@ -9,6 +9,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}"
 EndProject
 
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{4E4E4E4E-4E4E-4E4E-4E4E-4E4E4E4E4E4E}"
+EndProject
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Admin", "src\Honua.Sdk.Admin\Honua.Sdk.Admin.csproj", "{A1B1C1D1-E1F1-1111-1111-111111111111}"
 EndProject
 
@@ -25,10 +28,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Features", "src\H
 EndProject
 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Features.Tests", "tests\Honua.Sdk.Features.Tests\Honua.Sdk.Features.Tests.csproj", "{19D8F09B-89A7-481A-AF82-52B31E7F8B39}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Wfs", "src\Honua.Sdk.Wfs\Honua.Sdk.Wfs.csproj", "{A5B5C5D5-E5F5-5555-5555-555555555555}"
 EndProject
 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Wfs.Tests", "tests\Honua.Sdk.Wfs.Tests\Honua.Sdk.Wfs.Tests.csproj", "{A6B6C6D6-E6F6-6666-6666-666666666666}"
+EndProject
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminBootstrapConsole", "examples\AdminBootstrapConsole\AdminBootstrapConsole.csproj", "{B1234567-89AB-4CDE-8FAB-1234567890AB}"
+EndProject
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminBootstrapConsole.Tests", "tests\AdminBootstrapConsole.Tests\AdminBootstrapConsole.Tests.csproj", "{C1234567-89AB-4DEF-8ABC-1234567890AB}"
 EndProject
 
 Global
@@ -69,6 +79,14 @@ Global
 		{A6B6C6D6-E6F6-6666-6666-666666666666}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6B6C6D6-E6F6-6666-6666-666666666666}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6B6C6D6-E6F6-6666-6666-666666666666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1234567-89AB-4CDE-8FAB-1234567890AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1234567-89AB-4CDE-8FAB-1234567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1234567-89AB-4CDE-8FAB-1234567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1234567-89AB-4CDE-8FAB-1234567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A1B1C1D1-E1F1-1111-1111-111111111111} = {2F8F8F8F-8F8F-8F8F-8F8F-8F8F8F8F8F8F}
@@ -79,5 +97,7 @@ Global
 		{19D8F09B-89A7-481A-AF82-52B31E7F8B39} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 		{A5B5C5D5-E5F5-5555-5555-555555555555} = {2F8F8F8F-8F8F-8F8F-8F8F-8F8F8F8F8F8F}
 		{A6B6C6D6-E6F6-6666-6666-666666666666} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
+		{B1234567-89AB-4CDE-8FAB-1234567890AB} = {4E4E4E4E-4E4E-4E4E-4E4E-4E4E4E4E4E4E}
+		{C1234567-89AB-4DEF-8ABC-1234567890AB} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 	EndGlobalSection
 EndGlobal
