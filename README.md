@@ -164,6 +164,7 @@ tests/
   Honua.Sdk.Admin.Tests/    Admin + Geocoding tests (81 tests)
   Honua.Sdk.Wfs.Tests/      WFS client tests (52 tests)
 examples/
+  AdminBootstrapConsole/     Console sample for admin bootstrap + gRPC verification
   FieldDataCollection/      .NET MAUI field-data-collection app
 docs/
   quickstart.md             5-minute quickstart tutorial
@@ -173,6 +174,8 @@ docs/
 
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
   features via gRPC and WFS, lists services, and geocodes an address in 5 minutes
+- **[Admin Bootstrap Console](examples/AdminBootstrapConsole/)** -- bootstrap a
+  PostGIS table with `Honua.Sdk.Admin` and verify it with `Honua.Sdk.Grpc`
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI

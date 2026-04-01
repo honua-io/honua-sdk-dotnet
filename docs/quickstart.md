@@ -264,6 +264,9 @@ WFS 2.0.0: 4 feature types
 
 ## What's Next
 
+- **[Admin Bootstrap Console](../examples/AdminBootstrapConsole/)** -- bootstrap
+  a PostGIS table with `Honua.Sdk.Admin`, enable `Grpc`, and verify the
+  published layer with a bounded query
 - **[INSTALL.md](../INSTALL.md)** -- package sources, GitHub Packages setup,
   and version policy
 - **[Field Data Collection example](../examples/FieldDataCollection/)** -- a
