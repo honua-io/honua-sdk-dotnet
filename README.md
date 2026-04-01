@@ -30,6 +30,7 @@ Pre-release builds are also available from
 Register the clients with dependency injection and query features:
 
 ```csharp
+using Honua.Sdk.Grpc.Models;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Wfs.Extensions;
@@ -152,6 +153,26 @@ if (!compatibility.IsSupported)
 }
 ```
 
+## Admin bootstrap flow
+
+For a runnable publish-and-verify operator path, see
+[examples/AdminBootstrapConsole](examples/AdminBootstrapConsole/).
+
+- `CheckCompatibilityAsync()` is the first remote call. It validates server
+  version `0.1.0` or newer, release channel `preview` or newer, control-plane
+  API major `1`, and base path `/api/v1/admin`.
+- Existing connections are reused only when the configured name also matches
+  host, port, database, username, and SSL settings. Same-name connections that
+  point somewhere else fail fast.
+- Existing layers are reused only when the configured service and source table
+  match. The sample enables the layer and union-adds `Grpc` to the current
+  enabled protocol list instead of replacing it.
+- Publishing requires discovery metadata for the geometry column, geometry
+  type, SRID, and a single primary key.
+- Verification uses a bounded `QueryFeaturesAsync()` request with
+  `Where = "1=1"`, `ReturnGeometry = false`, `ResultRecordCount = 3`,
+  `OrderBy = primary key`, and `OutFields` selected from discovery metadata.
+
 ## Repository layout
 
 ```
@@ -175,7 +196,8 @@ docs/
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
   features via gRPC and WFS, lists services, and geocodes an address in 5 minutes
 - **[Admin Bootstrap Console](examples/AdminBootstrapConsole/)** -- bootstrap a
-  PostGIS table with `Honua.Sdk.Admin` and verify it with `Honua.Sdk.Grpc`
+  PostGIS table with `Honua.Sdk.Admin`, preserve existing protocols while
+  enabling `Grpc`, and verify it with a bounded `Honua.Sdk.Grpc` query
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI

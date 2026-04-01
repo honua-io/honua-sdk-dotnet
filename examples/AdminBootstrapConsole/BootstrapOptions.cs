@@ -44,6 +44,12 @@ public sealed class BootstrapOptions
         ArgumentNullException.ThrowIfNull(configuration);
 
         var section = configuration.GetSection("HonuaBootstrap");
+        var dbSecretReference = ReadValue(
+            configuration,
+            section,
+            "DbSecretReference",
+            "HONUA_BOOTSTRAP_DB_SECRET_REFERENCE",
+            treatEmptyAsOverride: true);
 
         var options = new BootstrapOptions
         {
@@ -60,9 +66,20 @@ public sealed class BootstrapOptions
             DbPort = ReadInt(configuration, section, "DbPort", "HONUA_BOOTSTRAP_DB_PORT", 5432),
             DbName = ReadRequiredValue(configuration, section, "DbName", "HONUA_BOOTSTRAP_DB_NAME", "honua_dev"),
             DbUser = ReadRequiredValue(configuration, section, "DbUser", "HONUA_BOOTSTRAP_DB_USER", "honua_user"),
-            DbPassword = ReadValue(configuration, section, "DbPassword", "HONUA_BOOTSTRAP_DB_PASSWORD", "honua_password"),
-            DbSecretReference = ReadValue(configuration, section, "DbSecretReference", "HONUA_BOOTSTRAP_DB_SECRET_REFERENCE"),
-            DbSecretType = ReadValue(configuration, section, "DbSecretType", "HONUA_BOOTSTRAP_DB_SECRET_TYPE"),
+            DbPassword = ReadValue(
+                configuration,
+                section,
+                "DbPassword",
+                "HONUA_BOOTSTRAP_DB_PASSWORD",
+                string.IsNullOrWhiteSpace(dbSecretReference) ? "honua_password" : null,
+                treatEmptyAsOverride: true),
+            DbSecretReference = dbSecretReference,
+            DbSecretType = ReadValue(
+                configuration,
+                section,
+                "DbSecretType",
+                "HONUA_BOOTSTRAP_DB_SECRET_TYPE",
+                treatEmptyAsOverride: true),
             DbSslRequired = ReadBool(configuration, section, "DbSslRequired", "HONUA_BOOTSTRAP_DB_SSL_REQUIRED", false),
             DbSslMode = ReadRequiredValue(configuration, section, "DbSslMode", "HONUA_BOOTSTRAP_DB_SSL_MODE", "Prefer"),
             ServiceName = ReadRequiredValue(configuration, section, "ServiceName", "HONUA_BOOTSTRAP_SERVICE_NAME", "sdk_demo"),
@@ -180,18 +197,35 @@ public sealed class BootstrapOptions
         IConfigurationSection section,
         string sectionKey,
         string environmentKey,
-        string? fallback = null)
+        string? fallback = null,
+        bool treatEmptyAsOverride = false)
     {
         var environmentValue = configuration[environmentKey];
-        if (!string.IsNullOrWhiteSpace(environmentValue))
+        if (environmentValue is not null)
         {
-            return environmentValue;
+            if (!string.IsNullOrWhiteSpace(environmentValue))
+            {
+                return environmentValue;
+            }
+
+            if (treatEmptyAsOverride)
+            {
+                return null;
+            }
         }
 
         var sectionValue = section[sectionKey];
-        if (!string.IsNullOrWhiteSpace(sectionValue))
+        if (sectionValue is not null)
         {
-            return sectionValue;
+            if (!string.IsNullOrWhiteSpace(sectionValue))
+            {
+                return sectionValue;
+            }
+
+            if (treatEmptyAsOverride)
+            {
+                return null;
+            }
         }
 
         return fallback;
