@@ -1,6 +1,8 @@
 # Admin Bootstrap Console
 
-Runnable console sample that bootstraps a PostGIS table through `Honua.Sdk.Admin` and then verifies the published layer through `Honua.Sdk.Grpc`.
+Canonical runnable sample app for this repository. It bootstraps a PostGIS
+table through `Honua.Sdk.Admin` and then verifies the published layer through
+`Honua.Sdk.Grpc`.
 
 ## What It Does
 
@@ -178,3 +180,37 @@ were already enabled on the target service.
 
 If the sample reports an existing connection or layer that points somewhere
 else, change the configured name instead of overwriting shared resources.
+
+## Troubleshooting
+
+- Compatibility gate failures surface as `[Compatibility] Server ... is not supported...`.
+  Re-check the target server version, release channel, and that the admin API is
+  reachable at `/api/v1/admin` before retrying.
+- Non-loopback HTTP plus `HONUA_BOOTSTRAP_API_KEY` or
+  `HONUA_BOOTSTRAP_BEARER_TOKEN` fails before credentials are sent. The process
+  exits with an insecure-transport message telling you to use HTTPS or loopback
+  HTTP only for local development.
+- Invalid database credential combinations surface as `[Configuration] ...`.
+  The sample requires exactly one of `HONUA_BOOTSTRAP_DB_PASSWORD` or
+  `HONUA_BOOTSTRAP_DB_SECRET_REFERENCE`, and secret references also require
+  `HONUA_BOOTSTRAP_DB_SECRET_TYPE`.
+- Same-name connection collisions surface as `[CreateConnection] Connection ... already exists but points to ...`.
+  Keep the configured name unique for the target host, port, database, user,
+  and SSL settings instead of reusing a shared name for a different database.
+- Same-name layer collisions surface as `[PublishLayer] Layer name ... already exists in service ...`.
+  Change `HONUA_BOOTSTRAP_LAYER_NAME` or target the existing source table
+  instead of overwriting a different published layer.
+- Missing geometry metadata, missing primary keys, and composite primary keys
+  all fail during discovery or publish as `[DiscoverTables] ...`. The sample
+  only publishes tables with a geometry column, geometry type, SRID, and a
+  single primary key.
+- Verification failures surface as `[gRPC] ...` when the bounded
+  `QueryFeaturesAsync()` call cannot read the published layer. Check that `Grpc`
+  is enabled for the target service and that the server exposes the configured
+  service/layer pair.
+- A zero-row verify result is still success. The sample prints that the layer is
+  queryable but currently has no rows, which means the publish/enable path
+  worked and only the fixture data is empty.
+
+For the read-only staging CI lane that validates the SDK against a shared Honua
+deployment, see [the staging integration guide](../../docs/staging-integration.md).

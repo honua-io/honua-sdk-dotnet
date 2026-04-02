@@ -155,7 +155,8 @@ if (!compatibility.IsSupported)
 
 ## Admin bootstrap flow
 
-For a runnable publish-and-verify operator path, see
+For the canonical runnable sample app for this repo's bootstrap and publish
+operator flow, see
 [examples/AdminBootstrapConsole](examples/AdminBootstrapConsole/).
 
 - `CheckCompatibilityAsync()` is the first remote call. It validates server
@@ -185,23 +186,29 @@ tests/
   Honua.Sdk.Admin.Tests/    Admin + Geocoding tests (81 tests)
   Honua.Sdk.Wfs.Tests/      WFS client tests (52 tests)
 examples/
-  AdminBootstrapConsole/     Console sample for admin bootstrap + gRPC verification
-  FieldDataCollection/      .NET MAUI field-data-collection app
+  AdminBootstrapConsole/     Canonical console sample for admin bootstrap + gRPC verification
+  FieldDataCollection/      Advanced .NET MAUI reference app (not the primary onboarding sample)
 docs/
   quickstart.md             5-minute quickstart tutorial
+  staging-integration.md    Staging CI inputs, evidence, and troubleshooting
 ```
 
 ## Documentation
 
+- **[Admin Bootstrap Console](examples/AdminBootstrapConsole/)** -- the
+  canonical sample app for this repo; bootstrap a PostGIS table with
+  `Honua.Sdk.Admin`, preserve existing protocols while enabling `Grpc`, verify
+  it with a bounded `Honua.Sdk.Grpc` query, and troubleshoot the exact error
+  surfaces returned by the sample
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
   features via gRPC and WFS, lists services, and geocodes an address in 5 minutes
-- **[Admin Bootstrap Console](examples/AdminBootstrapConsole/)** -- bootstrap a
-  PostGIS table with `Honua.Sdk.Admin`, preserve existing protocols while
-  enabling `Grpc`, and verify it with a bounded `Honua.Sdk.Grpc` query
+- **[Staging Integration Guide](docs/staging-integration.md)** -- staging
+  environment inputs, CI evidence artifacts, common failures, and bounded
+  follow-on tickets for shared staging ownership
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI
-  example with offline sync and map views
+  reference app with offline sync and map views
 
 ## License
 

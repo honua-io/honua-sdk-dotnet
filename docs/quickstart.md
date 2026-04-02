@@ -264,14 +264,18 @@ WFS 2.0.0: 4 feature types
 
 ## What's Next
 
-- **[Admin Bootstrap Console](../examples/AdminBootstrapConsole/)** -- bootstrap
-  a PostGIS table with `Honua.Sdk.Admin`, requiring geometry metadata and a
+- **[Admin Bootstrap Console](../examples/AdminBootstrapConsole/)** -- the
+  canonical sample app for this repo's operator/bootstrap flow; bootstrap a
+  PostGIS table with `Honua.Sdk.Admin`, requiring geometry metadata and a
   single primary key; reuse or publish the layer safely, preserve existing
   protocols while enabling `Grpc`, and verify the published layer with a
   bounded query
+- **[Staging Integration Guide](staging-integration.md)** -- required staging
+  environment variables, CI evidence artifacts, and troubleshooting for the
+  read-only staging suite
 - **[INSTALL.md](../INSTALL.md)** -- package sources, GitHub Packages setup,
   and version policy
 - **[Field Data Collection example](../examples/FieldDataCollection/)** -- a
-  full .NET MAUI app with offline sync, forms, and map views
+  full .NET MAUI reference app with offline sync, forms, and map views
 - **[gRPC vs Forms comparison](../examples/FieldDataCollection/GRPC_FORMS_COMPARISON.md)**
   -- when to use gRPC queries versus OpenRosa/XForms for data collection
