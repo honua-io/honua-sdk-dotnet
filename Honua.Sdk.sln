@@ -41,6 +41,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminBootstrapConsole.Tests", "tests\AdminBootstrapConsole.Tests\AdminBootstrapConsole.Tests.csproj", "{C1234567-89AB-4DEF-8ABC-1234567890AB}"
 EndProject
 
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.IntegrationTests", "tests\Honua.Sdk.IntegrationTests\Honua.Sdk.IntegrationTests.csproj", "{D1234567-89AB-4DEF-8BCD-1234567890AB}"
+EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +90,10 @@ Global
 		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1234567-89AB-4DEF-8ABC-1234567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1234567-89AB-4DEF-8BCD-1234567890AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1234567-89AB-4DEF-8BCD-1234567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1234567-89AB-4DEF-8BCD-1234567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1234567-89AB-4DEF-8BCD-1234567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A1B1C1D1-E1F1-1111-1111-111111111111} = {2F8F8F8F-8F8F-8F8F-8F8F-8F8F8F8F8F8F}
@@ -99,5 +106,6 @@ Global
 		{A6B6C6D6-E6F6-6666-6666-666666666666} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 		{B1234567-89AB-4CDE-8FAB-1234567890AB} = {4E4E4E4E-4E4E-4E4E-4E4E-4E4E4E4E4E4E}
 		{C1234567-89AB-4DEF-8ABC-1234567890AB} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
+		{D1234567-89AB-4DEF-8BCD-1234567890AB} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 	EndGlobalSection
 EndGlobal

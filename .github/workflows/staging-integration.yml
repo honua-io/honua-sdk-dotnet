@@ -1,0 +1,175 @@
+name: .NET SDK Staging Integration
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_call:
+    inputs:
+      artifact-retention:
+        description: Artifact retention window in days.
+        required: false
+        default: 30
+        type: number
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+
+jobs:
+  staging-integration:
+    name: Staging Read-Only Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    env:
+      HONUA_STAGING_BASE_URL: ${{ vars.HONUA_STAGING_BASE_URL }}
+      HONUA_STAGING_API_KEY: ${{ secrets.HONUA_STAGING_API_KEY }}
+      HONUA_STAGING_BEARER_TOKEN: ${{ secrets.HONUA_STAGING_BEARER_TOKEN }}
+      HONUA_STAGING_SERVICE_NAME: ${{ vars.HONUA_STAGING_SERVICE_NAME }}
+      HONUA_STAGING_LAYER_ID: ${{ vars.HONUA_STAGING_LAYER_ID }}
+      HONUA_STAGING_WFS_TYPENAME: ${{ vars.HONUA_STAGING_WFS_TYPENAME }}
+      HONUA_STAGING_OGC_COLLECTION_ID: ${{ vars.HONUA_STAGING_OGC_COLLECTION_ID }}
+      HONUA_STAGING_EVIDENCE_PATH: ${{ github.workspace }}/artifacts/evidence/ci-report.json
+      HONUA_STAGING_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+      TEST_RESULTS_DIR: ${{ github.workspace }}/artifacts/test-results
+      TEST_RESULTS_FILE: staging-integration.trx
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Validate staging configuration
+        id: validate-config
+        shell: bash
+        run: |
+          missing=()
+
+          require_value() {
+            local value="$1"
+            local key="$2"
+            if [[ -z "${value}" ]]; then
+              missing+=("${key}")
+            fi
+          }
+
+          require_value "${HONUA_STAGING_BASE_URL}" "HONUA_STAGING_BASE_URL"
+          require_value "${HONUA_STAGING_SERVICE_NAME}" "HONUA_STAGING_SERVICE_NAME"
+          require_value "${HONUA_STAGING_LAYER_ID}" "HONUA_STAGING_LAYER_ID"
+          require_value "${HONUA_STAGING_WFS_TYPENAME}" "HONUA_STAGING_WFS_TYPENAME"
+          require_value "${HONUA_STAGING_OGC_COLLECTION_ID}" "HONUA_STAGING_OGC_COLLECTION_ID"
+
+          if [[ -z "${HONUA_STAGING_API_KEY}" && -z "${HONUA_STAGING_BEARER_TOKEN}" ]]; then
+            missing+=("HONUA_STAGING_API_KEY or HONUA_STAGING_BEARER_TOKEN")
+          fi
+
+          mkdir -p "${TEST_RESULTS_DIR}" "$(dirname "${HONUA_STAGING_EVIDENCE_PATH}")"
+
+          if (( ${#missing[@]} > 0 )); then
+            {
+              echo "## Staging Integration"
+              echo
+              echo "Missing staging configuration: ${missing[*]}"
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 1
+          fi
+
+      - name: Run staging integration suite
+        id: run-tests
+        shell: bash
+        run: |
+          dotnet test tests/Honua.Sdk.IntegrationTests/Honua.Sdk.IntegrationTests.csproj \
+            --configuration Release \
+            --logger "trx;LogFileName=${TEST_RESULTS_FILE}" \
+            --results-directory "${TEST_RESULTS_DIR}"
+
+      - name: Write staging summary
+        if: always()
+        env:
+          PRECHECK_OUTCOME: ${{ steps.validate-config.outcome }}
+          TEST_OUTCOME: ${{ steps.run-tests.outcome }}
+        shell: bash
+        run: |
+          if [[ -f "${HONUA_STAGING_EVIDENCE_PATH}" ]]; then
+            python3 - <<'PY'
+import json
+import os
+
+evidence_path = os.environ["HONUA_STAGING_EVIDENCE_PATH"]
+summary_path = os.environ["GITHUB_STEP_SUMMARY"]
+precheck_outcome = os.environ.get("PRECHECK_OUTCOME", "unknown")
+test_outcome = os.environ.get("TEST_OUTCOME", "not-run")
+
+with open(evidence_path, encoding="utf-8") as evidence_file:
+    report = json.load(evidence_file)
+
+summary = report.get("Summary", {})
+checks = report.get("Checks", [])
+
+with open(summary_path, "a", encoding="utf-8") as summary_file:
+    summary_file.write("## Staging Integration\n\n")
+    summary_file.write(f"- Precheck: `{precheck_outcome}`\n")
+    summary_file.write(f"- Test step: `{test_outcome}`\n")
+    summary_file.write(f"- Base URL: `{report.get('BaseUrl', 'unknown')}`\n")
+    summary_file.write(f"- Service: `{report.get('ServiceName', 'unknown')}`\n")
+    summary_file.write(f"- Layer ID: `{report.get('LayerId', 'unknown')}`\n")
+    summary_file.write(f"- WFS type: `{report.get('WfsTypeName', 'unknown')}`\n")
+    summary_file.write(f"- OGC collection: `{report.get('OgcCollectionId', 'unknown')}`\n")
+    summary_file.write(
+        f"- Summary: {summary.get('Passed', 0)} passed, "
+        f"{summary.get('Failed', 0)} failed, "
+        f"{summary.get('NotRun', 0)} not run\n\n"
+    )
+    summary_file.write("| Check | Status | Details |\n")
+    summary_file.write("| --- | --- | --- |\n")
+
+    for check in checks:
+        details = str(check.get("Details", "")).replace("\n", " ").strip()
+        if len(details) > 160:
+            details = details[:157] + "..."
+        summary_file.write(
+            f"| `{check.get('Name', 'unknown')}` | "
+            f"{check.get('Status', 'unknown')} | "
+            f"{details} |\n"
+        )
+PY
+          else
+            {
+              echo "## Staging Integration"
+              echo
+              echo "- Precheck: \`${PRECHECK_OUTCOME}\`"
+              echo "- Test step: \`${TEST_OUTCOME:-not-run}\`"
+              echo "- Evidence file: not produced."
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload staging test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ github.event.repository.name }}-staging-integration-${{ github.run_id }}-test-results
+          path: ${{ github.workspace }}/artifacts/test-results/
+          if-no-files-found: warn
+          retention-days: ${{ github.event_name == 'workflow_call' && inputs['artifact-retention'] || 30 }}
+
+      - name: Upload staging evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ github.event.repository.name }}-staging-integration-${{ github.run_id }}-evidence
+          path: ${{ github.workspace }}/artifacts/evidence/
+          if-no-files-found: warn
+          retention-days: ${{ github.event_name == 'workflow_call' && inputs['artifact-retention'] || 30 }}
