@@ -249,6 +249,8 @@ third_party/
 - **[Staging Integration Guide](docs/staging-integration.md)** -- staging
   environment inputs, CI evidence artifacts, common failures, and bounded
   follow-on tickets for shared staging ownership
+- **[Release and NuGet Publishing](docs/release.md)** -- package versioning,
+  release tags, dry runs, GitHub Packages, and NuGet.org publishing
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
 - **[Backlog cadence](docs/backlog-cadence.md)** -- weekly triage, scope gate,

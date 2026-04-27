@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>0.1.0-alpha.1</Version>
     <PackageId>Honua.Sdk.Admin</PackageId>
     <Description>Admin client SDK for Honua Server</Description>
     <RootNamespace>Honua.Sdk.Admin</RootNamespace>
