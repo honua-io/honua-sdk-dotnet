@@ -25,7 +25,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
 
     private readonly Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient _client;
     private readonly GrpcChannel? _ownedChannel;
-    private readonly Metadata _metadata;
+    private readonly HonuaGrpcClientOptions _options;
+    private readonly Metadata? _metadataOverride;
 
     /// <summary>
     /// Creates a new gRPC client using the provided options.
@@ -46,7 +47,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
 
         _ownedChannel = GrpcChannel.ForAddress(address, channelOptions);
         _client = new Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient(_ownedChannel);
-        _metadata = BuildMetadata(opts);
+        _options = opts;
     }
 
     /// <summary>
@@ -57,14 +58,22 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public HonuaGrpcClient(GrpcChannel channel, HonuaGrpcClientOptions? options = null)
     {
         _client = new Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient(channel);
-        _metadata = BuildMetadata(options ?? new HonuaGrpcClientOptions());
+        _options = options ?? new HonuaGrpcClientOptions();
     }
 
     // For testing - inject the generated client stub directly
     internal HonuaGrpcClient(Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient client, Metadata? metadata = null)
     {
         _client = client;
-        _metadata = metadata ?? new Metadata();
+        _options = new HonuaGrpcClientOptions();
+        _metadataOverride = metadata ?? new Metadata();
+    }
+
+    // For testing - inject the generated client stub directly with live options
+    internal HonuaGrpcClient(Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient client, HonuaGrpcClientOptions options)
+    {
+        _client = client;
+        _options = options;
     }
 
     /// <inheritdoc />
@@ -77,7 +86,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
         try
         {
-            var protoResponse = await _client.QueryFeaturesAsync(protoRequest, _metadata, cancellationToken: ct);
+            var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
+            var protoResponse = await _client.QueryFeaturesAsync(protoRequest, metadata, cancellationToken: ct);
             return ProtoAdapter.FromProtoResponse(protoResponse);
         }
         catch (RpcException ex)
@@ -112,7 +122,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
         try
         {
-            var protoResponse = await _client.ApplyEditsAsync(protoRequest, _metadata, cancellationToken: ct);
+            var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
+            var protoResponse = await _client.ApplyEditsAsync(protoRequest, metadata, cancellationToken: ct);
             return ProtoAdapter.FromProtoApplyEditsResponse(protoResponse);
         }
         catch (RpcException ex)
@@ -126,7 +137,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         Models.QueryFeaturesRequest request, [EnumeratorCancellation] CancellationToken ct = default)
     {
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
-        var call = _client.QueryFeaturesStream(protoRequest, _metadata, cancellationToken: ct);
+        var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
+        var call = _client.QueryFeaturesStream(protoRequest, metadata, cancellationToken: ct);
         try
         {
             while (true)
@@ -195,17 +207,43 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         return serviceConfig;
     }
 
-    private static Metadata BuildMetadata(HonuaGrpcClientOptions opts)
+    private async Task<Metadata> BuildMetadataAsync(CancellationToken cancellationToken)
     {
+        if (_metadataOverride is not null)
+        {
+            return _metadataOverride;
+        }
+
         var metadata = new Metadata();
-        if (!string.IsNullOrEmpty(opts.ApiKey))
-            metadata.Add("x-api-key", opts.ApiKey);
-        if (!string.IsNullOrEmpty(opts.BearerToken))
-            metadata.Add("authorization", $"Bearer {opts.BearerToken}");
-        if (opts.EnableCompressionNegotiation && !string.IsNullOrWhiteSpace(opts.AcceptedCompressionEncodings))
-            metadata.Add("grpc-accept-encoding", opts.AcceptedCompressionEncodings);
+        var apiKey = await ResolveApiKeyAsync(cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(apiKey))
+        {
+            metadata.Add("x-api-key", apiKey);
+        }
+
+        var bearerToken = await ResolveBearerTokenAsync(cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(bearerToken))
+        {
+            metadata.Add("authorization", $"Bearer {bearerToken}");
+        }
+
+        if (_options.EnableCompressionNegotiation && !string.IsNullOrWhiteSpace(_options.AcceptedCompressionEncodings))
+        {
+            metadata.Add("grpc-accept-encoding", _options.AcceptedCompressionEncodings);
+        }
+
         return metadata;
     }
+
+    private Task<string?> ResolveApiKeyAsync(CancellationToken cancellationToken)
+        => _options.ApiKeyProvider is { } provider
+            ? provider(cancellationToken)
+            : Task.FromResult(_options.ApiKey);
+
+    private Task<string?> ResolveBearerTokenAsync(CancellationToken cancellationToken)
+        => _options.BearerTokenProvider is { } provider
+            ? provider(cancellationToken)
+            : Task.FromResult(_options.BearerToken);
 
     private static void ValidateAuthenticationTransport(HonuaGrpcClientOptions opts, Uri address)
     {
@@ -223,7 +261,10 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     }
 
     private static bool HasCredentials(HonuaGrpcClientOptions opts)
-        => !string.IsNullOrWhiteSpace(opts.ApiKey) || !string.IsNullOrWhiteSpace(opts.BearerToken);
+        => !string.IsNullOrWhiteSpace(opts.ApiKey) ||
+           !string.IsNullOrWhiteSpace(opts.BearerToken) ||
+           opts.ApiKeyProvider is not null ||
+           opts.BearerTokenProvider is not null;
 
     private static Models.QueryFeaturesRequest BuildGrpcQuery(FeatureQueryRequest request)
     {

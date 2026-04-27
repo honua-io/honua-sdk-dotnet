@@ -130,6 +130,92 @@ public sealed class HonuaAdminClientTests
     }
 
     [Fact]
+    public async Task AuthHandler_UsesCredentialProvidersPerRequest()
+    {
+        var apiKeyCalls = 0;
+        var bearerTokenCalls = 0;
+        var capturedCredentials = new List<(string? ApiKey, string? Authorization)>();
+
+        var options = Options.Create(new HonuaAdminClientOptions
+        {
+            ApiKeyProvider = _ => Task.FromResult<string?>($"admin-key-{++apiKeyCalls}"),
+            BearerTokenProvider = _ => Task.FromResult<string?>($"admin-token-{++bearerTokenCalls}")
+        });
+
+        var innerHandler = new MockHttpHandler(req =>
+        {
+            req.Headers.TryGetValues("X-API-Key", out var apiValues);
+            capturedCredentials.Add((apiValues?.SingleOrDefault(), req.Headers.Authorization?.ToString()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+        });
+
+        var authHandler = new HonuaAdminAuthHandler(options)
+        {
+            InnerHandler = innerHandler
+        };
+
+        var httpClient = new HttpClient(authHandler)
+        {
+            BaseAddress = new Uri("http://localhost:5000")
+        };
+
+        var client = new HonuaAdminClient(httpClient);
+        await client.ListServicesAsync();
+        await client.ListServicesAsync();
+
+        Assert.Collection(
+            capturedCredentials,
+            first =>
+            {
+                Assert.Equal("admin-key-1", first.ApiKey);
+                Assert.Equal("Bearer admin-token-1", first.Authorization);
+            },
+            second =>
+            {
+                Assert.Equal("admin-key-2", second.ApiKey);
+                Assert.Equal("Bearer admin-token-2", second.Authorization);
+            });
+    }
+
+    [Fact]
+    public async Task AuthHandler_ProviderReturningNullOrEmpty_OmitsCredentials()
+    {
+        var capturedApiKeyHeader = true;
+        var capturedAuthHeader = true;
+
+        var options = Options.Create(new HonuaAdminClientOptions
+        {
+            ApiKey = "fallback-key",
+            BearerToken = "fallback-token",
+            ApiKeyProvider = _ => Task.FromResult<string?>(null),
+            BearerTokenProvider = _ => Task.FromResult<string?>(string.Empty)
+        });
+
+        var innerHandler = new MockHttpHandler(req =>
+        {
+            capturedApiKeyHeader = req.Headers.Contains("X-API-Key");
+            capturedAuthHeader = req.Headers.Authorization is not null;
+            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+        });
+
+        var authHandler = new HonuaAdminAuthHandler(options)
+        {
+            InnerHandler = innerHandler
+        };
+
+        var httpClient = new HttpClient(authHandler)
+        {
+            BaseAddress = new Uri("http://localhost:5000")
+        };
+
+        var client = new HonuaAdminClient(httpClient);
+        await client.ListServicesAsync();
+
+        Assert.False(capturedApiKeyHeader);
+        Assert.False(capturedAuthHeader);
+    }
+
+    [Fact]
     public async Task AuthHandler_RejectsCredentialsOverRemoteHttp()
     {
         var options = Options.Create(new HonuaAdminClientOptions
@@ -151,6 +237,36 @@ public sealed class HonuaAdminClientTests
         var client = new HonuaAdminClient(httpClient);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.ListServicesAsync());
+    }
+
+    [Fact]
+    public async Task AuthHandler_RejectsCredentialProvidersOverRemoteHttp()
+    {
+        var providerCalled = false;
+        var options = Options.Create(new HonuaAdminClientOptions
+        {
+            BaseAddress = new Uri("http://example.com"),
+            ApiKeyProvider = _ =>
+            {
+                providerCalled = true;
+                return Task.FromResult<string?>("admin-key");
+            },
+        });
+
+        var authHandler = new HonuaAdminAuthHandler(options)
+        {
+            InnerHandler = new MockHttpHandler(_ => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())))
+        };
+
+        var httpClient = new HttpClient(authHandler)
+        {
+            BaseAddress = new Uri("http://example.com")
+        };
+
+        var client = new HonuaAdminClient(httpClient);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.ListServicesAsync());
+        Assert.False(providerCalled);
     }
 
     [Fact]

@@ -19,9 +19,23 @@ public sealed class HonuaGrpcClientOptions
     public string? ApiKey { get; set; }
 
     /// <summary>
+    /// Optional API key provider invoked before each RPC. When configured,
+    /// its value takes precedence over <see cref="ApiKey"/>; returning null or
+    /// an empty string omits the API key metadata entry.
+    /// </summary>
+    public Func<CancellationToken, Task<string?>>? ApiKeyProvider { get; set; }
+
+    /// <summary>
     /// Bearer token for authentication.
     /// </summary>
     public string? BearerToken { get; set; }
+
+    /// <summary>
+    /// Optional bearer token provider invoked before each RPC. When configured,
+    /// its value takes precedence over <see cref="BearerToken"/>; returning null or
+    /// an empty string omits the authorization metadata entry.
+    /// </summary>
+    public Func<CancellationToken, Task<string?>>? BearerTokenProvider { get; set; }
 
     /// <summary>
     /// Enables gRPC compression negotiation for responses.

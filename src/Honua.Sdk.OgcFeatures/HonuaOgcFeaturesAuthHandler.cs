@@ -24,26 +24,43 @@ internal sealed class HonuaOgcFeaturesAuthHandler : DelegatingHandler
     }
 
     /// <inheritdoc />
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var hasCredentials = !string.IsNullOrEmpty(_options.ApiKey) || !string.IsNullOrEmpty(_options.BearerToken);
-        if (hasCredentials && HonuaOgcFeaturesClientOptions.RequiresHttpsForAuthentication(request.RequestUri))
+        if (HasCredentialSource() && HonuaOgcFeaturesClientOptions.RequiresHttpsForAuthentication(request.RequestUri))
         {
             throw new InvalidOperationException(
                 "Refusing to send credentials over an insecure connection. Use HTTPS, " +
                 "or use loopback HTTP only for local development.");
         }
 
-        if (!string.IsNullOrEmpty(_options.ApiKey))
+        var apiKey = await ResolveApiKeyAsync(cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(apiKey))
         {
-            request.Headers.TryAddWithoutValidation("X-API-Key", _options.ApiKey);
+            request.Headers.TryAddWithoutValidation("X-API-Key", apiKey);
         }
 
-        if (!string.IsNullOrEmpty(_options.BearerToken))
+        var bearerToken = await ResolveBearerTokenAsync(cancellationToken).ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(bearerToken))
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.BearerToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
         }
 
-        return base.SendAsync(request, cancellationToken);
+        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
+
+    private bool HasCredentialSource()
+        => !string.IsNullOrEmpty(_options.ApiKey) ||
+           !string.IsNullOrEmpty(_options.BearerToken) ||
+           _options.ApiKeyProvider is not null ||
+           _options.BearerTokenProvider is not null;
+
+    private Task<string?> ResolveApiKeyAsync(CancellationToken cancellationToken)
+        => _options.ApiKeyProvider is { } provider
+            ? provider(cancellationToken)
+            : Task.FromResult(_options.ApiKey);
+
+    private Task<string?> ResolveBearerTokenAsync(CancellationToken cancellationToken)
+        => _options.BearerTokenProvider is { } provider
+            ? provider(cancellationToken)
+            : Task.FromResult(_options.BearerToken);
 }
