@@ -6,6 +6,7 @@
 |---------|-------------|
 | `Honua.Sdk.Admin` | Admin client for managing services, layers, and configuration |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries and edits |
+| `Honua.Sdk.Wfs` | WFS 2.0 read/query client for GetCapabilities, GetFeature, DescribeFeatureType |
 
 ## Prerequisites
 
@@ -20,6 +21,9 @@ dotnet add package Honua.Sdk.Grpc --prerelease
 
 # Admin client
 dotnet add package Honua.Sdk.Admin --prerelease
+
+# WFS 2.0 client
+dotnet add package Honua.Sdk.Wfs --prerelease
 ```
 
 ## Install from GitHub Packages (pre-release)
@@ -44,6 +48,8 @@ dotnet add package Honua.Sdk.Grpc --prerelease --source honua
 ```csharp
 using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;
+using Honua.Sdk.Grpc.Models;
+
 // Register in DI
 builder.Services.AddHonuaGrpc(options =>
 {
@@ -78,9 +84,10 @@ All packages follow [Semantic Versioning](https://semver.org/). Major versions a
 
 `Honua.Sdk.Admin` currently requires Honua Server
 `HonuaAdminCompatibility.MinimumSupportedServerVersion` or newer and a minimum
-server release channel baseline of `preview`. The admin client checks this
-baseline against `GET /api/v1/admin/capabilities`, which also advertises coarse
-feature flags for metadata and manifest workflows.
+server release channel baseline of `preview`. `CheckCompatibilityAsync()`
+evaluates that server against `GET /api/v1/admin/capabilities`, including
+control-plane API major `1` and base path `/api/v1/admin`, and also surfaces
+coarse feature flags for metadata and manifest workflows.
 
 Typical startup flow:
 
@@ -102,9 +109,20 @@ if (compatibility.Features.ManifestExport)
 }
 ```
 
+The same compatibility gate is the first remote step in the
+[Admin Bootstrap Console](examples/AdminBootstrapConsole/README.md) sample
+before any connection, publish, or service mutation.
+
 Use `GetCapabilitiesAsync()` directly when you need the raw compatibility
 metadata, including `releaseChannel`, `metadataSchemas`, and the
 `manifestDryRun` / `manifestPrune` feature flags.
 
 See [docs/compatibility.md](docs/compatibility.md) for the full server matrix
 and the CI package API compatibility gate used before publish.
+
+## Authentication Transport
+
+When `ApiKey` or `BearerToken` is configured on the Admin or gRPC clients, the
+SDK only sends those credentials over HTTPS. The only HTTP exception is
+loopback / `localhost` for local development, which is the path used by the
+admin bootstrap sample against local Docker Compose defaults.

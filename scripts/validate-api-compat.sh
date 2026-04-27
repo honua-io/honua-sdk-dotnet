@@ -38,12 +38,24 @@ dotnet tool restore --tool-manifest "${ROOT}/.config/dotnet-tools.json" >/dev/nu
 projects=(
   "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj|Honua.Sdk.Admin"
   "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj|Honua.Sdk.Grpc"
+  "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj|Honua.Sdk.Wfs"
+  "src/Honua.Sdk.Features/Honua.Sdk.Features.csproj|Honua.Sdk.Features"
 )
 
 for entry in "${projects[@]}"; do
   IFS="|" read -r project package_id <<< "${entry}"
   baseline_output="${BASE_PACKAGES}/${package_id}"
   current_output="${CURRENT_PACKAGES}/${package_id}"
+
+  if [[ ! -f "${ROOT}/${project}" ]]; then
+    echo "::warning::Skipping ${package_id}; current project '${project}' was not found."
+    continue
+  fi
+
+  if [[ ! -f "${BASE_WORKTREE}/${project}" ]]; then
+    echo "::notice::Skipping ${package_id} API compatibility; package does not exist at baseline ref '${BASE_REF}'."
+    continue
+  fi
 
   mkdir -p "${baseline_output}" "${current_output}"
 
