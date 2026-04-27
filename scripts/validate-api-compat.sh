@@ -36,10 +36,12 @@ git -C "${ROOT}" worktree add --detach "${BASE_WORKTREE}" "${BASE_REF}" >/dev/nu
 dotnet tool restore --tool-manifest "${ROOT}/.config/dotnet-tools.json" >/dev/null
 
 projects=(
+  "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj|Honua.Sdk.Abstractions"
   "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj|Honua.Sdk.Admin"
   "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj|Honua.Sdk.Grpc"
   "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj|Honua.Sdk.Wfs"
-  "src/Honua.Sdk.Features/Honua.Sdk.Features.csproj|Honua.Sdk.Features"
+  "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj|Honua.Sdk.GeoServices"
+  "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures"
 )
 
 for entry in "${projects[@]}"; do

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using Honua.Sdk.Abstractions.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
@@ -25,13 +26,15 @@ public static class ServiceCollectionExtensions
     {
         services.Configure(configure);
         services.AddTransient<HonuaWfsAuthHandler>();
-        var httpBuilder = services.AddHttpClient<IHonuaWfsClient, HonuaWfsClient>((sp, client) =>
+        var httpBuilder = services.AddHttpClient<HonuaWfsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaWfsClientOptions>>().Value;
             HonuaWfsClientOptions.ValidateBaseAddress(options.BaseAddress);
             client.BaseAddress = options.BaseAddress;
         })
         .AddHttpMessageHandler<HonuaWfsAuthHandler>();
+        services.AddTransient<IHonuaWfsClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
+        services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
         ConfigureResilience(services, httpBuilder, configure);
         return services;
     }

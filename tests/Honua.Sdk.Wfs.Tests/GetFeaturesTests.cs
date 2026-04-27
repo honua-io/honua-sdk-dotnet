@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text.Json;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Wfs.Exceptions;
 using Honua.Sdk.Wfs.Formats;
 using Honua.Sdk.Wfs.Models;
@@ -121,6 +122,45 @@ public sealed class GetFeaturesTests
             SrsName = "EPSG:3857",
             PropertyName = "name,geometry",
         });
+    }
+
+    [Fact]
+    public async Task GetFeatures_SharedAbstraction_SerializesProviderNeutralParams()
+    {
+        string? capturedQuery = null;
+        var client = TestHelpers.CreateClient(req =>
+        {
+            capturedQuery = req.RequestUri!.Query;
+            return Task.FromResult(TestHelpers.CreateGeoJsonResponse(TwoFeatureResponse));
+        });
+
+        var result = await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { TypeName = "parcels" },
+            Filter = """<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0" />""",
+            FilterLanguage = FeatureFilterLanguage.FesXml,
+            FeatureIds = ["parcels.1"],
+            OutFields = ["parcel_id", "owner"],
+            Limit = 10,
+            Offset = 20,
+            OrderBy = "owner ASC",
+            Bbox = new FeatureBoundingBox { MinX = -122.5, MinY = 37.5, MaxX = -122.0, MaxY = 38.0, Crs = "EPSG:4326" },
+            OutputCrs = "EPSG:3857",
+        });
+
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("TYPENAMES=parcels", capturedQuery);
+        Assert.Contains("COUNT=10", capturedQuery);
+        Assert.Contains("STARTINDEX=20", capturedQuery);
+        Assert.Contains("SORTBY=owner%20ASC", capturedQuery);
+        Assert.Contains("FILTER=", capturedQuery);
+        Assert.Contains("RESOURCEID=parcels.1", capturedQuery);
+        Assert.Contains("PROPERTYNAME=parcel_id%2Cowner", capturedQuery);
+        Assert.Contains("SRSNAME=EPSG%3A3857", capturedQuery);
+        Assert.Contains("BBOX=", capturedQuery);
+        Assert.Equal("wfs", result.ProviderName);
+        Assert.Equal(2, result.Features.Count);
+        Assert.Equal("parcels.1", result.Features[0].Id);
     }
 
     [Fact]

@@ -3,8 +3,9 @@
 ## What You'll Build
 
 A .NET console app that connects to a Honua server, queries geospatial features
-over gRPC, queries via OGC WFS 2.0, lists services through the Admin REST API,
-and forward-geocodes an address -- all printed to the console.
+over gRPC, queries via OGC WFS 2.0, queries FeatureServer and OGC API Features
+through a shared abstraction, lists services through the Admin REST API, and
+forward-geocodes an address -- all printed to the console.
 
 ## Prerequisites
 
@@ -17,8 +18,11 @@ and forward-geocodes an address -- all printed to the console.
 dotnet new console -n HonuaDemo
 cd HonuaDemo
 dotnet add package Honua.Sdk.Grpc --prerelease
+dotnet add package Honua.Sdk.Abstractions --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
+dotnet add package Honua.Sdk.GeoServices --prerelease
+dotnet add package Honua.Sdk.OgcFeatures --prerelease
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
@@ -27,7 +31,8 @@ This pulls in the SDK packages and the Generic Host for dependency injection.
 ## Step 2: Configure the client with DI (60 seconds)
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
-up the gRPC, Admin, Geocoding, and WFS clients so they can be injected anywhere.
+up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, and OGC API
+Features clients so they can be injected anywhere.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +40,8 @@ using Microsoft.Extensions.Hosting;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Wfs.Extensions;
+using Honua.Sdk.GeoServices.Extensions;
+using Honua.Sdk.OgcFeatures.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -58,6 +65,18 @@ builder.Services.AddHonuaGeocoding(options =>
 
 // WFS 2.0 client -- OGC feature queries
 builder.Services.AddHonuaWfs(options =>
+{
+    options.BaseAddress = new Uri("https://localhost:5001");
+});
+
+// GeoServices FeatureServer client
+builder.Services.AddHonuaFeatureServer(options =>
+{
+    options.BaseAddress = new Uri("https://localhost:5001");
+});
+
+// OGC API Features client
+builder.Services.AddHonuaOgcFeatures(options =>
 {
     options.BaseAddress = new Uri("https://localhost:5001");
 });
@@ -260,6 +279,44 @@ WFS 2.0.0: 4 feature types
   parcels.1
   parcels.2
   parcels.3
+```
+
+## Step 7: Query through the shared abstraction
+
+Every read/query protocol client also registers `IHonuaFeatureQueryClient`.
+Inject `IEnumerable<IHonuaFeatureQueryClient>` when application code should
+switch providers without changing query code:
+
+```csharp
+using Honua.Sdk.Abstractions.Features;
+
+public sealed class DemoWorker(
+    IHonuaGrpcClient grpcClient,
+    IHonuaAdminClient adminClient,
+    IHonuaGeocodingClient geocodingClient,
+    IHonuaWfsClient wfsClient,
+    IEnumerable<IHonuaFeatureQueryClient> featureQueryClients,
+    IHostApplicationLifetime lifetime) : BackgroundService
+```
+
+Then add:
+
+```csharp
+        // --- 7. Shared feature query abstraction ---
+        Console.WriteLine("\n=== Shared Query ===");
+
+        var ogc = featureQueryClients.Single(c => c.ProviderName == "ogc-features");
+        var page = await ogc.QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { CollectionId = "parks" },
+            Filter = "status = 'open'",
+            FilterLanguage = FeatureFilterLanguage.Cql2Text,
+            OutFields = ["name", "status"],
+            Limit = 3,
+        }, ct);
+
+        foreach (var feature in page.Features)
+            Console.WriteLine($"  {feature.Id}");
 ```
 
 ## What's Next

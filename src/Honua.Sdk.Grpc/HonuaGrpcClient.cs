@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Configuration;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Grpc.Conversion;
 using Microsoft.Extensions.Options;
 
@@ -13,8 +16,13 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// gRPC client for the Honua FeatureService.
 /// </summary>
-public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
+public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient, IDisposable
 {
+    private static readonly JsonSerializerOptions FeatureJsonOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     private readonly Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient _client;
     private readonly GrpcChannel? _ownedChannel;
     private readonly Metadata _metadata;
@@ -60,6 +68,9 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
     }
 
     /// <inheritdoc />
+    public string ProviderName => "grpc";
+
+    /// <inheritdoc />
     public async Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
         Models.QueryFeaturesRequest request, CancellationToken ct = default)
     {
@@ -72,6 +83,25 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
         catch (RpcException ex)
         {
             throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureQueryResult> QueryAsync(
+        FeatureQueryRequest request, CancellationToken ct = default)
+    {
+        var response = await QueryFeaturesAsync(BuildGrpcQuery(request), ct).ConfigureAwait(false);
+        return ToFeatureQueryResult(response);
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
+        FeatureQueryRequest request,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await foreach (var page in QueryFeaturesStreamAsync(BuildGrpcQuery(request), ct).ConfigureAwait(false))
+        {
+            yield return ToFeatureQueryResult(page);
         }
     }
 
@@ -194,4 +224,153 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IDisposable
 
     private static bool HasCredentials(HonuaGrpcClientOptions opts)
         => !string.IsNullOrWhiteSpace(opts.ApiKey) || !string.IsNullOrWhiteSpace(opts.BearerToken);
+
+    private static Models.QueryFeaturesRequest BuildGrpcQuery(FeatureQueryRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureSupportedFilterLanguage(request.FilterLanguage);
+
+        if (string.IsNullOrWhiteSpace(request.Source.ServiceId))
+        {
+            throw new ArgumentException("A service ID is required for gRPC feature queries.", nameof(request));
+        }
+
+        if (!request.Source.LayerId.HasValue)
+        {
+            throw new ArgumentException("A layer ID is required for gRPC feature queries.", nameof(request));
+        }
+
+        return new Models.QueryFeaturesRequest
+        {
+            ServiceId = request.Source.ServiceId,
+            LayerId = request.Source.LayerId.Value,
+            Where = request.Filter ?? "1=1",
+            ObjectIds = ResolveObjectIds(request),
+            OutFields = request.OutFields,
+            ReturnGeometry = request.ReturnGeometry ?? true,
+            OutSr = ParseSpatialReference(request.OutputCrs),
+            ResultOffset = request.Offset ?? 0,
+            ResultRecordCount = request.Limit ?? 0,
+            OrderBy = request.OrderBy ?? string.Empty,
+            SpatialFilter = BuildSpatialFilter(request.Bbox),
+        };
+    }
+
+    private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
+    {
+        if (language is not FeatureFilterLanguage.ProviderDefault and not FeatureFilterLanguage.SqlWhere)
+        {
+            throw new NotSupportedException("gRPC feature queries support provider-default or SQL WHERE filters.");
+        }
+    }
+
+    private static IReadOnlyList<long>? ResolveObjectIds(FeatureQueryRequest request)
+    {
+        if (request.ObjectIds is { Count: > 0 })
+        {
+            return request.ObjectIds;
+        }
+
+        if (request.FeatureIds is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var objectIds = new List<long>(request.FeatureIds.Count);
+        foreach (var featureId in request.FeatureIds)
+        {
+            if (!long.TryParse(featureId, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var objectId))
+            {
+                throw new ArgumentException("gRPC feature IDs must be numeric object IDs.", nameof(request));
+            }
+
+            objectIds.Add(objectId);
+        }
+
+        return objectIds;
+    }
+
+    private static Models.SpatialFilter? BuildSpatialFilter(FeatureBoundingBox? bbox)
+    {
+        if (bbox is null)
+        {
+            return null;
+        }
+
+        return new Models.SpatialFilter
+        {
+            Geometry = new Dictionary<string, object?>
+            {
+                ["xmin"] = bbox.MinX,
+                ["ymin"] = bbox.MinY,
+                ["xmax"] = bbox.MaxX,
+                ["ymax"] = bbox.MaxY,
+            },
+            SpatialRelationship = Models.SpatialRelationship.Intersects,
+            SpatialReference = ParseSpatialReference(bbox.Crs),
+        };
+    }
+
+    private static Models.SpatialReference? ParseSpatialReference(string? crs)
+    {
+        if (string.IsNullOrWhiteSpace(crs))
+        {
+            return null;
+        }
+
+        var digits = new string(crs.Where(char.IsDigit).ToArray());
+        if (int.TryParse(digits, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var wkid))
+        {
+            return new Models.SpatialReference { Wkid = wkid };
+        }
+
+        return new Models.SpatialReference { Wkt = crs };
+    }
+
+    private FeatureQueryResult ToFeatureQueryResult(Models.QueryFeaturesResponse response)
+    {
+        return new FeatureQueryResult
+        {
+            ProviderName = ProviderName,
+            Features = response.Features.Select(feature => ToFeatureRecord(feature)).ToList(),
+            NumberReturned = response.Features.Count,
+            HasMoreResults = response.ExceededTransferLimit,
+            ObjectIdFieldName = response.ObjectIdFieldName,
+        };
+    }
+
+    private FeatureQueryResult ToFeatureQueryResult(Models.FeaturePage page)
+    {
+        return new FeatureQueryResult
+        {
+            ProviderName = ProviderName,
+            Features = page.Features.Select(feature => ToFeatureRecord(feature)).ToList(),
+            NumberReturned = page.Features.Count,
+            HasMoreResults = !page.IsLastPage,
+            ObjectIdFieldName = string.IsNullOrWhiteSpace(page.ObjectIdFieldName) ? null : page.ObjectIdFieldName,
+        };
+    }
+
+    private static FeatureRecord ToFeatureRecord(Models.Feature feature)
+    {
+        JsonElement? geometry = feature.Geometry is not null
+            ? JsonSerializer.SerializeToElement(feature.Geometry, FeatureJsonOptions)
+            : null;
+
+        return new FeatureRecord
+        {
+            Id = feature.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Attributes = feature.Attributes.ToDictionary(
+                kvp => kvp.Key,
+                kvp => ToJsonElement(kvp.Value)),
+            Geometry = geometry,
+        };
+    }
+
+    private static JsonElement ToJsonElement(object? value)
+    {
+        return value is null
+            ? JsonSerializer.SerializeToElement<object?>(null, FeatureJsonOptions)
+            : JsonSerializer.SerializeToElement(value, value.GetType(), FeatureJsonOptions);
+    }
 }

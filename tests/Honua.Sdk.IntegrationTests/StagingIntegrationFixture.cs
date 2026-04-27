@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Honua.Sdk.Admin.Extensions;
-using Honua.Sdk.Features.Extensions;
+using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.Grpc.Extensions;
+using Honua.Sdk.OgcFeatures.Extensions;
 using Honua.Sdk.Wfs.Extensions;
 
 namespace Honua.Sdk.IntegrationTests;

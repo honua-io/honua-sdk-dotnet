@@ -48,10 +48,12 @@ jobs:
         run: |
           tag_version="${GITHUB_REF_NAME#dotnet-sdk-v}"
           projects=(
+            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
             "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
-            "src/Honua.Sdk.Features/Honua.Sdk.Features.csproj"
+            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
+            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
           )
 
           errors=0
@@ -72,10 +74,12 @@ jobs:
         shell: bash
         run: |
           projects=(
+            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
             "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
-            "src/Honua.Sdk.Features/Honua.Sdk.Features.csproj"
+            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
+            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
           )
 
           for project in "${projects[@]}"; do
@@ -89,7 +93,8 @@ jobs:
             "tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj"
             "tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj"
             "tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj"
-            "tests/Honua.Sdk.Features.Tests/Honua.Sdk.Features.Tests.csproj"
+            "tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj"
+            "tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj"
           )
 
           for project in "${projects[@]}"; do
@@ -120,10 +125,12 @@ jobs:
         shell: bash
         run: |
           projects=(
+            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
             "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
-            "src/Honua.Sdk.Features/Honua.Sdk.Features.csproj"
+            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
+            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
           )
 
           errors=0
@@ -147,10 +154,12 @@ jobs:
         run: |
           mkdir -p ./nupkgs
           projects=(
+            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
             "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
-            "src/Honua.Sdk.Features/Honua.Sdk.Features.csproj"
+            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
+            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
           )
 
           for project in "${projects[@]}"; do
@@ -160,10 +169,12 @@ jobs:
       - name: Package install smoke
         shell: bash
         run: |
+          abstractions_version="$(grep '<Version>' src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
           admin_version="$(grep '<Version>' src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
           grpc_version="$(grep '<Version>' src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
           wfs_version="$(grep '<Version>' src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-          features_version="$(grep '<Version>' src/Honua.Sdk.Features/Honua.Sdk.Features.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
+          geoservices_version="$(grep '<Version>' src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
+          ogc_features_version="$(grep '<Version>' src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
 
           smoke_dir="$(mktemp -d)"
           trap 'rm -rf "${smoke_dir}"' EXIT
@@ -173,23 +184,27 @@ jobs:
           pushd "${smoke_dir}" >/dev/null
 
           dotnet add package Microsoft.Extensions.Hosting --version 10.0.0
+          dotnet add package Honua.Sdk.Abstractions --version "${abstractions_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
           dotnet add package Honua.Sdk.Admin --version "${admin_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
           dotnet add package Honua.Sdk.Grpc --version "${grpc_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
           dotnet add package Honua.Sdk.Wfs --version "${wfs_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Features --version "${features_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.GeoServices --version "${geoservices_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.OgcFeatures --version "${ogc_features_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
 
           cat <<'EOF' > Program.cs
+          using Honua.Sdk.Abstractions.Features;
           using Honua.Sdk.Admin;
           using Honua.Sdk.Admin.Extensions;
           using Honua.Sdk.Admin.Geocoding;
-          using Honua.Sdk.Features.Extensions;
-          using Honua.Sdk.Features.FeatureServer;
-          using Honua.Sdk.Features.FeatureServer.Models;
-          using Honua.Sdk.Features.OgcFeatures;
-          using Honua.Sdk.Features.OgcFeatures.Models;
+          using Honua.Sdk.GeoServices.Extensions;
+          using Honua.Sdk.GeoServices.FeatureServer;
+          using Honua.Sdk.GeoServices.FeatureServer.Models;
           using Honua.Sdk.Grpc;
           using Honua.Sdk.Grpc.Extensions;
           using Honua.Sdk.Grpc.Models;
+          using Honua.Sdk.OgcFeatures;
+          using Honua.Sdk.OgcFeatures.Extensions;
+          using Honua.Sdk.OgcFeatures.Models;
           using Honua.Sdk.Wfs;
           using Honua.Sdk.Wfs.Extensions;
           using Honua.Sdk.Wfs.Models;
@@ -214,6 +229,7 @@ jobs:
           _ = host.Services.GetRequiredService<IHonuaWfsClient>();
           _ = host.Services.GetRequiredService<IHonuaFeatureServerClient>();
           _ = host.Services.GetRequiredService<IHonuaOgcFeaturesClient>();
+          _ = host.Services.GetServices<IHonuaFeatureQueryClient>().ToArray();
 
           _ = new QueryFeaturesRequest
           {
@@ -291,6 +307,11 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish to GitHub Packages (pre-release)
         run: |

@@ -6,7 +6,10 @@ using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Wfs.Exceptions;
 using Honua.Sdk.Wfs.Formats;
 using Honua.Sdk.Wfs.Models;
@@ -17,10 +20,16 @@ namespace Honua.Sdk.Wfs;
 /// <summary>
 /// WFS 2.0 read/query client for Honua Server.
 /// </summary>
-public sealed class HonuaWfsClient : IHonuaWfsClient
+public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient
 {
     private static readonly ActivitySource ActivitySource = new("Honua.Sdk.Wfs");
     private static readonly GeoJsonFeatureCollectionHandler DefaultGeoJsonHandler = new();
+    private static readonly JsonSerializerOptions FeatureJsonOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     private const int MaxAutoPages = 100;
 
     private readonly HttpClient _httpClient;
@@ -33,6 +42,9 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
     {
         _httpClient = httpClient;
     }
+
+    /// <inheritdoc />
+    public string ProviderName => "wfs";
 
     /// <inheritdoc />
     public async Task<WfsCapabilities> GetCapabilitiesAsync(CancellationToken ct = default)
@@ -87,6 +99,52 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
 
         activity?.SetTag("wfs.number_returned", result.NumberReturned);
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureQueryResult> QueryAsync(
+        FeatureQueryRequest request, CancellationToken ct = default)
+    {
+        var response = await GetFeaturesAsync(BuildWfsQuery(request), ct).ConfigureAwait(false);
+        return ToFeatureQueryResult(response);
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
+        FeatureQueryRequest request,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var current = request;
+        var startIndex = request.Offset ?? 0;
+        var pageCount = 0;
+
+        while (pageCount < MaxAutoPages)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var page = await GetFeaturesAsync(BuildWfsQuery(current), ct).ConfigureAwait(false);
+            yield return ToFeatureQueryResult(page);
+
+            if (page.NumberReturned == 0)
+            {
+                yield break;
+            }
+
+            startIndex += page.NumberReturned;
+            if (page.NumberMatched.HasValue && startIndex >= page.NumberMatched.Value)
+            {
+                yield break;
+            }
+
+            pageCount++;
+            current = request with { Offset = startIndex };
+        }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use protocol-specific manual paging for larger result sets.");
     }
 
     /// <inheritdoc />
@@ -360,5 +418,86 @@ public sealed class HonuaWfsClient : IHonuaWfsClient
         return long.TryParse(attr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
             ? count
             : null;
+    }
+
+    private static GetFeaturesRequest BuildWfsQuery(FeatureQueryRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureSupportedFilterLanguage(request.FilterLanguage);
+
+        if (string.IsNullOrWhiteSpace(request.Source.TypeName))
+        {
+            throw new ArgumentException("A WFS type name is required for WFS feature queries.", nameof(request));
+        }
+
+        return new GetFeaturesRequest
+        {
+            TypeNames = request.Source.TypeName,
+            Count = request.Limit,
+            StartIndex = request.Offset,
+            SortBy = request.OrderBy,
+            Filter = request.Filter,
+            Bbox = request.Bbox is null
+                ? null
+                : new WfsBoundingBox
+                {
+                    MinX = request.Bbox.MinX,
+                    MinY = request.Bbox.MinY,
+                    MaxX = request.Bbox.MaxX,
+                    MaxY = request.Bbox.MaxY,
+                    Crs = request.Bbox.Crs
+                },
+            ResourceId = BuildResourceId(request),
+            PropertyName = request.OutFields is { Count: > 0 } ? string.Join(",", request.OutFields) : null,
+            SrsName = request.OutputCrs,
+        };
+    }
+
+    private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
+    {
+        if (language is not FeatureFilterLanguage.ProviderDefault and not FeatureFilterLanguage.FesXml)
+        {
+            throw new NotSupportedException("WFS feature queries support provider-default or FES XML filters.");
+        }
+    }
+
+    private static string? BuildResourceId(FeatureQueryRequest request)
+    {
+        if (request.FeatureIds is { Count: > 0 })
+        {
+            return string.Join(",", request.FeatureIds);
+        }
+
+        return request.ObjectIds is { Count: > 0 }
+            ? string.Join(",", request.ObjectIds.Select(id => id.ToString(CultureInfo.InvariantCulture)))
+            : null;
+    }
+
+    private FeatureQueryResult ToFeatureQueryResult(WfsFeatureCollection response)
+    {
+        return new FeatureQueryResult
+        {
+            ProviderName = ProviderName,
+            Features = response.Features.Select(ToFeatureRecord).ToList(),
+            NumberMatched = response.NumberMatched,
+            NumberReturned = response.NumberReturned,
+            HasMoreResults = response.HasMoreResults,
+        };
+    }
+
+    private static FeatureRecord ToFeatureRecord(WfsFeature feature)
+    {
+        JsonElement? geometry = feature.Geometry is not null
+            ? JsonSerializer.SerializeToElement(feature.Geometry, FeatureJsonOptions)
+            : null;
+
+        return new FeatureRecord
+        {
+            Id = feature.Id,
+            Attributes = feature.Properties.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Clone()),
+            Geometry = geometry,
+        };
     }
 }

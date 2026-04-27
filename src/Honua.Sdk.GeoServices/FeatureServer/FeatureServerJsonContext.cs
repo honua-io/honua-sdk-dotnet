@@ -1,0 +1,24 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Honua.Sdk.GeoServices.FeatureServer.Models;
+
+namespace Honua.Sdk.GeoServices.FeatureServer;
+
+/// <summary>
+/// Source-generated JSON serializer context for FeatureServer types (AOT-compatible).
+/// </summary>
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(FeatureServerServiceInfo))]
+[JsonSerializable(typeof(FeatureServerLayerInfo))]
+[JsonSerializable(typeof(FeatureServerQueryResponse))]
+[JsonSerializable(typeof(FeatureServerValidateSqlResponse))]
+[JsonSerializable(typeof(GeoServicesErrorResponse))]
+[JsonSerializable(typeof(JsonElement))]
+internal sealed partial class FeatureServerJsonContext : JsonSerializerContext
+{
+}

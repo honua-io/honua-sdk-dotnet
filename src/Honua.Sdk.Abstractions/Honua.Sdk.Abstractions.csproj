@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>0.1.0-alpha.1</Version>
+    <PackageId>Honua.Sdk.Abstractions</PackageId>
+    <Description>Shared abstractions for Honua .NET SDK feature clients</Description>
+    <RootNamespace>Honua.Sdk.Abstractions</RootNamespace>
+    <Authors>Honua</Authors>
+    <Copyright>Copyright (c) Honua</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/honua-io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>geospatial;mobile;gis;offline;sync;honua;abstractions</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

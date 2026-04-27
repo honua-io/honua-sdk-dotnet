@@ -3,23 +3,30 @@
 Official .NET client libraries for [Honua](https://github.com/honua-io/honua-server) --
 an open-source geospatial feature server. The SDK provides typed clients for
 querying and editing features over gRPC, querying via OGC WFS 2.0, managing
-services through the Admin REST API, and geocoding addresses.
+services through the Admin REST API, geocoding addresses, and reading features
+through GeoServices FeatureServer and OGC API Features endpoints.
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
+| **Honua.Sdk.Abstractions** | Shared feature query abstractions implemented by provider-specific clients |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
 | **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
+| **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
+| **Honua.Sdk.OgcFeatures** | OGC API Features read/query client -- landing page, conformance, collections, queryables, items |
 | *Geocoding* (in Admin) | Forward/reverse geocoding and autocomplete via `IHonuaGeocodingClient` |
 
 ## Install
 
 ```bash
+dotnet add package Honua.Sdk.Abstractions --prerelease
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
+dotnet add package Honua.Sdk.GeoServices --prerelease
+dotnet add package Honua.Sdk.OgcFeatures --prerelease
 ```
 
 Pre-release builds are also available from
@@ -34,12 +41,16 @@ using Honua.Sdk.Grpc.Models;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Wfs.Extensions;
+using Honua.Sdk.GeoServices.Extensions;
+using Honua.Sdk.OgcFeatures.Extensions;
 
 // Register clients
 builder.Services.AddHonuaGrpc(o => o.Address = "https://localhost:5001");
 builder.Services.AddHonuaAdmin(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaGeocoding(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaWfs(o => o.BaseAddress = new Uri("https://localhost:5001"));
+builder.Services.AddHonuaFeatureServer(o => o.BaseAddress = new Uri("https://localhost:5001"));
+builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = new Uri("https://localhost:5001"));
 
 // Query features (injected IHonuaGrpcClient)
 var response = await grpcClient.QueryFeaturesAsync(new QueryFeaturesRequest
@@ -82,11 +93,33 @@ await foreach (var page in grpcClient.QueryFeaturesStreamAsync(request))
 }
 ```
 
+## Shared query abstraction
+
+Protocol packages keep their native APIs, and the read/query clients also
+implement `IHonuaFeatureQueryClient` from `Honua.Sdk.Abstractions` for common
+application code:
+
+```csharp
+using Honua.Sdk.Abstractions.Features;
+
+IHonuaFeatureQueryClient queryClient = featureQueryClients
+    .Single(c => c.ProviderName == "ogc-features");
+
+var page = await queryClient.QueryAsync(new FeatureQueryRequest
+{
+    Source = new FeatureSource { CollectionId = "parks" },
+    Filter = "status = 'open'",
+    FilterLanguage = FeatureFilterLanguage.Cql2Text,
+    OutFields = ["name", "status"],
+    Limit = 10,
+});
+```
+
 ## Retry
 
-The gRPC and WFS clients retry automatically on transient failures with
+The gRPC, WFS, GeoServices, and OGC API Features clients retry automatically on transient failures with
 exponential backoff and jitter. gRPC retries on `Unavailable` / `Internal`;
-WFS retries on `429`, `502`, `503`. Configurable on both clients:
+HTTP clients retry on `429`, `502`, `503`. Configurable on each client:
 
 ```csharp
 builder.Services.AddHonuaGrpc(o =>
@@ -184,16 +217,23 @@ src/
   Honua.Sdk.Grpc/          gRPC client package (query, stream, edit)
   Honua.Sdk.Admin/          Admin + Geocoding client package
   Honua.Sdk.Wfs/           WFS 2.0 read/query client package
+  Honua.Sdk.GeoServices/   GeoServices FeatureServer read/query client package
+  Honua.Sdk.OgcFeatures/   OGC API Features read/query client package
+  Honua.Sdk.Abstractions/  Shared provider-neutral feature query contracts
 tests/
-  Honua.Sdk.Grpc.Tests/     gRPC client tests (42 tests)
-  Honua.Sdk.Admin.Tests/    Admin + Geocoding tests (81 tests)
-  Honua.Sdk.Wfs.Tests/      WFS client tests (52 tests)
+  Honua.Sdk.Grpc.Tests/     gRPC client tests
+  Honua.Sdk.Admin.Tests/    Admin + Geocoding tests
+  Honua.Sdk.Wfs.Tests/      WFS client tests
+  Honua.Sdk.GeoServices.Tests/
+  Honua.Sdk.OgcFeatures.Tests/
 examples/
   AdminBootstrapConsole/     Canonical console sample for admin bootstrap + gRPC verification
   FieldDataCollection/      Advanced .NET MAUI reference app (not the primary onboarding sample)
 docs/
   quickstart.md             5-minute quickstart tutorial
   staging-integration.md    Staging CI inputs, evidence, and troubleshooting
+third_party/
+  geospatial-grpc/          Vendored proto input from the geospatial-grpc source of truth
 ```
 
 ## Documentation
@@ -204,7 +244,8 @@ docs/
   it with a bounded `Honua.Sdk.Grpc` query, and troubleshoot the exact error
   surfaces returned by the sample
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
-  features via gRPC and WFS, lists services, and geocodes an address in 5 minutes
+  features through native clients and the shared abstraction, lists services,
+  and geocodes an address in 5 minutes
 - **[Staging Integration Guide](docs/staging-integration.md)** -- staging
   environment inputs, CI evidence artifacts, common failures, and bounded
   follow-on tickets for shared staging ownership
