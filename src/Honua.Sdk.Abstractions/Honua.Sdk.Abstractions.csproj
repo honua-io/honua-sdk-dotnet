@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>0.1.0-alpha.1</Version>
     <PackageId>Honua.Sdk.Abstractions</PackageId>
     <Description>Shared abstractions for Honua .NET SDK feature clients</Description>
     <RootNamespace>Honua.Sdk.Abstractions</RootNamespace>

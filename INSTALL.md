@@ -38,6 +38,11 @@ dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
 ```
 
+All SDK packages share one package version from `Directory.Build.props`.
+Release tags use `dotnet-sdk-v<PackageVersion>`, for example
+`dotnet-sdk-v0.1.0-alpha.1`. See [Release and NuGet Publishing](docs/release.md)
+for the publish workflow and stable/prerelease rules.
+
 ## Install from GitHub Packages (pre-release)
 
 Add the Honua GitHub Packages source:
@@ -89,8 +94,10 @@ public class MyService(IHonuaGrpcClient client)
 
 ## Version Policy
 
-- **Pre-release** (`-alpha.*`, `-beta.*`): Published to GitHub Packages on every tag
-- **Stable** (`1.0.0+`): Published to NuGet.org after validation
+- **Pre-release** (`-*`): Published to GitHub Packages on every release tag
+  and skipped for NuGet.org.
+- **Stable** (`1.0.0+`): Published to GitHub Packages and NuGet.org after
+  validation.
 
 All packages follow [Semantic Versioning](https://semver.org/). Major versions are coordinated across all Honua SDKs.
 

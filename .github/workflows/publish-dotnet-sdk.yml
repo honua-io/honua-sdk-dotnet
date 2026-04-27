@@ -42,11 +42,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Validate tag version
-        if: github.event_name == 'push'
+      - name: Validate package versions
         shell: bash
         run: |
-          tag_version="${GITHUB_REF_NAME#dotnet-sdk-v}"
           projects=(
             "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
             "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
@@ -57,18 +55,41 @@ jobs:
           )
 
           errors=0
+          package_version=""
+
+          get_package_version() {
+            dotnet msbuild "$1" -nologo -getProperty:PackageVersion
+          }
 
           for project in "${projects[@]}"; do
-            version="$(grep '<Version>' "${project}" | sed 's/.*<Version>\(.*\)<\/Version>/\1/' || echo '')"
-            if [[ -n "${version}" && "${tag_version}" != "${version}" ]]; then
-              echo "Tag version (${tag_version}) does not match ${project} version (${version})."
+            version="$(get_package_version "${project}")"
+            if [[ -z "${version}" ]]; then
+              echo "Could not resolve PackageVersion for ${project}."
+              errors=1
+              continue
+            fi
+
+            if [[ -z "${package_version}" ]]; then
+              package_version="${version}"
+            elif [[ "${package_version}" != "${version}" ]]; then
+              echo "Package version mismatch: ${project} has ${version}; expected ${package_version}."
               errors=1
             fi
           done
 
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            tag_version="${GITHUB_REF_NAME#dotnet-sdk-v}"
+            if [[ "${tag_version}" != "${package_version}" ]]; then
+              echo "Tag version (${tag_version}) does not match package version (${package_version})."
+              errors=1
+            fi
+          fi
+
           if [[ ${errors} -ne 0 ]]; then
             exit 1
           fi
+
+          echo "PACKAGE_VERSION=${package_version}" >> "${GITHUB_ENV}"
 
       - name: Build SDK packages
         shell: bash
@@ -169,13 +190,6 @@ jobs:
       - name: Package install smoke
         shell: bash
         run: |
-          abstractions_version="$(grep '<Version>' src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-          admin_version="$(grep '<Version>' src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-          grpc_version="$(grep '<Version>' src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-          wfs_version="$(grep '<Version>' src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-          geoservices_version="$(grep '<Version>' src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-          ogc_features_version="$(grep '<Version>' src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/')"
-
           smoke_dir="$(mktemp -d)"
           trap 'rm -rf "${smoke_dir}"' EXIT
 
@@ -184,12 +198,12 @@ jobs:
           pushd "${smoke_dir}" >/dev/null
 
           dotnet add package Microsoft.Extensions.Hosting --version 10.0.0
-          dotnet add package Honua.Sdk.Abstractions --version "${abstractions_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Admin --version "${admin_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Grpc --version "${grpc_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Wfs --version "${wfs_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.GeoServices --version "${geoservices_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.OgcFeatures --version "${ogc_features_version}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.Abstractions --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.Admin --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.Grpc --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.Wfs --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.GeoServices --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
 
           cat <<'EOF' > Program.cs
           using Honua.Sdk.Abstractions.Features;
@@ -313,7 +327,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Publish to GitHub Packages (pre-release)
+      - name: Publish to GitHub Packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
@@ -321,8 +335,15 @@ jobs:
             --skip-duplicate
 
       - name: Publish to NuGet.org (stable releases only)
-        if: ${{ !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta') }}
+        if: ${{ github.event_name == 'push' && startsWith(github.ref_name, 'dotnet-sdk-v') }}
+        shell: bash
         run: |
+          version="${GITHUB_REF_NAME#dotnet-sdk-v}"
+          if [[ "${version}" == *-* ]]; then
+            echo "Skipping NuGet.org publish for prerelease ${version}."
+            exit 0
+          fi
+
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://api.nuget.org/v3/index.json" \
             --api-key ${{ secrets.NUGET_API_KEY }} \
