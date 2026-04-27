@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Honua.Sdk.Features.FeatureServer.Models;
-using Honua.Sdk.Features.OgcFeatures.Models;
+using Honua.Sdk.GeoServices.FeatureServer.Models;
 using Honua.Sdk.Grpc.Models;
+using Honua.Sdk.OgcFeatures.Models;
 using Honua.Sdk.Wfs.Models;
 
 namespace Honua.Sdk.IntegrationTests;

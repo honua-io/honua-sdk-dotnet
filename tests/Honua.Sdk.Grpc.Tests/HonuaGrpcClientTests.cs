@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Grpc.Core;
+using Honua.Sdk.Abstractions.Features;
 using Microsoft.Extensions.Options;
 using Moq;
 using Proto = Honua.Server.Features.Grpc.Proto;
@@ -39,6 +40,64 @@ public class HonuaGrpcClientTests
 
         Assert.Equal("OBJECTID", result.ObjectIdFieldName);
         Assert.Equal(Models.GeometryType.Point, result.GeometryType);
+    }
+
+    [Fact]
+    public async Task QueryAsync_SharedAbstraction_DelegatesToGrpcQuery()
+    {
+        Proto.QueryFeaturesRequest? capturedRequest = null;
+        var protoResponse = new Proto.QueryFeaturesResponse
+        {
+            ObjectIdFieldName = "OBJECTID",
+            GeometryType = Proto.GeometryType.Point,
+            ExceededTransferLimit = true,
+        };
+        var feature = new Proto.Feature { Id = 42 };
+        feature.Attributes["name"] = new Proto.AttributeValue { StringValue = "Park" };
+        protoResponse.Features.Add(feature);
+
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>((req, _, _, _) => capturedRequest = req)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var result = await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { ServiceId = "test-svc", LayerId = 0 },
+            Filter = "status = 'open'",
+            FilterLanguage = FeatureFilterLanguage.SqlWhere,
+            ObjectIds = [42],
+            OutFields = ["name"],
+            ReturnGeometry = false,
+            Offset = 5,
+            Limit = 10,
+            OrderBy = "name ASC",
+            OutputCrs = "EPSG:3857",
+        });
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal("test-svc", capturedRequest.ServiceId);
+        Assert.Equal(0, capturedRequest.LayerId);
+        Assert.Equal("status = 'open'", capturedRequest.Where);
+        Assert.Equal([42L], capturedRequest.ObjectIds);
+        Assert.Equal(["name"], capturedRequest.OutFields);
+        Assert.False(capturedRequest.ReturnGeometry);
+        Assert.Equal(5, capturedRequest.ResultOffset);
+        Assert.Equal(10, capturedRequest.ResultRecordCount);
+        Assert.Equal("name ASC", capturedRequest.OrderBy);
+        Assert.Equal(3857, capturedRequest.OutSr.Wkid);
+        Assert.Equal("grpc", result.ProviderName);
+        Assert.True(result.HasMoreResults);
+        Assert.Single(result.Features);
+        Assert.Equal("42", result.Features[0].Id);
+        Assert.Equal("Park", result.Features[0].Attributes["name"].GetString());
     }
 
     [Fact]

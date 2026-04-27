@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Microsoft.Extensions.DependencyInjection;
+using Honua.Sdk.Abstractions.Features;
 
 namespace Honua.Sdk.Grpc.Extensions;
 
@@ -21,7 +22,9 @@ public static class ServiceCollectionExtensions
         Action<HonuaGrpcClientOptions> configure)
     {
         services.Configure(configure);
-        services.AddSingleton<IHonuaGrpcClient, HonuaGrpcClient>();
+        services.AddSingleton<HonuaGrpcClient>();
+        services.AddSingleton<IHonuaGrpcClient>(sp => sp.GetRequiredService<HonuaGrpcClient>());
+        services.AddSingleton<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaGrpcClient>());
         return services;
     }
 }

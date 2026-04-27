@@ -4,9 +4,12 @@
 
 | Package | Description |
 |---------|-------------|
+| `Honua.Sdk.Abstractions` | Shared feature query abstractions implemented by provider-specific clients |
 | `Honua.Sdk.Admin` | Admin client for managing services, layers, and configuration |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries and edits |
 | `Honua.Sdk.Wfs` | WFS 2.0 read/query client for GetCapabilities, GetFeature, DescribeFeatureType |
+| `Honua.Sdk.GeoServices` | GeoServices FeatureServer read/query client |
+| `Honua.Sdk.OgcFeatures` | OGC API Features read/query client |
 
 ## Prerequisites
 
@@ -19,11 +22,20 @@
 # gRPC client (most common)
 dotnet add package Honua.Sdk.Grpc --prerelease
 
+# Shared read/query abstractions
+dotnet add package Honua.Sdk.Abstractions --prerelease
+
 # Admin client
 dotnet add package Honua.Sdk.Admin --prerelease
 
 # WFS 2.0 client
 dotnet add package Honua.Sdk.Wfs --prerelease
+
+# GeoServices FeatureServer client
+dotnet add package Honua.Sdk.GeoServices --prerelease
+
+# OGC API Features client
+dotnet add package Honua.Sdk.OgcFeatures --prerelease
 ```
 
 ## Install from GitHub Packages (pre-release)
@@ -41,6 +53,8 @@ Then install:
 
 ```bash
 dotnet add package Honua.Sdk.Grpc --prerelease --source honua
+dotnet add package Honua.Sdk.GeoServices --prerelease --source honua
+dotnet add package Honua.Sdk.OgcFeatures --prerelease --source honua
 ```
 
 ## Quick Start

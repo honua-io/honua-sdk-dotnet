@@ -31,6 +31,28 @@ jobs:
           HONUA_API_COMPAT_BASE_REF: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
         run: scripts/validate-api-compat.sh
 
+  dotnet-abstractions-sdk:
+    name: .NET Abstractions SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build
+        run: dotnet build src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj --configuration Release /p:TreatWarningsAsErrors=true
+
   dotnet-admin-sdk:
     name: .NET Admin SDK
     runs-on: ubuntu-latest
@@ -106,8 +128,8 @@ jobs:
       - name: Test
         run: dotnet test tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj --configuration Release
 
-  dotnet-features-sdk:
-    name: .NET Features SDK
+  dotnet-geoservices-sdk:
+    name: .NET GeoServices SDK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -126,10 +148,35 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build
-        run: dotnet build src/Honua.Sdk.Features/Honua.Sdk.Features.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj --configuration Release /p:TreatWarningsAsErrors=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.Features.Tests/Honua.Sdk.Features.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj --configuration Release
+
+  dotnet-ogc-features-sdk:
+    name: .NET OGC Features SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build
+        run: dotnet build src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj --configuration Release /p:TreatWarningsAsErrors=true
+
+      - name: Test
+        run: dotnet test tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj --configuration Release
 
   dotnet-admin-bootstrap-sample:
     name: Admin Bootstrap Sample

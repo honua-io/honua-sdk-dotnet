@@ -19,7 +19,8 @@
     <ProjectReference Include="..\..\src\Honua.Sdk.Admin\Honua.Sdk.Admin.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Grpc\Honua.Sdk.Grpc.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Wfs\Honua.Sdk.Wfs.csproj" />
-    <ProjectReference Include="..\..\src\Honua.Sdk.Features\Honua.Sdk.Features.csproj" />
+    <ProjectReference Include="..\..\src\Honua.Sdk.GeoServices\Honua.Sdk.GeoServices.csproj" />
+    <ProjectReference Include="..\..\src\Honua.Sdk.OgcFeatures\Honua.Sdk.OgcFeatures.csproj" />
   </ItemGroup>
 
 </Project>
