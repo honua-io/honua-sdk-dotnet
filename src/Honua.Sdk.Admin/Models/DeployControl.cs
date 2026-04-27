@@ -6,105 +6,195 @@ using System.Text.Json.Serialization;
 namespace Honua.Sdk.Admin.Models;
 
 /// <summary>
-/// Result of a deploy preflight check.
+/// Instance-scoped deploy preflight response.
 /// </summary>
 public sealed class DeployPreflightResult
 {
     /// <summary>
-    /// Whether the system is ready for deployment.
+    /// Current deploy preflight status.
     /// </summary>
-    [JsonPropertyName("ready")]
-    public bool Ready { get; init; }
+    [JsonPropertyName("status")]
+    public string Status { get; init; } = string.Empty;
 
     /// <summary>
-    /// Individual preflight checks that were performed.
+    /// Whether the instance is ready for coordinated deployment.
     /// </summary>
-    [JsonPropertyName("checks")]
-    public IReadOnlyList<PreflightCheck> Checks { get; init; } = [];
+    [JsonPropertyName("readyForCoordinatedDeploy")]
+    public bool ReadyForCoordinatedDeploy { get; init; }
 
     /// <summary>
-    /// Non-blocking warnings about the deployment environment.
+    /// Operator-facing summary for the preflight result.
     /// </summary>
-    [JsonPropertyName("warnings")]
-    public IReadOnlyList<string> Warnings { get; init; } = [];
+    [JsonPropertyName("message")]
+    public string Message { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Server version reported when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("serverVersion")]
+    public string? ServerVersion { get; init; }
+
+    /// <summary>
+    /// Host environment reported when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("environment")]
+    public string? Environment { get; init; }
+
+    /// <summary>
+    /// Deployment mode reported when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("deploymentMode")]
+    public string? DeploymentMode { get; init; }
+
+    /// <summary>
+    /// Instance name reported when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("instanceName")]
+    public string? InstanceName { get; init; }
+
+    /// <summary>
+    /// Timestamp when the payload was generated.
+    /// </summary>
+    [JsonPropertyName("generatedAt")]
+    public DateTimeOffset GeneratedAt { get; init; }
+
+    /// <summary>
+    /// Readiness detail, when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("readiness")]
+    public DeployPreflightReadiness? Readiness { get; init; }
+
+    /// <summary>
+    /// Migration detail, when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("migration")]
+    public DeployPreflightMigration? Migration { get; init; }
+
+    /// <summary>
+    /// Database compatibility detail, when diagnostics are included.
+    /// </summary>
+    [JsonPropertyName("databaseCompatibility")]
+    public DeployPreflightDatabaseCompatibility? DatabaseCompatibility { get; init; }
 }
 
 /// <summary>
-/// An individual preflight check result.
+/// Readiness summary embedded in deploy preflight responses.
 /// </summary>
-public sealed class PreflightCheck
+public sealed class DeployPreflightReadiness
 {
     /// <summary>
-    /// Name of the check.
+    /// Whether the instance is ready.
     /// </summary>
-    [JsonPropertyName("name")]
-    public string Name { get; init; } = string.Empty;
+    [JsonPropertyName("isReady")]
+    public bool IsReady { get; init; }
 
     /// <summary>
-    /// Whether the check passed.
+    /// HTTP status code returned by the readiness endpoint.
     /// </summary>
-    [JsonPropertyName("passed")]
-    public bool Passed { get; init; }
+    [JsonPropertyName("statusCode")]
+    public int StatusCode { get; init; }
 
     /// <summary>
-    /// Optional message describing the check result.
+    /// Human-readable readiness message.
+    /// </summary>
+    [JsonPropertyName("message")]
+    public string Message { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Migration summary embedded in deploy preflight responses.
+/// </summary>
+public sealed class DeployPreflightMigration
+{
+    /// <summary>
+    /// Migration lifecycle status.
+    /// </summary>
+    [JsonPropertyName("lifecycleStatus")]
+    public string LifecycleStatus { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Optional lifecycle detail.
     /// </summary>
     [JsonPropertyName("message")]
     public string? Message { get; init; }
+
+    /// <summary>
+    /// Whether a migration plan could be generated.
+    /// </summary>
+    [JsonPropertyName("planAvailable")]
+    public bool PlanAvailable { get; init; }
+
+    /// <summary>
+    /// Whether pending migrations were detected.
+    /// </summary>
+    [JsonPropertyName("upgradeRequired")]
+    public bool UpgradeRequired { get; init; }
+
+    /// <summary>
+    /// Pending migration scripts.
+    /// </summary>
+    [JsonPropertyName("pendingScripts")]
+    public IReadOnlyList<string> PendingScripts { get; init; } = [];
+
+    /// <summary>
+    /// Executed scripts no longer discovered by the current binary.
+    /// </summary>
+    [JsonPropertyName("executedButNotDiscoveredScripts")]
+    public IReadOnlyList<string> ExecutedButNotDiscoveredScripts { get; init; } = [];
+
+    /// <summary>
+    /// Error detail when migration planning could not complete.
+    /// </summary>
+    [JsonPropertyName("planError")]
+    public string? PlanError { get; init; }
 }
 
 /// <summary>
-/// A planned deployment describing the operations to be performed.
+/// Database compatibility summary embedded in deploy preflight responses.
 /// </summary>
-public sealed class DeployPlan
+public sealed class DeployPreflightDatabaseCompatibility
 {
     /// <summary>
-    /// Unique identifier for the plan.
+    /// Whether the database meets compatibility requirements.
     /// </summary>
-    [JsonPropertyName("planId")]
-    public string PlanId { get; init; } = string.Empty;
+    [JsonPropertyName("isCompatible")]
+    public bool IsCompatible { get; init; }
 
     /// <summary>
-    /// When the plan was created.
+    /// Database engine version.
     /// </summary>
-    [JsonPropertyName("createdAt")]
-    public DateTimeOffset CreatedAt { get; init; }
+    [JsonPropertyName("engineVersion")]
+    public string EngineVersion { get; init; } = string.Empty;
 
     /// <summary>
-    /// Ordered list of operations in the plan.
+    /// PostGIS extension version, if installed.
     /// </summary>
-    [JsonPropertyName("operations")]
-    public IReadOnlyList<PlannedOperation> Operations { get; init; } = [];
+    [JsonPropertyName("postGisVersion")]
+    public string? PostGisVersion { get; init; }
 
     /// <summary>
-    /// Estimated duration for the deployment.
+    /// PostGIS raster extension version, if installed.
     /// </summary>
-    [JsonPropertyName("estimatedDuration")]
-    public string? EstimatedDuration { get; init; }
-}
-
-/// <summary>
-/// A single operation within a deploy plan.
-/// </summary>
-public sealed class PlannedOperation
-{
-    /// <summary>
-    /// Type of the operation.
-    /// </summary>
-    [JsonPropertyName("type")]
-    public string Type { get; init; } = string.Empty;
+    [JsonPropertyName("postGisRasterVersion")]
+    public string? PostGisRasterVersion { get; init; }
 
     /// <summary>
-    /// Target resource for the operation.
+    /// Installed database extensions.
     /// </summary>
-    [JsonPropertyName("target")]
-    public string Target { get; init; } = string.Empty;
+    [JsonPropertyName("installedExtensions")]
+    public IReadOnlyList<string> InstalledExtensions { get; init; } = [];
 
     /// <summary>
-    /// Human-readable description of the operation.
+    /// Non-fatal compatibility warnings.
     /// </summary>
-    [JsonPropertyName("description")]
-    public string Description { get; init; } = string.Empty;
+    [JsonPropertyName("warnings")]
+    public IReadOnlyList<string> Warnings { get; init; } = [];
+
+    /// <summary>
+    /// Error message when compatibility failed.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; init; }
 }
 
 /// <summary>
@@ -113,74 +203,362 @@ public sealed class PlannedOperation
 public sealed class CreateDeployPlanRequest
 {
     /// <summary>
-    /// Target version to deploy to.
+    /// Deploy target identifier.
     /// </summary>
-    [JsonPropertyName("targetVersion")]
-    public string? TargetVersion { get; init; }
+    [JsonPropertyName("targetId")]
+    public string TargetId { get; init; } = string.Empty;
 
     /// <summary>
-    /// Whether to include data migrations in the plan.
+    /// Desired target revision.
     /// </summary>
-    [JsonPropertyName("includeDataMigrations")]
-    public bool IncludeDataMigrations { get; init; } = true;
+    [JsonPropertyName("desiredRevision")]
+    public string DesiredRevision { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Optional current revision.
+    /// </summary>
+    [JsonPropertyName("currentRevision")]
+    public string? CurrentRevision { get; init; }
+
+    /// <summary>
+    /// Optional deploy parameters.
+    /// </summary>
+    [JsonPropertyName("parameters")]
+    public IReadOnlyDictionary<string, string>? Parameters { get; init; }
 }
 
 /// <summary>
-/// A deploy operation representing an in-progress or completed deployment.
+/// A planned deployment response.
+/// </summary>
+public sealed class DeployPlan
+{
+    /// <summary>
+    /// Deploy target metadata.
+    /// </summary>
+    [JsonPropertyName("target")]
+    public DeployPlanTarget? Target { get; init; }
+
+    /// <summary>
+    /// Whether the plan can be submitted.
+    /// </summary>
+    [JsonPropertyName("readyToSubmit")]
+    public bool ReadyToSubmit { get; init; }
+
+    /// <summary>
+    /// Whether the operation requires approval.
+    /// </summary>
+    [JsonPropertyName("requiresApproval")]
+    public bool RequiresApproval { get; init; }
+
+    /// <summary>
+    /// Whether out-of-band migrations are required.
+    /// </summary>
+    [JsonPropertyName("requiresOutOfBandMigrations")]
+    public bool RequiresOutOfBandMigrations { get; init; }
+
+    /// <summary>
+    /// Whether a backend was registered for the target.
+    /// </summary>
+    [JsonPropertyName("backendRegistered")]
+    public bool BackendRegistered { get; init; }
+
+    /// <summary>
+    /// Backend capabilities used during planning.
+    /// </summary>
+    [JsonPropertyName("capabilities")]
+    public DeployBackendCapabilities? Capabilities { get; init; }
+
+    /// <summary>
+    /// Non-fatal planning warnings.
+    /// </summary>
+    [JsonPropertyName("warnings")]
+    public IReadOnlyList<string> Warnings { get; init; } = [];
+
+    /// <summary>
+    /// Reasons blocking submission.
+    /// </summary>
+    [JsonPropertyName("blockingReasons")]
+    public IReadOnlyList<string> BlockingReasons { get; init; } = [];
+
+    /// <summary>
+    /// Timestamp when the plan was generated.
+    /// </summary>
+    [JsonPropertyName("generatedAt")]
+    public DateTimeOffset GeneratedAt { get; init; }
+}
+
+/// <summary>
+/// Deploy target metadata resolved during planning.
+/// </summary>
+public sealed class DeployPlanTarget
+{
+    /// <summary>
+    /// Deploy target identifier.
+    /// </summary>
+    [JsonPropertyName("targetId")]
+    public string TargetId { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Deploy target kind.
+    /// </summary>
+    [JsonPropertyName("targetKind")]
+    public string TargetKind { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Backend used for the target.
+    /// </summary>
+    [JsonPropertyName("backend")]
+    public string Backend { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Target environment.
+    /// </summary>
+    [JsonPropertyName("environment")]
+    public string Environment { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Human-readable target name.
+    /// </summary>
+    [JsonPropertyName("targetName")]
+    public string TargetName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Artifact reference, if any.
+    /// </summary>
+    [JsonPropertyName("artifactReference")]
+    public string? ArtifactReference { get; init; }
+
+    /// <summary>
+    /// Runtime profile, if any.
+    /// </summary>
+    [JsonPropertyName("runtimeProfile")]
+    public string? RuntimeProfile { get; init; }
+
+    /// <summary>
+    /// Current revision, if known.
+    /// </summary>
+    [JsonPropertyName("currentRevision")]
+    public string? CurrentRevision { get; init; }
+
+    /// <summary>
+    /// Desired revision.
+    /// </summary>
+    [JsonPropertyName("desiredRevision")]
+    public string DesiredRevision { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Target parameters.
+    /// </summary>
+    [JsonPropertyName("parameters")]
+    public IReadOnlyDictionary<string, string> Parameters { get; init; } = new Dictionary<string, string>();
+}
+
+/// <summary>
+/// Backend capabilities used during deploy planning.
+/// </summary>
+public sealed class DeployBackendCapabilities
+{
+    /// <summary>
+    /// Whether rollback is supported.
+    /// </summary>
+    [JsonPropertyName("supportsRollback")]
+    public bool SupportsRollback { get; init; }
+
+    /// <summary>
+    /// Whether cancellation is supported.
+    /// </summary>
+    [JsonPropertyName("supportsCancellation")]
+    public bool SupportsCancellation { get; init; }
+
+    /// <summary>
+    /// Whether traffic shifting is supported.
+    /// </summary>
+    [JsonPropertyName("supportsTrafficShifting")]
+    public bool SupportsTrafficShifting { get; init; }
+
+    /// <summary>
+    /// Whether out-of-band migrations are required.
+    /// </summary>
+    [JsonPropertyName("requiresOutOfBandMigrations")]
+    public bool RequiresOutOfBandMigrations { get; init; }
+
+    /// <summary>
+    /// Whether progress polling is supported.
+    /// </summary>
+    [JsonPropertyName("supportsProgressPolling")]
+    public bool SupportsProgressPolling { get; init; }
+
+    /// <summary>
+    /// Whether revision pinning is supported.
+    /// </summary>
+    [JsonPropertyName("supportsRevisionPinning")]
+    public bool SupportsRevisionPinning { get; init; }
+}
+
+/// <summary>
+/// Request model for creating a deploy operation.
+/// </summary>
+public sealed class CreateDeployOperationRequest
+{
+    /// <summary>
+    /// Deploy target identifier.
+    /// </summary>
+    [JsonPropertyName("targetId")]
+    public string TargetId { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Desired target revision.
+    /// </summary>
+    [JsonPropertyName("desiredRevision")]
+    public string DesiredRevision { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Optional current revision.
+    /// </summary>
+    [JsonPropertyName("currentRevision")]
+    public string? CurrentRevision { get; init; }
+
+    /// <summary>
+    /// Optional reason for the operation.
+    /// </summary>
+    [JsonPropertyName("reason")]
+    public string? Reason { get; init; }
+
+    /// <summary>
+    /// Optional idempotency key.
+    /// </summary>
+    [JsonPropertyName("idempotencyKey")]
+    public string? IdempotencyKey { get; init; }
+
+    /// <summary>
+    /// Optional correlation ID.
+    /// </summary>
+    [JsonPropertyName("correlationId")]
+    public string? CorrelationId { get; init; }
+
+    /// <summary>
+    /// Optional priority string.
+    /// </summary>
+    [JsonPropertyName("priority")]
+    public string? Priority { get; init; }
+
+    /// <summary>
+    /// Whether to submit immediately after creation.
+    /// </summary>
+    [JsonPropertyName("submitImmediately")]
+    public bool? SubmitImmediately { get; init; }
+
+    /// <summary>
+    /// Optional deploy parameters.
+    /// </summary>
+    [JsonPropertyName("parameters")]
+    public IReadOnlyDictionary<string, string>? Parameters { get; init; }
+}
+
+/// <summary>
+/// A deploy operation response.
 /// </summary>
 public sealed class DeployOperation
 {
     /// <summary>
-    /// Unique identifier for the operation.
+    /// Unique operation identifier.
     /// </summary>
     [JsonPropertyName("operationId")]
     public string OperationId { get; init; } = string.Empty;
 
     /// <summary>
-    /// Identifier of the plan this operation executes.
+    /// Operation kind.
     /// </summary>
-    [JsonPropertyName("planId")]
-    public string PlanId { get; init; } = string.Empty;
+    [JsonPropertyName("kind")]
+    public string Kind { get; init; } = string.Empty;
 
     /// <summary>
-    /// Current status of the operation.
+    /// Current operation status.
     /// </summary>
     [JsonPropertyName("status")]
     public string Status { get; init; } = string.Empty;
 
     /// <summary>
-    /// When the operation was created.
+    /// Operation priority.
+    /// </summary>
+    [JsonPropertyName("priority")]
+    public string Priority { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Deploy target metadata.
+    /// </summary>
+    [JsonPropertyName("target")]
+    public DeployPlanTarget? Target { get; init; }
+
+    /// <summary>
+    /// Provider operation identifier, if any.
+    /// </summary>
+    [JsonPropertyName("providerOperationId")]
+    public string? ProviderOperationId { get; init; }
+
+    /// <summary>
+    /// Current provider phase, if any.
+    /// </summary>
+    [JsonPropertyName("currentPhase")]
+    public string? CurrentPhase { get; init; }
+
+    /// <summary>
+    /// Observed provider state, if any.
+    /// </summary>
+    [JsonPropertyName("observedState")]
+    public string? ObservedState { get; init; }
+
+    /// <summary>
+    /// Error message when the operation failed.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; init; }
+
+    /// <summary>
+    /// Non-fatal operation warnings.
+    /// </summary>
+    [JsonPropertyName("warnings")]
+    public IReadOnlyList<string> Warnings { get; init; } = [];
+
+    /// <summary>
+    /// Reasons blocking progress.
+    /// </summary>
+    [JsonPropertyName("blockingReasons")]
+    public IReadOnlyList<string> BlockingReasons { get; init; } = [];
+
+    /// <summary>
+    /// User that requested the operation.
+    /// </summary>
+    [JsonPropertyName("requestedBy")]
+    public string? RequestedBy { get; init; }
+
+    /// <summary>
+    /// Reason supplied for the operation.
+    /// </summary>
+    [JsonPropertyName("reason")]
+    public string? Reason { get; init; }
+
+    /// <summary>
+    /// Correlation ID supplied for the operation.
+    /// </summary>
+    [JsonPropertyName("correlationId")]
+    public string? CorrelationId { get; init; }
+
+    /// <summary>
+    /// Timestamp when the operation was created.
     /// </summary>
     [JsonPropertyName("createdAt")]
     public DateTimeOffset CreatedAt { get; init; }
 
     /// <summary>
-    /// When the operation started executing.
+    /// Timestamp when the operation was last updated.
     /// </summary>
-    [JsonPropertyName("startedAt")]
-    public DateTimeOffset? StartedAt { get; init; }
+    [JsonPropertyName("updatedAt")]
+    public DateTimeOffset UpdatedAt { get; init; }
 
     /// <summary>
-    /// When the operation completed.
+    /// Timestamp when the operation completed.
     /// </summary>
     [JsonPropertyName("completedAt")]
     public DateTimeOffset? CompletedAt { get; init; }
-
-    /// <summary>
-    /// Error message if the operation failed.
-    /// </summary>
-    [JsonPropertyName("error")]
-    public string? Error { get; init; }
-}
-
-/// <summary>
-/// Request model for creating a deploy operation from a plan.
-/// </summary>
-public sealed class CreateDeployOperationRequest
-{
-    /// <summary>
-    /// Identifier of the plan to execute.
-    /// </summary>
-    [JsonPropertyName("planId")]
-    public string PlanId { get; init; } = string.Empty;
 }
