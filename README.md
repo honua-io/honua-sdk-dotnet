@@ -108,6 +108,9 @@ if (!compatibility.IsSupported)
 }
 ```
 
+The current SDK compatibility policy and CI package API gate are documented in
+[docs/compatibility.md](docs/compatibility.md).
+
 ## Repository layout
 
 ```
@@ -129,6 +132,8 @@ docs/
   features, lists services, and geocodes an address in 5 minutes
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
+- **[Backlog cadence](docs/backlog-cadence.md)** -- weekly triage, scope gate,
+  and close hygiene for this repository
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI
   example with offline sync and map views
 

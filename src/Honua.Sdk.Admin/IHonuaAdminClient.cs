@@ -322,21 +322,30 @@ public interface IHonuaAdminClient
     /// <param name="limit">Optional maximum number of errors to return.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A list of recent errors.</returns>
-    Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default);
+    Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support recent errors.");
+    }
 
     /// <summary>
     /// Gets the current telemetry subsystem status.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The telemetry status.</returns>
-    Task<TelemetryStatus> GetTelemetryStatusAsync(CancellationToken ct = default);
+    Task<TelemetryStatus> GetTelemetryStatusAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support telemetry status.");
+    }
 
     /// <summary>
     /// Gets the current database migration status.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The migration status.</returns>
-    Task<MigrationStatus> GetMigrationStatusAsync(CancellationToken ct = default);
+    Task<MigrationStatus> GetMigrationStatusAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support migration status.");
+    }
 
     // Deploy Control
 
@@ -345,7 +354,10 @@ public interface IHonuaAdminClient
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The preflight check result.</returns>
-    Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default);
+    Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy preflight checks.");
+    }
 
     /// <summary>
     /// Creates a new deploy plan.
@@ -353,7 +365,10 @@ public interface IHonuaAdminClient
     /// <param name="request">The deploy plan creation request.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The created deploy plan.</returns>
-    Task<DeployPlan> CreateDeployPlanAsync(CreateDeployPlanRequest request, CancellationToken ct = default);
+    Task<DeployPlan> CreateDeployPlanAsync(CreateDeployPlanRequest request, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy plans.");
+    }
 
     /// <summary>
     /// Creates a new deploy operation from a plan.
@@ -361,7 +376,10 @@ public interface IHonuaAdminClient
     /// <param name="request">The deploy operation creation request.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The created deploy operation.</returns>
-    Task<DeployOperation> CreateDeployOperationAsync(CreateDeployOperationRequest request, CancellationToken ct = default);
+    Task<DeployOperation> CreateDeployOperationAsync(CreateDeployOperationRequest request, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
+    }
 
     /// <summary>
     /// Gets the status of a deploy operation.
@@ -369,7 +387,10 @@ public interface IHonuaAdminClient
     /// <param name="operationId">The operation identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The deploy operation.</returns>
-    Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken ct = default);
+    Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
+    }
 
     /// <summary>
     /// Submits a deploy operation for execution.
@@ -377,7 +398,10 @@ public interface IHonuaAdminClient
     /// <param name="operationId">The operation identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The updated deploy operation.</returns>
-    Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken ct = default);
+    Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
+    }
 
     /// <summary>
     /// Rolls back a deploy operation.
@@ -385,5 +409,8 @@ public interface IHonuaAdminClient
     /// <param name="operationId">The operation identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The updated deploy operation.</returns>
-    Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default);
+    Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
+    }
 }

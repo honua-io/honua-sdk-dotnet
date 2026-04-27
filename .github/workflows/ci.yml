@@ -12,6 +12,24 @@ env:
   DOTNET_NOLOGO: true
 
 jobs:
+  api-compat:
+    name: API Compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Validate package API compatibility
+        env:
+          HONUA_API_COMPAT_BASE_REF: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+        run: scripts/validate-api-compat.sh
+
   dotnet-admin-sdk:
     name: .NET Admin SDK
     runs-on: ubuntu-latest

@@ -105,3 +105,6 @@ if (compatibility.Features.ManifestExport)
 Use `GetCapabilitiesAsync()` directly when you need the raw compatibility
 metadata, including `releaseChannel`, `metadataSchemas`, and the
 `manifestDryRun` / `manifestPrune` feature flags.
+
+See [docs/compatibility.md](docs/compatibility.md) for the full server matrix
+and the CI package API compatibility gate used before publish.
