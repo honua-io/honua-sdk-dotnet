@@ -153,6 +153,9 @@ if (!compatibility.IsSupported)
 }
 ```
 
+The current SDK compatibility policy and CI package API gate are documented in
+[docs/compatibility.md](docs/compatibility.md).
+
 ## Admin bootstrap flow
 
 For the canonical runnable sample app for this repo's bootstrap and publish
@@ -207,6 +210,8 @@ docs/
   follow-on tickets for shared staging ownership
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
+- **[Backlog cadence](docs/backlog-cadence.md)** -- weekly triage, scope gate,
+  and close hygiene for this repository
 - **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI
   reference app with offline sync and map views
 

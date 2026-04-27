@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -99,6 +101,20 @@ jobs:
 
       - name: Test canonical sample workflow
         run: dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj --configuration Release
+
+      - name: Validate package API compatibility
+        shell: bash
+        run: |
+          baseline_ref="HEAD~1"
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            baseline_ref="$(git describe --tags --abbrev=0 --match 'dotnet-sdk-v*' "${GITHUB_SHA}^" 2>/dev/null || true)"
+            if [[ -z "${baseline_ref}" ]]; then
+              echo "No previous dotnet-sdk-v* tag found; using HEAD~1 as the API compatibility baseline."
+              baseline_ref="HEAD~1"
+            fi
+          fi
+
+          scripts/validate-api-compat.sh "${baseline_ref}"
 
       - name: Security audit (NuGet dependencies)
         shell: bash
