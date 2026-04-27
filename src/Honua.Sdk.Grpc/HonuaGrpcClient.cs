@@ -57,8 +57,14 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     /// <param name="options">Optional client options for authentication.</param>
     public HonuaGrpcClient(GrpcChannel channel, HonuaGrpcClientOptions? options = null)
     {
+        var opts = options ?? new HonuaGrpcClientOptions();
+        if (HasCredentials(opts))
+        {
+            ValidateAuthenticationTransport(opts, ResolveChannelAddress(channel));
+        }
+
         _client = new Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient(channel);
-        _options = options ?? new HonuaGrpcClientOptions();
+        _options = opts;
     }
 
     // For testing - inject the generated client stub directly
@@ -265,6 +271,32 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
            !string.IsNullOrWhiteSpace(opts.BearerToken) ||
            opts.ApiKeyProvider is not null ||
            opts.BearerTokenProvider is not null;
+
+    private static Uri ResolveChannelAddress(GrpcChannel channel)
+    {
+        if (Uri.TryCreate(channel.Target, UriKind.Absolute, out var targetAddress) &&
+            IsHttpOrHttps(targetAddress))
+        {
+            return targetAddress;
+        }
+
+        // GrpcChannel.Target omits the scheme; Address preserves the original URI.
+        var originalAddress = typeof(GrpcChannel)
+            .GetProperty("Address", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)?
+            .GetValue(channel) as Uri;
+
+        if (originalAddress is not null && IsHttpOrHttps(originalAddress))
+        {
+            return originalAddress;
+        }
+
+        throw new InvalidOperationException(
+            "Honua gRPC preconfigured channel target must expose an HTTP or HTTPS address when credentials are configured.");
+    }
+
+    private static bool IsHttpOrHttps(Uri uri)
+        => string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
 
     private static Models.QueryFeaturesRequest BuildGrpcQuery(FeatureQueryRequest request)
     {

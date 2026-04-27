@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Grpc.Core;
+using Grpc.Net.Client;
 using Honua.Sdk.Abstractions.Features;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -394,6 +395,31 @@ public class HonuaGrpcClientTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => new HonuaGrpcClient(options));
         Assert.Contains("Refusing to send gRPC credentials over an insecure connection", ex.Message);
+    }
+
+    [Fact]
+    public void ChannelConstructor_WithCredentialProviderAndRemoteHttpAddress_Throws()
+    {
+        using var channel = GrpcChannel.ForAddress("http://example.com:5000");
+        var options = new HonuaGrpcClientOptions
+        {
+            BearerTokenProvider = _ => Task.FromResult<string?>("my-token")
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => new HonuaGrpcClient(channel, options));
+        Assert.Contains("Refusing to send gRPC credentials over an insecure connection", ex.Message);
+    }
+
+    [Fact]
+    public void ChannelConstructor_WithCredentialProviderAndLoopbackHttpAddress_DoesNotThrow()
+    {
+        using var channel = GrpcChannel.ForAddress("http://localhost:5000");
+        var options = new HonuaGrpcClientOptions
+        {
+            ApiKeyProvider = _ => Task.FromResult<string?>("my-key")
+        };
+
+        using var client = new HonuaGrpcClient(channel, options);
     }
 
     [Fact]
