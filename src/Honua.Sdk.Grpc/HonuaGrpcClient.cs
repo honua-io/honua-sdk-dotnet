@@ -16,11 +16,19 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// gRPC client for the Honua FeatureService.
 /// </summary>
-public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient, IDisposable
+public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient, IDisposable
 {
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+    private static readonly FeatureEditCapabilities GrpcEditCapabilities = new()
+    {
+        SupportsAdds = true,
+        SupportsUpdates = true,
+        SupportsDeletes = true,
+        SupportsRollbackOnFailure = true,
+        NativeSurface = "grpc FeatureService.ApplyEdits"
     };
 
     private readonly Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient _client;
@@ -86,6 +94,9 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public string ProviderName => "grpc";
 
     /// <inheritdoc />
+    public FeatureEditCapabilities EditCapabilities => GrpcEditCapabilities;
+
+    /// <inheritdoc />
     public async Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
         Models.QueryFeaturesRequest request, CancellationToken ct = default)
     {
@@ -136,6 +147,14 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         {
             throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureEditResponse> ApplyEditsAsync(
+        FeatureEditRequest request, CancellationToken ct = default)
+    {
+        var response = await ApplyEditsAsync(BuildGrpcEditRequest(request), ct).ConfigureAwait(false);
+        return ToFeatureEditResponse(response);
     }
 
     /// <inheritdoc />
@@ -329,6 +348,98 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         };
     }
 
+    private static Models.ApplyEditsRequest BuildGrpcEditRequest(FeatureEditRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.Source.ServiceId))
+        {
+            throw new ArgumentException("A service ID is required for gRPC feature edits.", nameof(request));
+        }
+
+        if (!request.Source.LayerId.HasValue)
+        {
+            throw new ArgumentException("A layer ID is required for gRPC feature edits.", nameof(request));
+        }
+
+        return new Models.ApplyEditsRequest
+        {
+            ServiceId = request.Source.ServiceId,
+            LayerId = request.Source.LayerId.Value,
+            Adds = request.Adds.Select(feature => ToGrpcEditFeature(feature, requireObjectId: false)).ToList(),
+            Updates = request.Updates.Select(feature => ToGrpcEditFeature(feature, requireObjectId: true)).ToList(),
+            Deletes = ResolveDeleteObjectIds(request),
+            RollbackOnFailure = request.RollbackOnFailure,
+            ForceWrite = request.ForceWrite,
+        };
+    }
+
+    private static Models.Feature ToGrpcEditFeature(FeatureEditFeature feature, bool requireObjectId)
+    {
+        ArgumentNullException.ThrowIfNull(feature);
+
+        return new Models.Feature
+        {
+            Id = ResolveObjectId(feature, requireObjectId),
+            Attributes = feature.Attributes.ToDictionary(
+                kvp => kvp.Key,
+                kvp => ProtoAdapter.UnwrapJsonValue(kvp.Value)),
+            Geometry = ToGrpcGeometry(feature.Geometry),
+        };
+    }
+
+    private static long ResolveObjectId(FeatureEditFeature feature, bool required)
+    {
+        if (feature.ObjectId.HasValue)
+        {
+            return feature.ObjectId.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(feature.Id) &&
+            long.TryParse(feature.Id, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var objectId))
+        {
+            return objectId;
+        }
+
+        if (required)
+        {
+            throw new ArgumentException("gRPC feature updates require a numeric feature ID or object ID.");
+        }
+
+        return 0;
+    }
+
+    private static IReadOnlyList<long> ResolveDeleteObjectIds(FeatureEditRequest request)
+    {
+        var objectIds = new List<long>(request.DeleteObjectIds);
+        foreach (var id in request.DeleteIds)
+        {
+            if (!long.TryParse(id, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var objectId))
+            {
+                throw new ArgumentException("gRPC feature deletes require numeric feature IDs.", nameof(request));
+            }
+
+            objectIds.Add(objectId);
+        }
+
+        return objectIds;
+    }
+
+    private static IReadOnlyDictionary<string, object?>? ToGrpcGeometry(JsonElement? geometry)
+    {
+        if (!geometry.HasValue)
+        {
+            return null;
+        }
+
+        if (ProtoAdapter.UnwrapJsonValue(geometry.Value) is IReadOnlyDictionary<string, object?> dictionary)
+        {
+            return dictionary;
+        }
+
+        throw new ArgumentException("gRPC feature edit geometry must be a JSON object.");
+    }
+
     private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
     {
         if (language is not FeatureFilterLanguage.ProviderDefault and not FeatureFilterLanguage.SqlWhere)
@@ -421,6 +532,39 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             NumberReturned = page.Features.Count,
             HasMoreResults = !page.IsLastPage,
             ObjectIdFieldName = string.IsNullOrWhiteSpace(page.ObjectIdFieldName) ? null : page.ObjectIdFieldName,
+        };
+    }
+
+    private FeatureEditResponse ToFeatureEditResponse(Models.ApplyEditsResponse response)
+    {
+        return new FeatureEditResponse
+        {
+            ProviderName = ProviderName,
+            AddResults = response.AddResults.Select(ToFeatureEditResult).ToList(),
+            UpdateResults = response.UpdateResults.Select(ToFeatureEditResult).ToList(),
+            DeleteResults = response.DeleteResults.Select(ToFeatureEditResult).ToList(),
+            Error = response.Error is not null ? ToFeatureEditError(response.Error) : null,
+        };
+    }
+
+    private static FeatureEditResult ToFeatureEditResult(Models.EditResult result)
+    {
+        var id = result.ObjectId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return new FeatureEditResult
+        {
+            Id = id,
+            ObjectId = result.ObjectId,
+            Succeeded = result.Success,
+            Error = result.Error is not null ? ToFeatureEditError(result.Error) : null,
+        };
+    }
+
+    private static FeatureEditError ToFeatureEditError(Models.EditError error)
+    {
+        return new FeatureEditError
+        {
+            Code = error.Code,
+            Message = error.Message,
         };
     }
 

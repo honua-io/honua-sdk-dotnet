@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<HonuaGrpcClient>();
         services.AddSingleton<IHonuaGrpcClient>(sp => sp.GetRequiredService<HonuaGrpcClient>());
         services.AddSingleton<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaGrpcClient>());
+        services.AddSingleton<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaGrpcClient>());
         return services;
     }
 }
