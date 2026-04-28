@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Reflection;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Wfs.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,26 @@ public sealed class ClientOptionsTests
         var client = provider.GetRequiredService<HonuaWfsClient>();
 
         Assert.Equal(timeout, GetHttpClient(client).Timeout);
+    }
+
+    [Fact]
+    public void AddHonuaWfs_RegistersUnsupportedSharedEditClient()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaWfs(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
+
+        Assert.Equal("wfs", editClient.ProviderName);
+        Assert.False(editClient.EditCapabilities.SupportsAdds);
+        Assert.False(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsDeletes);
+        Assert.Contains("WFS-T", editClient.EditCapabilities.UnsupportedReason);
     }
 
     [Fact]

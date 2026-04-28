@@ -164,6 +164,28 @@ public sealed class GetFeaturesTests
     }
 
     [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_ThrowsUnsupportedWithCapabilities()
+    {
+        var client = TestHelpers.CreateClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+        var editClient = (IHonuaFeatureEditClient)client;
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => editClient.ApplyEditsAsync(new FeatureEditRequest
+            {
+                Source = new FeatureSource { TypeName = "parcels" }
+            }));
+
+        Assert.Equal("wfs", editClient.ProviderName);
+        Assert.False(editClient.EditCapabilities.SupportsAdds);
+        Assert.False(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsDeletes);
+        Assert.False(editClient.EditCapabilities.SupportsRollbackOnFailure);
+        Assert.Equal("WFS-T Transaction", editClient.EditCapabilities.NativeSurface);
+        Assert.Equal(editClient.EditCapabilities.UnsupportedReason, ex.Message);
+        Assert.Contains("WFS-T", ex.Message);
+    }
+
+    [Fact]
     public async Task GetFeatures_WithBbox_BuildsCorrectUrl()
     {
         var client = TestHelpers.CreateClient(req =>

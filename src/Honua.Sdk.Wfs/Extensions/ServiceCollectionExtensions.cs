@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
         .AddHttpMessageHandler<HonuaWfsAuthHandler>();
         services.AddTransient<IHonuaWfsClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
+        services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
         ConfigureResilience(services, httpBuilder, configure);
         return services;
     }

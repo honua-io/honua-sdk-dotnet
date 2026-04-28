@@ -276,6 +276,28 @@ public class HonuaOgcFeaturesClientTests
         Assert.Equal("building-7", result.Features[0].Id);
     }
 
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_ThrowsUnsupportedWithCapabilities()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+        var editClient = (IHonuaFeatureEditClient)client;
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => editClient.ApplyEditsAsync(new FeatureEditRequest
+            {
+                Source = new FeatureSource { CollectionId = "buildings" }
+            }));
+
+        Assert.Equal("ogc-features", editClient.ProviderName);
+        Assert.False(editClient.EditCapabilities.SupportsAdds);
+        Assert.False(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsDeletes);
+        Assert.False(editClient.EditCapabilities.SupportsRollbackOnFailure);
+        Assert.Equal("OGC API Features transactions", editClient.EditCapabilities.NativeSurface);
+        Assert.Equal(editClient.EditCapabilities.UnsupportedReason, ex.Message);
+        Assert.Contains("create", ex.Message);
+    }
+
     // ── GetItemAsync ────────────────────────────────────────────────
 
     [Fact]

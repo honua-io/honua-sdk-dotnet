@@ -20,10 +20,17 @@ namespace Honua.Sdk.Wfs;
 /// <summary>
 /// WFS 2.0 read/query client for Honua Server.
 /// </summary>
-public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient
+public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
 {
     private static readonly ActivitySource ActivitySource = new("Honua.Sdk.Wfs");
     private static readonly GeoJsonFeatureCollectionHandler DefaultGeoJsonHandler = new();
+    private const string UnsupportedEditReason = "Honua.Sdk.Wfs does not currently implement WFS-T transactions.";
+    private static readonly FeatureEditCapabilities UnsupportedEditCapabilities = new()
+    {
+        NativeSurface = "WFS-T Transaction",
+        UnsupportedReason = UnsupportedEditReason
+    };
+
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -45,6 +52,9 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient
 
     /// <inheritdoc />
     public string ProviderName => "wfs";
+
+    /// <inheritdoc />
+    public FeatureEditCapabilities EditCapabilities => UnsupportedEditCapabilities;
 
     /// <inheritdoc />
     public async Task<WfsCapabilities> GetCapabilitiesAsync(CancellationToken ct = default)
@@ -145,6 +155,14 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient
         throw new InvalidOperationException(
             $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
             "Use protocol-specific manual paging for larger result sets.");
+    }
+
+    /// <inheritdoc />
+    public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        throw new NotSupportedException(UnsupportedEditReason);
     }
 
     /// <inheritdoc />
