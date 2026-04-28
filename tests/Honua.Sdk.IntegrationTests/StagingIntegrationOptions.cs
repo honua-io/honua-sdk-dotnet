@@ -14,6 +14,10 @@ public sealed class StagingIntegrationOptions
     private const string ServerCommitKey = "HONUA_STAGING_SERVER_COMMIT";
     private const string ServerImageKey = "HONUA_STAGING_SERVER_IMAGE";
     private const string SeedProfileKey = "HONUA_STAGING_SEED_PROFILE";
+    private const string EnableFeatureServerEditsKey = "HONUA_STAGING_ENABLE_FEATURESERVER_EDITS";
+    private const string FeatureServerEditAddAttributesJsonKey = "HONUA_STAGING_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON";
+    private const string FeatureServerEditUpdateAttributesJsonKey = "HONUA_STAGING_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON";
+    private const string FeatureServerEditGeometryJsonKey = "HONUA_STAGING_FEATURESERVER_EDIT_GEOMETRY_JSON";
 
     public Uri BaseUri { get; init; } = new("https://localhost");
 
@@ -39,6 +43,14 @@ public sealed class StagingIntegrationOptions
 
     public string? SeedProfile { get; init; }
 
+    public bool EnableFeatureServerEdits { get; init; }
+
+    public string? FeatureServerEditAddAttributesJson { get; init; }
+
+    public string? FeatureServerEditUpdateAttributesJson { get; init; }
+
+    public string? FeatureServerEditGeometryJson { get; init; }
+
     public static IReadOnlyList<string> GetMissingEnvironmentVariables()
     {
         var missing = new List<string>();
@@ -55,6 +67,20 @@ public sealed class StagingIntegrationOptions
             missing.Add($"{ApiKeyKey} or {BearerTokenKey}");
         }
 
+        return missing;
+    }
+
+    public static IReadOnlyList<string> GetMissingFeatureServerEditEnvironmentVariables()
+    {
+        var missing = GetMissingEnvironmentVariables().ToList();
+        if (!IsEnabled(Read(EnableFeatureServerEditsKey)))
+        {
+            missing.Add($"{EnableFeatureServerEditsKey}=true");
+            return missing;
+        }
+
+        RequireValue(FeatureServerEditAddAttributesJsonKey, missing);
+        RequireValue(FeatureServerEditUpdateAttributesJsonKey, missing);
         return missing;
     }
 
@@ -101,7 +127,11 @@ public sealed class StagingIntegrationOptions
             RunId = Read(RunIdKey) ?? DateTimeOffset.UtcNow.ToString("yyyyMMddTHHmmssZ", System.Globalization.CultureInfo.InvariantCulture),
             ServerCommit = Read(ServerCommitKey),
             ServerImage = Read(ServerImageKey),
-            SeedProfile = Read(SeedProfileKey)
+            SeedProfile = Read(SeedProfileKey),
+            EnableFeatureServerEdits = IsEnabled(Read(EnableFeatureServerEditsKey)),
+            FeatureServerEditAddAttributesJson = Read(FeatureServerEditAddAttributesJsonKey),
+            FeatureServerEditUpdateAttributesJson = Read(FeatureServerEditUpdateAttributesJsonKey),
+            FeatureServerEditGeometryJson = Read(FeatureServerEditGeometryJsonKey)
         };
     }
 
@@ -121,4 +151,11 @@ public sealed class StagingIntegrationOptions
             missing.Add(key);
         }
     }
+
+    private static bool IsEnabled(string? value)
+        => value is not null &&
+           (string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(value, "on", StringComparison.OrdinalIgnoreCase));
 }

@@ -39,6 +39,7 @@ public sealed class StagingEvidenceTests
         Assert.Equal("server-sha", root.GetProperty("ServerCommit").GetString());
         Assert.Equal("ghcr.io/honua/server:test", root.GetProperty("ServerImage").GetString());
         Assert.Equal("sdk-readonly", root.GetProperty("SeedProfile").GetString());
+        Assert.False(root.GetProperty("FeatureServerEditCheckRan").GetBoolean());
 
         var packages = root.GetProperty("SdkPackages").EnumerateArray().ToArray();
         Assert.Contains(packages, package => HasPackage(package, "Honua.Sdk.Admin"));
@@ -50,6 +51,12 @@ public sealed class StagingEvidenceTests
             .ToArray();
         Assert.Contains("grpc", surfaces);
         Assert.Contains("geoservices-featureserver", surfaces);
+        Assert.DoesNotContain("geoservices-featureserver-edits", surfaces);
+
+        var checks = root.GetProperty("Checks").EnumerateArray()
+            .Select(check => check.GetProperty("Name").GetString())
+            .ToArray();
+        Assert.Contains("features-edit-roundtrip", checks);
 
         File.Delete(evidencePath);
     }

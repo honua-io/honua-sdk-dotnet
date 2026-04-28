@@ -25,6 +25,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         "wfs-get-features",
         "features-service-info",
         "features-query",
+        "features-edit-roundtrip",
         "ogc-collections",
         "ogc-items",
         "ogc-item"
@@ -93,6 +94,8 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
 
     public IHonuaFeatureServerClient FeatureServerClient => Services.GetRequiredService<IHonuaFeatureServerClient>();
 
+    public IHonuaFeatureServerEditClient FeatureServerEditClient => Services.GetRequiredService<IHonuaFeatureServerEditClient>();
+
     public IHonuaOgcFeaturesClient OgcFeaturesClient => Services.GetRequiredService<IHonuaOgcFeaturesClient>();
 
     public Task InitializeAsync() => Task.CompletedTask;
@@ -154,6 +157,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         }
 
         var checks = KnownChecks.Select(name => _results[name]).ToArray();
+        var featureServerEditsRan = WasCheckRun("features-edit-roundtrip");
         var report = new StagingEvidenceReport
         {
             SchemaVersion = "1.0",
@@ -168,7 +172,8 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
             ServerCommit = Options.ServerCommit,
             ServerImage = Options.ServerImage,
             SeedProfile = Options.SeedProfile,
-            ProtocolSurfaces = ProtocolSurfaces,
+            FeatureServerEditCheckRan = featureServerEditsRan,
+            ProtocolSurfaces = GetProtocolSurfaces(featureServerEditsRan),
             SdkPackages = GetSdkPackageVersions(),
             Checks = checks,
             Summary = new StagingEvidenceSummary
@@ -187,6 +192,20 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
 
         await File.WriteAllTextAsync(Options.EvidencePath, json).ConfigureAwait(false);
     }
+
+    private IReadOnlyList<string> GetProtocolSurfaces(bool featureServerEditsRan)
+    {
+        if (!featureServerEditsRan)
+        {
+            return ProtocolSurfaces;
+        }
+
+        return [.. ProtocolSurfaces, "geoservices-featureserver-edits"];
+    }
+
+    private bool WasCheckRun(string name)
+        => _results.TryGetValue(name, out var result) &&
+           !string.Equals(result.Status, "not-run", StringComparison.Ordinal);
 
     private static IReadOnlyList<SdkPackageVersion> GetSdkPackageVersions()
         =>
@@ -247,6 +266,8 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         public string? ServerImage { get; init; }
 
         public string? SeedProfile { get; init; }
+
+        public bool FeatureServerEditCheckRan { get; init; }
 
         public IReadOnlyList<string> ProtocolSurfaces { get; init; } = [];
 

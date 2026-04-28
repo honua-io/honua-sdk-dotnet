@@ -2,8 +2,10 @@
 
 The staging suite for this repository lives in
 `tests/Honua.Sdk.IntegrationTests` and runs through
-`.github/workflows/staging-integration.yml`. It is intentionally read-only and
-does not execute the mutating bootstrap sample against shared staging.
+`.github/workflows/staging-integration.yml`. The default lane is intentionally
+read-only and does not execute the mutating bootstrap sample against shared
+staging. A FeatureServer edit round-trip can be enabled only against a
+dedicated disposable edit fixture.
 
 ## What The Suite Covers
 
@@ -11,6 +13,8 @@ does not execute the mutating bootstrap sample against shared staging.
 - A bounded gRPC `QueryFeaturesAsync()` call with `ReturnGeometry = false`
 - WFS `GetCapabilitiesAsync()` and bounded `GetFeaturesAsync()`
 - FeatureServer metadata plus a bounded `QueryAsync()`
+- Optional FeatureServer add/update/delete round-trip against a dedicated edit
+  fixture
 - OGC API Features collections, bounded items, and a single item lookup
 
 Each request uses a small row limit and deterministic fixture identifiers so the
@@ -52,6 +56,13 @@ Optional evidence metadata:
 - `HONUA_STAGING_SERVER_IMAGE`
 - `HONUA_STAGING_SEED_PROFILE`
 
+Optional FeatureServer edit fixture values:
+
+- `HONUA_STAGING_ENABLE_FEATURESERVER_EDITS=true`
+- `HONUA_STAGING_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON`
+- `HONUA_STAGING_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON`
+- `HONUA_STAGING_FEATURESERVER_EDIT_GEOMETRY_JSON`
+
 Local execution uses the same environment variables. Example:
 
 ```bash
@@ -61,6 +72,11 @@ export HONUA_STAGING_SERVICE_NAME=sdk_demo
 export HONUA_STAGING_LAYER_ID=0
 export HONUA_STAGING_WFS_TYPENAME=public:sdk_demo_points
 export HONUA_STAGING_OGC_COLLECTION_ID=sdk_demo_points
+
+# Optional: enable only against a disposable edit fixture.
+export HONUA_STAGING_ENABLE_FEATURESERVER_EDITS=true
+export HONUA_STAGING_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON='{"name":"sdk-add","status":"new"}'
+export HONUA_STAGING_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON='{"name":"sdk-update","status":"updated"}'
 
 dotnet test tests/Honua.Sdk.IntegrationTests/Honua.Sdk.IntegrationTests.csproj --configuration Release
 ```
@@ -81,6 +97,7 @@ The JSON evidence includes:
 - SDK package versions
 - server commit and image when configured
 - seed profile when configured
+- whether the FeatureServer edit check ran
 - service/layer/type/collection identifiers
 - protocol surfaces under test
 - per-check status, duration, and detail string

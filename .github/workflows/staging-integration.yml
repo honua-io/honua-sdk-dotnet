@@ -34,6 +34,10 @@ jobs:
       HONUA_STAGING_SERVER_COMMIT: ${{ vars.HONUA_STAGING_SERVER_COMMIT }}
       HONUA_STAGING_SERVER_IMAGE: ${{ vars.HONUA_STAGING_SERVER_IMAGE }}
       HONUA_STAGING_SEED_PROFILE: ${{ vars.HONUA_STAGING_SEED_PROFILE }}
+      HONUA_STAGING_ENABLE_FEATURESERVER_EDITS: ${{ vars.HONUA_STAGING_ENABLE_FEATURESERVER_EDITS }}
+      HONUA_STAGING_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: ${{ vars.HONUA_STAGING_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON }}
+      HONUA_STAGING_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: ${{ vars.HONUA_STAGING_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON }}
+      HONUA_STAGING_FEATURESERVER_EDIT_GEOMETRY_JSON: ${{ vars.HONUA_STAGING_FEATURESERVER_EDIT_GEOMETRY_JSON }}
       HONUA_STAGING_EVIDENCE_PATH: ${{ github.workspace }}/artifacts/evidence/ci-report.json
       HONUA_STAGING_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
       TEST_RESULTS_DIR: ${{ github.workspace }}/artifacts/test-results
@@ -123,6 +127,7 @@ summary = report.get("Summary", {})
 checks = report.get("Checks", [])
 sdk_packages = report.get("SdkPackages", [])
 protocol_surfaces = report.get("ProtocolSurfaces", [])
+feature_server_edit_check_ran = report.get("FeatureServerEditCheckRan", False)
 
 with open(summary_path, "a", encoding="utf-8") as summary_file:
     summary_file.write("## Staging Integration\n\n")
@@ -136,6 +141,7 @@ with open(summary_path, "a", encoding="utf-8") as summary_file:
     summary_file.write(f"- Server commit: `{report.get('ServerCommit') or 'unknown'}`\n")
     summary_file.write(f"- Server image: `{report.get('ServerImage') or 'unknown'}`\n")
     summary_file.write(f"- Seed profile: `{report.get('SeedProfile') or 'unknown'}`\n")
+    summary_file.write(f"- FeatureServer edit check: `{'ran' if feature_server_edit_check_ran else 'not run'}`\n")
     summary_file.write(f"- Protocol surfaces: `{', '.join(protocol_surfaces) or 'unknown'}`\n")
     summary_file.write(
         "- SDK packages: `" +
