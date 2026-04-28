@@ -31,6 +31,9 @@ jobs:
       HONUA_STAGING_LAYER_ID: ${{ vars.HONUA_STAGING_LAYER_ID }}
       HONUA_STAGING_WFS_TYPENAME: ${{ vars.HONUA_STAGING_WFS_TYPENAME }}
       HONUA_STAGING_OGC_COLLECTION_ID: ${{ vars.HONUA_STAGING_OGC_COLLECTION_ID }}
+      HONUA_STAGING_SERVER_COMMIT: ${{ vars.HONUA_STAGING_SERVER_COMMIT }}
+      HONUA_STAGING_SERVER_IMAGE: ${{ vars.HONUA_STAGING_SERVER_IMAGE }}
+      HONUA_STAGING_SEED_PROFILE: ${{ vars.HONUA_STAGING_SEED_PROFILE }}
       HONUA_STAGING_EVIDENCE_PATH: ${{ github.workspace }}/artifacts/evidence/ci-report.json
       HONUA_STAGING_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
       TEST_RESULTS_DIR: ${{ github.workspace }}/artifacts/test-results
@@ -118,6 +121,8 @@ with open(evidence_path, encoding="utf-8") as evidence_file:
 
 summary = report.get("Summary", {})
 checks = report.get("Checks", [])
+sdk_packages = report.get("SdkPackages", [])
+protocol_surfaces = report.get("ProtocolSurfaces", [])
 
 with open(summary_path, "a", encoding="utf-8") as summary_file:
     summary_file.write("## Staging Integration\n\n")
@@ -128,6 +133,18 @@ with open(summary_path, "a", encoding="utf-8") as summary_file:
     summary_file.write(f"- Layer ID: `{report.get('LayerId', 'unknown')}`\n")
     summary_file.write(f"- WFS type: `{report.get('WfsTypeName', 'unknown')}`\n")
     summary_file.write(f"- OGC collection: `{report.get('OgcCollectionId', 'unknown')}`\n")
+    summary_file.write(f"- Server commit: `{report.get('ServerCommit') or 'unknown'}`\n")
+    summary_file.write(f"- Server image: `{report.get('ServerImage') or 'unknown'}`\n")
+    summary_file.write(f"- Seed profile: `{report.get('SeedProfile') or 'unknown'}`\n")
+    summary_file.write(f"- Protocol surfaces: `{', '.join(protocol_surfaces) or 'unknown'}`\n")
+    summary_file.write(
+        "- SDK packages: `" +
+        ", ".join(
+            f"{package.get('Package', 'unknown')} {package.get('Version', 'unknown')}"
+            for package in sdk_packages
+        ) +
+        "`\n"
+    )
     summary_file.write(
         f"- Summary: {summary.get('Passed', 0)} passed, "
         f"{summary.get('Failed', 0)} failed, "

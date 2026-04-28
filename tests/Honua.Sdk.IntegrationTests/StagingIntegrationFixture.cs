@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.GeoServices.Extensions;
@@ -27,6 +28,15 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         "ogc-collections",
         "ogc-items",
         "ogc-item"
+    ];
+
+    private static readonly string[] ProtocolSurfaces =
+    [
+        "admin",
+        "grpc",
+        "wfs",
+        "geoservices-featureserver",
+        "ogc-api-features"
     ];
 
     private readonly Dictionary<string, StagingCheckResult> _results =
@@ -155,6 +165,11 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
             LayerId = Options.LayerId,
             WfsTypeName = Options.WfsTypeName,
             OgcCollectionId = Options.OgcCollectionId,
+            ServerCommit = Options.ServerCommit,
+            ServerImage = Options.ServerImage,
+            SeedProfile = Options.SeedProfile,
+            ProtocolSurfaces = ProtocolSurfaces,
+            SdkPackages = GetSdkPackageVersions(),
             Checks = checks,
             Summary = new StagingEvidenceSummary
             {
@@ -172,6 +187,24 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
 
         await File.WriteAllTextAsync(Options.EvidencePath, json).ConfigureAwait(false);
     }
+
+    private static IReadOnlyList<SdkPackageVersion> GetSdkPackageVersions()
+        =>
+        [
+            CreateSdkPackageVersion("Honua.Sdk.Abstractions", typeof(Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient).Assembly),
+            CreateSdkPackageVersion("Honua.Sdk.Admin", typeof(HonuaAdminClient).Assembly),
+            CreateSdkPackageVersion("Honua.Sdk.Grpc", typeof(HonuaGrpcClient).Assembly),
+            CreateSdkPackageVersion("Honua.Sdk.Wfs", typeof(HonuaWfsClient).Assembly),
+            CreateSdkPackageVersion("Honua.Sdk.GeoServices", typeof(HonuaFeatureServerClient).Assembly),
+            CreateSdkPackageVersion("Honua.Sdk.OgcFeatures", typeof(HonuaOgcFeaturesClient).Assembly)
+        ];
+
+    private static SdkPackageVersion CreateSdkPackageVersion(string packageName, Assembly assembly)
+        => new(
+            packageName,
+            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
+            assembly.GetName().Version?.ToString() ??
+            "unknown");
 
     public sealed record StagingCheckResult(
         string Name,
@@ -209,10 +242,22 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
 
         public string OgcCollectionId { get; init; } = string.Empty;
 
+        public string? ServerCommit { get; init; }
+
+        public string? ServerImage { get; init; }
+
+        public string? SeedProfile { get; init; }
+
+        public IReadOnlyList<string> ProtocolSurfaces { get; init; } = [];
+
+        public IReadOnlyList<SdkPackageVersion> SdkPackages { get; init; } = [];
+
         public IReadOnlyList<StagingCheckResult> Checks { get; init; } = [];
 
         public StagingEvidenceSummary Summary { get; init; } = new();
     }
+
+    public sealed record SdkPackageVersion(string Package, string Version);
 
     public sealed class StagingEvidenceSummary
     {

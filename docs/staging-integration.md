@@ -46,6 +46,12 @@ Workflow-managed values:
 - `HONUA_STAGING_EVIDENCE_PATH`
 - `HONUA_STAGING_RUN_ID`
 
+Optional evidence metadata:
+
+- `HONUA_STAGING_SERVER_COMMIT`
+- `HONUA_STAGING_SERVER_IMAGE`
+- `HONUA_STAGING_SEED_PROFILE`
+
 Local execution uses the same environment variables. Example:
 
 ```bash
@@ -72,7 +78,11 @@ Successful workflow runs emit all of the following:
 The JSON evidence includes:
 
 - base URL
+- SDK package versions
+- server commit and image when configured
+- seed profile when configured
 - service/layer/type/collection identifiers
+- protocol surfaces under test
 - per-check status, duration, and detail string
 - a total passed / failed / not-run summary
 

@@ -11,6 +11,9 @@ public sealed class StagingIntegrationOptions
     private const string OgcCollectionIdKey = "HONUA_STAGING_OGC_COLLECTION_ID";
     private const string EvidencePathKey = "HONUA_STAGING_EVIDENCE_PATH";
     private const string RunIdKey = "HONUA_STAGING_RUN_ID";
+    private const string ServerCommitKey = "HONUA_STAGING_SERVER_COMMIT";
+    private const string ServerImageKey = "HONUA_STAGING_SERVER_IMAGE";
+    private const string SeedProfileKey = "HONUA_STAGING_SEED_PROFILE";
 
     public Uri BaseUri { get; init; } = new("https://localhost");
 
@@ -29,6 +32,12 @@ public sealed class StagingIntegrationOptions
     public string? EvidencePath { get; init; }
 
     public string RunId { get; init; } = string.Empty;
+
+    public string? ServerCommit { get; init; }
+
+    public string? ServerImage { get; init; }
+
+    public string? SeedProfile { get; init; }
 
     public static IReadOnlyList<string> GetMissingEnvironmentVariables()
     {
@@ -89,7 +98,10 @@ public sealed class StagingIntegrationOptions
             WfsTypeName = ReadRequired(WfsTypeNameKey),
             OgcCollectionId = ReadRequired(OgcCollectionIdKey),
             EvidencePath = Read(EvidencePathKey),
-            RunId = Read(RunIdKey) ?? DateTimeOffset.UtcNow.ToString("yyyyMMddTHHmmssZ", System.Globalization.CultureInfo.InvariantCulture)
+            RunId = Read(RunIdKey) ?? DateTimeOffset.UtcNow.ToString("yyyyMMddTHHmmssZ", System.Globalization.CultureInfo.InvariantCulture),
+            ServerCommit = Read(ServerCommitKey),
+            ServerImage = Read(ServerImageKey),
+            SeedProfile = Read(SeedProfileKey)
         };
     }
 
