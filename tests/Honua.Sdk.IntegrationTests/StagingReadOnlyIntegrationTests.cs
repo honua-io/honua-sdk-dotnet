@@ -20,6 +20,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "admin-compatibility",
+            "IHonuaAdminClient.CheckCompatibilityAsync",
+            "/api/v1/admin/capabilities",
             async ct =>
             {
                 var compatibility = await _fixture.AdminClient.CheckCompatibilityAsync(ct).ConfigureAwait(false);
@@ -37,6 +39,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "admin-service-settings",
+            "IHonuaAdminClient.GetServiceSettingsAsync",
+            $"/api/v1/admin/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/settings",
             async ct =>
             {
                 var settings = await _fixture.AdminClient.GetServiceSettingsAsync(
@@ -61,6 +65,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "grpc-query",
+            "IHonuaGrpcClient.QueryFeaturesAsync",
+            "grpc://FeatureService/QueryFeatures",
             async ct =>
             {
                 var response = await _fixture.GrpcClient.QueryFeaturesAsync(
@@ -89,6 +95,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "wfs-capabilities",
+            "IHonuaWfsClient.GetCapabilitiesAsync",
+            "/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
             async ct =>
             {
                 var capabilities = await _fixture.WfsClient.GetCapabilitiesAsync(ct).ConfigureAwait(false);
@@ -104,6 +112,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "wfs-get-features",
+            "IHonuaWfsClient.GetFeaturesAsync",
+            "/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature",
             async ct =>
             {
                 var features = await _fixture.WfsClient.GetFeaturesAsync(
@@ -130,6 +140,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "features-service-info",
+            "IHonuaFeatureServerClient.GetServiceInfoAsync",
+            $"/rest/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/FeatureServer",
             async ct =>
             {
                 var serviceInfo = await _fixture.FeatureServerClient.GetServiceInfoAsync(
@@ -148,6 +160,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "features-query",
+            "IHonuaFeatureServerClient.QueryAsync",
+            $"/rest/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/FeatureServer/{_fixture.Options.LayerId}/query",
             async ct =>
             {
                 var response = await _fixture.FeatureServerClient.QueryAsync(
@@ -181,6 +195,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "ogc-collections",
+            "IHonuaOgcFeaturesClient.ListCollectionsAsync",
+            "/ogc/features/collections",
             async ct =>
             {
                 var collections = await _fixture.OgcFeaturesClient.ListCollectionsAsync(ct).ConfigureAwait(false);
@@ -197,6 +213,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "ogc-items",
+            "IHonuaOgcFeaturesClient.GetItemsAsync",
+            $"/ogc/features/collections/{Uri.EscapeDataString(_fixture.Options.OgcCollectionId)}/items",
             async ct =>
             {
                 var items = await _fixture.OgcFeaturesClient.GetItemsAsync(
@@ -221,6 +239,8 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
 
         await _fixture.RecordCheckAsync(
             "ogc-item",
+            "IHonuaOgcFeaturesClient.GetItemAsync",
+            $"/ogc/features/collections/{Uri.EscapeDataString(_fixture.Options.OgcCollectionId)}/items/{{featureId}}",
             async ct =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(firstItemId));

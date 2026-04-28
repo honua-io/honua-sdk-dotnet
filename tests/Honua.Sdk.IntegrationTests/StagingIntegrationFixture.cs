@@ -1,10 +1,16 @@
 using System.Diagnostics;
+using System.Globalization;
+using System.Net;
 using System.Reflection;
 using System.Text.Json;
+using Honua.Sdk.Admin.Exceptions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.GeoServices.Extensions;
+using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.Grpc.Extensions;
+using Honua.Sdk.OgcFeatures.Exceptions;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.Wfs.Exceptions;
 using Honua.Sdk.Wfs.Extensions;
 
 namespace Honua.Sdk.IntegrationTests;
@@ -110,9 +116,22 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
 
     public async Task RecordCheckAsync(
         string name,
+        string sdkMethod,
+        string requestPath,
+        Func<CancellationToken, Task<string>> action,
+        CancellationToken ct)
+        => await RecordCheckAsync(name, () => sdkMethod, () => requestPath, action, ct).ConfigureAwait(false);
+
+    public async Task RecordCheckAsync(
+        string name,
+        Func<string> sdkMethod,
+        Func<string> requestPath,
         Func<CancellationToken, Task<string>> action,
         CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(sdkMethod);
+        ArgumentNullException.ThrowIfNull(requestPath);
+
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
 
@@ -133,7 +152,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
                 "fail",
                 startedAt,
                 stopwatch.ElapsedMilliseconds,
-                $"{ex.GetType().Name}: {ex.Message}");
+                BuildFailureDetails(sdkMethod(), requestPath(), ex));
             throw;
         }
     }
@@ -224,6 +243,117 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
             assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ??
             assembly.GetName().Version?.ToString() ??
             "unknown");
+
+    private static string BuildFailureDetails(string sdkMethod, string requestPath, Exception exception)
+    {
+        var parts = new List<string>
+        {
+            $"sdkMethod={sdkMethod}",
+            $"requestPath={requestPath}",
+            $"exception={exception.GetType().Name}",
+            $"message={Summarize(exception.Message)}",
+            $"status={FormatStatus(exception)}",
+            $"responseBody={SummarizeResponseBody(GetResponseBody(exception))}"
+        };
+
+        AddProtocolDetails(parts, exception);
+        return string.Join("; ", parts);
+    }
+
+    private static string FormatStatus(Exception exception)
+    {
+        if (GetHttpStatusCode(exception) is { } httpStatus)
+        {
+            return $"{(int)httpStatus} {httpStatus}";
+        }
+
+        if (exception is HonuaGrpcException grpcException)
+        {
+            return $"grpc {grpcException.StatusCode}";
+        }
+
+        return "unknown";
+    }
+
+    private static HttpStatusCode? GetHttpStatusCode(Exception exception)
+        => exception switch
+        {
+            HonuaAdminApiException adminException => adminException.StatusCode,
+            HonuaFeatureServerException featureServerException => featureServerException.StatusCode,
+            HonuaOgcFeaturesException ogcException => ogcException.StatusCode,
+            HonuaWfsException wfsException => wfsException.StatusCode,
+            System.Net.Http.HttpRequestException { StatusCode: { } statusCode } => statusCode,
+            _ => null
+        };
+
+    private static string? GetResponseBody(Exception exception)
+        => exception switch
+        {
+            HonuaAdminApiException adminException => adminException.ResponseBody,
+            HonuaFeatureServerException featureServerException => featureServerException.ResponseBody,
+            HonuaOgcFeaturesException ogcException => ogcException.ResponseBody,
+            HonuaWfsException wfsException => wfsException.ResponseBody,
+            _ => null
+        };
+
+    private static void AddProtocolDetails(List<string> parts, Exception exception)
+    {
+        switch (exception)
+        {
+            case HonuaAdminOperationException adminOperationException
+                when !string.IsNullOrWhiteSpace(adminOperationException.Operation):
+                parts.Add($"operation={adminOperationException.Operation}");
+                break;
+            case HonuaFeatureServerException featureServerException:
+                if (featureServerException.GeoServicesErrorCode.HasValue)
+                {
+                    parts.Add($"geoServicesErrorCode={featureServerException.GeoServicesErrorCode.Value.ToString(CultureInfo.InvariantCulture)}");
+                }
+
+                if (featureServerException.Details is { Count: > 0 })
+                {
+                    parts.Add($"details={Summarize(string.Join(" | ", featureServerException.Details))}");
+                }
+
+                break;
+            case HonuaOgcFeaturesException ogcException:
+                if (!string.IsNullOrWhiteSpace(ogcException.ProblemType))
+                {
+                    parts.Add($"problemType={Summarize(ogcException.ProblemType)}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(ogcException.ProblemTitle))
+                {
+                    parts.Add($"problemTitle={Summarize(ogcException.ProblemTitle)}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(ogcException.ProblemDetail))
+                {
+                    parts.Add($"problemDetail={Summarize(ogcException.ProblemDetail)}");
+                }
+
+                break;
+            case HonuaWfsException wfsException when !string.IsNullOrWhiteSpace(wfsException.ExceptionCode):
+                parts.Add($"exceptionCode={wfsException.ExceptionCode}");
+                break;
+        }
+    }
+
+    private static string SummarizeResponseBody(string? responseBody)
+        => string.IsNullOrWhiteSpace(responseBody)
+            ? "none"
+            : Summarize(responseBody);
+
+    private static string Summarize(string value, int maxLength = 300)
+    {
+        var normalized = string.Join(
+            " ",
+            value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+        return normalized.Length <= maxLength
+            ? normalized
+            : normalized[..maxLength] + "...";
+    }
 
     public sealed record StagingCheckResult(
         string Name,

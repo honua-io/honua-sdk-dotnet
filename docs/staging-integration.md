@@ -100,7 +100,9 @@ The JSON evidence includes:
 - whether the FeatureServer edit check ran
 - service/layer/type/collection identifiers
 - protocol surfaces under test
-- per-check status, duration, and detail string
+- per-check status, duration, and detail string; failed checks include the SDK
+  method, request path or gRPC method, status when available, and a short
+  response body summary
 - a total passed / failed / not-run summary
 
 ## Troubleshooting
