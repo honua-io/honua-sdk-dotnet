@@ -186,6 +186,34 @@ public sealed class SourceFacadeTests
     }
 
     [Fact]
+    public async Task HonuaSource_QueryObjectIdsAsync_ZeroLimitReturnsEmpty()
+    {
+        var queryClient = new FakeQueryClient(
+            "wfs",
+            _ =>
+            [
+                new FeatureQueryResult
+                {
+                    ProviderName = "wfs",
+                    Features = [new FeatureRecord { Id = "parcels.1" }],
+                    NumberReturned = 1
+                }
+            ]);
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parcels",
+                Protocol = FeatureProtocolIds.Wfs,
+                Locator = new SourceLocator { TypeName = "parcels" }
+            },
+            queryClient);
+
+        var ids = await source.QueryObjectIdsAsync(new SourceQuery { Limit = 0 });
+
+        Assert.Empty(ids);
+    }
+
+    [Fact]
     public async Task HonuaSource_QueryObjectIdsAsync_DoesNotRequireQueryCapability()
     {
         FeatureQueryRequest? capturedRequest = null;

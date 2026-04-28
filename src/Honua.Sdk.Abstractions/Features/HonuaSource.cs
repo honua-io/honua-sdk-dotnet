@@ -126,6 +126,11 @@ public sealed class HonuaSource : IHonuaSource
             : query with { ReturnGeometry = false };
         var request = BuildQueryRequest(objectIdQuery);
         var limit = query?.Limit;
+        if (limit is <= 0)
+        {
+            return [];
+        }
+
         var idFieldName = Descriptor.Schema?.PrimaryKey;
         var ids = new List<string>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -138,7 +143,7 @@ public sealed class HonuaSource : IHonuaSource
                 if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
                 {
                     ids.Add(id);
-                    if (limit.HasValue && ids.Count >= limit.Value)
+                    if (ids.Count >= limit.GetValueOrDefault(int.MaxValue))
                     {
                         return ids;
                     }
