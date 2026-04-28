@@ -31,7 +31,9 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
             HonuaGeoServicesClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaGeoServicesClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaFeatureServerClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
@@ -46,6 +48,7 @@ public static class ServiceCollectionExtensions
     {
         var opts = new HonuaGeoServicesClientOptions();
         configure(opts);
+        HonuaGeoServicesClientOptions.ValidateTimeout(opts.Timeout);
 
         if (!opts.EnableRetry)
         {
@@ -54,6 +57,8 @@ public static class ServiceCollectionExtensions
 
         httpBuilder.AddStandardResilienceHandler(options =>
         {
+            options.TotalRequestTimeout.Timeout = opts.Timeout;
+            options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
             options.Retry.ShouldHandle = args => ValueTask.FromResult(
                 args.Outcome.Result?.StatusCode is

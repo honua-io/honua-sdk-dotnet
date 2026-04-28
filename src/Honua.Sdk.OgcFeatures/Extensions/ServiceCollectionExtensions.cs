@@ -30,7 +30,9 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaOgcFeaturesClientOptions>>().Value;
             HonuaOgcFeaturesClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaOgcFeaturesClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaOgcFeaturesAuthHandler>();
         services.AddTransient<IHonuaOgcFeaturesClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
@@ -45,6 +47,7 @@ public static class ServiceCollectionExtensions
     {
         var opts = new HonuaOgcFeaturesClientOptions();
         configure(opts);
+        HonuaOgcFeaturesClientOptions.ValidateTimeout(opts.Timeout);
 
         if (!opts.EnableRetry)
         {
@@ -53,6 +56,8 @@ public static class ServiceCollectionExtensions
 
         httpBuilder.AddStandardResilienceHandler(options =>
         {
+            options.TotalRequestTimeout.Timeout = opts.Timeout;
+            options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
             options.Retry.ShouldHandle = args => ValueTask.FromResult(
                 args.Outcome.Result?.StatusCode is

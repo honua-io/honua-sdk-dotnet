@@ -54,6 +54,12 @@ public sealed class HonuaGrpcClientOptions
     public bool EnableRetry { get; set; } = true;
 
     /// <summary>
+    /// Overall deadline applied to each gRPC call, including retry attempts (default: 100 seconds).
+    /// Must be greater than 10 milliseconds and less than 24 hours.
+    /// </summary>
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
+
+    /// <summary>
     /// Maximum number of retry attempts (including the original call).
     /// Only used when <see cref="EnableRetry"/> is <c>true</c>. Defaults to 3.
     /// Must be between 2 and 5 inclusive.
@@ -79,6 +85,15 @@ public sealed class HonuaGrpcClientOptions
         }
 
         return uri;
+    }
+
+    internal static void ValidateTimeout(TimeSpan timeout)
+    {
+        if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
+        {
+            throw new InvalidOperationException(
+                "Honua gRPC timeout must be greater than 10 milliseconds and less than 24 hours.");
+        }
     }
 
     internal static bool RequiresHttpsForAuthentication(Uri? uri)

@@ -30,7 +30,9 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
             HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaAdminClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
         ConfigureResilience(services, httpBuilder, configure);
@@ -52,13 +54,16 @@ public static class ServiceCollectionExtensions
     {
         services.Configure(configure);
         services.AddTransient<HonuaAdminAuthHandler>();
-        var httpBuilder = services.AddHttpClient<IHonuaGeocodingClient, HonuaGeocodingClient>((sp, client) =>
+        var httpBuilder = services.AddHttpClient(nameof(HonuaGeocodingClient), (sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
             HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaAdminClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
+        httpBuilder.AddTypedClient<IHonuaGeocodingClient>(httpClient => new HonuaGeocodingClient(httpClient));
         ConfigureResilience(services, httpBuilder, configure);
         return services;
     }
@@ -70,6 +75,7 @@ public static class ServiceCollectionExtensions
     {
         var opts = new HonuaAdminClientOptions();
         configure(opts);
+        HonuaAdminClientOptions.ValidateTimeout(opts.Timeout);
 
         if (!opts.EnableRetry)
         {
@@ -78,6 +84,8 @@ public static class ServiceCollectionExtensions
 
         httpBuilder.AddStandardResilienceHandler(options =>
         {
+            options.TotalRequestTimeout.Timeout = opts.Timeout;
+            options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
             options.Retry.ShouldHandle = args => ValueTask.FromResult(
                 args.Outcome.Result?.StatusCode is

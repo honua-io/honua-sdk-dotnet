@@ -36,6 +36,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     {
         var opts = options.Value;
         var address = HonuaGrpcClientOptions.ParseAndValidateAddress(opts.Address);
+        HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
         ValidateAuthenticationTransport(opts, address);
 
         var channelOptions = new GrpcChannelOptions
@@ -58,6 +59,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public HonuaGrpcClient(GrpcChannel channel, HonuaGrpcClientOptions? options = null)
     {
         var opts = options ?? new HonuaGrpcClientOptions();
+        HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
         if (HasCredentials(opts))
         {
             ValidateAuthenticationTransport(opts, ResolveChannelAddress(channel));
@@ -79,6 +81,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     internal HonuaGrpcClient(Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient client, HonuaGrpcClientOptions options)
     {
         _client = client;
+        HonuaGrpcClientOptions.ValidateTimeout(options.Timeout);
         _options = options;
     }
 
@@ -93,7 +96,11 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         try
         {
             var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
-            var protoResponse = await _client.QueryFeaturesAsync(protoRequest, metadata, cancellationToken: ct);
+            var protoResponse = await _client.QueryFeaturesAsync(
+                protoRequest,
+                metadata,
+                deadline: CreateDeadline(),
+                cancellationToken: ct);
             return ProtoAdapter.FromProtoResponse(protoResponse);
         }
         catch (RpcException ex)
@@ -129,7 +136,11 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         try
         {
             var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
-            var protoResponse = await _client.ApplyEditsAsync(protoRequest, metadata, cancellationToken: ct);
+            var protoResponse = await _client.ApplyEditsAsync(
+                protoRequest,
+                metadata,
+                deadline: CreateDeadline(),
+                cancellationToken: ct);
             return ProtoAdapter.FromProtoApplyEditsResponse(protoResponse);
         }
         catch (RpcException ex)
@@ -144,7 +155,11 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     {
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
         var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
-        var call = _client.QueryFeaturesStream(protoRequest, metadata, cancellationToken: ct);
+        var call = _client.QueryFeaturesStream(
+            protoRequest,
+            metadata,
+            deadline: CreateDeadline(),
+            cancellationToken: ct);
         try
         {
             while (true)
@@ -240,6 +255,9 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
 
         return metadata;
     }
+
+    private DateTime CreateDeadline()
+        => DateTime.UtcNow.Add(_options.Timeout);
 
     private Task<string?> ResolveApiKeyAsync(CancellationToken cancellationToken)
         => _options.ApiKeyProvider is { } provider
