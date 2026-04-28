@@ -1,0 +1,57 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using System.Reflection;
+using Honua.Sdk.Wfs.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Honua.Sdk.Wfs.Tests;
+
+public sealed class ClientOptionsTests
+{
+    [Fact]
+    public void DefaultTimeout_IsOneHundredSeconds()
+    {
+        var options = new HonuaWfsClientOptions();
+
+        Assert.Equal(TimeSpan.FromSeconds(100), options.Timeout);
+    }
+
+    [Fact]
+    public void AddHonuaWfs_ConfiguresHttpClientTimeout()
+    {
+        var timeout = TimeSpan.FromSeconds(43);
+        var services = new ServiceCollection();
+        services.AddHonuaWfs(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+            options.Timeout = timeout;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<HonuaWfsClient>();
+
+        Assert.Equal(timeout, GetHttpClient(client).Timeout);
+    }
+
+    [Fact]
+    public void AddHonuaWfs_InvalidTimeout_Throws()
+    {
+        var services = new ServiceCollection();
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            services.AddHonuaWfs(options => options.Timeout = TimeSpan.FromMilliseconds(10)));
+
+        Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static HttpClient GetHttpClient(HonuaWfsClient client)
+    {
+        var field = typeof(HonuaWfsClient).GetField("_httpClient", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+
+        var value = field!.GetValue(client);
+        return Assert.IsType<HttpClient>(value);
+    }
+}

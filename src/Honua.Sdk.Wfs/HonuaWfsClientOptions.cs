@@ -44,6 +44,12 @@ public sealed class HonuaWfsClientOptions
     public bool EnableRetry { get; set; } = true;
 
     /// <summary>
+    /// Overall timeout for each HTTP request, including retry attempts (default: 100 seconds).
+    /// Must be greater than 10 milliseconds and less than 24 hours.
+    /// </summary>
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
+
+    /// <summary>
     /// Maximum number of retry attempts (default: 3, range 2-5).
     /// Only applies when <see cref="EnableRetry"/> is true.
     /// </summary>
@@ -71,6 +77,15 @@ public sealed class HonuaWfsClientOptions
             !string.Equals(baseAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("Honua WFS base address must use HTTP or HTTPS.");
+        }
+    }
+
+    internal static void ValidateTimeout(TimeSpan timeout)
+    {
+        if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
+        {
+            throw new InvalidOperationException(
+                "Honua WFS timeout must be greater than 10 milliseconds and less than 24 hours.");
         }
     }
 

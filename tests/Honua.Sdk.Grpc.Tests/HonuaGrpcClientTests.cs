@@ -44,6 +44,51 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task QueryFeaturesAsync_AppliesConfiguredDeadline()
+    {
+        var timeout = TimeSpan.FromSeconds(30);
+        DateTime? capturedDeadline = null;
+        var protoResponse = new Proto.QueryFeaturesResponse();
+
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>(
+                (_, _, deadline, _) => capturedDeadline = deadline)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object, new HonuaGrpcClientOptions
+        {
+            EnableCompressionNegotiation = false,
+            Timeout = timeout
+        });
+        var before = DateTime.UtcNow;
+
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "test-svc" });
+
+        Assert.NotNull(capturedDeadline);
+        Assert.InRange(capturedDeadline.Value, before.Add(timeout).AddSeconds(-1), DateTime.UtcNow.Add(timeout).AddSeconds(1));
+    }
+
+    [Fact]
+    public void Constructor_InvalidTimeout_Throws()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            new HonuaGrpcClient(mockClient.Object, new HonuaGrpcClientOptions
+            {
+                Timeout = TimeSpan.FromMilliseconds(10)
+            }));
+
+        Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task QueryAsync_SharedAbstraction_DelegatesToGrpcQuery()
     {
         Proto.QueryFeaturesRequest? capturedRequest = null;

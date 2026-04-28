@@ -30,7 +30,9 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaWfsClientOptions>>().Value;
             HonuaWfsClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaWfsClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaWfsAuthHandler>();
         services.AddTransient<IHonuaWfsClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
@@ -46,6 +48,7 @@ public static class ServiceCollectionExtensions
     {
         var opts = new HonuaWfsClientOptions();
         configure(opts);
+        HonuaWfsClientOptions.ValidateTimeout(opts.Timeout);
 
         if (!opts.EnableRetry)
         {
@@ -54,6 +57,8 @@ public static class ServiceCollectionExtensions
 
         httpBuilder.AddStandardResilienceHandler(options =>
         {
+            options.TotalRequestTimeout.Timeout = opts.Timeout;
+            options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
             options.Retry.ShouldHandle = args => ValueTask.FromResult(
                 args.Outcome.Result?.StatusCode is

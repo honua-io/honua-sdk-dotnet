@@ -138,12 +138,15 @@ var page = await queryClient.QueryAsync(new FeatureQueryRequest
 
 The gRPC, WFS, GeoServices, and OGC API Features clients retry automatically on transient failures with
 exponential backoff and jitter. gRPC retries on `Unavailable` / `Internal`;
-HTTP clients retry on `429`, `502`, `503`. Configurable on each client:
+HTTP clients retry on `429`, `502`, `503`. Each DI client also exposes a
+`Timeout` option that defaults to 100 seconds and accepts any value greater
+than 10 milliseconds and less than 24 hours. Configurable on each client:
 
 ```csharp
 builder.Services.AddHonuaGrpc(o =>
 {
     o.Address = "https://localhost:5001";
+    o.Timeout = TimeSpan.FromSeconds(30);
     o.EnableRetry = true;       // default
     o.MaxRetryAttempts = 3;     // default, range 2-5
 });
@@ -151,10 +154,14 @@ builder.Services.AddHonuaGrpc(o =>
 builder.Services.AddHonuaWfs(o =>
 {
     o.BaseAddress = new Uri("https://localhost:5001");
+    o.Timeout = TimeSpan.FromSeconds(30);
     o.EnableRetry = true;       // default
     o.MaxRetryAttempts = 3;     // default, range 2-5
 });
 ```
+
+Timeout, retry, error, pagination, and endpoint coverage behavior is documented
+in [docs/client-behavior.md](docs/client-behavior.md).
 
 ## WFS 2.0 queries
 
@@ -268,6 +275,8 @@ third_party/
 - **[Staging Integration Guide](docs/staging-integration.md)** -- staging
   environment inputs, CI evidence artifacts, common failures, and bounded
   follow-on tickets for shared staging ownership
+- **[Client Behavior](docs/client-behavior.md)** -- timeout, retry, error,
+  pagination, and typed endpoint coverage behavior across packages
 - **[Release and NuGet Publishing](docs/release.md)** -- package versioning,
   release tags, dry runs, GitHub Packages, and NuGet.org publishing
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
