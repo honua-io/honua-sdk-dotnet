@@ -1,15 +1,9 @@
 <Project>
 
   <PropertyGroup>
-    <HonuaSdkVersionPrefix>0.1.0</HonuaSdkVersionPrefix>
-    <HonuaSdkVersionSuffix>alpha.1</HonuaSdkVersionSuffix>
-    <VersionPrefix>$(HonuaSdkVersionPrefix)</VersionPrefix>
-    <VersionSuffix>$(HonuaSdkVersionSuffix)</VersionSuffix>
-    <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
-    <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
-    <PackageVersion>$(Version)</PackageVersion>
-    <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
-    <FileVersion>$(VersionPrefix).0</FileVersion>
+    <HonuaSdkVersion>0.1.0-alpha.1</HonuaSdkVersion> <!-- x-release-please-version -->
+    <Version>$(HonuaSdkVersion)</Version>
+    <PackageVersion>$(HonuaSdkVersion)</PackageVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>

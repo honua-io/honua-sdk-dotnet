@@ -278,6 +278,28 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
+    public async Task GetItemsAsync_SharedAbstraction_ProviderDefaultFilter_DoesNotSendFilterLang()
+    {
+        string? capturedUrl = null;
+        var json = """{ "type": "FeatureCollection", "features": [] }""";
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            capturedUrl = req.RequestUri?.ToString();
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { CollectionId = "buildings" },
+            Filter = "height > 10",
+        });
+
+        Assert.NotNull(capturedUrl);
+        Assert.Contains("filter=", capturedUrl);
+        Assert.DoesNotContain("filter-lang=", capturedUrl);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesOgcFeaturesClientAndExposesEditCapabilities()
     {
         string? capturedUrl = null;

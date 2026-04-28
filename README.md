@@ -190,10 +190,11 @@ provider support, and unsupported-provider behavior.
 
 ## Retry
 
-The gRPC, WFS, GeoServices, and OGC API Features clients retry automatically on transient failures with
-exponential backoff and jitter. gRPC retries on `Unavailable` / `Internal`;
-HTTP clients retry on `429`, `502`, `503`. Each DI client also exposes a
-`Timeout` option that defaults to 100 seconds and accepts any value greater
+The gRPC, WFS, GeoServices, and OGC API Features clients retry automatically on
+transient read failures with exponential backoff and jitter. gRPC retries
+`QueryFeatures` and `QueryFeaturesStream` on `Unavailable` / `Internal`; HTTP
+clients retry safe methods on `429`, `502`, `503`. Each DI client also exposes
+a `Timeout` option that defaults to 100 seconds and accepts any value greater
 than 10 milliseconds and less than 24 hours. Configurable on each client:
 
 ```csharp
@@ -308,7 +309,7 @@ tests/
   Honua.Sdk.OgcFeatures.Tests/
 examples/
   AdminBootstrapConsole/     Canonical console sample for admin bootstrap + gRPC verification
-  FieldDataCollection/      Advanced .NET MAUI reference app (not the primary onboarding sample)
+  FieldDataCollection/       Archived MAUI reference assets; buildable as a marker project
 docs/
   quickstart.md             5-minute quickstart tutorial
   staging-integration.md    Staging CI inputs, evidence, and troubleshooting
@@ -339,8 +340,8 @@ third_party/
   policy and server compatibility baseline
 - **[Backlog cadence](docs/backlog-cadence.md)** -- weekly triage, scope gate,
   and close hygiene for this repository
-- **[Field Data Collection](examples/FieldDataCollection/)** -- full MAUI
-  reference app with offline sync and map views
+- **[Field Data Collection](examples/FieldDataCollection/)** -- archived MAUI
+  reference assets for offline sync and map views
 
 ## License
 

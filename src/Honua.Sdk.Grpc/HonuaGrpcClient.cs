@@ -18,6 +18,8 @@ namespace Honua.Sdk.Grpc;
 /// </summary>
 public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient, IDisposable
 {
+    private const string FeatureServiceName = "honua.v1.FeatureService";
+
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -228,7 +230,11 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
 
             serviceConfig.MethodConfigs.Add(new MethodConfig
             {
-                Names = { MethodName.Default },
+                Names =
+                {
+                    new MethodName { Service = FeatureServiceName, Method = "QueryFeatures" },
+                    new MethodName { Service = FeatureServiceName, Method = "QueryFeaturesStream" }
+                },
                 RetryPolicy = new RetryPolicy
                 {
                     MaxAttempts = maxAttempts,
@@ -520,14 +526,35 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             return null;
         }
 
-        var digits = new string(crs.Where(char.IsDigit).ToArray());
-        if (int.TryParse(digits, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var wkid))
+        var trimmed = crs.Trim();
+        if (IsCrs84(trimmed))
+        {
+            return new Models.SpatialReference { Wkid = 4326 };
+        }
+
+        if (int.TryParse(trimmed, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var bareWkid))
+        {
+            return new Models.SpatialReference { Wkid = bareWkid };
+        }
+
+        var separatorIndex = Math.Max(trimmed.LastIndexOf(':'), trimmed.LastIndexOf('/'));
+        if (separatorIndex >= 0 &&
+            int.TryParse(
+                trimmed[(separatorIndex + 1)..],
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var wkid))
         {
             return new Models.SpatialReference { Wkid = wkid };
         }
 
-        return new Models.SpatialReference { Wkt = crs };
+        return new Models.SpatialReference { Wkt = trimmed };
     }
+
+    private static bool IsCrs84(string crs) =>
+        string.Equals(crs, "CRS84", StringComparison.OrdinalIgnoreCase) ||
+        crs.EndsWith("/CRS84", StringComparison.OrdinalIgnoreCase) ||
+        crs.EndsWith(":CRS84", StringComparison.OrdinalIgnoreCase);
 
     private FeatureQueryResult ToFeatureQueryResult(Models.QueryFeaturesResponse response)
     {

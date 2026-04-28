@@ -1,8 +1,8 @@
 # .NET SDK Release and NuGet Publishing
 
 The SDK packages share one version source in `Directory.Build.props`.
-Update `HonuaSdkVersionPrefix` and `HonuaSdkVersionSuffix` there before a
-release. Leave `HonuaSdkVersionSuffix` empty for stable releases.
+Release Please updates the `HonuaSdkVersion` property when it opens a release
+PR.
 
 ## Packages
 
@@ -17,12 +17,15 @@ The publish workflow builds and packs:
 
 ## Release Flow
 
-1. Update `Directory.Build.props`.
-2. Open a PR with the version bump and release notes.
-3. Run the `Publish .NET SDK Packages` workflow manually with `dry_run=true`.
+1. Merge changes to `trunk` using conventional commits.
+2. Let the Release Please workflow open or update the release PR.
+3. Confirm the release PR includes `Directory.Build.props`,
+   `.release-please-manifest.json`, and `CHANGELOG.md`.
+4. Run the `Publish .NET SDK Packages` workflow manually with `dry_run=true`.
    This builds, tests, validates API compatibility, audits dependencies, packs,
    and runs package install smoke without publishing.
-4. After merge, create and push a tag named `dotnet-sdk-v<PackageVersion>`.
+5. Merge the release PR so Release Please creates the tag named
+   `dotnet-sdk-v<PackageVersion>`.
    Example: `dotnet-sdk-v0.1.0-alpha.1`.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
@@ -46,6 +49,10 @@ Resolve the package version:
 ```bash
 dotnet msbuild src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj -nologo -getProperty:PackageVersion
 ```
+
+For emergency manual releases, update `HonuaSdkVersion` in
+`Directory.Build.props` and create a matching `dotnet-sdk-v<PackageVersion>`
+tag.
 
 Pack all packages locally:
 

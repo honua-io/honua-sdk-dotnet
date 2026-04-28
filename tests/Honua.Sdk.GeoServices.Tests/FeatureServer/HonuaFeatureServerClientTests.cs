@@ -211,6 +211,37 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
+    public async Task QueryAsync_SharedAbstraction_Crs84MapsToWkid4326()
+    {
+        string? capturedUrl = null;
+        var json = """{ "features": [], "exceededTransferLimit": false }""";
+        var client = TestHelpers.CreateFeatureServerClient(req =>
+        {
+            capturedUrl = req.RequestUri?.ToString();
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { ServiceId = "svc", LayerId = 0 },
+            Bbox = new FeatureBoundingBox
+            {
+                MinX = -118,
+                MinY = 33,
+                MaxX = -117,
+                MaxY = 34,
+                Crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            },
+            OutputCrs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        });
+
+        Assert.NotNull(capturedUrl);
+        Assert.Contains("inSR=4326", capturedUrl);
+        Assert.Contains("outSR=4326", capturedUrl);
+        Assert.DoesNotContain("1384", capturedUrl);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesFeatureServerClientAndMatchesProviderAlias()
     {
         string? capturedUrl = null;

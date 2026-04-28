@@ -37,8 +37,13 @@ Retries are enabled by default and can be disabled per client with
 
 | Client family | Retried failures |
 |---------------|------------------|
-| gRPC | `Unavailable`, `Internal` |
-| Admin, Geocoding, WFS, GeoServices, OGC API Features | HTTP `429`, `502`, `503` |
+| gRPC | `QueryFeatures` and `QueryFeaturesStream` retries on `Unavailable`, `Internal` |
+| Admin, Geocoding, WFS, GeoServices, OGC API Features | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
+
+Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
+API Features create/update/delete calls are not retried by the default policy.
+Retrying writes should be an explicit application decision because a server may
+apply a mutation before returning a transient failure.
 
 Authentication failures, validation errors, unsupported operations, parser
 failures, and application-level protocol errors are not retried by the SDK.

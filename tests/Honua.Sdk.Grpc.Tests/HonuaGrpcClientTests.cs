@@ -150,6 +150,41 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task QueryAsync_SharedAbstraction_Crs84MapsToWkid4326()
+    {
+        Proto.QueryFeaturesRequest? capturedRequest = null;
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>((req, _, _, _) => capturedRequest = req)
+            .Returns(CreateAsyncUnaryCall(new Proto.QueryFeaturesResponse()));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { ServiceId = "test-svc", LayerId = 0 },
+            Bbox = new FeatureBoundingBox
+            {
+                MinX = -118,
+                MinY = 33,
+                MaxX = -117,
+                MaxY = 34,
+                Crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            },
+            OutputCrs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        });
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal(4326, capturedRequest.OutSr.Wkid);
+        Assert.Equal(4326, capturedRequest.SpatialFilter.SpatialReference.Wkid);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesGrpcClientAndExposesNativeProtocol()
     {
         Proto.QueryFeaturesRequest? capturedRequest = null;
