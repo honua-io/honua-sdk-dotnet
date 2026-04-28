@@ -43,13 +43,15 @@ provider object IDs, per-feature errors, top-level batch errors, and a
 |----------|---------------------|---------------------|
 | gRPC | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaGrpcClient.ApplyEditsAsync()` |
 | GeoServices FeatureServer | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaFeatureServerEditClient.ApplyEditsAsync()` plus add/update/delete convenience methods |
-| WFS | Not yet | WFS-T decision tracked by #35 |
-| OGC API Features | Not yet | Transaction/create-update-delete decision tracked by #35 |
+| WFS | Registered as unsupported via `IHonuaFeatureEditClient` | WFS-T implementation decision tracked by #35 |
+| OGC API Features | Registered as unsupported via `IHonuaFeatureEditClient` | Transaction/create-update-delete implementation decision tracked by #35 |
 | Admin | Not applicable | Admin has control-plane mutations, not data-plane feature edits |
 
-Unsupported read providers are not registered as `IHonuaFeatureEditClient`
-implementations. Select from `IEnumerable<IHonuaFeatureEditClient>` or inspect
-`EditCapabilities` before attempting a write.
+Select from `IEnumerable<IHonuaFeatureEditClient>` and inspect
+`EditCapabilities` before attempting a write. Unsupported feature providers
+return `SupportsAdds`, `SupportsUpdates`, and `SupportsDeletes` as `false`,
+populate `UnsupportedReason`, and throw `NotSupportedException` from
+`ApplyEditsAsync`.
 
 ## gRPC Notes
 

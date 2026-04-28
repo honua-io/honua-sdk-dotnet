@@ -87,6 +87,7 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, and next-link pagination. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
-WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edits are
-available through `IHonuaFeatureEditClient` for gRPC and GeoServices
-FeatureServer.
+WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
+capabilities are available through `IHonuaFeatureEditClient`; gRPC and
+GeoServices FeatureServer currently advertise write support, while WFS and OGC
+API Features report unsupported edit capabilities with a reason.

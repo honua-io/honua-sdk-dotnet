@@ -14,9 +14,18 @@ namespace Honua.Sdk.OgcFeatures;
 /// <summary>
 /// HTTP client implementation for the Honua OGC API Features read/query API.
 /// </summary>
-public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeatureQueryClient
+public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
 {
     private const string BasePath = "/ogc/features";
+    private const string UnsupportedEditReason =
+        "Honua.Sdk.OgcFeatures does not currently implement OGC API Features create, update, or delete endpoints.";
+
+    private static readonly FeatureEditCapabilities UnsupportedEditCapabilities = new()
+    {
+        NativeSurface = "OGC API Features transactions",
+        UnsupportedReason = UnsupportedEditReason
+    };
+
     private readonly HttpClient _http;
 
     /// <summary>
@@ -30,6 +39,9 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
 
     /// <inheritdoc />
     public string ProviderName => "ogc-features";
+
+    /// <inheritdoc />
+    public FeatureEditCapabilities EditCapabilities => UnsupportedEditCapabilities;
 
     /// <inheritdoc />
     public async Task<OgcLandingPage> GetLandingPageAsync(CancellationToken ct = default)
@@ -109,6 +121,14 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
         {
             yield return ToFeatureQueryResult(page);
         }
+    }
+
+    /// <inheritdoc />
+    public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        throw new NotSupportedException(UnsupportedEditReason);
     }
 
     /// <inheritdoc />

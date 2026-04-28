@@ -24,6 +24,9 @@ public sealed record FeatureEditCapabilities
 
     /// <summary>Native protocol surface used by the provider, when useful for diagnostics.</summary>
     public string? NativeSurface { get; init; }
+
+    /// <summary>Reason edits are unsupported when no edit operation is available.</summary>
+    public string? UnsupportedReason { get; init; }
 }
 
 /// <summary>
