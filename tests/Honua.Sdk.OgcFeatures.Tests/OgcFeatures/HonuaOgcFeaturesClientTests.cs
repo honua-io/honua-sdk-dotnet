@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Exceptions;
@@ -277,7 +278,7 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
-    public async Task HonuaSourceFacade_QueriesOgcFeaturesClientAndSuppressesUnsupportedEdits()
+    public async Task HonuaSourceFacade_QueriesOgcFeaturesClientAndExposesEditCapabilities()
     {
         string? capturedUrl = null;
         var json = """
@@ -317,38 +318,231 @@ public class HonuaOgcFeaturesClientTests
         Assert.Contains("/ogc/features/collections/buildings/items", capturedUrl);
         Assert.Equal("ogc-features", result.ProviderName);
         Assert.Equal(["building-7"], ids);
-        if (((IHonuaFeatureEditClient)client).EditCapabilities.SupportsAdds)
-        {
-            Assert.Contains(FeatureCapabilities.ApplyEdits, source.Capabilities);
-        }
-        else
-        {
-            Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, source.Capabilities);
-        }
-
+        Assert.Contains(FeatureCapabilities.ApplyEdits, source.Capabilities);
         Assert.Same(client, source.Protocol<HonuaOgcFeaturesClient>());
     }
 
     [Fact]
-    public async Task ApplyEditsAsync_SharedAbstraction_ThrowsUnsupportedWithCapabilities()
+    public async Task CreateItemAsync_PostsGeoJsonFeature()
+    {
+        string? capturedBody = null;
+        var client = TestHelpers.CreateOgcFeaturesClient(async req =>
+        {
+            Assert.Equal(HttpMethod.Post, req.Method);
+            Assert.Contains("/ogc/features/collections/buildings/items", req.RequestUri?.ToString());
+            Assert.Equal("application/geo+json", req.Content?.Headers.ContentType?.MediaType);
+            capturedBody = await req.Content!.ReadAsStringAsync();
+
+            return TestHelpers.CreateRawJsonResponse("""
+            {
+                "type": "Feature",
+                "id": "created-1",
+                "properties": { "name": "Created" }
+            }
+            """, HttpStatusCode.Created);
+        });
+
+        var result = await client.CreateItemAsync(
+            "buildings",
+            new OgcFeature
+            {
+                Properties = new Dictionary<string, JsonElement>
+                {
+                    ["name"] = JsonSerializer.SerializeToElement("Created")
+                }
+            });
+
+        Assert.Contains("\"properties\"", capturedBody);
+        Assert.Equal("created-1", result.Id?.GetString());
+    }
+
+    [Fact]
+    public async Task UpdateItemAsync_PutsGeoJsonFeature()
+    {
+        string? capturedBody = null;
+        var client = TestHelpers.CreateOgcFeaturesClient(async req =>
+        {
+            Assert.Equal(HttpMethod.Put, req.Method);
+            Assert.Contains("/ogc/features/collections/buildings/items/building-7", req.RequestUri?.ToString());
+            capturedBody = await req.Content!.ReadAsStringAsync();
+
+            return TestHelpers.CreateRawJsonResponse("""
+            {
+                "type": "Feature",
+                "id": "building-7",
+                "properties": { "name": "Updated" }
+            }
+            """);
+        });
+
+        var result = await client.UpdateItemAsync(
+            "buildings",
+            "building-7",
+            new OgcFeature
+            {
+                Properties = new Dictionary<string, JsonElement>
+                {
+                    ["name"] = JsonSerializer.SerializeToElement("Updated")
+                }
+            });
+
+        Assert.Contains("\"Updated\"", capturedBody);
+        Assert.Equal("building-7", result.Id?.GetString());
+    }
+
+    [Fact]
+    public async Task DeleteItemAsync_SendsDelete()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            Assert.Equal(HttpMethod.Delete, req.Method);
+            Assert.Contains("/ogc/features/collections/buildings/items/building-7", req.RequestUri?.ToString());
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent));
+        });
+
+        await client.DeleteItemAsync("buildings", "building-7");
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_AppliesSequentialEdits()
+    {
+        var call = 0;
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            call++;
+            return call switch
+            {
+                1 => Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                    """{ "type": "Feature", "id": "created-1", "properties": {} }""",
+                    HttpStatusCode.Created)),
+                2 => Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                    """{ "type": "Feature", "id": "updated-1", "properties": {} }""")),
+                3 => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent)),
+                _ => throw new InvalidOperationException("Unexpected edit request.")
+            };
+        });
+
+        var response = await ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+        {
+            Source = new FeatureSource { CollectionId = "buildings" },
+            Adds =
+            [
+                new FeatureEditFeature
+                {
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["name"] = JsonSerializer.SerializeToElement("Created")
+                    }
+                }
+            ],
+            Updates =
+            [
+                new FeatureEditFeature
+                {
+                    Id = "updated-1",
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["name"] = JsonSerializer.SerializeToElement("Updated")
+                    }
+                }
+            ],
+            DeleteIds = ["deleted-1"],
+            RollbackOnFailure = false
+        });
+
+        Assert.Equal("ogc-features", response.ProviderName);
+        Assert.True(response.Succeeded);
+        Assert.Equal("created-1", Assert.Single(response.AddResults).Id);
+        Assert.Equal("updated-1", Assert.Single(response.UpdateResults).Id);
+        Assert.Equal("deleted-1", Assert.Single(response.DeleteResults).Id);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_MapsHttpErrorsToEditResults()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse("""
+            {
+                "type": "https://example.test/problems/edit-rejected",
+                "title": "Edit rejected",
+                "detail": "Geometry is outside the collection extent."
+            }
+            """, HttpStatusCode.BadRequest)));
+
+        var response = await ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+        {
+            Source = new FeatureSource { CollectionId = "buildings" },
+            Adds =
+            [
+                new FeatureEditFeature
+                {
+                    Id = "candidate-1",
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["name"] = JsonSerializer.SerializeToElement("Rejected")
+                    }
+                }
+            ]
+        });
+
+        var result = Assert.Single(response.AddResults);
+        Assert.False(response.Succeeded);
+        Assert.False(result.Succeeded);
+        Assert.Equal("candidate-1", result.Id);
+        Assert.Equal((int)HttpStatusCode.BadRequest, result.Error?.Code);
+        Assert.Contains("outside", result.Error?.Message);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_ValidatesUpdateIdsBeforeWrites()
     {
         var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
-        var editClient = (IHonuaFeatureEditClient)client;
 
-        var ex = await Assert.ThrowsAsync<NotSupportedException>(
-            () => editClient.ApplyEditsAsync(new FeatureEditRequest
+        var ex = await Assert.ThrowsAsync<ArgumentException>(
+            () => ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
             {
-                Source = new FeatureSource { CollectionId = "buildings" }
+                Source = new FeatureSource { CollectionId = "buildings" },
+                Adds =
+                [
+                    new FeatureEditFeature
+                    {
+                        Attributes = new Dictionary<string, JsonElement>
+                        {
+                            ["name"] = JsonSerializer.SerializeToElement("Created")
+                        }
+                    }
+                ],
+                Updates =
+                [
+                    new FeatureEditFeature
+                    {
+                        Attributes = new Dictionary<string, JsonElement>
+                        {
+                            ["name"] = JsonSerializer.SerializeToElement("Missing ID")
+                        }
+                    }
+                ],
+                RollbackOnFailure = false
             }));
 
-        Assert.Equal("ogc-features", editClient.ProviderName);
-        Assert.False(editClient.EditCapabilities.SupportsAdds);
-        Assert.False(editClient.EditCapabilities.SupportsUpdates);
-        Assert.False(editClient.EditCapabilities.SupportsDeletes);
-        Assert.False(editClient.EditCapabilities.SupportsRollbackOnFailure);
-        Assert.Equal("OGC API Features transactions", editClient.EditCapabilities.NativeSurface);
-        Assert.Equal(editClient.EditCapabilities.UnsupportedReason, ex.Message);
-        Assert.Contains("create", ex.Message);
+        Assert.Contains("updates require", ex.Message);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_RollbackBatch_Throws()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+            {
+                Source = new FeatureSource { CollectionId = "buildings" },
+                Adds = [new FeatureEditFeature()],
+                DeleteIds = ["building-7"],
+                RollbackOnFailure = true
+            }));
+
+        Assert.Contains("rollback", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     // ── GetItemAsync ────────────────────────────────────────────────

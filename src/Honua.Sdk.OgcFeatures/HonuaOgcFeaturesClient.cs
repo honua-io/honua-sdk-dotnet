@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.OgcFeatures.Exceptions;
@@ -14,16 +15,18 @@ namespace Honua.Sdk.OgcFeatures;
 /// <summary>
 /// HTTP client implementation for the Honua OGC API Features read/query API.
 /// </summary>
-public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
+public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcFeaturesEditClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
 {
     private const string BasePath = "/ogc/features";
-    private const string UnsupportedEditReason =
-        "Honua.Sdk.OgcFeatures does not currently implement OGC API Features create, update, or delete endpoints.";
+    private const string RollbackUnsupportedReason =
+        "OGC API Features create, update, and delete endpoints do not support rollback-on-failure edit batches.";
 
-    private static readonly FeatureEditCapabilities UnsupportedEditCapabilities = new()
+    private static readonly FeatureEditCapabilities OgcEditCapabilities = new()
     {
-        NativeSurface = "OGC API Features transactions",
-        UnsupportedReason = UnsupportedEditReason
+        SupportsAdds = true,
+        SupportsUpdates = true,
+        SupportsDeletes = true,
+        NativeSurface = "OGC API Features create/update/delete"
     };
 
     private readonly HttpClient _http;
@@ -41,7 +44,7 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
     public string ProviderName => "ogc-features";
 
     /// <inheritdoc />
-    public FeatureEditCapabilities EditCapabilities => UnsupportedEditCapabilities;
+    public FeatureEditCapabilities EditCapabilities => OgcEditCapabilities;
 
     /// <inheritdoc />
     public async Task<OgcLandingPage> GetLandingPageAsync(CancellationToken ct = default)
@@ -124,11 +127,37 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
     }
 
     /// <inheritdoc />
-    public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+    public async Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ct.ThrowIfCancellationRequested();
-        throw new NotSupportedException(UnsupportedEditReason);
+        var collectionId = GetEditCollectionId(request);
+        EnsureSupportedEditRequest(request);
+
+        var addResults = new List<FeatureEditResult>();
+        foreach (var feature in request.Adds)
+        {
+            addResults.Add(await ApplyAddAsync(collectionId, feature, ct).ConfigureAwait(false));
+        }
+
+        var updateResults = new List<FeatureEditResult>();
+        foreach (var feature in request.Updates)
+        {
+            updateResults.Add(await ApplyUpdateAsync(collectionId, feature, ct).ConfigureAwait(false));
+        }
+
+        var deleteResults = new List<FeatureEditResult>();
+        foreach (var featureId in ResolveDeleteIds(request))
+        {
+            deleteResults.Add(await ApplyDeleteAsync(collectionId, featureId, ct).ConfigureAwait(false));
+        }
+
+        return new FeatureEditResponse
+        {
+            ProviderName = ProviderName,
+            AddResults = addResults,
+            UpdateResults = updateResults,
+            DeleteResults = deleteResults
+        };
     }
 
     /// <inheritdoc />
@@ -141,6 +170,37 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
         var body = await GetStringAsync(url, ct).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeature)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize feature.", body);
+    }
+
+    /// <inheritdoc />
+    public Task<OgcFeature> CreateItemAsync(string collectionId, OgcFeature feature, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(collectionId);
+        ArgumentNullException.ThrowIfNull(feature);
+        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items?f=json";
+        return SendFeatureAsync(HttpMethod.Post, url, feature, ct);
+    }
+
+    /// <inheritdoc />
+    public Task<OgcFeature> UpdateItemAsync(string collectionId, string featureId, OgcFeature feature, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(collectionId);
+        ArgumentNullException.ThrowIfNull(featureId);
+        ArgumentNullException.ThrowIfNull(feature);
+        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+        return SendFeatureAsync(HttpMethod.Put, url, feature, ct);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteItemAsync(string collectionId, string featureId, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(collectionId);
+        ArgumentNullException.ThrowIfNull(featureId);
+        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+
+        using var response = await _http.DeleteAsync(url, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        EnsureSuccess(response, body);
     }
 
     /// <inheritdoc />
@@ -195,6 +255,31 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
+    }
+
+    private async Task<OgcFeature> SendFeatureAsync(HttpMethod method, string url, OgcFeature feature, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(method, url)
+        {
+            Content = CreateGeoJsonContent(feature)
+        };
+        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        EnsureSuccess(response, body);
+
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return feature;
+        }
+
+        return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeature)
+            ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize edited feature.", body);
+    }
+
+    private static StringContent CreateGeoJsonContent(OgcFeature feature)
+    {
+        var json = JsonSerializer.Serialize(feature, OgcFeaturesJsonContext.Default.OgcFeature);
+        return new StringContent(json, Encoding.UTF8, "application/geo+json");
     }
 
     private static void EnsureSuccess(HttpResponseMessage response, string body)
@@ -375,6 +460,160 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaFeat
             ? request.ObjectIds.Select(id => id.ToString(CultureInfo.InvariantCulture)).ToList()
             : null;
     }
+
+    private static string GetEditCollectionId(FeatureEditRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Source.CollectionId))
+        {
+            throw new ArgumentException("A collection ID is required for OGC API Features edits.", nameof(request));
+        }
+
+        return request.Source.CollectionId;
+    }
+
+    private static void EnsureSupportedEditRequest(FeatureEditRequest request)
+    {
+        if (request.ForceWrite)
+        {
+            throw new NotSupportedException("OGC API Features edits do not support ForceWrite.");
+        }
+
+        var operationCount = request.Adds.Count + request.Updates.Count + request.DeleteIds.Count + request.DeleteObjectIds.Count;
+        if (operationCount == 0)
+        {
+            throw new ArgumentException("At least one OGC API Features edit operation is required.", nameof(request));
+        }
+
+        foreach (var update in request.Updates)
+        {
+            _ = ResolveFeatureId(update);
+        }
+
+        foreach (var deleteId in request.DeleteIds)
+        {
+            if (string.IsNullOrWhiteSpace(deleteId))
+            {
+                throw new ArgumentException("OGC API Features deletes require non-empty feature IDs.", nameof(request));
+            }
+        }
+
+        if (request.RollbackOnFailure && operationCount > 1)
+        {
+            throw new NotSupportedException(RollbackUnsupportedReason);
+        }
+    }
+
+    private async Task<FeatureEditResult> ApplyAddAsync(string collectionId, FeatureEditFeature feature, CancellationToken ct)
+    {
+        try
+        {
+            var response = await CreateItemAsync(collectionId, ToOgcFeature(feature), ct).ConfigureAwait(false);
+            return ToFeatureEditResult(response, feature);
+        }
+        catch (HonuaOgcFeaturesException ex)
+        {
+            return ToFeatureEditResult(feature, ex);
+        }
+    }
+
+    private async Task<FeatureEditResult> ApplyUpdateAsync(string collectionId, FeatureEditFeature feature, CancellationToken ct)
+    {
+        var featureId = ResolveFeatureId(feature);
+
+        try
+        {
+            var response = await UpdateItemAsync(collectionId, featureId, ToOgcFeature(feature, featureId), ct).ConfigureAwait(false);
+            return ToFeatureEditResult(response, feature);
+        }
+        catch (HonuaOgcFeaturesException ex)
+        {
+            return ToFeatureEditResult(feature, ex);
+        }
+    }
+
+    private async Task<FeatureEditResult> ApplyDeleteAsync(string collectionId, string featureId, CancellationToken ct)
+    {
+        try
+        {
+            await DeleteItemAsync(collectionId, featureId, ct).ConfigureAwait(false);
+            return new FeatureEditResult
+            {
+                Id = featureId,
+                Succeeded = true
+            };
+        }
+        catch (HonuaOgcFeaturesException ex)
+        {
+            return new FeatureEditResult
+            {
+                Id = featureId,
+                Succeeded = false,
+                Error = ToFeatureEditError(ex)
+            };
+        }
+    }
+
+    private static OgcFeature ToOgcFeature(FeatureEditFeature feature, string? featureId = null)
+    {
+        var id = featureId ?? ResolveOptionalFeatureId(feature);
+
+        return new OgcFeature
+        {
+            Id = id is null ? null : JsonSerializer.SerializeToElement(id),
+            Geometry = feature.Geometry.HasValue ? feature.Geometry.Value.Clone() : null,
+            Properties = feature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone())
+        };
+    }
+
+    private static string ResolveFeatureId(FeatureEditFeature feature)
+        => ResolveOptionalFeatureId(feature) ??
+           throw new ArgumentException("OGC API Features updates require FeatureEditFeature.Id or ObjectId.");
+
+    private static string? ResolveOptionalFeatureId(FeatureEditFeature feature)
+    {
+        if (!string.IsNullOrWhiteSpace(feature.Id))
+        {
+            return feature.Id;
+        }
+
+        return feature.ObjectId?.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static IReadOnlyList<string> ResolveDeleteIds(FeatureEditRequest request)
+    {
+        var ids = new List<string>(request.DeleteIds);
+        ids.AddRange(request.DeleteObjectIds.Select(id => id.ToString(CultureInfo.InvariantCulture)));
+        return ids;
+    }
+
+    private static FeatureEditResult ToFeatureEditResult(OgcFeature response, FeatureEditFeature fallback)
+    {
+        var id = response.Id.HasValue ? JsonElementToString(response.Id.Value) : ResolveOptionalFeatureId(fallback);
+
+        return new FeatureEditResult
+        {
+            Id = id,
+            ObjectId = long.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var objectId) ? objectId : null,
+            Succeeded = true
+        };
+    }
+
+    private static FeatureEditResult ToFeatureEditResult(FeatureEditFeature feature, HonuaOgcFeaturesException exception)
+        => new()
+        {
+            Id = ResolveOptionalFeatureId(feature),
+            ObjectId = feature.ObjectId,
+            Succeeded = false,
+            Error = ToFeatureEditError(exception)
+        };
+
+    private static FeatureEditError ToFeatureEditError(HonuaOgcFeaturesException exception)
+        => new()
+        {
+            Code = (int)exception.StatusCode,
+            Message = exception.Message,
+            Details = exception.ResponseBody
+        };
 
     private FeatureQueryResult ToFeatureQueryResult(OgcFeatureCollection response)
     {
