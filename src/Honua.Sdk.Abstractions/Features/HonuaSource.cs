@@ -69,6 +69,7 @@ public sealed class HonuaSource : IHonuaSource
     {
         EnsureCapability(FeatureCapabilities.Query);
 
+        var limit = query?.Limit;
         var providerName = _queryClient.ProviderName;
         var features = new List<FeatureRecord>();
         long? numberMatched = null;
@@ -79,9 +80,20 @@ public sealed class HonuaSource : IHonuaSource
         {
             sawPage = true;
             providerName = page.ProviderName;
-            features.AddRange(page.Features);
+            var remaining = limit.HasValue ? limit.Value - features.Count : int.MaxValue;
+            if (remaining <= 0)
+            {
+                break;
+            }
+
+            features.AddRange(page.Features.Take(remaining));
             numberMatched ??= page.NumberMatched;
             objectIdFieldName ??= page.ObjectIdFieldName;
+
+            if (limit.HasValue && features.Count >= limit.Value)
+            {
+                break;
+            }
         }
 
         if (!sawPage)
@@ -113,6 +125,7 @@ public sealed class HonuaSource : IHonuaSource
             ? new SourceQuery { ReturnGeometry = false }
             : query with { ReturnGeometry = false };
         var request = BuildQueryRequest(objectIdQuery);
+        var limit = query?.Limit;
         var idFieldName = Descriptor.Schema?.PrimaryKey;
         var ids = new List<string>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -125,6 +138,10 @@ public sealed class HonuaSource : IHonuaSource
                 if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
                 {
                     ids.Add(id);
+                    if (limit.HasValue && ids.Count >= limit.Value)
+                    {
+                        return ids;
+                    }
                 }
             }
         }

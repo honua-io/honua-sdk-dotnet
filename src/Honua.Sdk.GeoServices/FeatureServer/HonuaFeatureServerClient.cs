@@ -867,11 +867,28 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             return null;
         }
 
-        var digits = new string(crs.Where(char.IsDigit).ToArray());
-        return int.TryParse(digits, NumberStyles.Integer, CultureInfo.InvariantCulture, out var wkid)
-            ? wkid
-            : null;
+        var trimmed = crs.Trim();
+        if (IsCrs84(trimmed))
+        {
+            return 4326;
+        }
+
+        if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var bareWkid))
+        {
+            return bareWkid;
+        }
+
+        var separatorIndex = Math.Max(trimmed.LastIndexOf(':'), trimmed.LastIndexOf('/'));
+        return separatorIndex >= 0 &&
+            int.TryParse(trimmed[(separatorIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var wkid)
+                ? wkid
+                : null;
     }
+
+    private static bool IsCrs84(string crs) =>
+        string.Equals(crs, "CRS84", StringComparison.OrdinalIgnoreCase) ||
+        crs.EndsWith("/CRS84", StringComparison.OrdinalIgnoreCase) ||
+        crs.EndsWith(":CRS84", StringComparison.OrdinalIgnoreCase);
 
     private FeatureQueryResult ToFeatureQueryResult(FeatureServerQueryResponse response)
     {

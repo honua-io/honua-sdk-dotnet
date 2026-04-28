@@ -104,6 +104,49 @@ public sealed class SourceFacadeTests
     }
 
     [Fact]
+    public async Task HonuaSource_QueryAllAsync_RespectsSourceQueryLimit()
+    {
+        var queryClient = new FakeQueryClient(
+            "grpc",
+            _ =>
+            [
+                new FeatureQueryResult
+                {
+                    ProviderName = "grpc",
+                    Features =
+                    [
+                        new FeatureRecord { Id = "1" },
+                        new FeatureRecord { Id = "2" }
+                    ],
+                    NumberMatched = 3,
+                    NumberReturned = 2,
+                    HasMoreResults = true
+                },
+                new FeatureQueryResult
+                {
+                    ProviderName = "grpc",
+                    Features = [new FeatureRecord { Id = "3" }],
+                    NumberMatched = 3,
+                    NumberReturned = 1
+                }
+            ]);
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parks",
+                Protocol = FeatureProtocolIds.Grpc,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 0 }
+            },
+            queryClient);
+
+        var result = await source.QueryAllAsync(new SourceQuery { Limit = 1 });
+
+        Assert.Equal(["1"], result.Features.Select(feature => feature.Id));
+        Assert.Equal(3, result.NumberMatched);
+        Assert.Equal(1, result.NumberReturned);
+    }
+
+    [Fact]
     public async Task HonuaSource_QueryObjectIdsAsync_UsesFeatureIdsAndPrimaryKeyFallback()
     {
         var queryClient = new FakeQueryClient(

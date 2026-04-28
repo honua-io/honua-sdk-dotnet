@@ -432,7 +432,10 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
             BboxCrs = request.Bbox?.Crs,
             Crs = request.OutputCrs,
             Filter = request.Filter,
-            FilterLang = string.IsNullOrWhiteSpace(request.Filter) ? null : "cql2-text",
+            FilterLang = !string.IsNullOrWhiteSpace(request.Filter) &&
+                request.FilterLanguage == FeatureFilterLanguage.Cql2Text
+                    ? "cql2-text"
+                    : null,
             Ids = BuildIds(request),
             Properties = request.OutFields is { Count: > 0 } ? string.Join(",", request.OutFields) : null,
             Sortby = request.OrderBy,

@@ -69,6 +69,29 @@ public sealed class GetFeaturesTests
     }
 
     [Fact]
+    public async Task GetFeatures_MissingNumberReturned_FallsBackToFeatureCount()
+    {
+        const string response = """
+            {
+                "type": "FeatureCollection",
+                "numberMatched": 42,
+                "features": [
+                    { "type": "Feature", "id": "parcels.1", "geometry": null, "properties": {} },
+                    { "type": "Feature", "id": "parcels.2", "geometry": null, "properties": {} }
+                ]
+            }
+            """;
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(TestHelpers.CreateGeoJsonResponse(response)));
+
+        var result = await client.GetFeaturesAsync(new GetFeaturesRequest { TypeNames = "parcels" });
+
+        Assert.Equal(2, result.NumberReturned);
+        Assert.True(result.HasMoreResults);
+        Assert.Equal(2, result.Features.Count);
+    }
+
+    [Fact]
     public async Task GetFeatures_ParsesFeatureProperties()
     {
         var client = TestHelpers.CreateClient(_ =>

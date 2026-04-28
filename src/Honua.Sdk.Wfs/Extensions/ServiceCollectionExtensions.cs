@@ -61,12 +61,23 @@ public static class ServiceCollectionExtensions
             options.TotalRequestTimeout.Timeout = opts.Timeout;
             options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
-            options.Retry.ShouldHandle = args => ValueTask.FromResult(
-                args.Outcome.Result?.StatusCode is
-                    HttpStatusCode.TooManyRequests or
-                    HttpStatusCode.BadGateway or
-                    HttpStatusCode.ServiceUnavailable);
+            options.Retry.ShouldHandle = args => ValueTask.FromResult(ShouldRetry(args.Outcome.Result));
             options.Retry.UseJitter = true;
         });
     }
+
+    private static bool ShouldRetry(HttpResponseMessage? response)
+    {
+        return IsSafeRetryMethod(response?.RequestMessage?.Method) &&
+            response?.StatusCode is
+                HttpStatusCode.TooManyRequests or
+                HttpStatusCode.BadGateway or
+                HttpStatusCode.ServiceUnavailable;
+    }
+
+    private static bool IsSafeRetryMethod(HttpMethod? method) =>
+        method == HttpMethod.Get ||
+        method == HttpMethod.Head ||
+        method == HttpMethod.Options ||
+        method == HttpMethod.Trace;
 }

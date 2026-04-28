@@ -25,7 +25,7 @@ internal sealed class WfsGeoJsonFeatureCollection
 {
     public string? Type { get; set; }
     public JsonElement NumberMatched { get; set; }
-    public int NumberReturned { get; set; }
+    public int? NumberReturned { get; set; }
     public List<WfsGeoJsonFeature>? Features { get; set; }
 
     public WfsFeatureCollection ToPublicModel()
@@ -45,7 +45,7 @@ internal sealed class WfsGeoJsonFeatureCollection
         {
             Features = features,
             NumberMatched = matched,
-            NumberReturned = NumberReturned,
+            NumberReturned = NumberReturned ?? features.Count,
         };
     }
 }

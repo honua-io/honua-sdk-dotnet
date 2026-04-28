@@ -1,5 +1,10 @@
 # Honua Field Data Collection - Reference MAUI App
 
+> Status: archived reference assets. The original app depends on
+> `Honua.Mobile.Core`, which is owned outside this SDK repository. The project
+> file in this folder is intentionally a buildable marker so solution and CI
+> restore/build checks do not depend on unavailable mobile-only assemblies.
+
 A comprehensive reference application demonstrating the capabilities of the Honua Mobile SDK for field data collection. This app implements all four screens specified in GitHub issue #406 and serves as a production-ready example of modern geospatial mobile development.
 
 ## Features
