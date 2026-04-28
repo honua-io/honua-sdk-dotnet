@@ -37,7 +37,7 @@ public sealed class ClientOptionsTests
     }
 
     [Fact]
-    public void AddHonuaOgcFeatures_RegistersUnsupportedSharedEditClient()
+    public void AddHonuaOgcFeatures_RegistersEditClients()
     {
         var services = new ServiceCollection();
         services.AddHonuaOgcFeatures(options =>
@@ -48,12 +48,14 @@ public sealed class ClientOptionsTests
 
         using var provider = services.BuildServiceProvider();
         var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
+        var nativeEditClient = Assert.Single(provider.GetServices<IHonuaOgcFeaturesEditClient>());
 
         Assert.Equal("ogc-features", editClient.ProviderName);
-        Assert.False(editClient.EditCapabilities.SupportsAdds);
-        Assert.False(editClient.EditCapabilities.SupportsUpdates);
-        Assert.False(editClient.EditCapabilities.SupportsDeletes);
-        Assert.Contains("create", editClient.EditCapabilities.UnsupportedReason);
+        Assert.True(editClient.EditCapabilities.SupportsAdds);
+        Assert.True(editClient.EditCapabilities.SupportsUpdates);
+        Assert.True(editClient.EditCapabilities.SupportsDeletes);
+        Assert.False(editClient.EditCapabilities.SupportsRollbackOnFailure);
+        Assert.IsType<HonuaOgcFeaturesClient>(nativeEditClient);
     }
 
     [Fact]
