@@ -137,9 +137,9 @@ var page = await queryClient.QueryAsync(new FeatureQueryRequest
 ## Shared edit abstraction
 
 Feature providers expose shared write support through `IHonuaFeatureEditClient`
-from `Honua.Sdk.Abstractions`. Today gRPC and GeoServices FeatureServer
-advertise write capabilities; WFS and OGC API Features register unsupported
-capabilities with a clear reason until their protocol write paths are added.
+from `Honua.Sdk.Abstractions`. Today gRPC, GeoServices FeatureServer, and OGC
+API Features advertise write capabilities; WFS registers unsupported
+capabilities with a clear reason until WFS-T support is added.
 
 ```csharp
 using Honua.Sdk.Abstractions.Features;

@@ -44,7 +44,7 @@ provider object IDs, per-feature errors, top-level batch errors, and a
 | gRPC | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaGrpcClient.ApplyEditsAsync()` |
 | GeoServices FeatureServer | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaFeatureServerEditClient.ApplyEditsAsync()` plus add/update/delete convenience methods |
 | WFS | Registered as unsupported via `IHonuaFeatureEditClient` | WFS-T implementation decision tracked by #35 |
-| OGC API Features | Registered as unsupported via `IHonuaFeatureEditClient` | Transaction/create-update-delete implementation decision tracked by #35 |
+| OGC API Features | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaOgcFeaturesEditClient.CreateItemAsync()`/`UpdateItemAsync()`/`DeleteItemAsync()` |
 | Admin | Not applicable | Admin has control-plane mutations, not data-plane feature edits |
 
 Select from `IEnumerable<IHonuaFeatureEditClient>` and inspect
@@ -89,3 +89,20 @@ FeatureServer updates require the layer object ID field in each update
 payload. When using the shared abstraction, the SDK injects the object ID field
 from layer metadata when `FeatureEditFeature.ObjectId` or a numeric `Id` is
 provided.
+
+## OGC API Features Notes
+
+The OGC API Features shared adapter maps:
+
+- `FeatureEditRequest.Source.CollectionId` to
+  `/ogc/features/collections/{collectionId}/items`.
+- `Adds` to `POST` GeoJSON feature payloads.
+- `Updates` to `PUT` GeoJSON feature payloads at
+  `/items/{featureId}` using `FeatureEditFeature.Id` or `ObjectId`.
+- `DeleteIds` and numeric `DeleteObjectIds` to `DELETE /items/{featureId}`.
+- OGC problem details and HTTP errors to shared `FeatureEditResult.Error`
+  values.
+
+OGC API Features writes are item-level operations, not server-side edit
+batches. Multi-operation shared edit requests must set
+`RollbackOnFailure = false`; rollback-on-failure batches are rejected locally.

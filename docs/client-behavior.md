@@ -88,6 +88,6 @@ Current typed endpoint coverage is:
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
 WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
-capabilities are available through `IHonuaFeatureEditClient`; gRPC and
-GeoServices FeatureServer currently advertise write support, while WFS and OGC
-API Features report unsupported edit capabilities with a reason.
+capabilities are available through `IHonuaFeatureEditClient`; gRPC,
+GeoServices FeatureServer, and OGC API Features currently advertise write
+support, while WFS reports unsupported edit capabilities with a reason.
