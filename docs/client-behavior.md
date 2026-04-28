@@ -83,8 +83,10 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
 | `Honua.Sdk.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
-| `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, and auto-pagination. |
+| `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, and next-link pagination. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
-WFS, GeoServices FeatureServer, and OGC API Features.
+WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edits are
+available through `IHonuaFeatureEditClient` for gRPC and GeoServices
+FeatureServer.
