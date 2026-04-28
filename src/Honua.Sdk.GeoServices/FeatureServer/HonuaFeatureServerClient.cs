@@ -14,9 +14,18 @@ namespace Honua.Sdk.GeoServices.FeatureServer;
 /// <summary>
 /// HTTP client implementation for the Honua FeatureServer (GeoServices) read/query API.
 /// </summary>
-public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonuaFeatureQueryClient
+public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonuaFeatureServerEditClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
 {
     private const int PostFallbackThreshold = 2000;
+    private static readonly FeatureEditCapabilities ProviderEditCapabilities = new()
+    {
+        SupportsAdds = true,
+        SupportsUpdates = true,
+        SupportsDeletes = true,
+        SupportsRollbackOnFailure = true,
+        NativeSurface = "GeoServices FeatureServer applyEdits"
+    };
+
     private readonly HttpClient _http;
 
     /// <summary>
@@ -30,6 +39,9 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
 
     /// <inheritdoc />
     public string ProviderName => "geoservices-featureserver";
+
+    /// <inheritdoc />
+    public FeatureEditCapabilities EditCapabilities => ProviderEditCapabilities;
 
     private static string ServicePath(string serviceId) =>
         $"/rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer";
@@ -54,6 +66,14 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         var body = await GetStringAsync(url, ct).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerLayerInfo)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize layer info.", body);
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureEditCapabilities> GetEditCapabilitiesAsync(
+        string serviceId, int layerId, CancellationToken ct = default)
+    {
+        var layer = await GetLayerInfoAsync(serviceId, layerId, ct).ConfigureAwait(false);
+        return BuildEditCapabilities(layer.Capabilities);
     }
 
     /// <inheritdoc />
@@ -107,6 +127,99 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         {
             yield return ToFeatureQueryResult(page);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureServerEditResponse> ApplyEditsAsync(
+        string serviceId,
+        int layerId,
+        FeatureServerEditRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceId);
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHasEdits(request);
+
+        var parameters = BuildEditParams(request);
+        var basePath = $"{ServicePath(serviceId)}/{layerId}/applyEdits";
+        var body = await PostFormAsync(basePath, parameters, ct).ConfigureAwait(false);
+        return DeserializeEditResponse(body);
+    }
+
+    /// <inheritdoc />
+    public Task<FeatureServerEditResponse> AddFeaturesAsync(
+        string serviceId,
+        int layerId,
+        IReadOnlyList<FeatureServerFeature> features,
+        bool rollbackOnFailure = true,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(features);
+        return ApplyEditsAsync(
+            serviceId,
+            layerId,
+            new FeatureServerEditRequest
+            {
+                Adds = features,
+                RollbackOnFailure = rollbackOnFailure
+            },
+            ct);
+    }
+
+    /// <inheritdoc />
+    public Task<FeatureServerEditResponse> UpdateFeaturesAsync(
+        string serviceId,
+        int layerId,
+        IReadOnlyList<FeatureServerFeature> features,
+        bool rollbackOnFailure = true,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(features);
+        return ApplyEditsAsync(
+            serviceId,
+            layerId,
+            new FeatureServerEditRequest
+            {
+                Updates = features,
+                RollbackOnFailure = rollbackOnFailure
+            },
+            ct);
+    }
+
+    /// <inheritdoc />
+    public Task<FeatureServerEditResponse> DeleteFeaturesAsync(
+        string serviceId,
+        int layerId,
+        IReadOnlyList<long> objectIds,
+        bool rollbackOnFailure = true,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(objectIds);
+        return ApplyEditsAsync(
+            serviceId,
+            layerId,
+            new FeatureServerEditRequest
+            {
+                Deletes = objectIds,
+                RollbackOnFailure = rollbackOnFailure
+            },
+            ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureEditResponse> ApplyEditsAsync(
+        FeatureEditRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var (serviceId, layerId) = GetEditSource(request);
+        var objectIdField = await ResolveObjectIdFieldAsync(serviceId, layerId, request, ct).ConfigureAwait(false);
+        var response = await ApplyEditsAsync(
+            serviceId,
+            layerId,
+            BuildFeatureServerEditRequest(request, objectIdField),
+            ct).ConfigureAwait(false);
+
+        return ToFeatureEditResponse(response);
     }
 
     /// <inheritdoc />
@@ -370,6 +483,12 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize query response.", body);
     }
 
+    private static FeatureServerEditResponse DeserializeEditResponse(string body)
+    {
+        return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerEditResponse)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize edit response.", body);
+    }
+
     private static List<(string Key, string? Value)> BuildQueryParams(FeatureServerQueryParams query)
     {
         var parameters = new List<(string Key, string? Value)>
@@ -423,6 +542,51 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             parameters.Add(("returnDistinctValues", "true"));
 
         return parameters;
+    }
+
+    private static List<(string Key, string? Value)> BuildEditParams(FeatureServerEditRequest request)
+    {
+        var parameters = new List<(string Key, string? Value)>
+        {
+            ("f", "json"),
+            ("rollbackOnFailure", request.RollbackOnFailure ? "true" : "false"),
+        };
+
+        if (request.Adds is { Count: > 0 })
+        {
+            parameters.Add(("adds", SerializeFeatures(request.Adds)));
+        }
+
+        if (request.Updates is { Count: > 0 })
+        {
+            parameters.Add(("updates", SerializeFeatures(request.Updates)));
+        }
+
+        if (request.Deletes is { Count: > 0 })
+        {
+            parameters.Add(("deletes", string.Join(",", request.Deletes)));
+        }
+
+        return parameters;
+    }
+
+    private static string SerializeFeatures(IReadOnlyList<FeatureServerFeature> features)
+    {
+        return JsonSerializer.Serialize(
+            features.ToArray(),
+            FeatureServerJsonContext.Default.FeatureServerFeatureArray);
+    }
+
+    private static void EnsureHasEdits(FeatureServerEditRequest request)
+    {
+        if (request.Adds is { Count: > 0 } ||
+            request.Updates is { Count: > 0 } ||
+            request.Deletes is { Count: > 0 })
+        {
+            return;
+        }
+
+        throw new ArgumentException("At least one add, update, or delete edit is required.", nameof(request));
     }
 
     private static List<(string Key, string? Value)> BuildStatisticsParams(FeatureServerStatisticsParams query)
@@ -494,6 +658,149 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         };
 
         return (request.Source.ServiceId, request.Source.LayerId.Value, query);
+    }
+
+    private static (string ServiceId, int LayerId) GetEditSource(FeatureEditRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Source.ServiceId))
+        {
+            throw new ArgumentException("A service ID is required for FeatureServer edits.", nameof(request));
+        }
+
+        if (!request.Source.LayerId.HasValue)
+        {
+            throw new ArgumentException("A layer ID is required for FeatureServer edits.", nameof(request));
+        }
+
+        return (request.Source.ServiceId, request.Source.LayerId.Value);
+    }
+
+    private async Task<string?> ResolveObjectIdFieldAsync(
+        string serviceId,
+        int layerId,
+        FeatureEditRequest request,
+        CancellationToken ct)
+    {
+        if (!request.Updates.Any(HasFeatureObjectId))
+        {
+            return null;
+        }
+
+        var layer = await GetLayerInfoAsync(serviceId, layerId, ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(layer.ObjectIdField))
+        {
+            throw new InvalidOperationException(
+                "FeatureServer layer metadata does not expose an object ID field required for shared updates.");
+        }
+
+        return layer.ObjectIdField;
+    }
+
+    private static FeatureServerEditRequest BuildFeatureServerEditRequest(
+        FeatureEditRequest request,
+        string? objectIdField)
+    {
+        if (request.ForceWrite)
+        {
+            throw new NotSupportedException("FeatureServer edits do not support force-write conflict overrides.");
+        }
+
+        return new FeatureServerEditRequest
+        {
+            Adds = request.Adds.Select(feature => ToFeatureServerFeature(feature, objectIdField: null)).ToList(),
+            Updates = request.Updates.Select(feature => ToFeatureServerFeature(feature, objectIdField)).ToList(),
+            Deletes = ResolveDeleteObjectIds(request),
+            RollbackOnFailure = request.RollbackOnFailure,
+        };
+    }
+
+    private static FeatureServerFeature ToFeatureServerFeature(FeatureEditFeature feature, string? objectIdField)
+    {
+        ArgumentNullException.ThrowIfNull(feature);
+
+        var attributes = feature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone());
+        if (!string.IsNullOrWhiteSpace(objectIdField) && !ContainsAttribute(attributes, objectIdField))
+        {
+            var objectId = ResolveFeatureObjectId(feature);
+            if (objectId.HasValue)
+            {
+                attributes[objectIdField] = JsonSerializer.SerializeToElement(objectId.Value);
+            }
+        }
+
+        return new FeatureServerFeature
+        {
+            Attributes = attributes,
+            Geometry = feature.Geometry.HasValue ? feature.Geometry.Value.Clone() : null,
+        };
+    }
+
+    private static IReadOnlyList<long> ResolveDeleteObjectIds(FeatureEditRequest request)
+    {
+        var objectIds = new List<long>(request.DeleteObjectIds);
+        foreach (var id in request.DeleteIds)
+        {
+            if (!long.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var objectId))
+            {
+                throw new ArgumentException("FeatureServer feature deletes require numeric feature IDs.", nameof(request));
+            }
+
+            objectIds.Add(objectId);
+        }
+
+        return objectIds;
+    }
+
+    private static bool HasFeatureObjectId(FeatureEditFeature feature)
+        => feature.ObjectId.HasValue || !string.IsNullOrWhiteSpace(feature.Id);
+
+    private static long? ResolveFeatureObjectId(FeatureEditFeature feature)
+    {
+        if (feature.ObjectId.HasValue)
+        {
+            return feature.ObjectId.Value;
+        }
+
+        if (string.IsNullOrWhiteSpace(feature.Id))
+        {
+            return null;
+        }
+
+        if (long.TryParse(feature.Id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var objectId))
+        {
+            return objectId;
+        }
+
+        throw new ArgumentException("FeatureServer feature updates require numeric feature IDs.");
+    }
+
+    private static bool ContainsAttribute(Dictionary<string, JsonElement> attributes, string name)
+        => attributes.Keys.Any(key => string.Equals(key, name, StringComparison.OrdinalIgnoreCase));
+
+    private static FeatureEditCapabilities BuildEditCapabilities(string? capabilities)
+    {
+        var tokens = ParseCapabilities(capabilities);
+        var supportsAdds = tokens.Contains("create") || tokens.Contains("editing");
+        var supportsUpdates = tokens.Contains("update") || tokens.Contains("editing");
+        var supportsDeletes = tokens.Contains("delete") || tokens.Contains("editing");
+
+        return new FeatureEditCapabilities
+        {
+            SupportsAdds = supportsAdds,
+            SupportsUpdates = supportsUpdates,
+            SupportsDeletes = supportsDeletes,
+            SupportsRollbackOnFailure = supportsAdds || supportsUpdates || supportsDeletes,
+            NativeSurface = "GeoServices FeatureServer applyEdits"
+        };
+    }
+
+    private static HashSet<string> ParseCapabilities(string? capabilities)
+    {
+        return string.IsNullOrWhiteSpace(capabilities)
+            ? []
+            : capabilities.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(capability => capability.ToLowerInvariant())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
@@ -578,6 +885,38 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             NumberReturned = features.Count,
             HasMoreResults = response.ExceededTransferLimit,
             ObjectIdFieldName = response.ObjectIdFieldName,
+        };
+    }
+
+    private FeatureEditResponse ToFeatureEditResponse(FeatureServerEditResponse response)
+    {
+        return new FeatureEditResponse
+        {
+            ProviderName = ProviderName,
+            AddResults = response.AddResults.Select(ToFeatureEditResult).ToList(),
+            UpdateResults = response.UpdateResults.Select(ToFeatureEditResult).ToList(),
+            DeleteResults = response.DeleteResults.Select(ToFeatureEditResult).ToList(),
+        };
+    }
+
+    private static FeatureEditResult ToFeatureEditResult(FeatureServerEditResult result)
+    {
+        var id = result.ObjectId?.ToString(CultureInfo.InvariantCulture) ?? result.GlobalId;
+        return new FeatureEditResult
+        {
+            Id = id,
+            ObjectId = result.ObjectId,
+            Succeeded = result.Success,
+            Error = result.Error is not null ? ToFeatureEditError(result.Error) : null,
+        };
+    }
+
+    private static FeatureEditError ToFeatureEditError(FeatureServerEditError error)
+    {
+        return new FeatureEditError
+        {
+            Code = error.Code,
+            Message = error.Description ?? error.Message ?? "FeatureServer edit failed.",
         };
     }
 

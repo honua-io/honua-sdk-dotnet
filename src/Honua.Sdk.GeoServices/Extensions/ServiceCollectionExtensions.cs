@@ -37,7 +37,9 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaFeatureServerClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
+        services.AddTransient<IHonuaFeatureServerEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
+        services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         ConfigureResilience(httpBuilder, configure);
         return services;
     }

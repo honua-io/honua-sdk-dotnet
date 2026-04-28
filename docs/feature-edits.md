@@ -13,7 +13,7 @@ code should apply edits without depending directly on one protocol package.
 using Honua.Sdk.Abstractions.Features;
 
 IHonuaFeatureEditClient edits = featureEditClients
-    .Single(c => c.ProviderName == "grpc");
+    .Single(c => c.ProviderName == "geoservices-featureserver");
 
 var result = await edits.ApplyEditsAsync(new FeatureEditRequest
 {
@@ -42,7 +42,7 @@ provider object IDs, per-feature errors, top-level batch errors, and a
 | Provider | Shared edit support | Native edit support |
 |----------|---------------------|---------------------|
 | gRPC | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaGrpcClient.ApplyEditsAsync()` |
-| GeoServices FeatureServer | Not yet | Tracked by #35 |
+| GeoServices FeatureServer | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaFeatureServerEditClient.ApplyEditsAsync()` plus add/update/delete convenience methods |
 | WFS | Not yet | WFS-T decision tracked by #35 |
 | OGC API Features | Not yet | Transaction/create-update-delete decision tracked by #35 |
 | Admin | Not applicable | Admin has control-plane mutations, not data-plane feature edits |
@@ -64,3 +64,26 @@ The gRPC shared adapter maps:
 
 gRPC updates and deletes require numeric feature IDs or object IDs. Non-numeric
 IDs fail locally with `ArgumentException` before a remote call.
+
+## GeoServices FeatureServer Notes
+
+The FeatureServer shared adapter maps:
+
+- `FeatureEditRequest.Source.ServiceId` and `LayerId` to
+  `/rest/services/{serviceId}/FeatureServer/{layerId}/applyEdits`.
+- `Adds` and `Updates` to GeoServices feature JSON payloads with `attributes`
+  and optional Esri JSON `geometry`.
+- `DeleteObjectIds` and numeric `DeleteIds` to GeoServices `deletes`.
+- GeoServices per-feature edit errors to shared `FeatureEditResult.Error`
+  values.
+
+Native callers can use `ApplyEditsAsync`, `AddFeaturesAsync`,
+`UpdateFeaturesAsync`, and `DeleteFeaturesAsync` on
+`IHonuaFeatureServerEditClient`. Use `GetEditCapabilitiesAsync(serviceId, layerId)`
+to inspect layer capabilities parsed from FeatureServer layer metadata before
+attempting writes.
+
+FeatureServer updates require the layer object ID field in each update
+payload. When using the shared abstraction, the SDK injects the object ID field
+from layer metadata when `FeatureEditFeature.ObjectId` or a numeric `Id` is
+provided.

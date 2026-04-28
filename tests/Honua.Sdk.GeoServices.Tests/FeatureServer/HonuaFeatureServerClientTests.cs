@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 using Honua.Sdk.GeoServices.Tests.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 
@@ -205,6 +208,221 @@ public class HonuaFeatureServerClientTests
         Assert.Equal("geoservices-featureserver", result.ProviderName);
         Assert.Single(result.Features);
         Assert.Equal("7", result.Features[0].Id);
+    }
+
+    // ── Feature edits ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task ApplyEditsAsync_PostsApplyEditsFormAndReturnsResults()
+    {
+        HttpMethod? capturedMethod = null;
+        string? capturedPath = null;
+        Dictionary<string, string?>? capturedForm = null;
+        var json = """
+        {
+            "addResults": [{ "objectId": 101, "success": true }],
+            "updateResults": [
+                {
+                    "objectId": 102,
+                    "success": false,
+                    "error": { "code": 400, "description": "Update rejected" }
+                }
+            ],
+            "deleteResults": [{ "objectId": 103, "success": true }],
+            "editMoment": 123456789
+        }
+        """;
+        var client = TestHelpers.CreateFeatureServerClient(async req =>
+        {
+            capturedMethod = req.Method;
+            capturedPath = req.RequestUri?.AbsolutePath;
+            capturedForm = await ParseFormAsync(req).ConfigureAwait(false);
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        var response = await client.ApplyEditsAsync("svc", 0, new FeatureServerEditRequest
+        {
+            Adds =
+            [
+                new FeatureServerFeature
+                {
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["NAME"] = JsonValue("New Park"),
+                        ["ACTIVE"] = JsonValue(true),
+                    },
+                    Geometry = JsonObject("""{"x":1.25,"y":2.5}"""),
+                }
+            ],
+            Updates =
+            [
+                new FeatureServerFeature
+                {
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["OBJECTID"] = JsonValue(102),
+                        ["NAME"] = JsonValue("Renamed Park"),
+                    },
+                }
+            ],
+            Deletes = [103],
+            RollbackOnFailure = false,
+        });
+
+        Assert.Equal(HttpMethod.Post, capturedMethod);
+        Assert.Equal("/rest/services/svc/FeatureServer/0/applyEdits", capturedPath);
+        Assert.NotNull(capturedForm);
+        Assert.Equal("json", capturedForm!["f"]);
+        Assert.Equal("false", capturedForm["rollbackOnFailure"]);
+        Assert.Equal("103", capturedForm["deletes"]);
+
+        using var adds = JsonDocument.Parse(capturedForm["adds"]!);
+        Assert.Equal("New Park", adds.RootElement[0].GetProperty("attributes").GetProperty("NAME").GetString());
+        Assert.True(adds.RootElement[0].GetProperty("attributes").GetProperty("ACTIVE").GetBoolean());
+        Assert.Equal(1.25, adds.RootElement[0].GetProperty("geometry").GetProperty("x").GetDouble());
+
+        using var updates = JsonDocument.Parse(capturedForm["updates"]!);
+        Assert.Equal(102, updates.RootElement[0].GetProperty("attributes").GetProperty("OBJECTID").GetInt64());
+
+        Assert.Equal(123456789, response.EditMoment);
+        Assert.Single(response.AddResults);
+        Assert.True(response.AddResults[0].Success);
+        Assert.False(response.UpdateResults[0].Success);
+        Assert.Equal(400, response.UpdateResults[0].Error?.Code);
+        Assert.Equal("Update rejected", response.UpdateResults[0].Error?.Description);
+        Assert.Equal(103, response.DeleteResults[0].ObjectId);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_InjectsObjectIdFieldAndMapsResults()
+    {
+        var callCount = 0;
+        Dictionary<string, string?>? capturedForm = null;
+        var client = TestHelpers.CreateFeatureServerClient(async req =>
+        {
+            callCount++;
+            if (req.Method == HttpMethod.Get)
+            {
+                return TestHelpers.CreateRawJsonResponse("""{ "id": 0, "objectIdField": "OBJECTID", "capabilities": "Query,Create,Update,Delete" }""");
+            }
+
+            capturedForm = await ParseFormAsync(req).ConfigureAwait(false);
+            return TestHelpers.CreateRawJsonResponse("""
+            {
+                "addResults": [{ "objectId": 201, "success": true }],
+                "updateResults": [{ "objectId": 202, "success": true }],
+                "deleteResults": [{ "objectId": 203, "success": true }]
+            }
+            """);
+        });
+
+        var response = await ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+        {
+            Source = new FeatureSource { ServiceId = "svc", LayerId = 0 },
+            Adds =
+            [
+                new FeatureEditFeature
+                {
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["NAME"] = JsonValue("New Park"),
+                    },
+                }
+            ],
+            Updates =
+            [
+                new FeatureEditFeature
+                {
+                    ObjectId = 202,
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["NAME"] = JsonValue("Updated Park"),
+                    },
+                }
+            ],
+            DeleteIds = ["203"],
+        });
+
+        Assert.Equal(2, callCount);
+        Assert.NotNull(capturedForm);
+        Assert.Equal("203", capturedForm!["deletes"]);
+
+        using var updates = JsonDocument.Parse(capturedForm["updates"]!);
+        var attributes = updates.RootElement[0].GetProperty("attributes");
+        Assert.Equal("Updated Park", attributes.GetProperty("NAME").GetString());
+        Assert.Equal(202, attributes.GetProperty("OBJECTID").GetInt64());
+
+        Assert.Equal("geoservices-featureserver", response.ProviderName);
+        Assert.True(response.Succeeded);
+        Assert.Equal(201, response.AddResults[0].ObjectId);
+        Assert.Equal(202, response.UpdateResults[0].ObjectId);
+        Assert.Equal(203, response.DeleteResults[0].ObjectId);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_NonNumericDeleteId_Throws()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse("""{}""")));
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+            {
+                Source = new FeatureSource { ServiceId = "svc", LayerId = 0 },
+                DeleteIds = ["abc"],
+            }));
+
+        Assert.Contains("numeric", ex.Message);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_EmptyRequest_Throws()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse("""{}""")));
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            client.ApplyEditsAsync("svc", 0, new FeatureServerEditRequest()));
+
+        Assert.Contains("At least one", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetEditCapabilitiesAsync_ParsesLayerCapabilities()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse("""
+            { "id": 0, "objectIdField": "OBJECTID", "capabilities": "Query,Create,Update,Delete" }
+            """)));
+
+        var capabilities = await client.GetEditCapabilitiesAsync("svc", 0);
+
+        Assert.True(capabilities.SupportsAdds);
+        Assert.True(capabilities.SupportsUpdates);
+        Assert.True(capabilities.SupportsDeletes);
+        Assert.True(capabilities.SupportsRollbackOnFailure);
+        Assert.Equal("GeoServices FeatureServer applyEdits", capabilities.NativeSurface);
+    }
+
+    [Fact]
+    public void AddHonuaFeatureServer_RegistersEditClients()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaFeatureServer(options =>
+        {
+            options.BaseAddress = new Uri("http://localhost:5000");
+            options.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
+        var featureServerEditClient = Assert.Single(provider.GetServices<IHonuaFeatureServerEditClient>());
+
+        Assert.Equal("geoservices-featureserver", editClient.ProviderName);
+        Assert.True(editClient.EditCapabilities.SupportsAdds);
+        Assert.True(editClient.EditCapabilities.SupportsUpdates);
+        Assert.True(editClient.EditCapabilities.SupportsDeletes);
+        Assert.IsType<HonuaFeatureServerClient>(featureServerEditClient);
     }
 
     // ── GetFeatureAsync ────────────────────────────────────────────
@@ -510,5 +728,25 @@ public class HonuaFeatureServerClientTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(capturedUrl);
         Assert.Contains("f=flatgeobuf", capturedUrl);
+    }
+
+    private static JsonElement JsonValue<T>(T value)
+        => JsonSerializer.SerializeToElement(value);
+
+    private static JsonElement JsonObject(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
+    }
+
+    private static async Task<Dictionary<string, string?>> ParseFormAsync(HttpRequestMessage request)
+    {
+        var body = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return body
+            .Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Split('=', 2))
+            .ToDictionary(
+                pair => WebUtility.UrlDecode(pair[0])!,
+                pair => pair.Length > 1 ? WebUtility.UrlDecode(pair[1]) : null);
     }
 }

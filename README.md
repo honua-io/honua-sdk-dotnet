@@ -137,8 +137,9 @@ var page = await queryClient.QueryAsync(new FeatureQueryRequest
 ## Shared edit abstraction
 
 Edit-capable providers implement `IHonuaFeatureEditClient` from
-`Honua.Sdk.Abstractions`. Today gRPC is registered for shared edits; native
-GeoServices, WFS, and OGC API Features write endpoints are tracked separately.
+`Honua.Sdk.Abstractions`. Today gRPC and GeoServices FeatureServer are
+registered for shared edits; WFS and OGC API Features write endpoints are
+tracked separately.
 
 ```csharp
 using Honua.Sdk.Abstractions.Features;
