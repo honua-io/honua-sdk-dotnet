@@ -198,7 +198,7 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
         ArgumentNullException.ThrowIfNull(featureId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
 
-        using var response = await _http.DeleteAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.DeleteAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         EnsureSuccess(response, body);
     }
@@ -244,14 +244,14 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
-        return await _http.GetAsync(url, ct).ConfigureAwait(false);
+        return await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private async Task<string> GetStringAsync(string url, CancellationToken ct)
     {
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
@@ -582,12 +582,14 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
         return feature.ObjectId?.ToString(CultureInfo.InvariantCulture);
     }
 
-    private static IReadOnlyList<string> ResolveDeleteIds(FeatureEditRequest request)
+    private static List<string> ResolveDeleteIds(FeatureEditRequest request)
     {
         var ids = new List<string>(request.DeleteIds);
         ids.AddRange(request.DeleteObjectIds.Select(id => id.ToString(CultureInfo.InvariantCulture)));
         return ids;
     }
+
+    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static FeatureEditResult ToFeatureEditResult(OgcFeature response, FeatureEditFeature fallback)
     {

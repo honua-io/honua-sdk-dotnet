@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -41,6 +42,9 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Validate package versions
         shell: bash
@@ -104,7 +108,7 @@ jobs:
           )
 
           for project in "${projects[@]}"; do
-            dotnet build "${project}" --configuration Release /p:TreatWarningsAsErrors=true
+            dotnet build "${project}" --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
           done
 
       - name: Test SDK packages
@@ -119,17 +123,17 @@ jobs:
           )
 
           for project in "${projects[@]}"; do
-            dotnet test "${project}" --configuration Release
+            dotnet test "${project}" --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
           done
 
       - name: Build canonical sample
-        run: dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Build field data reference sample
-        run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test canonical sample workflow
-        run: dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj --configuration Release
+        run: dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Validate package API compatibility
         shell: bash
@@ -200,13 +204,42 @@ jobs:
 
           pushd "${smoke_dir}" >/dev/null
 
+          cat > NuGet.config <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="local-sdk" value="${GITHUB_WORKSPACE}/nupkgs" />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+              <add key="github-honua" value="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" />
+            </packageSources>
+            <packageSourceCredentials>
+              <github-honua>
+                <add key="Username" value="${{ github.actor }}" />
+                <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
+              </github-honua>
+            </packageSourceCredentials>
+            <packageSourceMapping>
+              <packageSource key="local-sdk">
+                <package pattern="Honua.Sdk.*" />
+              </packageSource>
+              <packageSource key="github-honua">
+                <package pattern="Geospatial.Grpc" />
+              </packageSource>
+              <packageSource key="nuget.org">
+                <package pattern="*" />
+              </packageSource>
+            </packageSourceMapping>
+          </configuration>
+          EOF
+
           dotnet add package Microsoft.Extensions.Hosting --version 10.0.0
-          dotnet add package Honua.Sdk.Abstractions --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Admin --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Grpc --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.Wfs --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.GeoServices --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
-          dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}" --source "${GITHUB_WORKSPACE}/nupkgs"
+          dotnet add package Honua.Sdk.Abstractions --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Admin --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Grpc --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Wfs --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.GeoServices --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}"
 
           cat <<'EOF' > Program.cs
           using Honua.Sdk.Abstractions.Features;
@@ -335,19 +368,4 @@ jobs:
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --api-key ${{ secrets.GITHUB_TOKEN }} \
-            --skip-duplicate
-
-      - name: Publish to NuGet.org (stable releases only)
-        if: ${{ github.event_name == 'push' && startsWith(github.ref_name, 'dotnet-sdk-v') }}
-        shell: bash
-        run: |
-          version="${GITHUB_REF_NAME#dotnet-sdk-v}"
-          if [[ "${version}" == *-* ]]; then
-            echo "Skipping NuGet.org publish for prerelease ${version}."
-            exit 0
-          fi
-
-          dotnet nuget push ./nupkgs/*.nupkg \
-            --source "https://api.nuget.org/v3/index.json" \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
             --skip-duplicate

@@ -11,6 +11,33 @@ namespace Honua.Sdk.Admin.Exceptions;
 public sealed class HonuaAdminApiException : Exception
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaAdminApiException"/> class.
+    /// </summary>
+    public HonuaAdminApiException()
+        : this(HttpStatusCode.InternalServerError, "Admin API request failed.")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaAdminApiException"/> class.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    public HonuaAdminApiException(string message)
+        : this(HttpStatusCode.InternalServerError, message)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaAdminApiException"/> class with an inner exception.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    /// <param name="innerException">The inner exception that caused this exception.</param>
+    public HonuaAdminApiException(string message, Exception innerException)
+        : this(HttpStatusCode.InternalServerError, message, null, innerException)
+    {
+    }
+
+    /// <summary>
     /// HTTP status code returned by the server.
     /// </summary>
     public HttpStatusCode StatusCode { get; }

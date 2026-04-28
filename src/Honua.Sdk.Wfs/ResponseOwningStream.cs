@@ -56,6 +56,6 @@ internal sealed class ResponseOwningStream : Stream
     {
         await _inner.DisposeAsync().ConfigureAwait(false);
         _response.Dispose();
-        GC.SuppressFinalize(this);
+        await base.DisposeAsync().ConfigureAwait(false);
     }
 }

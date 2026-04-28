@@ -15,8 +15,13 @@ if [[ -z "${BASE_REF}" ]]; then
 fi
 
 if ! git -C "${ROOT}" rev-parse --verify --quiet "${BASE_REF}^{commit}" >/dev/null; then
-  echo "::warning::Skipping API compatibility validation because baseline ref '${BASE_REF}' was not found."
-  exit 0
+  if [[ "${HONUA_API_COMPAT_ALLOW_MISSING_BASELINE:-false}" == "true" ]]; then
+    echo "::warning::Skipping API compatibility validation because baseline ref '${BASE_REF}' was not found and HONUA_API_COMPAT_ALLOW_MISSING_BASELINE=true."
+    exit 0
+  fi
+
+  echo "::error::API compatibility baseline ref '${BASE_REF}' was not found. Fetch the baseline or set HONUA_API_COMPAT_ALLOW_MISSING_BASELINE=true for intentional first-run bootstraps."
+  exit 1
 fi
 
 TEMP_DIR="$(mktemp -d)"

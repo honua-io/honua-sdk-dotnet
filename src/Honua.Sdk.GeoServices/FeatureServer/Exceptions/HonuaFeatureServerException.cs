@@ -11,6 +11,33 @@ namespace Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 public sealed class HonuaFeatureServerException : Exception
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class.
+    /// </summary>
+    public HonuaFeatureServerException()
+        : this(HttpStatusCode.InternalServerError, "FeatureServer request failed.")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    public HonuaFeatureServerException(string message)
+        : this(HttpStatusCode.InternalServerError, message)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class with an inner exception.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    /// <param name="innerException">The inner exception that caused this exception.</param>
+    public HonuaFeatureServerException(string message, Exception innerException)
+        : this(HttpStatusCode.InternalServerError, message, null, innerException)
+    {
+    }
+
+    /// <summary>
     /// HTTP status code returned by the server, or the GeoServices error code mapped to an HTTP status.
     /// </summary>
     public HttpStatusCode StatusCode { get; }

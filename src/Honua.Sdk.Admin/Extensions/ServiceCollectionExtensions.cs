@@ -1,7 +1,6 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-using System.Net;
 using Honua.Sdk.Admin.Geocoding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -24,6 +23,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<HonuaAdminClientOptions> configure)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
         services.Configure(configure);
         services.AddTransient<HonuaAdminAuthHandler>();
         var httpBuilder = services.AddHttpClient<IHonuaAdminClient, HonuaAdminClient>((sp, client) =>
@@ -35,7 +37,7 @@ public static class ServiceCollectionExtensions
             client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
-        ConfigureResilience(services, httpBuilder, configure);
+        ConfigureResilience(httpBuilder, configure);
         return services;
     }
 
@@ -52,6 +54,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<HonuaAdminClientOptions> configure)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
         services.Configure(configure);
         services.AddTransient<HonuaAdminAuthHandler>();
         var httpBuilder = services.AddHttpClient(nameof(HonuaGeocodingClient), (sp, client) =>
@@ -64,12 +69,11 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
         httpBuilder.AddTypedClient<IHonuaGeocodingClient>(httpClient => new HonuaGeocodingClient(httpClient));
-        ConfigureResilience(services, httpBuilder, configure);
+        ConfigureResilience(httpBuilder, configure);
         return services;
     }
 
     private static void ConfigureResilience(
-        IServiceCollection services,
         IHttpClientBuilder httpBuilder,
         Action<HonuaAdminClientOptions> configure)
     {
@@ -87,23 +91,9 @@ public static class ServiceCollectionExtensions
             options.TotalRequestTimeout.Timeout = opts.Timeout;
             options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
-            options.Retry.ShouldHandle = args => ValueTask.FromResult(ShouldRetry(args.Outcome.Result));
+            options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+            options.Retry.DisableForUnsafeHttpMethods();
             options.Retry.UseJitter = true;
         });
     }
-
-    private static bool ShouldRetry(HttpResponseMessage? response)
-    {
-        return IsSafeRetryMethod(response?.RequestMessage?.Method) &&
-            response?.StatusCode is
-                HttpStatusCode.TooManyRequests or
-                HttpStatusCode.BadGateway or
-                HttpStatusCode.ServiceUnavailable;
-    }
-
-    private static bool IsSafeRetryMethod(HttpMethod? method) =>
-        method == HttpMethod.Get ||
-        method == HttpMethod.Head ||
-        method == HttpMethod.Options ||
-        method == HttpMethod.Trace;
 }

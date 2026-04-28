@@ -105,7 +105,7 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             },
             ct).ConfigureAwait(false);
 
-        return response.Features?.FirstOrDefault();
+        return response.Features is { Count: > 0 } features ? features[0] : null;
     }
 
     /// <inheritdoc />
@@ -338,19 +338,19 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
 
         if (url.Length > PostFallbackThreshold)
         {
-            var content = new FormUrlEncodedContent(
+            using var content = new FormUrlEncodedContent(
                 parameters.Where(p => p.Value is not null).Select(p => new KeyValuePair<string, string>(p.Key, p.Value!)));
-            return await _http.PostAsync(basePath, content, ct).ConfigureAwait(false);
+            return await _http.PostAsync(CreateRequestUri(basePath), content, ct).ConfigureAwait(false);
         }
 
-        return await _http.GetAsync(url, ct).ConfigureAwait(false);
+        return await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
     private async Task<string> GetStringAsync(string url, CancellationToken ct)
     {
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
@@ -374,10 +374,10 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
     private async Task<string> PostFormAsync(
         string path, List<(string Key, string? Value)> parameters, CancellationToken ct)
     {
-        var content = new FormUrlEncodedContent(
+        using var content = new FormUrlEncodedContent(
             parameters.Where(p => p.Value is not null).Select(p => new KeyValuePair<string, string>(p.Key, p.Value!)));
 
-        using var response = await _http.PostAsync(path, content, ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(path), content, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
@@ -735,7 +735,7 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         };
     }
 
-    private static IReadOnlyList<long> ResolveDeleteObjectIds(FeatureEditRequest request)
+    private static List<long> ResolveDeleteObjectIds(FeatureEditRequest request)
     {
         var objectIds = new List<long>(request.DeleteObjectIds);
         foreach (var id in request.DeleteIds)
@@ -780,9 +780,9 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
     private static FeatureEditCapabilities BuildEditCapabilities(string? capabilities)
     {
         var tokens = ParseCapabilities(capabilities);
-        var supportsAdds = tokens.Contains("create") || tokens.Contains("editing");
-        var supportsUpdates = tokens.Contains("update") || tokens.Contains("editing");
-        var supportsDeletes = tokens.Contains("delete") || tokens.Contains("editing");
+        var supportsAdds = tokens.Contains("CREATE") || tokens.Contains("EDITING");
+        var supportsUpdates = tokens.Contains("UPDATE") || tokens.Contains("EDITING");
+        var supportsDeletes = tokens.Contains("DELETE") || tokens.Contains("EDITING");
 
         return new FeatureEditCapabilities
         {
@@ -799,9 +799,11 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         return string.IsNullOrWhiteSpace(capabilities)
             ? []
             : capabilities.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(capability => capability.ToLowerInvariant())
+                .Select(capability => capability.ToUpperInvariant())
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
+
+    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
     {

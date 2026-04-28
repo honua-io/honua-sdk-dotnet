@@ -183,7 +183,7 @@ public sealed class HonuaSource : IHonuaSource
         return native as TClient;
     }
 
-    private static IReadOnlyList<string> BuildCapabilities(
+    private static List<string> BuildCapabilities(
         SourceDescriptor descriptor,
         IHonuaFeatureQueryClient queryClient,
         IHonuaFeatureEditClient? editClient)

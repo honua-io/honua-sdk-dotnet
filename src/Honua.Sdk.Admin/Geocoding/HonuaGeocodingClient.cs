@@ -73,7 +73,7 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
 
         var url = $"{ServicePath}/findAddressCandidates{BuildQuery(queryParams)}";
 
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -113,7 +113,7 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
             ("outSR", wkid.ToString(CultureInfo.InvariantCulture)),
             ("f", "json"))}";
 
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -175,7 +175,7 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
 
         var url = $"{ServicePath}/suggest{BuildQuery(queryParams)}";
 
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -283,7 +283,7 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
         return null;
     }
 
-    private static IReadOnlyDictionary<string, string?> FlattenAttributes(Dictionary<string, object?>? attributes)
+    private static Dictionary<string, string?> FlattenAttributes(Dictionary<string, object?>? attributes)
     {
         if (attributes is null or { Count: 0 })
         {
@@ -331,4 +331,6 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
 
         return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
     }
+
+    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 }
