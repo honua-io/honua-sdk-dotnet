@@ -53,11 +53,13 @@ public sealed class StagingEvidenceTests
             .ToArray();
         Assert.Contains("grpc", surfaces);
         Assert.Contains("geoservices-featureserver", surfaces);
+        Assert.Contains("source-facade", surfaces);
         Assert.DoesNotContain("geoservices-featureserver-edits", surfaces);
 
         var checks = root.GetProperty("Checks").EnumerateArray()
             .Select(check => check.GetProperty("Name").GetString())
             .ToArray();
+        Assert.Contains("source-facade-query", checks);
         Assert.Contains("features-edit-roundtrip", checks);
 
         File.Delete(evidencePath);

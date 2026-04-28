@@ -13,6 +13,8 @@ dedicated disposable edit fixture.
 - A bounded gRPC `QueryFeaturesAsync()` call with `ReturnGeometry = false`
 - WFS `GetCapabilitiesAsync()` and bounded `GetFeaturesAsync()`
 - FeatureServer metadata plus a bounded `QueryAsync()`
+- Source-facade queries across gRPC, FeatureServer, WFS, and OGC API Features
+  using `IHonuaSource.QueryAsync()`
 - Optional FeatureServer add/update/delete round-trip against a dedicated edit
   fixture
 - OGC API Features collections, bounded items, and a single item lookup

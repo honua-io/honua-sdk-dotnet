@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 using Honua.Sdk.Grpc.Models;
 using Honua.Sdk.OgcFeatures.Models;
@@ -189,6 +190,61 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
     }
 
     [StagingConfiguredFact]
+    public async Task SourceFacade_QueriesAllConfiguredFeatureProviders()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
+
+        await _fixture.RecordCheckAsync(
+            "source-facade-query",
+            "IHonuaSource.QueryAsync",
+            "source://grpc,geoservices-feature-service,wfs,ogc-features",
+            async ct =>
+            {
+                var sources = new[]
+                {
+                    CreateSource(
+                        "grpc",
+                        FeatureProtocolIds.Grpc,
+                        new SourceLocator { ServiceId = _fixture.Options.ServiceName, LayerId = _fixture.Options.LayerId }),
+                    CreateSource(
+                        "geoservices",
+                        FeatureProtocolIds.GeoServicesFeatureService,
+                        new SourceLocator { ServiceId = _fixture.Options.ServiceName, LayerId = _fixture.Options.LayerId }),
+                    CreateSource(
+                        "wfs",
+                        FeatureProtocolIds.Wfs,
+                        new SourceLocator { TypeName = _fixture.Options.WfsTypeName }),
+                    CreateSource(
+                        "ogc",
+                        FeatureProtocolIds.OgcFeatures,
+                        new SourceLocator { CollectionId = _fixture.Options.OgcCollectionId })
+                };
+
+                var summaries = new List<string>();
+                foreach (var source in sources)
+                {
+                    Assert.Contains(FeatureCapabilities.Query, source.Capabilities);
+
+                    var result = await source.QueryAsync(
+                        new SourceQuery
+                        {
+                            Where = BuildWhere(source.Descriptor.CanonicalProtocol),
+                            FilterLanguage = BuildFilterLanguage(source.Descriptor.CanonicalProtocol),
+                            ReturnGeometry = false,
+                            Limit = 1
+                        },
+                        ct).ConfigureAwait(false);
+
+                    Assert.InRange(result.Features.Count, 1, 1);
+                    summaries.Add($"{source.Descriptor.Id}:{result.ProviderName}:rows={result.Features.Count}");
+                }
+
+                return string.Join("; ", summaries);
+            },
+            timeout.Token).ConfigureAwait(false);
+    }
+
+    [StagingConfiguredFact]
     public async Task OgcCollections_Items_AndSingleItem_AreReadable()
     {
         using var timeout = _fixture.CreateTimeoutScope();
@@ -269,4 +325,35 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             _ => throw new Xunit.Sdk.XunitException($"Unsupported OGC feature ID kind: {id.ValueKind}.")
         };
     }
+
+    private HonuaSource CreateSource(string id, string protocol, SourceLocator locator)
+    {
+        var queryClient = _fixture.Services
+            .GetServices<IHonuaFeatureQueryClient>()
+            .Single(client => FeatureProtocolIds.Matches(protocol, client.ProviderName));
+        var editClient = _fixture.Services
+            .GetServices<IHonuaFeatureEditClient>()
+            .SingleOrDefault(client => FeatureProtocolIds.Matches(protocol, client.ProviderName));
+
+        return new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = id,
+                Protocol = protocol,
+                Locator = locator
+            },
+            queryClient,
+            editClient,
+            queryClient);
+    }
+
+    private static string? BuildWhere(string protocol)
+        => protocol is FeatureProtocolIds.Grpc or FeatureProtocolIds.GeoServicesFeatureService
+            ? "1=1"
+            : null;
+
+    private static FeatureFilterLanguage BuildFilterLanguage(string protocol)
+        => protocol is FeatureProtocolIds.Grpc or FeatureProtocolIds.GeoServicesFeatureService
+            ? FeatureFilterLanguage.SqlWhere
+            : FeatureFilterLanguage.ProviderDefault;
 }
