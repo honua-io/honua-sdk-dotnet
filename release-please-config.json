@@ -4,7 +4,7 @@
     ".": {
       "release-type": "simple",
       "component": "dotnet-sdk",
-      "tag-separator": "-v",
+      "tag-separator": "-",
       "include-component-in-tag": true,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
