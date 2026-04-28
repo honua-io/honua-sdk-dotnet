@@ -53,6 +53,9 @@ jobs:
       - name: Build
         run: dotnet build src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj --configuration Release /p:TreatWarningsAsErrors=true
 
+      - name: Test
+        run: dotnet test tests/Honua.Sdk.Abstractions.Tests/Honua.Sdk.Abstractions.Tests.csproj --configuration Release
+
   dotnet-admin-sdk:
     name: .NET Admin SDK
     runs-on: ubuntu-latest

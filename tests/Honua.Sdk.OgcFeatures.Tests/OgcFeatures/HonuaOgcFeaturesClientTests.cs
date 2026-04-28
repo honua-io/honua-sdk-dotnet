@@ -277,6 +277,59 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
+    public async Task HonuaSourceFacade_QueriesOgcFeaturesClientAndSuppressesUnsupportedEdits()
+    {
+        string? capturedUrl = null;
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": 1,
+            "numberReturned": 1,
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": "building-7",
+                    "properties": { "name": "Building A" }
+                }
+            ]
+        }
+        """;
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            capturedUrl = req.RequestUri?.ToString();
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "buildings",
+                Protocol = FeatureProtocolIds.OgcFeatures,
+                Locator = new SourceLocator { CollectionId = "buildings" }
+            },
+            client,
+            client,
+            client);
+
+        var result = await source.QueryAsync(new SourceQuery { Where = "height > 10", Limit = 5 });
+        var ids = await source.QueryObjectIdsAsync();
+
+        Assert.NotNull(capturedUrl);
+        Assert.Contains("/ogc/features/collections/buildings/items", capturedUrl);
+        Assert.Equal("ogc-features", result.ProviderName);
+        Assert.Equal(["building-7"], ids);
+        if (((IHonuaFeatureEditClient)client).EditCapabilities.SupportsAdds)
+        {
+            Assert.Contains(FeatureCapabilities.ApplyEdits, source.Capabilities);
+        }
+        else
+        {
+            Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, source.Capabilities);
+        }
+
+        Assert.Same(client, source.Protocol<HonuaOgcFeaturesClient>());
+    }
+
+    [Fact]
     public async Task ApplyEditsAsync_SharedAbstraction_ThrowsUnsupportedWithCapabilities()
     {
         var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));

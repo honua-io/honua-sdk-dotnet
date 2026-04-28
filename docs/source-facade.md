@@ -1,0 +1,80 @@
+# Source Facade
+
+`Honua.Sdk.Abstractions` includes an additive source-oriented facade over the
+existing protocol clients. Native clients remain the implementation surface;
+`IHonuaSource` gives application code one place to query, drain pages, ask for
+feature IDs, apply supported edits, and reach the native client when a
+protocol-specific method is needed.
+
+## Core Types
+
+- `SourceDescriptor` is the serializable source identity: `Id`, `Protocol`,
+  `Locator`, declared `Capabilities`, optional `Schema`, and `Attribution`.
+- `SourceLocator` carries protocol-specific addressing fields such as
+  `ServiceId`, `LayerId`, `CollectionId`, and `TypeName`.
+- `SourceQuery` is the source-oriented query request. `HonuaSource` maps it to
+  the existing `FeatureQueryRequest` and fills `FeatureQueryRequest.Source`
+  from the descriptor.
+- `IHonuaSource` is the runtime handle with `QueryAsync()`,
+  `QueryPagesAsync()`, `QueryAllAsync()`, `QueryObjectIdsAsync()`,
+  `ApplyEditsAsync()`, and `Protocol<TClient>()`.
+
+```csharp
+var source = new HonuaSource(
+    new SourceDescriptor
+    {
+        Id = "parks",
+        Protocol = FeatureProtocolIds.GeoServicesFeatureService,
+        Locator = new SourceLocator { ServiceId = "parks", LayerId = 0 }
+    },
+    queryClient,
+    editClient,
+    nativeClient);
+
+var page = await source.QueryAsync(new SourceQuery
+{
+    Where = "status = 'open'",
+    FilterLanguage = FeatureFilterLanguage.SqlWhere,
+    Limit = 25,
+});
+```
+
+## Protocol IDs
+
+Use `FeatureProtocolIds` for stable protocol identifiers. The facade accepts
+existing provider-name aliases and normalizes them to canonical IDs:
+
+| Canonical ID | Common aliases |
+| --- | --- |
+| `grpc` | `grpc` |
+| `geoservices-feature-service` | `geoservices-featureserver`, `featureserver`, `FeatureServer` |
+| `ogc-features` | `ogc-api-features`, `ogcapi-features`, `OgcFeatures` |
+| `wfs` | `wfs` |
+
+Call `FeatureProtocolIds.Normalize()` or `FeatureProtocolIds.Matches()` when
+persisted descriptors may contain older provider names.
+
+## Capabilities
+
+Use `FeatureCapabilities` for shared capability identifiers. The .NET facade
+currently advertises query, query-object-IDs, stream/page iteration, and edit
+capabilities where the wrapped client supports them. `FeatureProtocolCapabilities`
+contains protocol defaults and helpers for union/intersection when a caller is
+building a multi-source view.
+
+`HonuaSource` intersects declared descriptor capabilities with runtime client
+capabilities. For example, WFS can still be described as queryable while
+`ApplyEditsAsync()` throws a clear `NotSupportedException` until WFS-T is
+implemented.
+
+## Native Escape Hatch
+
+The facade does not replace protocol-native clients. Use `Protocol<TClient>()`
+for operations outside the shared source surface:
+
+```csharp
+var featureServer = source.Protocol<IHonuaFeatureServerClient>(
+    FeatureProtocolIds.GeoServicesFeatureServer);
+
+var layerInfo = await featureServer!.GetLayerInfoAsync("parks", 0);
+```
