@@ -1,9 +1,12 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Grpc.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using Proto = Honua.Server.Features.Grpc.Proto;
@@ -144,6 +147,128 @@ public class HonuaGrpcClientTests
         Assert.Single(result.Features);
         Assert.Equal("42", result.Features[0].Id);
         Assert.Equal("Park", result.Features[0].Attributes["name"].GetString());
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_DelegatesToGrpcApplyEdits()
+    {
+        Proto.ApplyEditsRequest? capturedRequest = null;
+        var protoResponse = new Proto.ApplyEditsResponse
+        {
+            Error = null,
+        };
+        protoResponse.AddResults.Add(new Proto.EditResult { ObjectId = 101, Success = true });
+        protoResponse.UpdateResults.Add(new Proto.EditResult
+        {
+            ObjectId = 102,
+            Success = false,
+            Error = new Proto.EditError { Code = 400, Message = "Update rejected" }
+        });
+        protoResponse.DeleteResults.Add(new Proto.EditResult { ObjectId = 103, Success = true });
+
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.ApplyEditsAsync(
+                It.IsAny<Proto.ApplyEditsRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.ApplyEditsRequest, Metadata, DateTime?, CancellationToken>(
+                (req, _, _, _) => capturedRequest = req)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var response = await ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+        {
+            Source = new FeatureSource { ServiceId = "parks", LayerId = 2 },
+            Adds =
+            [
+                new FeatureEditFeature
+                {
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["name"] = JsonValue("New Park"),
+                        ["active"] = JsonValue(true),
+                        ["visitors"] = JsonValue(12),
+                    },
+                    Geometry = JsonObject("""{"x":1.25,"y":2.5,"spatialReference":{"wkid":4326}}"""),
+                }
+            ],
+            Updates =
+            [
+                new FeatureEditFeature
+                {
+                    Id = "77",
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["name"] = JsonValue("Renamed Park"),
+                    },
+                }
+            ],
+            DeleteObjectIds = [88],
+            DeleteIds = ["89"],
+            RollbackOnFailure = true,
+            ForceWrite = true,
+        });
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal("parks", capturedRequest.ServiceId);
+        Assert.Equal(2, capturedRequest.LayerId);
+        Assert.True(capturedRequest.RollbackOnFailure);
+        Assert.True(capturedRequest.ForceWrite);
+        Assert.Single(capturedRequest.Adds);
+        Assert.Equal("New Park", capturedRequest.Adds[0].Attributes["name"].StringValue);
+        Assert.True(capturedRequest.Adds[0].Attributes["active"].BoolValue);
+        Assert.Equal(12, capturedRequest.Adds[0].Attributes["visitors"].Int64Value);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.Point, capturedRequest.Adds[0].Geometry.ShapeCase);
+        Assert.Single(capturedRequest.Updates);
+        Assert.Equal(77, capturedRequest.Updates[0].Id);
+        Assert.Equal([88L, 89L], capturedRequest.Deletes);
+
+        Assert.Equal("grpc", response.ProviderName);
+        Assert.False(response.Succeeded);
+        Assert.Equal(101, response.AddResults[0].ObjectId);
+        Assert.True(response.AddResults[0].Succeeded);
+        Assert.Equal(102, response.UpdateResults[0].ObjectId);
+        Assert.False(response.UpdateResults[0].Succeeded);
+        Assert.Equal(400, response.UpdateResults[0].Error?.Code);
+        Assert.Equal("Update rejected", response.UpdateResults[0].Error?.Message);
+        Assert.Equal(103, response.DeleteResults[0].ObjectId);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_NonNumericUpdateId_Throws()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+            {
+                Source = new FeatureSource { ServiceId = "parks", LayerId = 2 },
+                Updates =
+                [
+                    new FeatureEditFeature { Id = "abc" }
+                ],
+            }));
+
+        Assert.Contains("numeric", ex.Message);
+    }
+
+    [Fact]
+    public void AddHonuaGrpc_RegistersSharedEditClient()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaGrpc(options => options.Address = "http://localhost:5000");
+
+        using var provider = services.BuildServiceProvider();
+        var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
+
+        Assert.Equal("grpc", editClient.ProviderName);
+        Assert.True(editClient.EditCapabilities.SupportsAdds);
+        Assert.True(editClient.EditCapabilities.SupportsUpdates);
+        Assert.True(editClient.EditCapabilities.SupportsDeletes);
     }
 
     [Fact]
@@ -501,6 +626,15 @@ public class HonuaGrpcClientTests
 
     private static string? GetMetadataValue(Metadata metadata, string key)
         => metadata.FirstOrDefault(entry => entry.Key == key)?.Value;
+
+    private static JsonElement JsonValue<T>(T value)
+        => JsonSerializer.SerializeToElement(value);
+
+    private static JsonElement JsonObject(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return document.RootElement.Clone();
+    }
 
     private static AsyncServerStreamingCall<T> CreateAsyncServerStreamingCall<T>(IEnumerable<T> responses)
     {

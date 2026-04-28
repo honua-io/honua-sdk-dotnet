@@ -931,7 +931,7 @@ internal static class ProtoAdapter
         }
     }
 
-    private static object? UnwrapJsonValue(JsonElement element)
+    internal static object? UnwrapJsonValue(JsonElement element)
     {
         return element.ValueKind switch
         {

@@ -10,7 +10,7 @@ through GeoServices FeatureServer and OGC API Features endpoints.
 
 | Package | Description |
 |---------|-------------|
-| **Honua.Sdk.Abstractions** | Shared feature query abstractions implemented by provider-specific clients |
+| **Honua.Sdk.Abstractions** | Shared feature query/edit abstractions implemented by provider-specific clients |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
 | **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
@@ -133,6 +133,29 @@ var page = await queryClient.QueryAsync(new FeatureQueryRequest
     Limit = 10,
 });
 ```
+
+## Shared edit abstraction
+
+Edit-capable providers implement `IHonuaFeatureEditClient` from
+`Honua.Sdk.Abstractions`. Today gRPC is registered for shared edits; native
+GeoServices, WFS, and OGC API Features write endpoints are tracked separately.
+
+```csharp
+using Honua.Sdk.Abstractions.Features;
+
+IHonuaFeatureEditClient edits = featureEditClients
+    .Single(c => c.ProviderName == "grpc");
+
+var result = await edits.ApplyEditsAsync(new FeatureEditRequest
+{
+    Source = new FeatureSource { ServiceId = "parks", LayerId = 0 },
+    DeleteObjectIds = [42],
+    RollbackOnFailure = true,
+});
+```
+
+See [docs/feature-edits.md](docs/feature-edits.md) for shared result models,
+provider support, and unsupported-provider behavior.
 
 ## Retry
 
@@ -272,6 +295,8 @@ third_party/
 - **[Quickstart](docs/quickstart.md)** -- build a console app that queries
   features through native clients and the shared abstraction, lists services,
   and geocodes an address in 5 minutes
+- **[Feature Edits](docs/feature-edits.md)** -- shared edit abstraction,
+  current gRPC support, and provider-specific write backlog boundaries
 - **[Staging Integration Guide](docs/staging-integration.md)** -- staging
   environment inputs, CI evidence artifacts, common failures, and bounded
   follow-on tickets for shared staging ownership
