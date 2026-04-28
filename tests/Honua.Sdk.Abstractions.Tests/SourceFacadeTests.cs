@@ -143,6 +143,50 @@ public sealed class SourceFacadeTests
     }
 
     [Fact]
+    public async Task HonuaSource_QueryObjectIdsAsync_DoesNotRequireQueryCapability()
+    {
+        FeatureQueryRequest? capturedRequest = null;
+        var queryClient = new FakeQueryClient(
+            "wfs",
+            request =>
+            {
+                capturedRequest = request;
+                return
+                [
+                    new FeatureQueryResult
+                    {
+                        ProviderName = "wfs",
+                        Features =
+                        [
+                            new FeatureRecord { Id = "parcels.1" },
+                            new FeatureRecord { Id = "parcels.1" },
+                            new FeatureRecord { Id = "parcels.2" }
+                        ],
+                        NumberReturned = 3
+                    }
+                ];
+            });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "ids-only",
+                Protocol = FeatureProtocolIds.Wfs,
+                Locator = new SourceLocator { TypeName = "parcels" },
+                Capabilities = [FeatureCapabilities.QueryObjectIds]
+            },
+            queryClient);
+
+        var ids = await source.QueryObjectIdsAsync(new SourceQuery { Limit = 10 });
+
+        Assert.DoesNotContain(FeatureCapabilities.Query, source.Capabilities);
+        Assert.Contains(FeatureCapabilities.QueryObjectIds, source.Capabilities);
+        Assert.NotNull(capturedRequest);
+        Assert.False(capturedRequest.ReturnGeometry);
+        Assert.Equal(10, capturedRequest.Limit);
+        Assert.Equal(["parcels.1", "parcels.2"], ids);
+    }
+
+    [Fact]
     public async Task HonuaSource_ApplyEditsAsync_RejectsUnsupportedEditCapability()
     {
         var source = new HonuaSource(
@@ -167,6 +211,38 @@ public sealed class SourceFacadeTests
 
         Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, source.Capabilities);
         Assert.Contains("applyEdits", ex.Message);
+    }
+
+    [Fact]
+    public async Task HonuaSource_ApplyEditsAsync_RejectsMismatchedEditClient()
+    {
+        var editClient = new FakeEditClient(
+            "geoservices-featureserver",
+            new FeatureEditCapabilities
+            {
+                SupportsAdds = true,
+                SupportsUpdates = true,
+                SupportsDeletes = true
+            });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parks",
+                Protocol = FeatureProtocolIds.Grpc,
+                Locator = new SourceLocator { ServiceId = "parks", LayerId = 0 }
+            },
+            new FakeQueryClient("grpc", _ => []),
+            editClient);
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => source.ApplyEditsAsync(new FeatureEditRequest
+            {
+                DeleteObjectIds = [1]
+            }));
+
+        Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, source.Capabilities);
+        Assert.Contains("applyEdits", ex.Message);
+        Assert.Equal(0, editClient.ApplyCalls);
     }
 
     private sealed class FakeQueryClient(
@@ -199,7 +275,12 @@ public sealed class SourceFacadeTests
 
         public FeatureEditCapabilities EditCapabilities { get; } = capabilities;
 
+        public int ApplyCalls { get; private set; }
+
         public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
-            => Task.FromResult(new FeatureEditResponse { ProviderName = ProviderName });
+        {
+            ApplyCalls++;
+            return Task.FromResult(new FeatureEditResponse { ProviderName = ProviderName });
+        }
     }
 }

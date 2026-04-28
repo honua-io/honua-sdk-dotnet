@@ -112,15 +112,24 @@ public sealed class HonuaSource : IHonuaSource
         var objectIdQuery = query is null
             ? new SourceQuery { ReturnGeometry = false }
             : query with { ReturnGeometry = false };
-        var result = await QueryAllAsync(objectIdQuery, ct).ConfigureAwait(false);
-        var idFieldName = result.ObjectIdFieldName ?? Descriptor.Schema?.PrimaryKey;
+        var request = BuildQueryRequest(objectIdQuery);
+        var idFieldName = Descriptor.Schema?.PrimaryKey;
+        var ids = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
 
-        return result.Features
-            .Select(feature => ResolveFeatureId(feature, idFieldName))
-            .Where(id => id is not null)
-            .Select(id => id!)
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
+        await foreach (var page in _queryClient.QueryPagesAsync(request, ct).ConfigureAwait(false))
+        {
+            idFieldName ??= page.ObjectIdFieldName;
+            foreach (var feature in page.Features)
+            {
+                if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
+                {
+                    ids.Add(id);
+                }
+            }
+        }
+
+        return ids;
     }
 
     /// <inheritdoc />
@@ -129,7 +138,7 @@ public sealed class HonuaSource : IHonuaSource
         ArgumentNullException.ThrowIfNull(request);
         EnsureCapability(FeatureCapabilities.ApplyEdits);
 
-        if (_editClient is null)
+        if (_editClient is null || !SupportsEditProtocol(Descriptor, _editClient))
         {
             throw new NotSupportedException(BuildUnsupportedMessage(FeatureCapabilities.ApplyEdits));
         }
@@ -170,6 +179,7 @@ public sealed class HonuaSource : IHonuaSource
         }
 
         if (editClient?.EditCapabilities is { } editCapabilities &&
+            SupportsEditProtocol(descriptor, editClient) &&
             (editCapabilities.SupportsAdds || editCapabilities.SupportsUpdates || editCapabilities.SupportsDeletes))
         {
             if (declared.Contains(FeatureCapabilities.ApplyEdits, StringComparer.Ordinal) || descriptor.Capabilities.Count == 0)
@@ -188,6 +198,10 @@ public sealed class HonuaSource : IHonuaSource
     private static bool SupportsQueryProtocol(SourceDescriptor descriptor, IHonuaFeatureQueryClient queryClient)
         => FeatureProtocolIds.Matches(descriptor.Protocol, queryClient.ProviderName) ||
            FeatureProtocolIds.Matches(descriptor.CanonicalProtocol, queryClient.ProviderName);
+
+    private static bool SupportsEditProtocol(SourceDescriptor descriptor, IHonuaFeatureEditClient editClient)
+        => FeatureProtocolIds.Matches(descriptor.Protocol, editClient.ProviderName) ||
+           FeatureProtocolIds.Matches(descriptor.CanonicalProtocol, editClient.ProviderName);
 
     private FeatureQueryRequest BuildQueryRequest(SourceQuery? query)
         => (query ?? new SourceQuery()).ToFeatureQueryRequest(Descriptor.ToFeatureSource());
