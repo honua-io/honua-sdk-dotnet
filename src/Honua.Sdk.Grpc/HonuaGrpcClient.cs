@@ -10,6 +10,7 @@ using Grpc.Net.Client.Configuration;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Grpc.Conversion;
 using Microsoft.Extensions.Options;
+using Proto = Geospatial.V1;
 
 namespace Honua.Sdk.Grpc;
 
@@ -18,7 +19,7 @@ namespace Honua.Sdk.Grpc;
 /// </summary>
 public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient, IDisposable
 {
-    private const string FeatureServiceName = "honua.v1.FeatureService";
+    private const string FeatureServiceName = "geospatial.v1.FeatureService";
 
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
@@ -33,7 +34,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         NativeSurface = "grpc FeatureService.ApplyEdits"
     };
 
-    private readonly Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient _client;
+    private readonly Proto.FeatureService.FeatureServiceClient _client;
     private readonly GrpcChannel? _ownedChannel;
     private readonly HonuaGrpcClientOptions _options;
     private readonly Metadata? _metadataOverride;
@@ -44,6 +45,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     /// <param name="options">Configuration options for the client.</param>
     public HonuaGrpcClient(IOptions<HonuaGrpcClientOptions> options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         var opts = options.Value;
         var address = HonuaGrpcClientOptions.ParseAndValidateAddress(opts.Address);
         HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
@@ -57,7 +60,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         };
 
         _ownedChannel = GrpcChannel.ForAddress(address, channelOptions);
-        _client = new Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient(_ownedChannel);
+        _client = new Proto.FeatureService.FeatureServiceClient(_ownedChannel);
         _options = opts;
     }
 
@@ -68,6 +71,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     /// <param name="options">Optional client options for authentication.</param>
     public HonuaGrpcClient(GrpcChannel channel, HonuaGrpcClientOptions? options = null)
     {
+        ArgumentNullException.ThrowIfNull(channel);
+
         var opts = options ?? new HonuaGrpcClientOptions();
         HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
         if (HasCredentials(opts))
@@ -75,12 +80,12 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             ValidateAuthenticationTransport(opts, ResolveChannelAddress(channel));
         }
 
-        _client = new Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient(channel);
+        _client = new Proto.FeatureService.FeatureServiceClient(channel);
         _options = opts;
     }
 
     // For testing - inject the generated client stub directly
-    internal HonuaGrpcClient(Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient client, Metadata? metadata = null)
+    internal HonuaGrpcClient(Proto.FeatureService.FeatureServiceClient client, Metadata? metadata = null)
     {
         _client = client;
         _options = new HonuaGrpcClientOptions();
@@ -88,7 +93,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     }
 
     // For testing - inject the generated client stub directly with live options
-    internal HonuaGrpcClient(Honua.Server.Features.Grpc.Proto.FeatureService.FeatureServiceClient client, HonuaGrpcClientOptions options)
+    internal HonuaGrpcClient(Proto.FeatureService.FeatureServiceClient client, HonuaGrpcClientOptions options)
     {
         _client = client;
         HonuaGrpcClientOptions.ValidateTimeout(options.Timeout);
@@ -105,6 +110,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public async Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
         Models.QueryFeaturesRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
         try
         {
@@ -145,6 +152,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public async Task<Models.ApplyEditsResponse> ApplyEditsAsync(
         Models.ApplyEditsRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
         try
         {
@@ -174,6 +183,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public async IAsyncEnumerable<Models.FeaturePage> QueryFeaturesStreamAsync(
         Models.QueryFeaturesRequest request, [EnumeratorCancellation] CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
         var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
         var call = _client.QueryFeaturesStream(
@@ -185,7 +196,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         {
             while (true)
             {
-                Honua.Server.Features.Grpc.Proto.FeaturePage protoPage;
+                Proto.FeaturePage protoPage;
                 try
                 {
                     if (!await call.ResponseStream.MoveNext(ct).ConfigureAwait(false))
@@ -433,7 +444,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         return 0;
     }
 
-    private static IReadOnlyList<long> ResolveDeleteObjectIds(FeatureEditRequest request)
+    private static List<long> ResolveDeleteObjectIds(FeatureEditRequest request)
     {
         var objectIds = new List<long>(request.DeleteObjectIds);
         foreach (var id in request.DeleteIds)

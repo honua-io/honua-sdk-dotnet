@@ -12,6 +12,10 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   api-compat:
     name: API Compatibility
@@ -26,6 +30,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Validate package API compatibility
         env:
           HONUA_API_COMPAT_BASE_REF: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
@@ -38,7 +45,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -50,11 +57,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build
-        run: dotnet build src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.Abstractions.Tests/Honua.Sdk.Abstractions.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.Abstractions.Tests/Honua.Sdk.Abstractions.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
   dotnet-admin-sdk:
     name: .NET Admin SDK
@@ -63,7 +73,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -75,11 +85,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build
-        run: dotnet build src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
   dotnet-grpc-sdk:
     name: .NET gRPC SDK
@@ -88,7 +101,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -100,11 +113,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build
-        run: dotnet build src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
   dotnet-wfs-sdk:
     name: .NET WFS SDK
@@ -113,7 +129,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -125,11 +141,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build
-        run: dotnet build src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
   dotnet-geoservices-sdk:
     name: .NET GeoServices SDK
@@ -138,7 +157,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -150,11 +169,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build
-        run: dotnet build src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
   dotnet-ogc-features-sdk:
     name: .NET OGC Features SDK
@@ -163,7 +185,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -175,11 +197,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build
-        run: dotnet build src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test
-        run: dotnet test tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj --configuration Release
+        run: dotnet test tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
   dotnet-admin-bootstrap-sample:
     name: Admin Bootstrap Sample
@@ -188,7 +213,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -200,11 +225,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
       - name: Build canonical sample
-        run: dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Build field data reference sample
-        run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true
+        run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test canonical sample workflow
-        run: dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj --configuration Release
+        run: dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true

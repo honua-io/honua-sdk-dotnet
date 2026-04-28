@@ -9,6 +9,33 @@ namespace Honua.Sdk.Admin.Exceptions;
 public sealed class HonuaAdminOperationException : Exception
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaAdminOperationException"/> class.
+    /// </summary>
+    public HonuaAdminOperationException()
+        : this("Honua Admin operation failed.", operation: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaAdminOperationException"/> class.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    public HonuaAdminOperationException(string message)
+        : this(message, operation: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaAdminOperationException"/> class with an inner exception.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    /// <param name="innerException">The inner exception that caused this exception.</param>
+    public HonuaAdminOperationException(string message, Exception innerException)
+        : this(message, operation: null, innerException: innerException)
+    {
+    }
+
+    /// <summary>
     /// The operation that failed.
     /// </summary>
     public string? Operation { get; }

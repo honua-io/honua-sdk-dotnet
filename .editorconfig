@@ -1,0 +1,47 @@
+root = true
+
+[*.cs]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+# Public wire-contract fields intentionally keep SDK-compatible string URLs.
+[src/Honua.Sdk.Abstractions/Features/SourceDescriptor.cs]
+dotnet_diagnostic.CA1056.severity = none
+
+# OGC/WFS domain model names use the protocol terms from their specs.
+[src/**/Models/*.cs]
+dotnet_diagnostic.CA1711.severity = none
+
+# These DTO arrays are part of the current serialized Admin SDK contract.
+[src/Honua.Sdk.Admin/Models/ServiceSettings.cs]
+dotnet_diagnostic.CA1819.severity = none
+
+# Tests keep descriptive xUnit names and intentionally use compact fixtures.
+[tests/**/*.cs]
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1034.severity = none
+dotnet_diagnostic.CA1056.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1307.severity = none
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1826.severity = none
+dotnet_diagnostic.CA1849.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1869.severity = none
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA2234.severity = none
+
+# Samples are executable guidance, not reusable library surface.
+[examples/**/*.cs]
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1032.severity = none
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA2007.severity = none

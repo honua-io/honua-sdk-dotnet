@@ -23,7 +23,7 @@ public static class FeatureProtocolIds
     /// <summary>WFS protocol identifier.</summary>
     public const string Wfs = "wfs";
 
-    private static readonly IReadOnlyDictionary<string, string> CanonicalIds =
+    private static readonly Dictionary<string, string> CanonicalIds =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             [Grpc] = Grpc,
@@ -40,7 +40,7 @@ public static class FeatureProtocolIds
             [Wfs] = Wfs
         };
 
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> AliasMap =
+    private static readonly Dictionary<string, IReadOnlyList<string>> AliasMap =
         new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)
         {
             [Grpc] = [Grpc],

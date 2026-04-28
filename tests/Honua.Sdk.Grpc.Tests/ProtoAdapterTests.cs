@@ -4,7 +4,7 @@
 using System.Text.Json;
 using Honua.Sdk.Grpc.Conversion;
 using Honua.Sdk.Grpc.Models;
-using Proto = Honua.Server.Features.Grpc.Proto;
+using Proto = Geospatial.V1;
 
 namespace Honua.Sdk.Grpc.Tests;
 

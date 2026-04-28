@@ -134,16 +134,16 @@ public static class HonuaAdminCompatibility
     }
 
     private static int GetReleaseChannelRank(string releaseChannel)
-        => releaseChannel.Trim().ToLowerInvariant() switch
+        => releaseChannel.Trim().ToUpperInvariant() switch
         {
-            "nightly" => 0,
-            "dev" => 1,
-            "alpha" => 2,
-            "preview" => 3,
-            "beta" => 4,
-            "rc" => 5,
-            "stable" => 6,
-            "lts" => 7,
+            "NIGHTLY" => 0,
+            "DEV" => 1,
+            "ALPHA" => 2,
+            "PREVIEW" => 3,
+            "BETA" => 4,
+            "RC" => 5,
+            "STABLE" => 6,
+            "LTS" => 7,
             _ => -1
         };
 
@@ -181,8 +181,8 @@ public static class HonuaAdminCompatibility
                 normalized = normalized[1..];
             }
 
-            var preReleaseIndex = normalized.IndexOf('-');
-            var buildIndex = normalized.IndexOf('+');
+            var preReleaseIndex = normalized.IndexOf('-', StringComparison.Ordinal);
+            var buildIndex = normalized.IndexOf('+', StringComparison.Ordinal);
             var endIndex = normalized.Length;
 
             if (preReleaseIndex >= 0)

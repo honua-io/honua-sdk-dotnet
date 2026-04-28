@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -128,7 +129,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<(MetadataResource Resource, string? ETag)> GetMetadataResourceAsync(string kind, string ns, string name, CancellationToken ct = default)
     {
         var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
@@ -324,7 +325,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         using var response = await _http.DeleteAsync(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}", ct).ConfigureAwait(false);
+            CreateRequestUri($"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}"), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
@@ -416,7 +417,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var url = $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/tables";
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -454,7 +455,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<JsonElement> GetConfigAsync(CancellationToken ct = default)
     {
-        using var response = await _http.GetAsync($"{ApiPrefix}/config", ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri($"{ApiPrefix}/config"), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -466,7 +467,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default)
     {
-        var query = BuildQuery(("limit", limit?.ToString()));
+        var query = BuildQuery(("limit", limit?.ToString(CultureInfo.InvariantCulture)));
         var data = await GetRawAsync<RecentErrorsResponse>(
             $"{ApiPrefix}/observability/errors{query}",
             HonuaAdminJsonContext.Default.RecentErrorsResponse,
@@ -569,7 +570,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         JsonTypeInfo<ApiResponse<T>> typeInfo,
         CancellationToken ct)
     {
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
@@ -583,7 +584,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         JsonTypeInfo<T> typeInfo,
         CancellationToken ct)
     {
-        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -611,7 +612,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using (content)
         {
-            using var response = await _http.PostAsync(url, content, ct).ConfigureAwait(false);
+            using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             await EnsureSuccessAsync(response, body).ConfigureAwait(false);
             EnsureEnvelopeSucceeded(response, body);
@@ -629,7 +630,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         CancellationToken ct)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PostAsync(url, content, ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
@@ -659,7 +660,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using (content)
         {
-            using var response = await _http.PostAsync(url, content, ct).ConfigureAwait(false);
+            using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -675,7 +676,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         CancellationToken ct)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PostAsync(url, content, ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
@@ -690,7 +691,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         CancellationToken ct)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PutAsync(url, content, ct).ConfigureAwait(false);
+        using var response = await _http.PutAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
@@ -771,6 +772,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         return null;
     }
+
+    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
     {

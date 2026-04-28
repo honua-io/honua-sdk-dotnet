@@ -21,6 +21,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<HonuaGrpcClientOptions> configure)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
         services.Configure(configure);
         services.AddSingleton<HonuaGrpcClient>();
         services.AddSingleton<IHonuaGrpcClient>(sp => sp.GetRequiredService<HonuaGrpcClient>());

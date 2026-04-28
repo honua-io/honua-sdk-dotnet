@@ -9,7 +9,7 @@ using Honua.Sdk.Grpc.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
-using Proto = Honua.Server.Features.Grpc.Proto;
+using Proto = Geospatial.V1;
 
 namespace Honua.Sdk.Grpc.Tests;
 

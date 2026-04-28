@@ -54,6 +54,20 @@ dotnet nuget add source "https://nuget.pkg.github.com/honua-io/index.json" \
   --password YOUR_GITHUB_PAT
 ```
 
+This repository also contains `NuGet.config` with a `github-honua` source used
+by CI. To restore locally with that source name, run:
+
+```bash
+dotnet nuget update source github-honua \
+  --username YOUR_GITHUB_USERNAME \
+  --password YOUR_GITHUB_PAT \
+  --store-password-in-clear-text
+```
+
+The SDK gRPC package depends on the generated `Geospatial.Grpc` protocol
+package from GitHub Packages; no sibling repo should copy protocol source files
+to satisfy that dependency.
+
 Then install:
 
 ```bash
@@ -94,10 +108,8 @@ public class MyService(IHonuaGrpcClient client)
 
 ## Version Policy
 
-- **Pre-release** (`-*`): Published to GitHub Packages on every release tag
-  and skipped for NuGet.org.
-- **Stable** (`1.0.0+`): Published to GitHub Packages and NuGet.org after
-  validation.
+- **Pre-release** (`-*`): Published to GitHub Packages on every release tag.
+- **Stable** (`1.0.0+`): Published to GitHub Packages after validation.
 
 All packages follow [Semantic Versioning](https://semver.org/). Major versions are coordinated across all Honua SDKs.
 

@@ -11,6 +11,33 @@ namespace Honua.Sdk.OgcFeatures.Exceptions;
 public sealed class HonuaOgcFeaturesException : Exception
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaOgcFeaturesException"/> class.
+    /// </summary>
+    public HonuaOgcFeaturesException()
+        : this(HttpStatusCode.InternalServerError, "OGC API Features request failed.")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaOgcFeaturesException"/> class.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    public HonuaOgcFeaturesException(string message)
+        : this(HttpStatusCode.InternalServerError, message)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaOgcFeaturesException"/> class with an inner exception.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    /// <param name="innerException">The inner exception that caused this exception.</param>
+    public HonuaOgcFeaturesException(string message, Exception innerException)
+        : this(HttpStatusCode.InternalServerError, message, null, innerException)
+    {
+    }
+
+    /// <summary>
     /// HTTP status code returned by the server.
     /// </summary>
     public HttpStatusCode StatusCode { get; }

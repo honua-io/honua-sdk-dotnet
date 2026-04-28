@@ -8,7 +8,7 @@ namespace Honua.Sdk.Abstractions.Features;
 /// </summary>
 public static class FeatureProtocolCapabilities
 {
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> Defaults =
+    private static readonly Dictionary<string, IReadOnlyList<string>> Defaults =
         new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)
         {
             [FeatureProtocolIds.Grpc] =

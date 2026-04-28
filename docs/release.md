@@ -34,13 +34,8 @@ projects. The workflow fails before publishing if they differ.
 ## Publishing Targets
 
 All tag releases publish package artifacts and push packages to GitHub Packages.
-
-Stable tags also publish to NuGet.org. A stable tag has no prerelease suffix,
-for example `dotnet-sdk-v0.1.0`. Prerelease tags such as
-`dotnet-sdk-v0.1.0-alpha.1`, `dotnet-sdk-v0.1.0-beta.1`, or
-`dotnet-sdk-v0.1.0-rc.1` skip NuGet.org.
-
-NuGet.org publishing requires the repository secret `NUGET_API_KEY`.
+The release workflow also restores GitHub-hosted dependencies such as
+`Geospatial.Grpc` from `nuget.pkg.github.com/honua-io` using `GITHUB_TOKEN`.
 
 ## Local Checks
 

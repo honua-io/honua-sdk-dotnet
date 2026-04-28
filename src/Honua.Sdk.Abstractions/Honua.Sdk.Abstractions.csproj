@@ -12,7 +12,7 @@
     <Authors>Honua</Authors>
     <Copyright>Copyright (c) Honua</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/honua-io</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/honua-io/honua-sdk-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>geospatial;mobile;gis;offline;sync;honua;abstractions</PackageTags>

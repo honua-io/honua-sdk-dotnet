@@ -17,6 +17,10 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   staging-integration:
     name: Staging Read-Only Integration
@@ -47,7 +51,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -58,6 +62,9 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Validate staging configuration
         id: validate-config
@@ -100,6 +107,8 @@ jobs:
         run: |
           dotnet test tests/Honua.Sdk.IntegrationTests/Honua.Sdk.IntegrationTests.csproj \
             --configuration Release \
+            /p:TreatWarningsAsErrors=true \
+            /p:EnforceCodeStyleInBuild=true \
             --logger "trx;LogFileName=${TEST_RESULTS_FILE}" \
             --results-directory "${TEST_RESULTS_DIR}"
 
@@ -112,63 +121,63 @@ jobs:
         run: |
           if [[ -f "${HONUA_STAGING_EVIDENCE_PATH}" ]]; then
             python3 - <<'PY'
-import json
-import os
+          import json
+          import os
 
-evidence_path = os.environ["HONUA_STAGING_EVIDENCE_PATH"]
-summary_path = os.environ["GITHUB_STEP_SUMMARY"]
-precheck_outcome = os.environ.get("PRECHECK_OUTCOME", "unknown")
-test_outcome = os.environ.get("TEST_OUTCOME", "not-run")
+          evidence_path = os.environ["HONUA_STAGING_EVIDENCE_PATH"]
+          summary_path = os.environ["GITHUB_STEP_SUMMARY"]
+          precheck_outcome = os.environ.get("PRECHECK_OUTCOME", "unknown")
+          test_outcome = os.environ.get("TEST_OUTCOME", "not-run")
 
-with open(evidence_path, encoding="utf-8") as evidence_file:
-    report = json.load(evidence_file)
+          with open(evidence_path, encoding="utf-8") as evidence_file:
+              report = json.load(evidence_file)
 
-summary = report.get("Summary", {})
-checks = report.get("Checks", [])
-sdk_packages = report.get("SdkPackages", [])
-protocol_surfaces = report.get("ProtocolSurfaces", [])
-feature_server_edit_check_ran = report.get("FeatureServerEditCheckRan", False)
+          summary = report.get("Summary", {})
+          checks = report.get("Checks", [])
+          sdk_packages = report.get("SdkPackages", [])
+          protocol_surfaces = report.get("ProtocolSurfaces", [])
+          feature_server_edit_check_ran = report.get("FeatureServerEditCheckRan", False)
 
-with open(summary_path, "a", encoding="utf-8") as summary_file:
-    summary_file.write("## Staging Integration\n\n")
-    summary_file.write(f"- Precheck: `{precheck_outcome}`\n")
-    summary_file.write(f"- Test step: `{test_outcome}`\n")
-    summary_file.write(f"- Base URL: `{report.get('BaseUrl', 'unknown')}`\n")
-    summary_file.write(f"- Service: `{report.get('ServiceName', 'unknown')}`\n")
-    summary_file.write(f"- Layer ID: `{report.get('LayerId', 'unknown')}`\n")
-    summary_file.write(f"- WFS type: `{report.get('WfsTypeName', 'unknown')}`\n")
-    summary_file.write(f"- OGC collection: `{report.get('OgcCollectionId', 'unknown')}`\n")
-    summary_file.write(f"- Server commit: `{report.get('ServerCommit') or 'unknown'}`\n")
-    summary_file.write(f"- Server image: `{report.get('ServerImage') or 'unknown'}`\n")
-    summary_file.write(f"- Seed profile: `{report.get('SeedProfile') or 'unknown'}`\n")
-    summary_file.write(f"- FeatureServer edit check: `{'ran' if feature_server_edit_check_ran else 'not run'}`\n")
-    summary_file.write(f"- Protocol surfaces: `{', '.join(protocol_surfaces) or 'unknown'}`\n")
-    summary_file.write(
-        "- SDK packages: `" +
-        ", ".join(
-            f"{package.get('Package', 'unknown')} {package.get('Version', 'unknown')}"
-            for package in sdk_packages
-        ) +
-        "`\n"
-    )
-    summary_file.write(
-        f"- Summary: {summary.get('Passed', 0)} passed, "
-        f"{summary.get('Failed', 0)} failed, "
-        f"{summary.get('NotRun', 0)} not run\n\n"
-    )
-    summary_file.write("| Check | Status | Details |\n")
-    summary_file.write("| --- | --- | --- |\n")
+          with open(summary_path, "a", encoding="utf-8") as summary_file:
+              summary_file.write("## Staging Integration\n\n")
+              summary_file.write(f"- Precheck: `{precheck_outcome}`\n")
+              summary_file.write(f"- Test step: `{test_outcome}`\n")
+              summary_file.write(f"- Base URL: `{report.get('BaseUrl', 'unknown')}`\n")
+              summary_file.write(f"- Service: `{report.get('ServiceName', 'unknown')}`\n")
+              summary_file.write(f"- Layer ID: `{report.get('LayerId', 'unknown')}`\n")
+              summary_file.write(f"- WFS type: `{report.get('WfsTypeName', 'unknown')}`\n")
+              summary_file.write(f"- OGC collection: `{report.get('OgcCollectionId', 'unknown')}`\n")
+              summary_file.write(f"- Server commit: `{report.get('ServerCommit') or 'unknown'}`\n")
+              summary_file.write(f"- Server image: `{report.get('ServerImage') or 'unknown'}`\n")
+              summary_file.write(f"- Seed profile: `{report.get('SeedProfile') or 'unknown'}`\n")
+              summary_file.write(f"- FeatureServer edit check: `{'ran' if feature_server_edit_check_ran else 'not run'}`\n")
+              summary_file.write(f"- Protocol surfaces: `{', '.join(protocol_surfaces) or 'unknown'}`\n")
+              summary_file.write(
+                  "- SDK packages: `" +
+                  ", ".join(
+                      f"{package.get('Package', 'unknown')} {package.get('Version', 'unknown')}"
+                      for package in sdk_packages
+                  ) +
+                  "`\n"
+              )
+              summary_file.write(
+                  f"- Summary: {summary.get('Passed', 0)} passed, "
+                  f"{summary.get('Failed', 0)} failed, "
+                  f"{summary.get('NotRun', 0)} not run\n\n"
+              )
+              summary_file.write("| Check | Status | Details |\n")
+              summary_file.write("| --- | --- | --- |\n")
 
-    for check in checks:
-        details = str(check.get("Details", "")).replace("\n", " ").strip()
-        if len(details) > 160:
-            details = details[:157] + "..."
-        summary_file.write(
-            f"| `{check.get('Name', 'unknown')}` | "
-            f"{check.get('Status', 'unknown')} | "
-            f"{details} |\n"
-        )
-PY
+              for check in checks:
+                  details = str(check.get("Details", "")).replace("\n", " ").strip()
+                  if len(details) > 160:
+                      details = details[:157] + "..."
+                  summary_file.write(
+                      f"| `{check.get('Name', 'unknown')}` | "
+                      f"{check.get('Status', 'unknown')} | "
+                      f"{details} |\n"
+                  )
+          PY
           else
             {
               echo "## Staging Integration"

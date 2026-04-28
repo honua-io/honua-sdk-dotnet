@@ -1,7 +1,6 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-using System.Net;
 using Honua.Sdk.Abstractions.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -24,6 +23,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         Action<HonuaOgcFeaturesClientOptions> configure)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
         services.Configure(configure);
         services.AddTransient<HonuaOgcFeaturesAuthHandler>();
         var httpBuilder = services.AddHttpClient<HonuaOgcFeaturesClient>((sp, client) =>
@@ -61,23 +63,9 @@ public static class ServiceCollectionExtensions
             options.TotalRequestTimeout.Timeout = opts.Timeout;
             options.AttemptTimeout.Timeout = opts.Timeout;
             options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
-            options.Retry.ShouldHandle = args => ValueTask.FromResult(ShouldRetry(args.Outcome.Result));
+            options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+            options.Retry.DisableForUnsafeHttpMethods();
             options.Retry.UseJitter = true;
         });
     }
-
-    private static bool ShouldRetry(HttpResponseMessage? response)
-    {
-        return IsSafeRetryMethod(response?.RequestMessage?.Method) &&
-            response?.StatusCode is
-                HttpStatusCode.TooManyRequests or
-                HttpStatusCode.BadGateway or
-                HttpStatusCode.ServiceUnavailable;
-    }
-
-    private static bool IsSafeRetryMethod(HttpMethod? method) =>
-        method == HttpMethod.Get ||
-        method == HttpMethod.Head ||
-        method == HttpMethod.Options ||
-        method == HttpMethod.Trace;
 }

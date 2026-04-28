@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -63,7 +64,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         activity?.SetTag("wfs.operation", "GetCapabilities");
 
         var url = BuildWfsUrl("GetCapabilities");
-        using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
@@ -81,7 +82,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         activity?.SetTag("wfs.type_name", typeName);
 
         var url = BuildWfsUrl("DescribeFeatureType", ("TYPENAMES", typeName));
-        using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
@@ -100,7 +101,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         activity?.SetTag("wfs.output_format", "application/geo+json");
 
         var url = BuildGetFeatureUrl(request, DefaultGeoJsonHandler.MediaType);
-        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
 
         await EnsureGetFeatureSuccessAsync(response, DefaultGeoJsonHandler.MediaType, ct).ConfigureAwait(false);
 
@@ -166,6 +167,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
     }
 
     /// <inheritdoc />
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Response ownership is transferred to ResponseOwningStream when the handler owns the response stream.")]
     public async Task<TResult> GetFeaturesAsync<TResult>(
         GetFeaturesRequest request,
         IWfsOutputFormatHandler<TResult> handler,
@@ -180,7 +182,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         activity?.SetTag("wfs.output_format", handler.MediaType);
 
         var url = BuildGetFeatureUrl(request, handler.MediaType);
-        var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        var response = await _httpClient.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
         try
         {
             await EnsureGetFeatureSuccessAsync(response, handler.MediaType, ct).ConfigureAwait(false);
@@ -232,7 +234,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         }
 
         var url = BuildWfsUrl("GetFeature", parameters.ToArray());
-        using var response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
@@ -300,7 +302,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
 
     // ── URL building ─────────────────────────────────────────────────────
 
-    private string BuildWfsUrl(string requestType, params (string Key, string Value)[] extra)
+    private static string BuildWfsUrl(string requestType, params (string Key, string Value)[] extra)
     {
         var sb = new StringBuilder("/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=");
         sb.Append(Uri.EscapeDataString(requestType));
@@ -316,7 +318,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         return sb.ToString();
     }
 
-    private string BuildGetFeatureUrl(GetFeaturesRequest request, string mediaType)
+    private static string BuildGetFeatureUrl(GetFeaturesRequest request, string mediaType)
     {
         var parameters = new List<(string, string)>
         {
@@ -377,7 +379,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         return Task.CompletedTask;
     }
 
-    private async Task EnsureGetFeatureSuccessAsync(
+    private static async Task EnsureGetFeatureSuccessAsync(
         HttpResponseMessage response, string requestedMediaType, CancellationToken ct)
     {
         // WFS servers may return XML ExceptionReport even when GeoJSON was requested.
@@ -437,6 +439,8 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
             ? count
             : null;
     }
+
+    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static GetFeaturesRequest BuildWfsQuery(FeatureQueryRequest request)
     {

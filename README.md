@@ -335,11 +335,14 @@ third_party/
 - **[Client Behavior](docs/client-behavior.md)** -- timeout, retry, error,
   pagination, and typed endpoint coverage behavior across packages
 - **[Release and NuGet Publishing](docs/release.md)** -- package versioning,
-  release tags, dry runs, GitHub Packages, and NuGet.org publishing
+  release tags, dry runs, and GitHub Packages publishing
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
   policy and server compatibility baseline
 - **[Backlog cadence](docs/backlog-cadence.md)** -- weekly triage, scope gate,
   and close hygiene for this repository
+- **[SDK Capability Backlog](docs/sdk-capability-backlog.md)** -- prioritized
+  non-display SDK feature backlog mapped against mature GIS SDK capability
+  areas, plus a separate display/maps approach
 - **[Field Data Collection](examples/FieldDataCollection/)** -- archived MAUI
   reference assets for offline sync and map views
 

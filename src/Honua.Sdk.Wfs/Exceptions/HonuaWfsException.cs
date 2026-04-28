@@ -10,6 +10,33 @@ namespace Honua.Sdk.Wfs.Exceptions;
 /// </summary>
 public sealed class HonuaWfsException : Exception
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaWfsException"/> class.
+    /// </summary>
+    public HonuaWfsException()
+        : this(HttpStatusCode.InternalServerError, "WFS request failed.")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaWfsException"/> class.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    public HonuaWfsException(string message)
+        : this(HttpStatusCode.InternalServerError, message)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaWfsException"/> class with an inner exception.
+    /// </summary>
+    /// <param name="message">A human-readable error message.</param>
+    /// <param name="innerException">The inner exception that caused this exception.</param>
+    public HonuaWfsException(string message, Exception innerException)
+        : this(HttpStatusCode.InternalServerError, message, null, null, innerException)
+    {
+    }
+
     /// <summary>HTTP status code returned by the server.</summary>
     public HttpStatusCode StatusCode { get; }
 

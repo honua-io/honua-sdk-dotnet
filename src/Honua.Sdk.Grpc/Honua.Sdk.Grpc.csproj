@@ -12,7 +12,7 @@
     <Authors>Honua</Authors>
     <Copyright>Copyright (c) Honua</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/honua-io</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/honua-io/honua-sdk-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>geospatial;mobile;gis;grpc;offline;sync;honua</PackageTags>
@@ -33,15 +33,10 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageReference Include="Geospatial.Grpc" Version="$(GeospatialGrpcVersion)" />
     <PackageReference Include="Google.Protobuf" Version="3.34.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.80.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="..\..\third_party\geospatial-grpc\proto\honua\v1\feature_service.proto"
-              GrpcServices="Client" ProtoRoot="..\..\third_party\geospatial-grpc\proto" />
   </ItemGroup>
 
 </Project>

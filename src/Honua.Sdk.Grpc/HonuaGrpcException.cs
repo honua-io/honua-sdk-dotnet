@@ -11,6 +11,33 @@ namespace Honua.Sdk.Grpc;
 public sealed class HonuaGrpcException : Exception
 {
     /// <summary>
+    /// Creates a new gRPC exception.
+    /// </summary>
+    public HonuaGrpcException()
+        : this(StatusCode.Unknown, "gRPC request failed.")
+    {
+    }
+
+    /// <summary>
+    /// Creates a new gRPC exception.
+    /// </summary>
+    /// <param name="message">The error detail message.</param>
+    public HonuaGrpcException(string message)
+        : this(StatusCode.Unknown, message)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new gRPC exception.
+    /// </summary>
+    /// <param name="message">The error detail message.</param>
+    /// <param name="innerException">The original exception.</param>
+    public HonuaGrpcException(string message, Exception innerException)
+        : this(StatusCode.Unknown, message, innerException)
+    {
+    }
+
+    /// <summary>
     /// The gRPC status code.
     /// </summary>
     public StatusCode StatusCode { get; }
