@@ -17,9 +17,14 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
     public async Task FeatureServerApplyEdits_AddUpdateDelete_RoundTrips()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
+        var layerPath = $"/rest/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/FeatureServer/{_fixture.Options.LayerId}";
+        var sdkMethod = "IHonuaFeatureServerEditClient.AddFeaturesAsync";
+        var requestPath = $"{layerPath}/addFeatures";
 
         await _fixture.RecordCheckAsync(
             "features-edit-roundtrip",
+            () => sdkMethod,
+            () => requestPath,
             async ct =>
             {
                 var addAttributes = ParseAttributes(
@@ -33,6 +38,8 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
 
                 try
                 {
+                    sdkMethod = "IHonuaFeatureServerEditClient.AddFeaturesAsync";
+                    requestPath = $"{layerPath}/addFeatures";
                     var addResponse = await _fixture.FeatureServerEditClient.AddFeaturesAsync(
                         _fixture.Options.ServiceName,
                         _fixture.Options.LayerId,
@@ -55,6 +62,8 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
                         .GetServices<IHonuaFeatureEditClient>()
                         .Single(client => client.ProviderName == "geoservices-featureserver");
 
+                    sdkMethod = "IHonuaFeatureEditClient.ApplyEditsAsync";
+                    requestPath = $"{layerPath}/applyEdits";
                     var updateResponse = await sharedEditClient.ApplyEditsAsync(
                         new FeatureEditRequest
                         {
@@ -78,6 +87,8 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
                     var updateResult = Assert.Single(updateResponse.UpdateResults);
                     Assert.True(updateResult.Succeeded, FormatError(updateResult.Error));
 
+                    sdkMethod = "IHonuaFeatureServerEditClient.DeleteFeaturesAsync";
+                    requestPath = $"{layerPath}/deleteFeatures";
                     var deleteResponse = await _fixture.FeatureServerEditClient.DeleteFeaturesAsync(
                         _fixture.Options.ServiceName,
                         _fixture.Options.LayerId,
