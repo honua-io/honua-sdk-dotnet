@@ -11,3 +11,15 @@ public sealed class StagingConfiguredFactAttribute : FactAttribute
         }
     }
 }
+
+public sealed class StagingFeatureServerEditsFactAttribute : FactAttribute
+{
+    public StagingFeatureServerEditsFactAttribute()
+    {
+        var missing = StagingIntegrationOptions.GetMissingFeatureServerEditEnvironmentVariables();
+        if (missing.Count > 0)
+        {
+            Skip = $"Set FeatureServer edit staging variables to run. Missing: {string.Join(", ", missing)}.";
+        }
+    }
+}
