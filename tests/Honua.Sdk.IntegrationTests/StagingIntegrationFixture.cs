@@ -31,6 +31,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         "wfs-get-features",
         "features-service-info",
         "features-query",
+        "source-facade-query",
         "features-edit-roundtrip",
         "ogc-collections",
         "ogc-items",
@@ -43,7 +44,8 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         "grpc",
         "wfs",
         "geoservices-featureserver",
-        "ogc-api-features"
+        "ogc-api-features",
+        "source-facade"
     ];
 
     private readonly Dictionary<string, StagingCheckResult> _results =
