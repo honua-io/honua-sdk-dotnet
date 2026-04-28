@@ -89,11 +89,20 @@ for entry in "${projects[@]}"; do
   fi
 
   echo "Validating ${package_id} API compatibility..."
+  api_compat_args=(
+    "package" "${current_package}"
+    "--baseline-package" "${baseline_package}"
+    "--run-api-compat"
+    "--enable-rule-cannot-change-parameter-name"
+  )
+
+  suppression_file="${ROOT}/eng/api-compat/${package_id}.xml"
+  if [[ -f "${suppression_file}" ]]; then
+    api_compat_args+=("--suppression-file" "${suppression_file}")
+  fi
+
   (
     cd "${ROOT}"
-    dotnet tool run apicompat -- package "${current_package}" \
-      --baseline-package "${baseline_package}" \
-      --run-api-compat \
-      --enable-rule-cannot-change-parameter-name
+    dotnet tool run apicompat -- "${api_compat_args[@]}"
   )
 done
