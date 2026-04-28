@@ -65,6 +65,25 @@ foreach (var feature in response.Features)
     Console.WriteLine($"{feature.Id}: {feature.Attributes["name"]}");
 ```
 
+## Authentication and token refresh
+
+All client packages support static `ApiKey` / `BearerToken` values and
+request-time `ApiKeyProvider` / `BearerTokenProvider` delegates. Use providers
+when credentials can refresh, rotate, or be revoked while the process is
+running:
+
+```csharp
+builder.Services.AddHonuaGrpc(o =>
+{
+    o.Address = "https://localhost:5001";
+    o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
+});
+```
+
+Credentials are sent only over HTTPS except for loopback HTTP during local
+development. See [docs/authentication.md](docs/authentication.md) for secure
+storage guidance and retry/failure behavior.
+
 ## Apply edits
 
 The gRPC client supports feature edits (adds, updates, deletes):

@@ -143,7 +143,23 @@ and the CI package API compatibility gate used before publish.
 
 ## Authentication Transport
 
-When `ApiKey` or `BearerToken` is configured on the Admin or gRPC clients, the
-SDK only sends those credentials over HTTPS. The only HTTP exception is
-loopback / `localhost` for local development, which is the path used by the
-admin bootstrap sample against local Docker Compose defaults.
+When `ApiKey`, `BearerToken`, `ApiKeyProvider`, or `BearerTokenProvider` is
+configured on any SDK client, the SDK only sends those credentials over HTTPS.
+The only HTTP exception is loopback / `localhost` for local development, which
+is the path used by the admin bootstrap sample against local Docker Compose
+defaults.
+
+Use credential providers for refresh, revocation, and key rotation:
+
+```csharp
+builder.Services.AddHonuaAdmin(o =>
+{
+    o.BaseAddress = new Uri("https://honua.example.com");
+    o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
+});
+```
+
+Providers run before each request or RPC. Returning null or an empty string
+omits the credential header. Store secrets in your application-owned secure
+store and see [docs/authentication.md](docs/authentication.md) for storage,
+failure, and retry behavior.

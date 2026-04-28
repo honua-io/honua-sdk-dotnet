@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Grpc.Core;
+using Grpc.Net.Client;
 using Honua.Sdk.Abstractions.Features;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -264,6 +265,113 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task Metadata_IncludesStaticCredentials_WhenConfiguredInOptions()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        Metadata? capturedMetadata = null;
+
+        var protoResponse = new Proto.QueryFeaturesResponse();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>(
+                (_, metadata, _, _) => capturedMetadata = metadata)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object, new HonuaGrpcClientOptions
+        {
+            EnableCompressionNegotiation = false,
+            ApiKey = "my-key",
+            BearerToken = "my-token"
+        });
+
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+
+        Assert.NotNull(capturedMetadata);
+        Assert.Equal("my-key", GetMetadataValue(capturedMetadata!, "x-api-key"));
+        Assert.Equal("Bearer my-token", GetMetadataValue(capturedMetadata!, "authorization"));
+    }
+
+    [Fact]
+    public async Task Metadata_UsesCredentialProvidersPerCall()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        var capturedMetadata = new List<Metadata>();
+        var apiKeyCalls = 0;
+        var bearerTokenCalls = 0;
+
+        var protoResponse = new Proto.QueryFeaturesResponse();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>(
+                (_, metadata, _, _) => capturedMetadata.Add(metadata))
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object, new HonuaGrpcClientOptions
+        {
+            EnableCompressionNegotiation = false,
+            ApiKeyProvider = _ => Task.FromResult<string?>($"grpc-key-{++apiKeyCalls}"),
+            BearerTokenProvider = _ => Task.FromResult<string?>($"grpc-token-{++bearerTokenCalls}")
+        });
+
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+
+        Assert.Collection(
+            capturedMetadata,
+            first =>
+            {
+                Assert.Equal("grpc-key-1", GetMetadataValue(first, "x-api-key"));
+                Assert.Equal("Bearer grpc-token-1", GetMetadataValue(first, "authorization"));
+            },
+            second =>
+            {
+                Assert.Equal("grpc-key-2", GetMetadataValue(second, "x-api-key"));
+                Assert.Equal("Bearer grpc-token-2", GetMetadataValue(second, "authorization"));
+            });
+    }
+
+    [Fact]
+    public async Task Metadata_ProviderReturningNullOrEmpty_OmitsCredentials()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        Metadata? capturedMetadata = null;
+
+        var protoResponse = new Proto.QueryFeaturesResponse();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>(
+                (_, metadata, _, _) => capturedMetadata = metadata)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object, new HonuaGrpcClientOptions
+        {
+            EnableCompressionNegotiation = false,
+            ApiKey = "fallback-key",
+            BearerToken = "fallback-token",
+            ApiKeyProvider = _ => Task.FromResult<string?>(null),
+            BearerTokenProvider = _ => Task.FromResult<string?>(string.Empty)
+        });
+
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+
+        Assert.NotNull(capturedMetadata);
+        Assert.Null(GetMetadataValue(capturedMetadata!, "x-api-key"));
+        Assert.Null(GetMetadataValue(capturedMetadata!, "authorization"));
+    }
+
+    [Fact]
     public void Constructor_WithCredentialsAndRemoteHttpAddress_Throws()
     {
         var options = Options.Create(new HonuaGrpcClientOptions
@@ -274,6 +382,44 @@ public class HonuaGrpcClientTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => new HonuaGrpcClient(options));
         Assert.Contains("Refusing to send gRPC credentials over an insecure connection", ex.Message);
+    }
+
+    [Fact]
+    public void Constructor_WithCredentialProviderAndRemoteHttpAddress_Throws()
+    {
+        var options = Options.Create(new HonuaGrpcClientOptions
+        {
+            Address = "http://example.com:5000",
+            BearerTokenProvider = _ => Task.FromResult<string?>("my-token")
+        });
+
+        var ex = Assert.Throws<InvalidOperationException>(() => new HonuaGrpcClient(options));
+        Assert.Contains("Refusing to send gRPC credentials over an insecure connection", ex.Message);
+    }
+
+    [Fact]
+    public void ChannelConstructor_WithCredentialProviderAndRemoteHttpAddress_Throws()
+    {
+        using var channel = GrpcChannel.ForAddress("http://example.com:5000");
+        var options = new HonuaGrpcClientOptions
+        {
+            BearerTokenProvider = _ => Task.FromResult<string?>("my-token")
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => new HonuaGrpcClient(channel, options));
+        Assert.Contains("Refusing to send gRPC credentials over an insecure connection", ex.Message);
+    }
+
+    [Fact]
+    public void ChannelConstructor_WithCredentialProviderAndLoopbackHttpAddress_DoesNotThrow()
+    {
+        using var channel = GrpcChannel.ForAddress("http://localhost:5000");
+        var options = new HonuaGrpcClientOptions
+        {
+            ApiKeyProvider = _ => Task.FromResult<string?>("my-key")
+        };
+
+        using var client = new HonuaGrpcClient(channel, options);
     }
 
     [Fact]
@@ -307,6 +453,9 @@ public class HonuaGrpcClientTests
             () => new Metadata(),
             () => { });
     }
+
+    private static string? GetMetadataValue(Metadata metadata, string key)
+        => metadata.FirstOrDefault(entry => entry.Key == key)?.Value;
 
     private static AsyncServerStreamingCall<T> CreateAsyncServerStreamingCall<T>(IEnumerable<T> responses)
     {
