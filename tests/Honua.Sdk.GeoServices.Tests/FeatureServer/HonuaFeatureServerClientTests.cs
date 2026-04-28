@@ -210,6 +210,46 @@ public class HonuaFeatureServerClientTests
         Assert.Equal("7", result.Features[0].Id);
     }
 
+    [Fact]
+    public async Task HonuaSourceFacade_QueriesFeatureServerClientAndMatchesProviderAlias()
+    {
+        string? capturedUrl = null;
+        var json = """
+        {
+            "objectIdFieldName": "OBJECTID",
+            "features": [
+                { "attributes": { "OBJECTID": 7, "NAME": "Point A" } }
+            ],
+            "exceededTransferLimit": false
+        }
+        """;
+        var client = TestHelpers.CreateFeatureServerClient(req =>
+        {
+            capturedUrl = req.RequestUri?.ToString();
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parks",
+                Protocol = FeatureProtocolIds.GeoServicesFeatureService,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 0 }
+            },
+            client,
+            client,
+            client);
+
+        var result = await source.QueryAsync(new SourceQuery { Where = "POP > 100", Limit = 10 });
+        var ids = await source.QueryObjectIdsAsync();
+
+        Assert.NotNull(capturedUrl);
+        Assert.Contains("/rest/services/svc/FeatureServer/0/query", capturedUrl);
+        Assert.Equal("geoservices-featureserver", result.ProviderName);
+        Assert.Equal(["7"], ids);
+        Assert.Contains(FeatureCapabilities.ApplyEdits, source.Capabilities);
+        Assert.Same(client, source.Protocol<HonuaFeatureServerClient>("geoservices-featureserver"));
+    }
+
     // ── Feature edits ───────────────────────────────────────────────
 
     [Fact]

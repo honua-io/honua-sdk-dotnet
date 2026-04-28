@@ -319,6 +319,29 @@ Then add:
             Console.WriteLine($"  {feature.Id}");
 ```
 
+To keep provider-specific source identifiers out of call sites, wrap the
+selected client in a source descriptor:
+
+```csharp
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parks",
+                Protocol = FeatureProtocolIds.OgcFeatures,
+                Locator = new SourceLocator { CollectionId = "parks" }
+            },
+            ogc,
+            editClient: ogc as IHonuaFeatureEditClient,
+            nativeClient: ogc);
+
+        var ids = await source.QueryObjectIdsAsync(new SourceQuery
+        {
+            Where = "status = 'open'",
+            FilterLanguage = FeatureFilterLanguage.Cql2Text,
+            Limit = 3,
+        }, ct);
+```
+
 ## What's Next
 
 - **[Admin Bootstrap Console](../examples/AdminBootstrapConsole/)** -- the
@@ -330,6 +353,8 @@ Then add:
 - **[Staging Integration Guide](staging-integration.md)** -- required staging
   environment variables, CI evidence artifacts, and troubleshooting for the
   read-only staging suite
+- **[Source facade](source-facade.md)** -- source descriptors, protocol
+  aliases, capabilities, and native protocol escape hatches
 - **[INSTALL.md](../INSTALL.md)** -- package sources, GitHub Packages setup,
   and version policy
 - **[Field Data Collection example](../examples/FieldDataCollection/)** -- a

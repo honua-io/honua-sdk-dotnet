@@ -91,3 +91,10 @@ WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
 capabilities are available through `IHonuaFeatureEditClient`; gRPC,
 GeoServices FeatureServer, and OGC API Features currently advertise write
 support, while WFS reports unsupported edit capabilities with a reason.
+
+`Honua.Sdk.Abstractions` also exposes the source-oriented facade used for
+cross-provider application code: `SourceDescriptor`, `SourceLocator`,
+`SourceQuery`, `IHonuaSource`, and `HonuaSource`. It wraps the existing
+query/edit interfaces, normalizes protocol aliases such as
+`geoservices-featureserver` to `geoservices-feature-service`, and keeps native
+clients available through `IHonuaSource.Protocol<TClient>()`.

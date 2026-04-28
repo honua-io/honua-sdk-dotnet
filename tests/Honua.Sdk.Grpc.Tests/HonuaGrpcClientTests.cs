@@ -150,6 +150,49 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task HonuaSourceFacade_QueriesGrpcClientAndExposesNativeProtocol()
+    {
+        Proto.QueryFeaturesRequest? capturedRequest = null;
+        var protoResponse = new Proto.QueryFeaturesResponse();
+        protoResponse.Features.Add(new Proto.Feature { Id = 42 });
+
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>((req, _, _, _) => capturedRequest = req)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parks",
+                Protocol = FeatureProtocolIds.Grpc,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 3 }
+            },
+            client,
+            client,
+            client);
+
+        var query = new SourceQuery { Where = "1=1", Limit = 10 };
+        var result = await source.QueryAsync(query);
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal("svc", capturedRequest.ServiceId);
+        Assert.Equal(3, capturedRequest.LayerId);
+        Assert.Equal("1=1", capturedRequest.Where);
+        Assert.Equal(10, capturedRequest.ResultRecordCount);
+        Assert.Equal("grpc", result.ProviderName);
+        Assert.Equal("42", Assert.Single(result.Features).Id);
+        Assert.Contains(FeatureCapabilities.ApplyEdits, source.Capabilities);
+        Assert.Same(client, source.Protocol<HonuaGrpcClient>());
+    }
+
+    [Fact]
     public async Task ApplyEditsAsync_SharedAbstraction_DelegatesToGrpcApplyEdits()
     {
         Proto.ApplyEditsRequest? capturedRequest = null;

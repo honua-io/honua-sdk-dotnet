@@ -134,6 +134,36 @@ var page = await queryClient.QueryAsync(new FeatureQueryRequest
 });
 ```
 
+For source-oriented application code, wrap a provider client in
+`HonuaSource`. The source descriptor owns the provider locator, so query code
+does not switch on gRPC, WFS, GeoServices, or OGC-specific source fields:
+
+```csharp
+var source = new HonuaSource(
+    new SourceDescriptor
+    {
+        Id = "parks",
+        Protocol = FeatureProtocolIds.OgcFeatures,
+        Locator = new SourceLocator { CollectionId = "parks" }
+    },
+    queryClient,
+    editClient: queryClient as IHonuaFeatureEditClient,
+    nativeClient: queryClient);
+
+var result = await source.QueryAsync(new SourceQuery
+{
+    Where = "status = 'open'",
+    FilterLanguage = FeatureFilterLanguage.Cql2Text,
+    OutFields = ["name", "status"],
+    Limit = 10,
+});
+
+var native = source.Protocol<IHonuaOgcFeaturesClient>(FeatureProtocolIds.OgcFeatures);
+```
+
+See [docs/source-facade.md](docs/source-facade.md) for the descriptor,
+capability, and protocol alias model.
+
 ## Shared edit abstraction
 
 Feature providers expose shared write support through `IHonuaFeatureEditClient`

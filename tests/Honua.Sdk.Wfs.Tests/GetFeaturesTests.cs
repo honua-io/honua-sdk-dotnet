@@ -164,6 +164,37 @@ public sealed class GetFeaturesTests
     }
 
     [Fact]
+    public async Task HonuaSourceFacade_QueriesWfsClientAndSuppressesUnsupportedEdits()
+    {
+        string? capturedQuery = null;
+        var client = TestHelpers.CreateClient(req =>
+        {
+            capturedQuery = req.RequestUri!.Query;
+            return Task.FromResult(TestHelpers.CreateGeoJsonResponse(TwoFeatureResponse));
+        });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parcels",
+                Protocol = FeatureProtocolIds.Wfs,
+                Locator = new SourceLocator { TypeName = "parcels" }
+            },
+            client,
+            client,
+            client);
+
+        var result = await source.QueryAsync(new SourceQuery { Where = "<fes:Filter />", FilterLanguage = FeatureFilterLanguage.FesXml });
+        var ids = await source.QueryObjectIdsAsync();
+
+        Assert.NotNull(capturedQuery);
+        Assert.Contains("TYPENAMES=parcels", capturedQuery);
+        Assert.Equal("wfs", result.ProviderName);
+        Assert.Equal(["parcels.1", "parcels.2"], ids);
+        Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, source.Capabilities);
+        Assert.Same(client, source.Protocol<HonuaWfsClient>());
+    }
+
+    [Fact]
     public async Task ApplyEditsAsync_SharedAbstraction_ThrowsUnsupportedWithCapabilities()
     {
         var client = TestHelpers.CreateClient(_ => throw new InvalidOperationException("HTTP should not be called."));
