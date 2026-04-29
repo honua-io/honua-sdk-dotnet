@@ -1,0 +1,41 @@
+{
+  "serviceId": "parks",
+  "layerId": 2,
+  "adds": [
+    {
+      "attributes": {
+        "name": {
+          "stringValue": "New Park"
+        },
+        "active": {
+          "boolValue": true
+        },
+        "opened_at": {
+          "datetimeValue": "1700000000000"
+        }
+      },
+      "geometry": {
+        "point": {
+          "x": -157.85,
+          "y": 21.3
+        }
+      }
+    }
+  ],
+  "updates": [
+    {
+      "id": "77",
+      "attributes": {
+        "name": {
+          "stringValue": "Renamed Park"
+        }
+      }
+    }
+  ],
+  "deletes": [
+    "88",
+    "89"
+  ],
+  "rollbackOnFailure": true,
+  "forceWrite": true
+}

@@ -1,0 +1,50 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "geometryType": "GEOMETRY_TYPE_POINT",
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "fieldType": "FIELD_TYPE_INTEGER",
+      "nullable": false
+    },
+    {
+      "name": "name",
+      "fieldType": "FIELD_TYPE_STRING",
+      "length": 128,
+      "nullable": true
+    },
+    {
+      "name": "opened_at",
+      "fieldType": "FIELD_TYPE_DATE_TIME",
+      "nullable": true
+    }
+  ],
+  "features": [
+    {
+      "id": "101",
+      "attributes": {
+        "name": {
+          "stringValue": "Ala Moana Regional Park"
+        },
+        "visitors": {
+          "int64Value": "2500"
+        },
+        "opened_at": {
+          "datetimeValue": "1700000000000"
+        }
+      },
+      "geometry": {
+        "point": {
+          "x": -157.849,
+          "y": 21.291
+        }
+      }
+    }
+  ],
+  "exceededTransferLimit": true,
+  "count": "1"
+}

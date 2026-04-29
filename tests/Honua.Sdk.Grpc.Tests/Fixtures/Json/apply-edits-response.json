@@ -1,0 +1,27 @@
+{
+  "addResults": [
+    {
+      "objectId": "101",
+      "success": true
+    }
+  ],
+  "updateResults": [
+    {
+      "objectId": "102",
+      "error": {
+        "code": 409,
+        "message": "Edit conflict"
+      }
+    }
+  ],
+  "deleteResults": [
+    {
+      "objectId": "103",
+      "success": true
+    }
+  ],
+  "error": {
+    "code": 400,
+    "message": "Batch rejected"
+  }
+}

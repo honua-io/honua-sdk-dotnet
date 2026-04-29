@@ -211,6 +211,12 @@ internal static class ProtoAdapter
             case bool b:
                 attr.BoolValue = b;
                 break;
+            case DateTime dateTime:
+                attr.DatetimeValue = new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
+                break;
+            case DateTimeOffset dateTimeOffset:
+                attr.DatetimeValue = dateTimeOffset.ToUnixTimeMilliseconds();
+                break;
             case byte[] bytes:
                 attr.BytesValue = Google.Protobuf.ByteString.CopyFrom(bytes);
                 break;
@@ -267,7 +273,7 @@ internal static class ProtoAdapter
             Proto.AttributeValue.ValueOneofCase.DoubleValue => attr.DoubleValue,
             Proto.AttributeValue.ValueOneofCase.FloatValue => (double)attr.FloatValue,
             Proto.AttributeValue.ValueOneofCase.BoolValue => attr.BoolValue,
-            Proto.AttributeValue.ValueOneofCase.DatetimeValue => attr.DatetimeValue,
+            Proto.AttributeValue.ValueOneofCase.DatetimeValue => DateTimeOffset.FromUnixTimeMilliseconds(attr.DatetimeValue).DateTime,
             Proto.AttributeValue.ValueOneofCase.BytesValue => attr.BytesValue.ToByteArray(),
             Proto.AttributeValue.ValueOneofCase.NullValue => null,
             Proto.AttributeValue.ValueOneofCase.None => null,
