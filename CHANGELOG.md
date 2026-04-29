@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.2-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.1-alpha.1...dotnet-sdk-v0.1.2-alpha.1) (2026-04-29)
+
+
+### Features
+
+* complete admin contract gap coverage ([7cd992d](https://github.com/honua-io/honua-sdk-dotnet/commit/7cd992d83249e568adeaabb42a23c0bff4390f4a))
+* complete admin contract gap coverage ([445362e](https://github.com/honua-io/honua-sdk-dotnet/commit/445362ec5db9db9d92a41264226c778fa05230f0))
+
 ## [0.1.1-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.0-alpha.1...dotnet-sdk-v0.1.1-alpha.1) (2026-04-29)
 
 
