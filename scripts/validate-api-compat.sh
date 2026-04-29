@@ -47,6 +47,8 @@ projects=(
   "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj|Honua.Sdk.Wfs"
   "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj|Honua.Sdk.GeoServices"
   "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures"
+  "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj|Honua.Sdk.Offline.Abstractions"
+  "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj|Honua.Sdk.Offline"
 )
 
 for entry in "${projects[@]}"; do
