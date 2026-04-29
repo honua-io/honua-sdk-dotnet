@@ -19,4 +19,8 @@
     <ProjectReference Include="..\..\src\Honua.Sdk.Grpc\Honua.Sdk.Grpc.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Fixtures\Json\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

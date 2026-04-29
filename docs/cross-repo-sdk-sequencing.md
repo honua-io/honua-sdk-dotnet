@@ -87,6 +87,9 @@ Foundation work should land before repo cutovers:
 - Server transport alignment: https://github.com/honua-io/honua-sdk-dotnet/issues/73
 - Browser/WASM matrix: https://github.com/honua-io/honua-sdk-dotnet/issues/62
 
+The SDK-side server transport inventory and first converter fixture slice lives
+in [Server Transport Ownership](server-transport-ownership.md).
+
 ### Gate 4: Admin Cutover
 
 Admin should keep Blazor/MudBlazor UI state, local stubs, workspace state

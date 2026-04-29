@@ -1,0 +1,72 @@
+{
+  "serviceId": "parks",
+  "layerId": 2,
+  "where": "status = 'open'",
+  "objectIds": [
+    "101",
+    "102"
+  ],
+  "outFields": [
+    "name",
+    "status",
+    "opened_at"
+  ],
+  "returnGeometry": true,
+  "outSr": {
+    "wkid": 3857,
+    "latestWkid": 3857
+  },
+  "resultOffset": 5,
+  "resultRecordCount": 25,
+  "orderBy": "name ASC",
+  "returnDistinct": true,
+  "outStatistics": [
+    {
+      "onStatisticField": "visitors",
+      "statisticType": "STATISTIC_TYPE_SUM",
+      "outStatisticFieldName": "total_visitors"
+    }
+  ],
+  "groupBy": [
+    "status"
+  ],
+  "geometryPrecision": 6,
+  "maxAllowableOffset": 0.25,
+  "spatialFilter": {
+    "geometry": {
+      "polygon": {
+        "rings": [
+          {
+            "coords": [
+              {
+                "x": -123.5,
+                "y": 37.5
+              },
+              {
+                "x": -122.5,
+                "y": 37.5
+              },
+              {
+                "x": -122.5,
+                "y": 38.5
+              },
+              {
+                "x": -123.5,
+                "y": 38.5
+              },
+              {
+                "x": -123.5,
+                "y": 37.5
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "spatialRelationship": "SPATIAL_RELATIONSHIP_INTERSECTS",
+    "spatialReference": {
+      "wkid": 4326
+    },
+    "distanceUnit": "DISTANCE_UNIT_METERS"
+  }
+}

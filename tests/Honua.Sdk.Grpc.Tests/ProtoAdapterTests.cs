@@ -430,11 +430,26 @@ public class ProtoAdapterTests
     }
 
     [Fact]
-    public void ConvertAttribute_DatetimeValue_ReturnsLong()
+    public void ConvertAttribute_DatetimeValue_ReturnsDateTime()
     {
         var attr = new Proto.AttributeValue { DatetimeValue = 1700000000000L };
         var result = ProtoAdapter.ConvertAttribute(attr);
-        Assert.Equal(1700000000000L, result);
+        Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds(1700000000000L).DateTime, result);
+    }
+
+    [Fact]
+    public void ConvertAttributeToProto_DateTimeValues_ReturnDatetimeValue()
+    {
+        var dateTimeOffset = DateTimeOffset.FromUnixTimeMilliseconds(1700000000000L);
+        var dateTime = dateTimeOffset.UtcDateTime;
+
+        var fromDateTime = ProtoAdapter.ConvertAttributeToProto(dateTime);
+        var fromDateTimeOffset = ProtoAdapter.ConvertAttributeToProto(dateTimeOffset);
+
+        Assert.Equal(Proto.AttributeValue.ValueOneofCase.DatetimeValue, fromDateTime.ValueCase);
+        Assert.Equal(1700000000000L, fromDateTime.DatetimeValue);
+        Assert.Equal(Proto.AttributeValue.ValueOneofCase.DatetimeValue, fromDateTimeOffset.ValueCase);
+        Assert.Equal(1700000000000L, fromDateTimeOffset.DatetimeValue);
     }
 
     [Fact]
