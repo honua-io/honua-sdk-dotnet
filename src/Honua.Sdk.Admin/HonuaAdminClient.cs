@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -460,6 +462,149 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<JsonElement>(body);
+    }
+
+    // ── Identity ────────────────────────────────────────────────────────
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<OidcProviderResponse>> ListOidcProvidersAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<OidcProviderResponse[]>(
+            $"{ApiPrefix}/oidc/providers",
+            HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponseArray,
+            ct).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<OidcProviderResponse?> GetOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    {
+        using var response = await _http.GetAsync(
+            CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
+
+        var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponse);
+        return envelope?.Data;
+    }
+
+    /// <inheritdoc />
+    public async Task<OidcProviderResponse> CreateOidcProviderAsync(CreateOidcProviderRequest request, CancellationToken ct = default)
+    {
+        var data = await PostAsync<OidcProviderResponse>(
+            $"{ApiPrefix}/oidc/providers",
+            request,
+            HonuaAdminJsonContext.Default.CreateOidcProviderRequest,
+            HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponse,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null provider.", "CreateOidcProvider");
+    }
+
+    /// <inheritdoc />
+    public async Task<OidcProviderResponse> UpdateOidcProviderAsync(Guid providerId, UpdateOidcProviderRequest request, CancellationToken ct = default)
+    {
+        var data = await PutAsync<OidcProviderResponse>(
+            $"{ApiPrefix}/oidc/providers/{providerId:D}",
+            request,
+            HonuaAdminJsonContext.Default.UpdateOidcProviderRequest,
+            HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponse,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null provider.", "UpdateOidcProvider");
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    {
+        using var response = await _http.DeleteAsync(
+            CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
+    }
+
+    /// <inheritdoc />
+    public async Task<OidcProviderTestResponse> TestOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    {
+        var data = await PostAsync<OidcProviderTestResponse>(
+            $"{ApiPrefix}/oidc/providers/{providerId:D}/test",
+            (object?)null,
+            HonuaAdminJsonContext.Default.ApiResponseOidcProviderTestResponse,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestOidcProvider");
+    }
+
+    /// <inheritdoc />
+    public async Task<IdentityProvidersResponse> GetIdentityProvidersAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<IdentityProvidersResponse>(
+            $"{ApiPrefix}/identity/providers",
+            HonuaAdminJsonContext.Default.ApiResponseIdentityProvidersResponse,
+            ct).ConfigureAwait(false);
+        return data ?? new IdentityProvidersResponse();
+    }
+
+    /// <inheritdoc />
+    public async Task<IdentityProviderTestResult> TestIdentityProviderAsync(string providerType, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(providerType))
+        {
+            throw new ArgumentException("Provider type must be supplied.", nameof(providerType));
+        }
+
+        var data = await GetAsync<IdentityProviderTestResult>(
+            $"{ApiPrefix}/identity/providers/{Uri.EscapeDataString(providerType)}/test",
+            HonuaAdminJsonContext.Default.ApiResponseIdentityProviderTestResult,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestIdentityProvider");
+    }
+
+    // ── License ─────────────────────────────────────────────────────────
+
+    /// <inheritdoc />
+    public async Task<LicenseStatusResponse> GetLicenseStatusAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<LicenseStatusResponse>(
+            $"{ApiPrefix}/license",
+            HonuaAdminJsonContext.Default.ApiResponseLicenseStatusResponse,
+            ct).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null license status.", "GetLicenseStatus");
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<LicenseEntitlement>> GetLicenseEntitlementsAsync(CancellationToken ct = default)
+    {
+        var data = await GetAsync<LicenseEntitlement[]>(
+            $"{ApiPrefix}/license/entitlements",
+            HonuaAdminJsonContext.Default.ApiResponseLicenseEntitlementArray,
+            ct).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<LicenseStatusResponse> UploadLicenseAsync(byte[] bytes, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+
+        using var content = new ByteArrayContent(bytes);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        using var request = new HttpRequestMessage(HttpMethod.Post, CreateRequestUri($"{ApiPrefix}/license"))
+        {
+            Content = content
+        };
+
+        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
+
+        var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseLicenseStatusResponse);
+        return envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null license status.", "UploadLicense");
     }
 
     // ── Observability ────────────────────────────────────────────────────

@@ -314,6 +314,127 @@ public interface IHonuaAdminClient
     /// <returns>The configuration as a JSON element.</returns>
     Task<JsonElement> GetConfigAsync(CancellationToken ct = default);
 
+    // Identity
+
+    /// <summary>
+    /// Lists configured OIDC providers.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A list of OIDC providers.</returns>
+    Task<IReadOnlyList<OidcProviderResponse>> ListOidcProvidersAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Gets a configured OIDC provider by identifier.
+    /// </summary>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The provider, or null when the server returns 404.</returns>
+    Task<OidcProviderResponse?> GetOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Creates a configured OIDC provider.
+    /// </summary>
+    /// <param name="request">Provider create request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created provider.</returns>
+    Task<OidcProviderResponse> CreateOidcProviderAsync(CreateOidcProviderRequest request, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Updates a configured OIDC provider.
+    /// </summary>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="request">Provider update request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated provider.</returns>
+    Task<OidcProviderResponse> UpdateOidcProviderAsync(Guid providerId, UpdateOidcProviderRequest request, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Deletes a configured OIDC provider.
+    /// </summary>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    Task DeleteOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Tests a configured OIDC provider.
+    /// </summary>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The provider test result.</returns>
+    Task<OidcProviderTestResponse> TestOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Gets identity provider catalog status.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The identity provider catalog response.</returns>
+    Task<IdentityProvidersResponse> GetIdentityProvidersAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    /// <summary>
+    /// Tests a provider type from the identity provider catalog.
+    /// </summary>
+    /// <param name="providerType">Provider type.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The provider test result.</returns>
+    Task<IdentityProviderTestResult> TestIdentityProviderAsync(string providerType, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support identity administration.");
+    }
+
+    // License
+
+    /// <summary>
+    /// Gets the active license status.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The active license status.</returns>
+    Task<LicenseStatusResponse> GetLicenseStatusAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support license administration.");
+    }
+
+    /// <summary>
+    /// Gets active license entitlements.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The active license entitlements.</returns>
+    Task<IReadOnlyList<LicenseEntitlement>> GetLicenseEntitlementsAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support license administration.");
+    }
+
+    /// <summary>
+    /// Uploads a replacement license file.
+    /// </summary>
+    /// <param name="bytes">License file bytes.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The refreshed license status.</returns>
+    Task<LicenseStatusResponse> UploadLicenseAsync(byte[] bytes, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support license administration.");
+    }
+
     // Observability
 
     /// <summary>
