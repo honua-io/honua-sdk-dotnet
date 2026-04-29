@@ -1,0 +1,44 @@
+{
+  "planId": "plan-1",
+  "grammarVersion": "spec/v1",
+  "processFamilyVersion": "process/v1",
+  "nodes": [
+    {
+      "nodeId": "source",
+      "kind": "Dataset",
+      "op": "catalog.source",
+      "dependsOn": [],
+      "contentHash": "sha256:source",
+      "cost": {
+        "estimatedRows": 5,
+        "estimatedBytes": 1024,
+        "estimatedDurationMs": 1.5
+      },
+      "warnings": []
+    },
+    {
+      "nodeId": "buffer",
+      "kind": "Compute",
+      "op": "geometry.buffer",
+      "dependsOn": [
+        "source"
+      ],
+      "contentHash": "sha256:buffer",
+      "cost": {
+        "estimatedRows": 5,
+        "estimatedBytes": 2048,
+        "estimatedDurationMs": 12.5
+      },
+      "warnings": [
+        {
+          "code": "crs-transform-required",
+          "message": "Input CRS differs from requested output CRS.",
+          "severity": "Warning",
+          "nodeId": "buffer",
+          "remedy": "Confirm the output spatial reference."
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

@@ -38,7 +38,7 @@ Retries are enabled by default and can be disabled per client with
 | Client family | Retried failures |
 |---------------|------------------|
 | gRPC | `QueryFeatures` and `QueryFeaturesStream` retries on `Unavailable`, `Internal` |
-| Admin, Geocoding, WFS, GeoServices, OGC API Features | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
+| Admin, Geocoding, Spec, WFS, GeoServices, OGC API Features | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
 
 Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
 API Features create/update/delete calls are not retried by the default policy.
@@ -57,6 +57,7 @@ right failure surface without parsing strings.
 |---------|-----------|-------|
 | `Honua.Sdk.Admin` | `HonuaAdminApiException` | Non-success HTTP status codes. Includes status code and response body. |
 | `Honua.Sdk.Admin` | `HonuaAdminOperationException` | Successful HTTP responses that fail the expected Admin contract, such as null envelopes or compatibility failures. |
+| `Honua.Sdk.Spec` | `HonuaSpecException` | Non-success spec REST responses, including structured problem-details payloads. |
 | `Honua.Sdk.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
@@ -86,6 +87,7 @@ Current typed endpoint coverage is:
 | Package | Covered surfaces |
 |---------|------------------|
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, observability, migrations, deploy preflight/plans/operations, and geocoding. |
+| `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
 | `Honua.Sdk.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |

@@ -1,0 +1,9 @@
+{
+  "type": "urn:honua:spec:invalid-request-body",
+  "title": "Spec request rejected",
+  "status": 400,
+  "detail": "Body must contain exactly one of 'text' or 'spec'.",
+  "code": "invalid-request-body",
+  "nodeId": null,
+  "remedy": "Provide either DSL text or canonical JSON."
+}

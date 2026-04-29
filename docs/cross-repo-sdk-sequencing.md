@@ -123,6 +123,8 @@ These move after foundation contracts are stable:
 - Mobile field adapter: https://github.com/honua-io/honua-mobile/issues/56
 - Plugin contracts: https://github.com/honua-io/honua-sdk-dotnet/issues/72
 - Spec workspace clients: https://github.com/honua-io/honua-sdk-dotnet/issues/74
+  (`Honua.Sdk.Spec` owns the stable REST/SSE DTOs and client; server/admin
+  keep runtime and UI state)
 
 ### Gate 7: Server Dependencies
 

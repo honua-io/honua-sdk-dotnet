@@ -10,10 +10,13 @@ The publish workflow builds and packs:
 
 - `Honua.Sdk.Abstractions`
 - `Honua.Sdk.Admin`
+- `Honua.Sdk.Spec`
 - `Honua.Sdk.Grpc`
 - `Honua.Sdk.Wfs`
 - `Honua.Sdk.GeoServices`
 - `Honua.Sdk.OgcFeatures`
+- `Honua.Sdk.Offline.Abstractions`
+- `Honua.Sdk.Offline`
 
 ## Release Flow
 
@@ -56,10 +59,13 @@ mkdir -p ./nupkgs
 for project in \
   src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj \
   src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj \
+  src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj \
   src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj \
   src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj \
   src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj \
-  src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj
+  src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj \
+  src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj \
+  src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj
 do
   dotnet pack "$project" --configuration Release -o ./nupkgs
 done

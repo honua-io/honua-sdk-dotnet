@@ -15,6 +15,7 @@ through GeoServices FeatureServer and OGC API Features endpoints.
 | **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
+| **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
 | **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
 | **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
 | **Honua.Sdk.OgcFeatures** | OGC API Features read/query client -- landing page, conformance, collections, queryables, items |
@@ -28,6 +29,7 @@ dotnet add package Honua.Sdk.Offline.Abstractions --prerelease
 dotnet add package Honua.Sdk.Offline --prerelease
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
+dotnet add package Honua.Sdk.Spec --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
@@ -44,6 +46,7 @@ Register the clients with dependency injection and query features:
 using Honua.Sdk.Grpc.Models;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
+using Honua.Sdk.Spec.Extensions;
 using Honua.Sdk.Wfs.Extensions;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
@@ -52,6 +55,7 @@ using Honua.Sdk.OgcFeatures.Extensions;
 builder.Services.AddHonuaGrpc(o => o.Address = "https://localhost:5001");
 builder.Services.AddHonuaAdmin(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaGeocoding(o => o.BaseAddress = new Uri("https://localhost:5001"));
+builder.Services.AddHonuaSpec(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaWfs(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaFeatureServer(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = new Uri("https://localhost:5001"));
@@ -291,6 +295,39 @@ if (!compatibility.IsSupported)
 The current SDK compatibility policy and CI package API gate are documented in
 [docs/compatibility.md](docs/compatibility.md).
 
+## Spec workspace contracts
+
+`Honua.Sdk.Spec` provides the stable client surface for spec validation,
+planning, apply-event streaming, and cancellation:
+
+```csharp
+var document = new SpecDocumentRequest
+{
+    GrammarVersion = "spec/v1",
+    ProcessFamilyVersion = "process/v1",
+    Nodes =
+    [
+        new SpecNodeRequest
+        {
+            Id = "source",
+            Kind = SpecResourceKind.Dataset,
+            Op = "catalog.source"
+        }
+    ]
+};
+
+var plan = await specClient.PlanAsync(document);
+await using var apply = await specClient.ApplyAsync(document);
+await foreach (var evt in apply.Events)
+{
+    Console.WriteLine($"{evt.Sequence}: {evt.Kind}");
+}
+```
+
+Server implementation details stay in `honua-server`; admin editor state and
+local stubs stay in `honua-server-admin`. See
+[docs/spec-workspace-contracts.md](docs/spec-workspace-contracts.md).
+
 ## Admin bootstrap flow
 
 For the canonical runnable sample app for this repo's bootstrap and publish
@@ -318,6 +355,7 @@ operator flow, see
 src/
   Honua.Sdk.Grpc/          gRPC client package (query, stream, edit)
   Honua.Sdk.Admin/          Admin + Geocoding client package
+  Honua.Sdk.Spec/           Spec workspace validate/plan/apply client package
   Honua.Sdk.Wfs/           WFS 2.0 read/query client package
   Honua.Sdk.GeoServices/   GeoServices FeatureServer read/query client package
   Honua.Sdk.OgcFeatures/   OGC API Features read/query client package
@@ -325,6 +363,7 @@ src/
 tests/
   Honua.Sdk.Grpc.Tests/     gRPC client tests
   Honua.Sdk.Admin.Tests/    Admin + Geocoding tests
+  Honua.Sdk.Spec.Tests/     Spec workspace contract/client tests
   Honua.Sdk.Wfs.Tests/      WFS client tests
   Honua.Sdk.GeoServices.Tests/
   Honua.Sdk.OgcFeatures.Tests/
@@ -355,6 +394,8 @@ third_party/
   follow-on tickets for shared staging ownership
 - **[Client Behavior](docs/client-behavior.md)** -- timeout, retry, error,
   pagination, and typed endpoint coverage behavior across packages
+- **[Spec Workspace Contracts](docs/spec-workspace-contracts.md)** -- package
+  ownership, repo boundaries, and JSON fixtures for spec plan/apply contracts
 - **[Release and NuGet Publishing](docs/release.md)** -- package versioning,
   release tags, dry runs, and GitHub Packages publishing
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
