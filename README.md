@@ -11,6 +11,8 @@ through GeoServices FeatureServer and OGC API Features endpoints.
 | Package | Description |
 |---------|-------------|
 | **Honua.Sdk.Abstractions** | Shared feature query/edit abstractions implemented by provider-specific clients |
+| **Honua.Sdk.Offline.Abstractions** | Browser-safe offline manifests, sync state, checkpoints, conflicts, and storage contracts |
+| **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
 | **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
@@ -22,6 +24,8 @@ through GeoServices FeatureServer and OGC API Features endpoints.
 
 ```bash
 dotnet add package Honua.Sdk.Abstractions --prerelease
+dotnet add package Honua.Sdk.Offline.Abstractions --prerelease
+dotnet add package Honua.Sdk.Offline --prerelease
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
@@ -187,6 +191,23 @@ var result = await edits.ApplyEditsAsync(new FeatureEditRequest
 
 See [docs/feature-edits.md](docs/feature-edits.md) for shared result models,
 provider support, and unsupported-provider behavior.
+
+## Offline sync core
+
+Offline-capable apps can use `Honua.Sdk.Offline.Abstractions` for package
+manifests, source descriptors, sync state, checkpoints, change journals,
+conflict envelopes, and storage adapter interfaces. `Honua.Sdk.Offline` adds a
+platform-neutral planner and sync engine over `IHonuaFeatureQueryClient` and
+`IHonuaFeatureEditClient`.
+
+```csharp
+using Honua.Sdk.Offline;
+
+var result = await offlineSyncEngine.SyncAsync(manifest, cancellationToken);
+```
+
+See [docs/offline-sync-core.md](docs/offline-sync-core.md) for package
+boundaries, adapter expectations, and mobile integration guidance.
 
 ## Retry
 
