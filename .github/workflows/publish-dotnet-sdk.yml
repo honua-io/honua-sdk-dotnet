@@ -8,6 +8,11 @@ on:
         required: false
         default: true
         type: boolean
+      run_staging:
+        description: "Run staging integration before publishing"
+        required: false
+        default: false
+        type: boolean
   push:
     tags:
       - "dotnet-sdk-v*"
@@ -330,7 +335,7 @@ jobs:
   release-staging-integration:
     name: Release Staging Integration
     needs: release-smoke
-    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true') }}
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_staging == 'true') }}
     uses: ./.github/workflows/staging-integration.yml
     with:
       artifact-retention: 90
@@ -343,6 +348,7 @@ jobs:
       - release-staging-integration
     if: >-
       ${{
+        always() &&
         needs.release-smoke.result == 'success' &&
         (needs.release-staging-integration.result == 'success' || needs.release-staging-integration.result == 'skipped') &&
         !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
@@ -353,7 +359,7 @@ jobs:
       packages: write
     steps:
       - name: Download package artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs
