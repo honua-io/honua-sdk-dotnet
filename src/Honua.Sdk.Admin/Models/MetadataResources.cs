@@ -87,7 +87,7 @@ public sealed class ResourceMetadata
     /// Generation number that increments when spec changes.
     /// </summary>
     [JsonPropertyName("generation")]
-    public int? Generation { get; init; }
+    public long? Generation { get; init; }
 
     /// <summary>
     /// Timestamp when the resource was created.
@@ -124,4 +124,20 @@ public sealed class MetadataResourceIdentifier
     /// </summary>
     [JsonPropertyName("name")]
     public string Name { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Metadata resource response with transport metadata.
+/// </summary>
+public sealed class MetadataResourceResponse
+{
+    /// <summary>
+    /// The metadata resource returned by the server.
+    /// </summary>
+    public MetadataResource Resource { get; init; } = new();
+
+    /// <summary>
+    /// Entity tag returned by the server, if present.
+    /// </summary>
+    public string? ETag { get; init; }
 }

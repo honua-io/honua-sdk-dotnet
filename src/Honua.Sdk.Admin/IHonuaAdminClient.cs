@@ -104,6 +104,17 @@ public interface IHonuaAdminClient
     Task<MetadataResource> CreateMetadataResourceAsync(MetadataResource resource, CancellationToken ct = default);
 
     /// <summary>
+    /// Creates a new metadata resource and returns transport metadata.
+    /// </summary>
+    /// <param name="resource">The resource to create.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created resource and its ETag, if present.</returns>
+    Task<MetadataResourceResponse> CreateMetadataResourceWithResponseAsync(MetadataResource resource, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support metadata resources.");
+    }
+
+    /// <summary>
     /// Updates an existing metadata resource.
     /// </summary>
     /// <param name="kind">Resource kind.</param>
@@ -114,6 +125,21 @@ public interface IHonuaAdminClient
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The updated resource.</returns>
     Task<MetadataResource> UpdateMetadataResourceAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Updates an existing metadata resource and returns transport metadata.
+    /// </summary>
+    /// <param name="kind">Resource kind.</param>
+    /// <param name="ns">Resource namespace.</param>
+    /// <param name="name">Resource name.</param>
+    /// <param name="resource">The updated resource.</param>
+    /// <param name="ifMatch">Optional ETag for optimistic concurrency.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated resource and its ETag, if present.</returns>
+    Task<MetadataResourceResponse> UpdateMetadataResourceWithResponseAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support metadata resources.");
+    }
 
     /// <summary>
     /// Deletes a metadata resource.
@@ -449,6 +475,17 @@ public interface IHonuaAdminClient
     }
 
     /// <summary>
+    /// Gets recent errors from the server, including response metadata.
+    /// </summary>
+    /// <param name="limit">Optional maximum number of errors to return.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The recent-errors response payload.</returns>
+    Task<RecentErrorsResponse> GetRecentErrorsResponseAsync(int? limit = null, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support recent errors.");
+    }
+
+    /// <summary>
     /// Gets the current telemetry subsystem status.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
@@ -476,6 +513,17 @@ public interface IHonuaAdminClient
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The preflight check result.</returns>
     Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy preflight checks.");
+    }
+
+    /// <summary>
+    /// Runs preflight checks to determine deployment readiness.
+    /// </summary>
+    /// <param name="includeDiagnostics">Whether to include diagnostic detail in the response.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The preflight check result.</returns>
+    Task<DeployPreflightResult> GetDeployPreflightAsync(bool includeDiagnostics, CancellationToken ct = default)
     {
         throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy preflight checks.");
     }
@@ -525,12 +573,36 @@ public interface IHonuaAdminClient
     }
 
     /// <summary>
+    /// Submits a deploy operation for execution.
+    /// </summary>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="request">The submit request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated deploy operation.</returns>
+    Task<DeployOperation> SubmitDeployOperationAsync(string operationId, SubmitDeployOperationRequest request, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
+    }
+
+    /// <summary>
     /// Rolls back a deploy operation.
     /// </summary>
     /// <param name="operationId">The operation identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The updated deploy operation.</returns>
     Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default)
+    {
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
+    }
+
+    /// <summary>
+    /// Rolls back a deploy operation.
+    /// </summary>
+    /// <param name="operationId">The operation identifier.</param>
+    /// <param name="request">The rollback request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated deploy operation.</returns>
+    Task<DeployOperation> RollbackDeployOperationAsync(string operationId, RollbackDeployOperationRequest request, CancellationToken ct = default)
     {
         throw new NotSupportedException("This IHonuaAdminClient implementation does not support deploy operations.");
     }

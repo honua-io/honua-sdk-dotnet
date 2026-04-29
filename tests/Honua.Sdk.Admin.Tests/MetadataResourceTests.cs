@@ -25,6 +25,21 @@ public sealed class MetadataResourceTests
         spec = new { type = "Feature" }
     };
 
+    private static object CreateLargeGenerationMetadataResourcePayload() => new
+    {
+        apiVersion = "honua.io/v1alpha1",
+        kind = "Layer",
+        metadata = new
+        {
+            id = "res-1",
+            name = "test-layer",
+            @namespace = "default",
+            resourceVersion = "1",
+            generation = 3_000_000_000L
+        },
+        spec = new { type = "Feature" }
+    };
+
     [Fact]
     public async Task ListMetadataResourcesAsync_ReturnsResources()
     {
@@ -93,6 +108,19 @@ public sealed class MetadataResourceTests
     }
 
     [Fact]
+    public async Task GetMetadataResourceAsync_PreservesLargeGeneration()
+    {
+        var resource = CreateLargeGenerationMetadataResourcePayload();
+
+        var client = TestHelpers.CreateClient(req =>
+            Task.FromResult(TestHelpers.CreateJsonResponse(resource)));
+
+        var (result, _) = await client.GetMetadataResourceAsync("Layer", "default", "test-layer");
+
+        Assert.Equal(3_000_000_000L, result.Metadata?.Generation);
+    }
+
+    [Fact]
     public async Task CreateMetadataResourceAsync_SendsPost()
     {
         var created = CreateMetadataResourcePayload();
@@ -113,6 +141,31 @@ public sealed class MetadataResourceTests
         });
 
         Assert.Equal("Layer", result.Kind);
+    }
+
+    [Fact]
+    public async Task CreateMetadataResourceWithResponseAsync_ReturnsResponseETag()
+    {
+        var created = CreateMetadataResourcePayload();
+
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Equal(HttpMethod.Post, req.Method);
+            var response = TestHelpers.CreateJsonResponse(created, HttpStatusCode.Created);
+            response.Headers.ETag = new EntityTagHeaderValue("\"v2\"");
+            return Task.FromResult(response);
+        });
+
+        var result = await client.CreateMetadataResourceWithResponseAsync(new MetadataResource
+        {
+            ApiVersion = "honua.io/v1alpha1",
+            Kind = "Layer",
+            Metadata = new ResourceMetadata { Name = "test-layer", Namespace = "default" },
+            Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+        });
+
+        Assert.Equal("Layer", result.Resource.Kind);
+        Assert.Equal("\"v2\"", result.ETag);
     }
 
     [Fact]
@@ -140,6 +193,34 @@ public sealed class MetadataResourceTests
             ifMatch: "\"v1\"");
 
         Assert.Equal("Layer", result.Kind);
+    }
+
+    [Fact]
+    public async Task UpdateMetadataResourceWithResponseAsync_ReturnsResponseETag()
+    {
+        var updated = CreateMetadataResourcePayload();
+
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Equal(HttpMethod.Put, req.Method);
+            Assert.Equal("\"v1\"", req.Headers.GetValues("If-Match").First());
+            var response = TestHelpers.CreateJsonResponse(updated);
+            response.Headers.ETag = new EntityTagHeaderValue("\"v3\"");
+            return Task.FromResult(response);
+        });
+
+        var result = await client.UpdateMetadataResourceWithResponseAsync(
+            "Layer", "default", "test-layer",
+            new MetadataResource
+            {
+                ApiVersion = "honua.io/v1alpha1",
+                Kind = "Layer",
+                Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+            },
+            ifMatch: "\"v1\"");
+
+        Assert.Equal("Layer", result.Resource.Kind);
+        Assert.Equal("\"v3\"", result.ETag);
     }
 
     [Fact]
