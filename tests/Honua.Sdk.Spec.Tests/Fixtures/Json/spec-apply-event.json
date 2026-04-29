@@ -1,0 +1,15 @@
+{
+  "sequence": 2,
+  "kind": "Succeeded",
+  "applyToken": "apply-1",
+  "nodeId": "buffer",
+  "contentHash": "sha256:buffer",
+  "timestamp": "2026-04-29T07:00:00Z",
+  "diagnostic": null,
+  "actualCost": {
+    "rows": 5,
+    "bytes": 2048,
+    "durationMs": 42.5
+  },
+  "summary": null
+}

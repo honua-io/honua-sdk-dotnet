@@ -649,6 +649,8 @@ Acceptance criteria:
   spec service is exposed over gRPC.
 - Consume this SDK package from admin/CLI through versioned NuGet packages, not
   sibling project references.
+- Initial SDK implementation lives in `Honua.Sdk.Spec`; server/admin follow-up
+  issues should consume that package through GitHub Packages.
 
 Related dependencies:
 

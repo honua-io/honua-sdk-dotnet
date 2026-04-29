@@ -1,0 +1,35 @@
+{
+  "grammarVersion": "spec/v1",
+  "processFamilyVersion": "process/v1",
+  "specId": "demo",
+  "nodes": [
+    {
+      "id": "source",
+      "kind": "Dataset",
+      "op": "catalog.source",
+      "parameters": {
+        "collection": "parcels"
+      },
+      "canonicalFragment": "{\"op\":\"catalog.source\",\"collection\":\"parcels\"}",
+      "sourcePins": {
+        "parcels": "v1"
+      },
+      "nondeterministic": false
+    },
+    {
+      "id": "buffer",
+      "kind": "Compute",
+      "op": "geometry.buffer",
+      "inputs": {
+        "source": "@source"
+      },
+      "parameters": {
+        "distance": "100"
+      },
+      "canonicalFragment": "{\"op\":\"geometry.buffer\",\"distance\":\"100\"}",
+      "nondeterministic": true
+    }
+  ],
+  "cacheMode": "Bypass",
+  "maxConcurrency": 2
+}

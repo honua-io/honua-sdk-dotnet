@@ -1,0 +1,44 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using Honua.Sdk.Spec.Models;
+
+namespace Honua.Sdk.Spec;
+
+/// <summary>
+/// Client interface for the Honua spec workspace REST API.
+/// </summary>
+public interface IHonuaSpecClient
+{
+    /// <summary>
+    /// Validates spec DSL text or a canonical JSON spec document.
+    /// </summary>
+    /// <param name="request">Validation request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Validation diagnostics and optional canonical JSON.</returns>
+    Task<SpecValidateResponse> ValidateAsync(SpecValidateRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Compiles a canonical spec document into a plan.
+    /// </summary>
+    /// <param name="request">Spec document request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Plan response.</returns>
+    Task<SpecPlanResponse> PlanAsync(SpecDocumentRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Starts an apply run and streams apply events.
+    /// </summary>
+    /// <param name="request">Spec document request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Disposable apply token and event stream.</returns>
+    Task<SpecApplyStream> ApplyAsync(SpecDocumentRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Cancels an in-flight apply run by apply token.
+    /// </summary>
+    /// <param name="applyToken">Opaque apply token returned by <see cref="ApplyAsync"/> or the server header.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Cancellation response.</returns>
+    Task<SpecCancelResponse> CancelAsync(string applyToken, CancellationToken ct = default);
+}
