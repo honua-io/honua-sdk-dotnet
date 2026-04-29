@@ -139,47 +139,36 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         var resource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null metadata resource.", "GetMetadataResource");
 
-        string? etag = null;
-        if (response.Headers.ETag is not null)
-        {
-            etag = response.Headers.ETag.Tag;
-        }
-
-        return (resource, etag);
+        return (resource, GetETag(response));
     }
 
     /// <inheritdoc />
     public async Task<MetadataResource> CreateMetadataResourceAsync(MetadataResource resource, CancellationToken ct = default)
-    {
-        var data = await PostAsync<MetadataResource>(
+        => (await CreateMetadataResourceWithResponseAsync(resource, ct).ConfigureAwait(false)).Resource;
+
+    /// <inheritdoc />
+    public Task<MetadataResourceResponse> CreateMetadataResourceWithResponseAsync(MetadataResource resource, CancellationToken ct = default)
+        => SendMetadataResourceAsync(
             $"{ApiPrefix}/metadata/resources",
+            HttpMethod.Post,
             resource,
-            HonuaAdminJsonContext.Default.MetadataResource,
-            HonuaAdminJsonContext.Default.ApiResponseMetadataResource,
-            ct).ConfigureAwait(false);
-        return data ?? throw new HonuaAdminOperationException("Server returned null response.", "CreateMetadataResource");
-    }
+            ifMatch: null,
+            operation: "CreateMetadataResource",
+            ct);
 
     /// <inheritdoc />
     public async Task<MetadataResource> UpdateMetadataResourceAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken ct = default)
-    {
-        var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
-        using var content = JsonContent.Create(resource, HonuaAdminJsonContext.Default.MetadataResource);
-        using var request = new HttpRequestMessage(HttpMethod.Put, url) { Content = content };
+        => (await UpdateMetadataResourceWithResponseAsync(kind, ns, name, resource, ifMatch, ct).ConfigureAwait(false)).Resource;
 
-        if (!string.IsNullOrEmpty(ifMatch))
-        {
-            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
-        }
-
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
-
-        var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
-        return envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateMetadataResource");
-    }
+    /// <inheritdoc />
+    public Task<MetadataResourceResponse> UpdateMetadataResourceWithResponseAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken ct = default)
+        => SendMetadataResourceAsync(
+            $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}",
+            HttpMethod.Put,
+            resource,
+            ifMatch,
+            operation: "UpdateMetadataResource",
+            ct);
 
     /// <inheritdoc />
     public async Task DeleteMetadataResourceAsync(string kind, string ns, string name, string? ifMatch = null, CancellationToken ct = default)
@@ -196,6 +185,36 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
+    }
+
+    private async Task<MetadataResourceResponse> SendMetadataResourceAsync(
+        string url,
+        HttpMethod method,
+        MetadataResource resource,
+        string? ifMatch,
+        string operation,
+        CancellationToken ct)
+    {
+        using var content = JsonContent.Create(resource, HonuaAdminJsonContext.Default.MetadataResource);
+        using var request = new HttpRequestMessage(method, CreateRequestUri(url)) { Content = content };
+
+        if (!string.IsNullOrEmpty(ifMatch))
+        {
+            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+        }
+
+        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
+
+        var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
+        var responseResource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null response.", operation);
+        return new MetadataResourceResponse
+        {
+            Resource = responseResource,
+            ETag = GetETag(response)
+        };
     }
 
     // ── Manifests ────────────────────────────────────────────────────────
@@ -611,13 +630,17 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default)
+        => (await GetRecentErrorsResponseAsync(limit, ct).ConfigureAwait(false)).Errors;
+
+    /// <inheritdoc />
+    public async Task<RecentErrorsResponse> GetRecentErrorsResponseAsync(int? limit = null, CancellationToken ct = default)
     {
         var query = BuildQuery(("limit", limit?.ToString(CultureInfo.InvariantCulture)));
         var data = await GetRawAsync<RecentErrorsResponse>(
             $"{ApiPrefix}/observability/errors{query}",
             HonuaAdminJsonContext.Default.RecentErrorsResponse,
             ct).ConfigureAwait(false);
-        return data?.Errors ?? [];
+        return data ?? throw new HonuaAdminOperationException("Server returned null recent errors response.", "GetRecentErrors");
     }
 
     /// <inheritdoc />
@@ -644,9 +667,14 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     /// <inheritdoc />
     public async Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default)
+        => await GetDeployPreflightAsync(includeDiagnostics: false, ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<DeployPreflightResult> GetDeployPreflightAsync(bool includeDiagnostics, CancellationToken ct = default)
     {
+        var query = includeDiagnostics ? BuildQuery(("includeDiagnostics", "true")) : string.Empty;
         var data = await GetRawAsync<DeployPreflightResult>(
-            $"{ApiPrefix}/deploy/preflight",
+            $"{ApiPrefix}/deploy/preflight{query}",
             HonuaAdminJsonContext.Default.DeployPreflightResult,
             ct).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null preflight result.", "GetDeployPreflight");
@@ -688,10 +716,15 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     /// <inheritdoc />
     public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken ct = default)
+        => await SubmitDeployOperationAsync(operationId, new SubmitDeployOperationRequest(), ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, SubmitDeployOperationRequest request, CancellationToken ct = default)
     {
         var data = await PostRawAsync<DeployOperation>(
             $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/submit",
-            (object?)null,
+            request,
+            HonuaAdminJsonContext.Default.SubmitDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,
             ct).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "SubmitDeployOperation");
@@ -699,10 +732,15 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     /// <inheritdoc />
     public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default)
+        => await RollbackDeployOperationAsync(operationId, new RollbackDeployOperationRequest(), ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, RollbackDeployOperationRequest request, CancellationToken ct = default)
     {
         var data = await PostRawAsync<DeployOperation>(
             $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/rollback",
-            (object?)null,
+            request,
+            HonuaAdminJsonContext.Default.RollbackDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,
             ct).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "RollbackDeployOperation");
@@ -919,6 +957,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+
+    private static string? GetETag(HttpResponseMessage response) => response.Headers.ETag?.ToString();
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
     {

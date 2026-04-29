@@ -43,6 +43,38 @@ public sealed class ObservabilityDeployControlTests
     }
 
     [Fact]
+    public async Task GetRecentErrorsResponseAsync_PreservesResponseMetadata()
+    {
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Equal("/api/v1/admin/observability/errors?limit=2", req.RequestUri!.PathAndQuery);
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(new
+            {
+                capacity = 25,
+                instanceId = "node-1",
+                errors = new[]
+                {
+                    new
+                    {
+                        timestamp = DateTimeOffset.Parse("2026-04-27T10:00:00Z"),
+                        correlationId = "corr-1",
+                        path = "/api/v1/admin/config",
+                        statusCode = 500,
+                        message = "boom"
+                    }
+                }
+            }));
+        });
+
+        var result = await client.GetRecentErrorsResponseAsync(2);
+
+        Assert.Equal(25, result.Capacity);
+        Assert.Equal("node-1", result.InstanceId);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal("corr-1", error.CorrelationId);
+    }
+
+    [Fact]
     public async Task GetTelemetryStatusAsync_ReadsRawTelemetryResponse()
     {
         var client = TestHelpers.CreateClient(req =>
@@ -128,6 +160,34 @@ public sealed class ObservabilityDeployControlTests
         Assert.True(result.ReadyForCoordinatedDeploy);
         Assert.Equal("Development", result.Environment);
         Assert.Equal(200, result.Readiness?.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetDeployPreflightAsync_WithDiagnostics_PassesQuery()
+    {
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Equal("/api/v1/admin/deploy/preflight?includeDiagnostics=true", req.RequestUri!.PathAndQuery);
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(new
+            {
+                status = "ready",
+                readyForCoordinatedDeploy = true,
+                message = "Instance is ready for coordinated deployment.",
+                serverVersion = "0.1.0",
+                environment = "Development",
+                deploymentMode = "SingleInstance",
+                instanceName = "node-1",
+                generatedAt = DateTimeOffset.Parse("2026-04-27T10:00:00Z"),
+                readiness = (object?)null,
+                migration = (object?)null,
+                databaseCompatibility = (object?)null
+            }));
+        });
+
+        var result = await client.GetDeployPreflightAsync(includeDiagnostics: true);
+
+        Assert.Equal("Development", result.Environment);
+        Assert.Equal("node-1", result.InstanceName);
     }
 
     [Fact]
@@ -220,6 +280,28 @@ public sealed class ObservabilityDeployControlTests
 
         Assert.Equal("op-1", result.OperationId);
         Assert.Equal("deploy", result.Kind);
+    }
+
+    [Theory]
+    [InlineData("submit")]
+    [InlineData("rollback")]
+    public async Task DeployOperationActions_SendReasonBody(string action)
+    {
+        string? body = null;
+        var client = TestHelpers.CreateClient(async req =>
+        {
+            Assert.Equal($"/api/v1/admin/deploy/operations/op-1/{action}", req.RequestUri!.PathAndQuery);
+            body = await req.Content!.ReadAsStringAsync();
+            return TestHelpers.CreateRawJsonResponse(CreateOperationPayload());
+        });
+
+        _ = action == "submit"
+            ? await client.SubmitDeployOperationAsync("op-1", new SubmitDeployOperationRequest { Reason = "approved" })
+            : await client.RollbackDeployOperationAsync("op-1", new RollbackDeployOperationRequest { Reason = "bad rollout" });
+
+        using var sent = JsonDocument.Parse(body!);
+        var expectedReason = action == "submit" ? "approved" : "bad rollout";
+        Assert.Equal(expectedReason, sent.RootElement.GetProperty("reason").GetString());
     }
 
     private static object CreatePlanPayload()

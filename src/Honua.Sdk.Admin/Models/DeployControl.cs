@@ -456,6 +456,30 @@ public sealed class CreateDeployOperationRequest
 }
 
 /// <summary>
+/// Request model for submitting or approving a deploy operation.
+/// </summary>
+public sealed class SubmitDeployOperationRequest
+{
+    /// <summary>
+    /// Optional operator reason for submitting the operation.
+    /// </summary>
+    [JsonPropertyName("reason")]
+    public string? Reason { get; init; }
+}
+
+/// <summary>
+/// Request model for rolling back a deploy operation.
+/// </summary>
+public sealed class RollbackDeployOperationRequest
+{
+    /// <summary>
+    /// Optional operator reason for requesting rollback.
+    /// </summary>
+    [JsonPropertyName("reason")]
+    public string? Reason { get; init; }
+}
+
+/// <summary>
 /// A deploy operation response.
 /// </summary>
 public sealed class DeployOperation
