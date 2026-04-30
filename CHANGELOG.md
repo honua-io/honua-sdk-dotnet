@@ -2,6 +2,18 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.4-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.3-alpha.1...dotnet-sdk-v0.1.4-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add SDK geometry core ([3a39fdc](https://github.com/honua-io/honua-sdk-dotnet/commit/3a39fdc9c40d1a958bfd451612693d2fcfa920d6))
+
+
+### Bug Fixes
+
+* address geometry review feedback ([3c4e250](https://github.com/honua-io/honua-sdk-dotnet/commit/3c4e250ad515b128b20190154f61747da250cb47))
+
 ## [0.1.3-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.2-alpha.1...dotnet-sdk-v0.1.3-alpha.1) (2026-04-30)
 
 
