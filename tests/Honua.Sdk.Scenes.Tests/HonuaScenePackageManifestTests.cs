@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Honua.Sdk.Abstractions.Scenes;
 
 namespace Honua.Sdk.Scenes.Tests;
@@ -302,10 +301,6 @@ public sealed class HonuaScenePackageManifestTests
     private static string FormatIssues(HonuaScenePackageValidationResult result)
         => string.Join("; ", result.Issues.Select(issue => $"{issue.Code}: {issue.Message}"));
 
-    private static string ReadFixture(string name, [CallerFilePath] string sourceFile = "")
-    {
-        var testDirectory = Path.GetDirectoryName(sourceFile)
-            ?? throw new InvalidOperationException("Unable to resolve test directory.");
-        return File.ReadAllText(Path.Combine(testDirectory, "Fixtures", "Scenes", name));
-    }
+    private static string ReadFixture(string name)
+        => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Scenes", name));
 }
