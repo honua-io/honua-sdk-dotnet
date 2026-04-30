@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.7-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.6-alpha.1...dotnet-sdk-v0.1.7-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add scene metadata SDK package ([c9e8459](https://github.com/honua-io/honua-sdk-dotnet/commit/c9e8459ca4e99be75fe78ed43802c8251226e4c2))
+
 ## [0.1.6-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.5-alpha.1...dotnet-sdk-v0.1.6-alpha.1) (2026-04-30)
 
 
