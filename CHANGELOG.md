@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.14-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.13-alpha.1...dotnet-sdk-v0.1.14-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add advanced editing rule contracts ([#123](https://github.com/honua-io/honua-sdk-dotnet/issues/123)) ([c5c3256](https://github.com/honua-io/honua-sdk-dotnet/commit/c5c32567063d5a20fcc22ae1cdaf175796e8a135))
+
 ## [0.1.13-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.12-alpha.1...dotnet-sdk-v0.1.13-alpha.1) (2026-04-30)
 
 
