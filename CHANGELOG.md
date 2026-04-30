@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.8-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.7-alpha.1...dotnet-sdk-v0.1.8-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add field workflow SDK package ([#103](https://github.com/honua-io/honua-sdk-dotnet/issues/103)) ([83f2f35](https://github.com/honua-io/honua-sdk-dotnet/commit/83f2f35e990fc0d54ba71af6c70a6c49779b42dd))
+
 ## [0.1.7-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.6-alpha.1...dotnet-sdk-v0.1.7-alpha.1) (2026-04-30)
 
 
