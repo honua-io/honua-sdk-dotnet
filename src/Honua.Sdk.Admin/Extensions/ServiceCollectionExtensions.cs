@@ -70,6 +70,7 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
         httpBuilder.AddTypedClient<IHonuaGeocodingClient>(httpClient => new HonuaGeocodingClient(httpClient));
+        httpBuilder.AddTypedClient<IHonuaBatchGeocodingClient>(httpClient => new HonuaGeocodingClient(httpClient));
         ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;

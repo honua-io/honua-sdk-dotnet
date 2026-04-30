@@ -157,6 +157,10 @@ public sealed class HonuaGeocodingClientTests
             Assert.Contains("outSR=3857", req.RequestUri.Query);
             Assert.Contains("magicKey=abc123", req.RequestUri.Query);
             Assert.Contains("countryCode=USA%2CCAN", req.RequestUri.Query);
+            Assert.Contains("location=-89.65%2C39.78", req.RequestUri.Query);
+            Assert.Contains("searchExtent=-90%2C39%2C-89%2C40", req.RequestUri.Query);
+            Assert.Contains("category=Address%2CPOI", req.RequestUri.Query);
+            Assert.Contains("outFields=Addr_type%2CCity", req.RequestUri.Query);
             return Task.FromResult(CreateGeoJsonResponse(responseJson));
         });
 
@@ -165,7 +169,11 @@ public sealed class HonuaGeocodingClientTests
             MaxResults = 10,
             SpatialReferenceWkid = 3857,
             MagicKey = "abc123",
-            CountryCodes = new[] { "USA", "CAN" }
+            CountryCodes = new[] { "USA", "CAN" },
+            Location = new GeocodePoint(-89.65, 39.78),
+            SearchExtent = new GeocodeExtent(-90, 39, -89, 40),
+            Categories = new[] { "Address", "POI" },
+            OutFields = new[] { "Addr_type", "City" }
         };
 
         await client.ForwardGeocodeAsync("test", options);
@@ -397,13 +405,19 @@ public sealed class HonuaGeocodingClientTests
         {
             Assert.Contains("maxSuggestions=3", req.RequestUri!.Query);
             Assert.Contains("countryCode=USA", req.RequestUri.Query);
+            Assert.Contains("location=-89.65%2C39.78", req.RequestUri.Query);
+            Assert.Contains("searchExtent=-90%2C39%2C-89%2C40", req.RequestUri.Query);
+            Assert.Contains("category=Address", req.RequestUri.Query);
             return Task.FromResult(CreateGeoJsonResponse(responseJson));
         });
 
         await client.SuggestAsync("test", new SuggestOptions
         {
             MaxResults = 3,
-            CountryCodes = new[] { "USA" }
+            CountryCodes = new[] { "USA" },
+            Location = new GeocodePoint(-89.65, 39.78),
+            SearchExtent = new GeocodeExtent(-90, 39, -89, 40),
+            Categories = new[] { "Address" }
         });
     }
 
@@ -524,6 +538,26 @@ public sealed class HonuaGeocodingClientTests
     }
 
     [Fact]
+    public async Task ForwardGeocode_Http429_ThrowsRateLimitException()
+    {
+        var client = CreateGeocodingClient(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                ReasonPhrase = "Too Many Requests",
+                Content = new StringContent(
+                    """{"error":{"code":429,"message":"Rate limit exceeded"}}""",
+                    System.Text.Encoding.UTF8,
+                    "application/json")
+            }));
+
+        var ex = await Assert.ThrowsAsync<HonuaAdminApiException>(
+            () => client.ForwardGeocodeAsync("test"));
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, ex.StatusCode);
+        Assert.Equal("Rate limit exceeded", ex.Message);
+    }
+
+    [Fact]
     public async Task ReverseGeocode_Http500_ThrowsHonuaAdminApiException()
     {
         var client = CreateGeocodingClient(_ =>
@@ -580,12 +614,125 @@ public sealed class HonuaGeocodingClientTests
     // ── BatchGeocodeAsync ───────────────────────────────────────────────
 
     [Fact]
-    public async Task BatchGeocode_ThrowsNotSupportedException()
+    public async Task BatchGeocode_Detailed_ReturnsPartialFailures()
     {
-        var client = CreateGeocodingClient(_ =>
-            Task.FromResult(CreateGeoJsonResponse("{}")));
+        var responseJson = """
+        {
+            "locations": [
+                {
+                    "address": "123 Main St, Springfield, IL",
+                    "location": { "x": -89.6501, "y": 39.7817 },
+                    "score": 98.1,
+                    "attributes": { "ResultID": 1, "Status": "M", "City": "Springfield" }
+                },
+                {
+                    "address": "",
+                    "location": null,
+                    "score": 0,
+                    "attributes": { "ResultID": 2, "Status": "U" }
+                }
+            ]
+        }
+        """;
 
-        await Assert.ThrowsAsync<NotSupportedException>(
-            () => client.BatchGeocodeAsync(new[] { "addr1", "addr2" }));
+        var client = CreateGeocodingClient(async req =>
+        {
+            Assert.Equal(HttpMethod.Post, req.Method);
+            Assert.Contains("/rest/services/World/GeocodeServer/geocodeAddresses", req.RequestUri!.PathAndQuery);
+            var form = ParseForm(await req.Content!.ReadAsStringAsync());
+            Assert.Contains("\"SingleLine\":\"123 Main St\"", form["addresses"]);
+            Assert.Contains("\"SingleLine\":\"missing place\"", form["addresses"]);
+            Assert.Equal("json", form["f"]);
+            Assert.Equal("3857", form["outSR"]);
+            Assert.Equal("USA,CAN", form["sourceCountry"]);
+            Assert.Equal("-90,39,-89,40", form["searchExtent"]);
+            Assert.Equal("Address,POI", form["category"]);
+            Assert.Equal("City,Region", form["outFields"]);
+            return CreateGeoJsonResponse(responseJson);
+        });
+
+        var results = await ((IHonuaBatchGeocodingClient)client).BatchGeocodeDetailedAsync(
+            new[] { "123 Main St", "missing place" },
+            new BatchGeocodeOptions
+            {
+                SpatialReferenceWkid = 3857,
+                CountryCodes = new[] { "USA", "CAN" },
+                SearchExtent = new GeocodeExtent(-90, 39, -89, 40),
+                Categories = new[] { "Address", "POI" },
+                OutFields = new[] { "City", "Region" }
+            });
+
+        Assert.Collection(
+            results,
+            matched =>
+            {
+                Assert.Equal(1, matched.InputId);
+                Assert.Equal("123 Main St", matched.InputAddress);
+                Assert.Equal("M", matched.Status);
+                Assert.NotNull(matched.Result);
+                Assert.Equal("123 Main St, Springfield, IL", matched.Result!.Address);
+                Assert.Equal("Springfield", matched.Attributes["City"]);
+                Assert.Null(matched.ErrorMessage);
+            },
+            unmatched =>
+            {
+                Assert.Equal(2, unmatched.InputId);
+                Assert.Equal("missing place", unmatched.InputAddress);
+                Assert.Equal("U", unmatched.Status);
+                Assert.Null(unmatched.Result);
+                Assert.Contains("status 'U'", unmatched.ErrorMessage);
+            });
     }
+
+    [Fact]
+    public async Task BatchGeocode_ReturnsMatchedResults()
+    {
+        var responseJson = """
+        {
+            "locations": [
+                {
+                    "address": "123 Main St, Springfield, IL",
+                    "location": { "x": -89.6501, "y": 39.7817 },
+                    "score": 98.1,
+                    "attributes": { "ResultID": 1, "Status": "M" }
+                },
+                {
+                    "address": "",
+                    "location": null,
+                    "score": 0,
+                    "attributes": { "ResultID": 2, "Status": "U" }
+                }
+            ]
+        }
+        """;
+
+        var client = CreateGeocodingClient(_ => Task.FromResult(CreateGeoJsonResponse(responseJson)));
+
+        var results = await client.BatchGeocodeAsync(new[] { "123 Main St", "missing place" });
+
+        var result = Assert.Single(results);
+        Assert.Equal("123 Main St, Springfield, IL", result.Address);
+    }
+
+    [Fact]
+    public async Task BatchGeocode_EmptyInputs_ReturnsEmptyList()
+    {
+        var client = CreateGeocodingClient(_ => Task.FromResult(CreateGeoJsonResponse("{}")));
+
+        var results = await client.BatchGeocodeAsync(Array.Empty<string>());
+
+        Assert.Empty(results);
+    }
+
+    private static IReadOnlyDictionary<string, string> ParseForm(string body)
+        => body
+            .Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Split('=', 2))
+            .ToDictionary(
+                pair => Decode(pair[0]),
+                pair => pair.Length == 2 ? Decode(pair[1]) : string.Empty,
+                StringComparer.Ordinal);
+
+    private static string Decode(string value)
+        => Uri.UnescapeDataString(value.Replace("+", "%20", StringComparison.Ordinal));
 }

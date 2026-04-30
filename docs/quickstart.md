@@ -213,7 +213,13 @@ Then add:
 
         var candidates = await geocodingClient.ForwardGeocodeAsync(
             "1600 Pennsylvania Ave NW, Washington, DC",
-            new ForwardGeocodeOptions { MaxResults = 3 },
+            new ForwardGeocodeOptions
+            {
+                MaxResults = 3,
+                Categories = ["Address"],
+                OutFields = ["Addr_type", "City", "Region"],
+                Location = new GeocodePoint(-77.0365, 38.8977)
+            },
             ct);
 
         foreach (var result in candidates)
@@ -223,6 +229,10 @@ Then add:
                               $"score={result.Score}");
         }
 ```
+
+For batch geocoding with partial-failure details, inject
+`IHonuaBatchGeocodingClient` or cast the default client and call
+`BatchGeocodeDetailedAsync`.
 
 Run again and you should see all three sections:
 

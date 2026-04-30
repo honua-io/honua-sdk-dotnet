@@ -56,6 +56,22 @@ public sealed class ClientOptionsTests
     }
 
     [Fact]
+    public void AddHonuaGeocoding_RegistersDetailedBatchClient()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaGeocoding(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHonuaBatchGeocodingClient>();
+
+        Assert.IsType<HonuaGeocodingClient>(client);
+    }
+
+    [Fact]
     public void AddHonuaAdmin_InvalidTimeout_Throws()
     {
         var services = new ServiceCollection();

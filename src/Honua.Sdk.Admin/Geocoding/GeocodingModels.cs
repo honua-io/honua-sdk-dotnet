@@ -46,6 +46,49 @@ public sealed record GeocodeSuggestion(
     string MagicKey,
     bool IsCollection);
 
+/// <summary>
+/// A point used to bias geocode and suggestion results.
+/// </summary>
+/// <param name="X">X coordinate, typically longitude for WGS84 inputs.</param>
+/// <param name="Y">Y coordinate, typically latitude for WGS84 inputs.</param>
+/// <param name="SpatialReferenceWkid">Optional spatial reference WKID for non-WGS84 coordinates.</param>
+public sealed record GeocodePoint(
+    double X,
+    double Y,
+    int? SpatialReferenceWkid = null);
+
+/// <summary>
+/// A rectangular search extent used to constrain geocode and suggestion results.
+/// </summary>
+/// <param name="XMin">Minimum X coordinate.</param>
+/// <param name="YMin">Minimum Y coordinate.</param>
+/// <param name="XMax">Maximum X coordinate.</param>
+/// <param name="YMax">Maximum Y coordinate.</param>
+/// <param name="SpatialReferenceWkid">Optional spatial reference WKID for non-WGS84 coordinates.</param>
+public sealed record GeocodeExtent(
+    double XMin,
+    double YMin,
+    double XMax,
+    double YMax,
+    int? SpatialReferenceWkid = null);
+
+/// <summary>
+/// Per-input batch geocode result with partial-failure metadata.
+/// </summary>
+/// <param name="InputId">One-based input record identifier sent to the service.</param>
+/// <param name="InputAddress">Original input address.</param>
+/// <param name="Status">Provider status code when returned, such as M for matched or U for unmatched.</param>
+/// <param name="Result">Geocode result for matched inputs, or null for partial failures.</param>
+/// <param name="ErrorMessage">Failure message for unmatched or missing inputs.</param>
+/// <param name="Attributes">Provider attributes returned for the batch row.</param>
+public sealed record BatchGeocodeResult(
+    int InputId,
+    string InputAddress,
+    string? Status,
+    GeocodeResult? Result,
+    string? ErrorMessage,
+    IReadOnlyDictionary<string, string?> Attributes);
+
 // ── Options records ──────────────────────────────────────────────────────
 
 /// <summary>
@@ -72,6 +115,26 @@ public sealed record ForwardGeocodeOptions
     /// An opaque key from a prior suggest call to accelerate the lookup.
     /// </summary>
     public string? MagicKey { get; init; }
+
+    /// <summary>
+    /// Optional point that biases candidates toward a local search origin.
+    /// </summary>
+    public GeocodePoint? Location { get; init; }
+
+    /// <summary>
+    /// Optional extent that constrains candidates to a local area.
+    /// </summary>
+    public GeocodeExtent? SearchExtent { get; init; }
+
+    /// <summary>
+    /// Optional categories, such as Address, POI, Postal, or custom locator categories.
+    /// </summary>
+    public IReadOnlyList<string>? Categories { get; init; }
+
+    /// <summary>
+    /// Optional provider attribute fields to include in candidate results.
+    /// </summary>
+    public IReadOnlyList<string>? OutFields { get; init; }
 }
 
 /// <summary>
@@ -99,6 +162,21 @@ public sealed record SuggestOptions
     /// Restrict suggestions to specific country codes (ISO 3166-1 alpha-3).
     /// </summary>
     public IReadOnlyList<string>? CountryCodes { get; init; }
+
+    /// <summary>
+    /// Optional point that biases suggestions toward a local search origin.
+    /// </summary>
+    public GeocodePoint? Location { get; init; }
+
+    /// <summary>
+    /// Optional extent that constrains suggestions to a local area.
+    /// </summary>
+    public GeocodeExtent? SearchExtent { get; init; }
+
+    /// <summary>
+    /// Optional categories, such as Address, POI, Postal, or custom locator categories.
+    /// </summary>
+    public IReadOnlyList<string>? Categories { get; init; }
 }
 
 /// <summary>
@@ -115,6 +193,21 @@ public sealed record BatchGeocodeOptions
     /// Restrict results to specific country codes (ISO 3166-1 alpha-3).
     /// </summary>
     public IReadOnlyList<string>? CountryCodes { get; init; }
+
+    /// <summary>
+    /// Optional extent that constrains batch candidates to a local area.
+    /// </summary>
+    public GeocodeExtent? SearchExtent { get; init; }
+
+    /// <summary>
+    /// Optional categories, such as Address, POI, Postal, or custom locator categories.
+    /// </summary>
+    public IReadOnlyList<string>? Categories { get; init; }
+
+    /// <summary>
+    /// Optional provider attribute fields to include in batch results.
+    /// </summary>
+    public IReadOnlyList<string>? OutFields { get; init; }
 }
 
 // ── Raw GeoServices wire models (internal) ───────────────────────────────
@@ -174,6 +267,75 @@ internal sealed class GeoServicesFindAddressCandidatesResponse
 
     [JsonPropertyName("candidates")]
     public List<GeoServicesCandidate>? Candidates { get; set; }
+}
+
+internal sealed class GeoServicesRequestSpatialReference
+{
+    [JsonPropertyName("wkid")]
+    public int Wkid { get; set; }
+}
+
+internal sealed class GeoServicesRequestPoint
+{
+    [JsonPropertyName("x")]
+    public double X { get; set; }
+
+    [JsonPropertyName("y")]
+    public double Y { get; set; }
+
+    [JsonPropertyName("spatialReference")]
+    public GeoServicesRequestSpatialReference? SpatialReference { get; set; }
+}
+
+internal sealed class GeoServicesRequestExtent
+{
+    [JsonPropertyName("xmin")]
+    public double XMin { get; set; }
+
+    [JsonPropertyName("ymin")]
+    public double YMin { get; set; }
+
+    [JsonPropertyName("xmax")]
+    public double XMax { get; set; }
+
+    [JsonPropertyName("ymax")]
+    public double YMax { get; set; }
+
+    [JsonPropertyName("spatialReference")]
+    public GeoServicesRequestSpatialReference? SpatialReference { get; set; }
+}
+
+internal sealed class GeoServicesBatchGeocodeRequest
+{
+    [JsonPropertyName("records")]
+    public List<GeoServicesBatchAddressRecord> Records { get; set; } = [];
+}
+
+internal sealed class GeoServicesBatchAddressRecord
+{
+    [JsonPropertyName("attributes")]
+    public Dictionary<string, object?> Attributes { get; set; } = new(StringComparer.Ordinal);
+}
+
+internal sealed class GeoServicesBatchGeocodeResponse
+{
+    [JsonPropertyName("locations")]
+    public List<GeoServicesBatchLocation>? Locations { get; set; }
+}
+
+internal sealed class GeoServicesBatchLocation
+{
+    [JsonPropertyName("address")]
+    public string Address { get; set; } = string.Empty;
+
+    [JsonPropertyName("location")]
+    public GeoServicesLocation? Location { get; set; }
+
+    [JsonPropertyName("score")]
+    public double Score { get; set; }
+
+    [JsonPropertyName("attributes")]
+    public Dictionary<string, object?>? Attributes { get; set; }
 }
 
 /// <summary>
