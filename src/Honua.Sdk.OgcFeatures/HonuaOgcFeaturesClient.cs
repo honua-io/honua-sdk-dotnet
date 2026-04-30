@@ -510,6 +510,12 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
                 "OGC API Features shared queries do not support provider-neutral statistics, group-by, or having clauses yet.");
         }
 
+        if (request.SpatialFilter is not null)
+        {
+            throw new NotSupportedException(
+                "OGC API Features shared queries do not support explicit geometry spatial filters yet. Use Bbox for envelope filters.");
+        }
+
         if (request.TimeFilter?.Relation is FeatureTimeRelation.AfterStartWithinEnd or FeatureTimeRelation.Within)
         {
             throw new NotSupportedException(

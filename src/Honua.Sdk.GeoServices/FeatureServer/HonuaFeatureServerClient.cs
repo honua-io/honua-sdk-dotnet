@@ -686,9 +686,9 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             ReturnCountOnly = request.ReturnCountOnly,
             ReturnIdsOnly = request.ReturnIdsOnly,
             ReturnExtentOnly = request.ReturnExtentOnly,
-            SpatialFilter = BuildSpatialFilter(request.Bbox),
+            SpatialFilter = BuildSpatialFilter(request.SpatialFilter, request.Bbox),
             OutSR = ParseWkid(request.OutputCrs),
-            InSR = ParseWkid(request.Bbox?.Crs),
+            InSR = ParseWkid(request.SpatialFilter?.Crs ?? request.Bbox?.Crs),
         };
 
         return (request.Source.ServiceId, request.Source.LayerId.Value, query);
@@ -869,8 +869,23 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         return objectIds;
     }
 
-    private static FeatureServerSpatialFilter? BuildSpatialFilter(FeatureBoundingBox? bbox)
+    private static FeatureServerSpatialFilter? BuildSpatialFilter(
+        FeatureSpatialFilter? spatialFilter,
+        FeatureBoundingBox? bbox)
     {
+        EnsureSingleSpatialFilter(spatialFilter, bbox);
+
+        if (spatialFilter is not null)
+        {
+            EnsureSpatialGeometryObject(spatialFilter.Geometry);
+            return new FeatureServerSpatialFilter
+            {
+                Geometry = spatialFilter.Geometry.GetRawText(),
+                GeometryType = ToFeatureServerGeometryType(spatialFilter),
+                SpatialRel = ToFeatureServerSpatialRelationship(spatialFilter.Relationship)
+            };
+        }
+
         if (bbox is null)
         {
             return null;
@@ -891,6 +906,105 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             SpatialRel = SpatialRelationship.Intersects
         };
     }
+
+    private static void EnsureSingleSpatialFilter(FeatureSpatialFilter? spatialFilter, FeatureBoundingBox? bbox)
+    {
+        if (spatialFilter is not null && bbox is not null)
+        {
+            throw new ArgumentException("Feature query cannot specify both Bbox and SpatialFilter.");
+        }
+    }
+
+    private static void EnsureSpatialGeometryObject(JsonElement geometry)
+    {
+        if (geometry.ValueKind != JsonValueKind.Object)
+        {
+            throw new ArgumentException("Feature query spatial filter geometry must be a JSON object.", nameof(geometry));
+        }
+    }
+
+    private static string ToFeatureServerGeometryType(FeatureSpatialFilter spatialFilter)
+    {
+        var inferred = InferSpatialGeometryType(spatialFilter.Geometry);
+        var geometryType = spatialFilter.GeometryType == FeatureSpatialGeometryType.Unspecified
+            ? inferred
+            : spatialFilter.GeometryType;
+
+        if (geometryType != inferred)
+        {
+            throw new ArgumentException(
+                "Feature query spatial filter geometry type does not match the geometry object.",
+                nameof(spatialFilter));
+        }
+
+        return geometryType switch
+        {
+            FeatureSpatialGeometryType.Point => "esriGeometryPoint",
+            FeatureSpatialGeometryType.Envelope => "esriGeometryEnvelope",
+            FeatureSpatialGeometryType.MultiPoint => "esriGeometryMultipoint",
+            FeatureSpatialGeometryType.Polyline => "esriGeometryPolyline",
+            FeatureSpatialGeometryType.Polygon => "esriGeometryPolygon",
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(spatialFilter),
+                spatialFilter.GeometryType,
+                "Feature spatial filter geometry type is not supported by FeatureServer shared queries."),
+        };
+    }
+
+    private static FeatureSpatialGeometryType InferSpatialGeometryType(JsonElement geometry)
+    {
+        EnsureSpatialGeometryObject(geometry);
+
+        if (geometry.TryGetProperty("x", out _) && geometry.TryGetProperty("y", out _))
+        {
+            return FeatureSpatialGeometryType.Point;
+        }
+
+        if (geometry.TryGetProperty("xmin", out _) &&
+            geometry.TryGetProperty("ymin", out _) &&
+            geometry.TryGetProperty("xmax", out _) &&
+            geometry.TryGetProperty("ymax", out _))
+        {
+            return FeatureSpatialGeometryType.Envelope;
+        }
+
+        if (geometry.TryGetProperty("points", out _))
+        {
+            return FeatureSpatialGeometryType.MultiPoint;
+        }
+
+        if (geometry.TryGetProperty("paths", out _))
+        {
+            return FeatureSpatialGeometryType.Polyline;
+        }
+
+        if (geometry.TryGetProperty("rings", out _))
+        {
+            return FeatureSpatialGeometryType.Polygon;
+        }
+
+        throw new ArgumentException(
+            "Feature query spatial filter geometry type could not be inferred from the geometry object.",
+            nameof(geometry));
+    }
+
+    private static SpatialRelationship ToFeatureServerSpatialRelationship(FeatureSpatialRelationship relationship)
+        => relationship switch
+        {
+            FeatureSpatialRelationship.Unspecified => SpatialRelationship.Intersects,
+            FeatureSpatialRelationship.Intersects => SpatialRelationship.Intersects,
+            FeatureSpatialRelationship.Within => SpatialRelationship.Within,
+            FeatureSpatialRelationship.Contains => SpatialRelationship.Contains,
+            FeatureSpatialRelationship.EnvelopeIntersects => SpatialRelationship.EnvelopeIntersects,
+            FeatureSpatialRelationship.Crosses => SpatialRelationship.Crosses,
+            FeatureSpatialRelationship.Touches => SpatialRelationship.Touches,
+            FeatureSpatialRelationship.Overlaps => SpatialRelationship.Overlaps,
+            FeatureSpatialRelationship.IndexIntersects => SpatialRelationship.IndexIntersects,
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(relationship),
+                relationship,
+                "Feature spatial relationship is not supported by FeatureServer shared queries."),
+        };
 
     private static int? ParseWkid(string? crs)
     {

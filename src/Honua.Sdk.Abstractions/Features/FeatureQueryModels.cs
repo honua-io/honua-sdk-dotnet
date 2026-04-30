@@ -45,6 +45,81 @@ public sealed record FeatureBoundingBox
 }
 
 /// <summary>
+/// Geometry shape type for provider-neutral spatial filters.
+/// </summary>
+public enum FeatureSpatialGeometryType
+{
+    /// <summary>Infer the geometry type from the geometry object.</summary>
+    Unspecified = 0,
+
+    /// <summary>Point geometry.</summary>
+    Point = 1,
+
+    /// <summary>Envelope geometry.</summary>
+    Envelope = 2,
+
+    /// <summary>Multi-point geometry.</summary>
+    MultiPoint = 3,
+
+    /// <summary>Line or polyline geometry.</summary>
+    Polyline = 4,
+
+    /// <summary>Polygon geometry.</summary>
+    Polygon = 5
+}
+
+/// <summary>
+/// Spatial relationship for provider-neutral spatial filters.
+/// </summary>
+public enum FeatureSpatialRelationship
+{
+    /// <summary>Use the provider default, normally intersects.</summary>
+    Unspecified = 0,
+
+    /// <summary>Features intersect the filter geometry.</summary>
+    Intersects = 1,
+
+    /// <summary>Features are within the filter geometry.</summary>
+    Within = 2,
+
+    /// <summary>Features contain the filter geometry.</summary>
+    Contains = 3,
+
+    /// <summary>Feature envelopes intersect the filter geometry envelope.</summary>
+    EnvelopeIntersects = 4,
+
+    /// <summary>Features cross the filter geometry.</summary>
+    Crosses = 5,
+
+    /// <summary>Features touch the filter geometry.</summary>
+    Touches = 6,
+
+    /// <summary>Features overlap the filter geometry.</summary>
+    Overlaps = 7,
+
+    /// <summary>Features are found by the provider's spatial index intersect behavior.</summary>
+    IndexIntersects = 8
+}
+
+/// <summary>
+/// Explicit geometry spatial filter used by the shared feature query abstraction.
+/// </summary>
+public sealed record FeatureSpatialFilter
+{
+    /// <summary>Filter geometry object using GeoServices-style JSON shape keys.</summary>
+    public required JsonElement Geometry { get; init; }
+
+    /// <summary>Geometry shape type, or <see cref="FeatureSpatialGeometryType.Unspecified"/> to infer from <see cref="Geometry"/>.</summary>
+    public FeatureSpatialGeometryType GeometryType { get; init; } = FeatureSpatialGeometryType.Unspecified;
+
+    /// <summary>Optional coordinate reference system identifier for the filter geometry.</summary>
+    public string? Crs { get; init; }
+
+    /// <summary>Spatial relationship to apply between queried features and the filter geometry.</summary>
+    public FeatureSpatialRelationship Relationship { get; init; } = FeatureSpatialRelationship.Intersects;
+}
+
+/// <summary>
 /// Temporal relationship for provider-neutral time filters.
 /// </summary>
 public enum FeatureTimeRelation
@@ -183,6 +258,9 @@ public sealed record FeatureQueryRequest
 
     /// <summary>Optional bounding box spatial filter.</summary>
     public FeatureBoundingBox? Bbox { get; init; }
+
+    /// <summary>Optional explicit geometry spatial filter.</summary>
+    public FeatureSpatialFilter? SpatialFilter { get; init; }
 
     /// <summary>Optional output coordinate reference system identifier.</summary>
     public string? OutputCrs { get; init; }

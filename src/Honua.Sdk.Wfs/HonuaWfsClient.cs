@@ -503,6 +503,12 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
             throw new NotSupportedException(
                 "WFS shared queries do not support provider-neutral time filters, statistics, group-by, or having clauses yet.");
         }
+
+        if (request.SpatialFilter is not null)
+        {
+            throw new NotSupportedException(
+                "WFS shared queries do not support explicit geometry spatial filters yet. Use Bbox for envelope filters.");
+        }
     }
 
     private static string? BuildResourceId(FeatureQueryRequest request)

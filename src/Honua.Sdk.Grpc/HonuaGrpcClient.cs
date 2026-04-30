@@ -387,7 +387,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             ReturnExtentOnly = request.ReturnExtentOnly ?? false,
             OutStatistics = BuildGrpcStatistics(request.OutStatistics),
             GroupBy = request.GroupBy,
-            SpatialFilter = BuildSpatialFilter(request.Bbox),
+            SpatialFilter = BuildSpatialFilter(request.SpatialFilter, request.Bbox),
         };
     }
 
@@ -561,8 +561,22 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         return objectIds;
     }
 
-    private static Models.SpatialFilter? BuildSpatialFilter(FeatureBoundingBox? bbox)
+    private static Models.SpatialFilter? BuildSpatialFilter(
+        FeatureSpatialFilter? spatialFilter,
+        FeatureBoundingBox? bbox)
     {
+        EnsureSingleSpatialFilter(spatialFilter, bbox);
+
+        if (spatialFilter is not null)
+        {
+            return new Models.SpatialFilter
+            {
+                Geometry = BuildSpatialGeometry(spatialFilter),
+                SpatialRelationship = ToGrpcSpatialRelationship(spatialFilter.Relationship),
+                SpatialReference = ParseSpatialReference(spatialFilter.Crs),
+            };
+        }
+
         if (bbox is null)
         {
             return null;
@@ -581,6 +595,102 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             SpatialReference = ParseSpatialReference(bbox.Crs),
         };
     }
+
+    private static void EnsureSingleSpatialFilter(FeatureSpatialFilter? spatialFilter, FeatureBoundingBox? bbox)
+    {
+        if (spatialFilter is not null && bbox is not null)
+        {
+            throw new ArgumentException("Feature query cannot specify both Bbox and SpatialFilter.");
+        }
+    }
+
+    private static IReadOnlyDictionary<string, object?> BuildSpatialGeometry(FeatureSpatialFilter spatialFilter)
+    {
+        var geometry = spatialFilter.Geometry;
+        if (geometry.ValueKind != JsonValueKind.Object)
+        {
+            throw new ArgumentException("Feature query spatial filter geometry must be a JSON object.", nameof(spatialFilter));
+        }
+
+        EnsureSpatialGeometryTypeMatches(spatialFilter);
+
+        if (ProtoAdapter.UnwrapJsonValue(geometry) is IReadOnlyDictionary<string, object?> dictionary)
+        {
+            return dictionary;
+        }
+
+        throw new ArgumentException("Feature query spatial filter geometry must be a JSON object.", nameof(spatialFilter));
+    }
+
+    private static void EnsureSpatialGeometryTypeMatches(FeatureSpatialFilter spatialFilter)
+    {
+        if (spatialFilter.GeometryType is FeatureSpatialGeometryType.Unspecified)
+        {
+            return;
+        }
+
+        var inferred = InferSpatialGeometryType(spatialFilter.Geometry);
+        if (inferred != spatialFilter.GeometryType)
+        {
+            throw new ArgumentException(
+                "Feature query spatial filter geometry type does not match the geometry object.",
+                nameof(spatialFilter));
+        }
+    }
+
+    private static FeatureSpatialGeometryType InferSpatialGeometryType(JsonElement geometry)
+    {
+        if (geometry.TryGetProperty("x", out _) && geometry.TryGetProperty("y", out _))
+        {
+            return FeatureSpatialGeometryType.Point;
+        }
+
+        if (geometry.TryGetProperty("xmin", out _) &&
+            geometry.TryGetProperty("ymin", out _) &&
+            geometry.TryGetProperty("xmax", out _) &&
+            geometry.TryGetProperty("ymax", out _))
+        {
+            return FeatureSpatialGeometryType.Envelope;
+        }
+
+        if (geometry.TryGetProperty("points", out _))
+        {
+            return FeatureSpatialGeometryType.MultiPoint;
+        }
+
+        if (geometry.TryGetProperty("paths", out _))
+        {
+            return FeatureSpatialGeometryType.Polyline;
+        }
+
+        if (geometry.TryGetProperty("rings", out _))
+        {
+            return FeatureSpatialGeometryType.Polygon;
+        }
+
+        throw new ArgumentException(
+            "Feature query spatial filter geometry type could not be inferred from the geometry object.",
+            nameof(geometry));
+    }
+
+    private static Models.SpatialRelationship ToGrpcSpatialRelationship(FeatureSpatialRelationship relationship)
+        => relationship switch
+        {
+            FeatureSpatialRelationship.Unspecified => Models.SpatialRelationship.Intersects,
+            FeatureSpatialRelationship.Intersects => Models.SpatialRelationship.Intersects,
+            FeatureSpatialRelationship.Within => Models.SpatialRelationship.Within,
+            FeatureSpatialRelationship.Contains => Models.SpatialRelationship.Contains,
+            FeatureSpatialRelationship.EnvelopeIntersects => Models.SpatialRelationship.EnvelopeIntersects,
+            FeatureSpatialRelationship.Crosses => Models.SpatialRelationship.Crosses,
+            FeatureSpatialRelationship.Touches => Models.SpatialRelationship.Touches,
+            FeatureSpatialRelationship.Overlaps => Models.SpatialRelationship.Overlaps,
+            FeatureSpatialRelationship.IndexIntersects => throw new NotSupportedException(
+                "gRPC shared spatial filters do not support index-intersects relationships."),
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(relationship),
+                relationship,
+                "Feature spatial relationship is not supported by gRPC shared queries."),
+        };
 
     private static Models.SpatialReference? ParseSpatialReference(string? crs)
     {

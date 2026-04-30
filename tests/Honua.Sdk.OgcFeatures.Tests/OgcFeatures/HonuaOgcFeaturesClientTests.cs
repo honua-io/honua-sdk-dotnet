@@ -343,6 +343,27 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
+    public async Task GetItemsAsync_SharedAbstraction_UnsupportedExplicitSpatialFilterThrows()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { CollectionId = "buildings" },
+                SpatialFilter = new FeatureSpatialFilter
+                {
+                    Geometry = JsonSerializer.SerializeToElement(new { x = -118.0, y = 34.0 }),
+                    GeometryType = FeatureSpatialGeometryType.Point,
+                    Crs = "EPSG:4326",
+                    Relationship = FeatureSpatialRelationship.Intersects
+                },
+            }));
+
+        Assert.Contains("spatial filters", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesOgcFeaturesClientAndExposesEditCapabilities()
     {
         string? capturedUrl = null;
