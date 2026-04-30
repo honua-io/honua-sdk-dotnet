@@ -3,6 +3,8 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Admin.Catalog;
 using Honua.Sdk.Admin.Models;
 
 namespace Honua.Sdk.Admin;
@@ -14,6 +16,9 @@ namespace Honua.Sdk.Admin;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(ApiResponse<ServiceSummary[]>))]
+[JsonSerializable(typeof(CatalogFeatureServerServiceInfo))]
+[JsonSerializable(typeof(CatalogFeatureServerLayerInfo))]
+[JsonSerializable(typeof(SourceDescriptor))]
 [JsonSerializable(typeof(ApiResponse<ServiceSettingsResponse>))]
 [JsonSerializable(typeof(ApiResponse<LayerMetadataResponse>))]
 [JsonSerializable(typeof(ApiResponse<SecureConnectionSummary[]>))]

@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using Honua.Sdk.Admin.Catalog;
 using Honua.Sdk.Admin.Geocoding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -29,6 +30,38 @@ public static class ServiceCollectionExtensions
         services.Configure(configure);
         services.AddTransient<HonuaAdminAuthHandler>();
         var httpBuilder = services.AddHttpClient<IHonuaAdminClient, HonuaAdminClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
+            HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaAdminClientOptions.ValidateTimeout(options.Timeout);
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
+        })
+        .AddHttpMessageHandler<HonuaAdminAuthHandler>();
+        httpBuilder.AddTypedClient<IHonuaCatalogClient>(httpClient => new HonuaCatalogClient(httpClient));
+        ConfigurePrimaryHandler(httpBuilder, configure);
+        ConfigureResilience(httpBuilder, configure);
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Honua catalog discovery client with the DI container.
+    /// Uses the same <see cref="HonuaAdminClientOptions"/> and <see cref="HonuaAdminAuthHandler"/>
+    /// as the Admin client for authentication and base address configuration.
+    /// </summary>
+    /// <param name="services">The service collection to register with.</param>
+    /// <param name="configure">Configuration delegate for client options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddHonuaCatalog(
+        this IServiceCollection services,
+        Action<HonuaAdminClientOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        services.Configure(configure);
+        services.AddTransient<HonuaAdminAuthHandler>();
+        var httpBuilder = services.AddHttpClient<IHonuaCatalogClient, HonuaCatalogClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaAdminClientOptions>>().Value;
             HonuaAdminClientOptions.ValidateBaseAddress(options.BaseAddress);
