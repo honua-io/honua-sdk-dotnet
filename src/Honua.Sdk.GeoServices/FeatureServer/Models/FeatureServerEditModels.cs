@@ -21,6 +21,9 @@ public sealed class FeatureServerEditRequest
 
     /// <summary>Whether the server should roll back all edits if any individual edit fails.</summary>
     public bool RollbackOnFailure { get; init; } = true;
+
+    /// <summary>Whether the server should force conflict-overriding writes when supported.</summary>
+    public bool ForceWrite { get; init; }
 }
 
 /// <summary>

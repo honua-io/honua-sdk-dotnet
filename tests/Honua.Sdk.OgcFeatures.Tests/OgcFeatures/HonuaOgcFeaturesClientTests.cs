@@ -413,6 +413,42 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
+    public async Task PatchItemAsync_SendsJsonMergePatch()
+    {
+        string? capturedBody = null;
+        string? capturedMediaType = null;
+        var client = TestHelpers.CreateOgcFeaturesClient(async req =>
+        {
+            Assert.Equal(HttpMethod.Patch, req.Method);
+            Assert.Contains("/ogc/features/collections/buildings/items/building-7", req.RequestUri?.ToString());
+            capturedMediaType = req.Content?.Headers.ContentType?.MediaType;
+            capturedBody = await req.Content!.ReadAsStringAsync();
+
+            return TestHelpers.CreateRawJsonResponse("""
+            {
+                "type": "Feature",
+                "id": "building-7",
+                "properties": { "name": "Patched" }
+            }
+            """);
+        });
+
+        var patch = JsonSerializer.SerializeToElement(new
+        {
+            properties = new
+            {
+                name = "Patched"
+            }
+        });
+
+        var result = await client.PatchItemAsync("buildings", "building-7", patch);
+
+        Assert.Equal("application/merge-patch+json", capturedMediaType);
+        Assert.Contains("\"Patched\"", capturedBody);
+        Assert.Equal("building-7", result.Id?.GetString());
+    }
+
+    [Fact]
     public async Task DeleteItemAsync_SendsDelete()
     {
         var client = TestHelpers.CreateOgcFeaturesClient(req =>

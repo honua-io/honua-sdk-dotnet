@@ -50,6 +50,15 @@ public sealed record FeatureServerQueryParams
 
     /// <summary>Whether to return only distinct values.</summary>
     public bool? ReturnDistinctValues { get; init; }
+
+    /// <summary>Whether to return only the count of matching features.</summary>
+    public bool? ReturnCountOnly { get; init; }
+
+    /// <summary>Whether to return only matching object IDs.</summary>
+    public bool? ReturnIdsOnly { get; init; }
+
+    /// <summary>Whether to return only the extent of matching features.</summary>
+    public bool? ReturnExtentOnly { get; init; }
 }
 
 /// <summary>

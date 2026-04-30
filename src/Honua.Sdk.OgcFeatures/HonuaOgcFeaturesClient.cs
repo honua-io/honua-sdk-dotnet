@@ -192,6 +192,15 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
     }
 
     /// <inheritdoc />
+    public Task<OgcFeature> PatchItemAsync(string collectionId, string featureId, JsonElement patch, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(collectionId);
+        ArgumentNullException.ThrowIfNull(featureId);
+        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+        return SendMergePatchAsync(url, featureId, patch, ct);
+    }
+
+    /// <inheritdoc />
     public async Task DeleteItemAsync(string collectionId, string featureId, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
@@ -276,10 +285,38 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize edited feature.", body);
     }
 
+    private async Task<OgcFeature> SendMergePatchAsync(string url, string featureId, JsonElement patch, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Patch, url)
+        {
+            Content = CreateMergePatchContent(patch)
+        };
+        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        EnsureSuccess(response, body);
+
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return new OgcFeature
+            {
+                Id = JsonSerializer.SerializeToElement(featureId)
+            };
+        }
+
+        return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeature)
+            ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize patched feature.", body);
+    }
+
     private static StringContent CreateGeoJsonContent(OgcFeature feature)
     {
         var json = JsonSerializer.Serialize(feature, OgcFeaturesJsonContext.Default.OgcFeature);
         return new StringContent(json, Encoding.UTF8, "application/geo+json");
+    }
+
+    private static StringContent CreateMergePatchContent(JsonElement patch)
+    {
+        var json = JsonSerializer.Serialize(patch, OgcFeaturesJsonContext.Default.JsonElement);
+        return new StringContent(json, Encoding.UTF8, "application/merge-patch+json");
     }
 
     private static void EnsureSuccess(HttpResponseMessage response, string body)
