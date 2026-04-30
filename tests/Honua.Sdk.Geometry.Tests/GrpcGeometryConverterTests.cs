@@ -140,6 +140,24 @@ public class GrpcGeometryConverterTests
     }
 
     [Fact]
+    public void ReadSpatialReference_WktPreservesLatestWkid()
+    {
+        var proto = new Proto.SpatialReference
+        {
+            Wkid = 102100,
+            LatestWkid = 3857,
+            Wkt = "PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\"]",
+        };
+
+        var spatialReference = GrpcGeometryConverter.ReadSpatialReference(proto);
+
+        Assert.NotNull(spatialReference);
+        Assert.Equal(102100, spatialReference.Wkid);
+        Assert.Equal(3857, spatialReference.LatestWkid);
+        Assert.Equal(proto.Wkt, spatialReference.Wkt);
+    }
+
+    [Fact]
     public void WriteGeometry_GeometryCollectionThrows()
     {
         var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

@@ -137,6 +137,15 @@ public sealed record HonuaSpatialReference
     /// <returns>The spatial reference.</returns>
     public static HonuaSpatialReference FromWkt(string wkt, string? authority = null, int? code = null)
     {
+        return FromWktWithLatestWkid(wkt, authority, code, latestWkid: null);
+    }
+
+    internal static HonuaSpatialReference FromWktWithLatestWkid(
+        string wkt,
+        string? authority,
+        int? code,
+        int? latestWkid)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(wkt);
         if (authority is not null)
         {
@@ -148,12 +157,20 @@ public sealed record HonuaSpatialReference
             throw new ArgumentOutOfRangeException(nameof(code), code, "Authority code must be greater than zero.");
         }
 
+        if (latestWkid is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(latestWkid),
+                latestWkid,
+                "Latest WKID must be greater than zero.");
+        }
+
         var normalizedAuthority = authority?.Trim();
         var wkid = normalizedAuthority is not null &&
             normalizedAuthority.Equals("EPSG", StringComparison.OrdinalIgnoreCase)
             ? code
             : null;
-        return new HonuaSpatialReference(normalizedAuthority, code, wkid, wkid, wkt.Trim());
+        return new HonuaSpatialReference(normalizedAuthority, code, wkid, latestWkid ?? wkid, wkt.Trim());
     }
 
     /// <summary>

@@ -83,9 +83,15 @@ public static class GrpcGeometryConverter
 
         if (!string.IsNullOrWhiteSpace(spatialReference.Wkt))
         {
-            return spatialReference.Wkid > 0
-                ? HonuaSpatialReference.FromWkt(spatialReference.Wkt, "EPSG", spatialReference.Wkid)
-                : HonuaSpatialReference.FromWkt(spatialReference.Wkt);
+            var wkid = spatialReference.Wkid > 0 ? spatialReference.Wkid : (int?)null;
+            var latestWkid = spatialReference.LatestWkid > 0
+                ? spatialReference.LatestWkid
+                : (int?)null;
+            return HonuaSpatialReference.FromWktWithLatestWkid(
+                spatialReference.Wkt,
+                wkid is null ? null : "EPSG",
+                wkid,
+                latestWkid);
         }
 
         if (spatialReference.Wkid > 0)
