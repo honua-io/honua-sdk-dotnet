@@ -108,6 +108,13 @@ query/edit interfaces, normalizes protocol aliases such as
 `geoservices-featureserver` to `geoservices-feature-service`, and keeps native
 clients available through `IHonuaSource.Protocol<TClient>()`.
 
+Source descriptor discovery is provider-aware. `IHonuaSource.GetDescriptorAsync`
+returns enriched `SourceDescriptor` metadata when the backing client supports
+`IHonuaFeatureDescriptorClient`: GeoServices maps FeatureServer layer metadata,
+OGC API Features combines collection metadata with queryables, WFS combines
+capabilities with DescribeFeatureType, and gRPC derives schema from query
+metadata plus an extent-only query until the proto adds a dedicated schema RPC.
+
 Shared query support is intentionally provider-aware. GeoServices FeatureServer
 maps provider-neutral time filters, statistics, group-by, and having clauses to
 native query parameters. GeoServices FeatureServer and gRPC map explicit

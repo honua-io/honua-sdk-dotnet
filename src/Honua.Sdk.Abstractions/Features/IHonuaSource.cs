@@ -14,6 +14,14 @@ public interface IHonuaSource
     /// <summary>Canonical capabilities supported by this source handle.</summary>
     IReadOnlyList<string> Capabilities { get; }
 
+    /// <summary>
+    /// Retrieves this source descriptor enriched with provider-neutral schema and discovered capabilities when available.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The current descriptor, or a provider-enriched descriptor when the backing client supports discovery.</returns>
+    Task<SourceDescriptor> GetDescriptorAsync(CancellationToken ct = default)
+        => Task.FromResult(Descriptor);
+
     /// <summary>Executes a feature query and returns one page.</summary>
     /// <param name="query">Source-oriented query request.</param>
     /// <param name="ct">Cancellation token.</param>

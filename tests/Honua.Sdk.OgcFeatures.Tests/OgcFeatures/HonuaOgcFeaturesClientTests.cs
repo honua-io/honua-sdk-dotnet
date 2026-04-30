@@ -140,6 +140,68 @@ public class HonuaOgcFeaturesClientTests
         Assert.Single(result.Required);
     }
 
+    [Fact]
+    public async Task GetDescriptorAsync_SharedAbstraction_MapsCollectionAndQueryables()
+    {
+        var collectionJson = """
+        {
+            "id": "buildings",
+            "title": "Buildings",
+            "storageCrs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+            "extent": {
+                "spatial": {
+                    "bbox": [[-180, -90, 180, 90]],
+                    "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+                }
+            }
+        }
+        """;
+        var queryablesJson = """
+        {
+            "type": "object",
+            "properties": {
+                "id": { "type": "string", "title": "Identifier" },
+                "name": { "type": "string", "title": "Name", "maxLength": 100 },
+                "status": { "type": "string", "enum": ["open", "closed"], "default": "open" }
+            },
+            "required": ["id", "name"]
+        }
+        """;
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            var url = req.RequestUri?.ToString();
+            return Task.FromResult(url?.Contains("/queryables", StringComparison.Ordinal) == true
+                ? TestHelpers.CreateRawJsonResponse(queryablesJson)
+                : TestHelpers.CreateRawJsonResponse(collectionJson));
+        });
+
+        var descriptor = await ((IHonuaFeatureDescriptorClient)client).GetDescriptorAsync(new SourceDescriptor
+        {
+            Id = "buildings",
+            Protocol = FeatureProtocolIds.OgcFeatures,
+            Locator = new SourceLocator { CollectionId = "buildings" }
+        });
+
+        Assert.NotNull(descriptor.Schema);
+        Assert.Equal("id", descriptor.Schema.PrimaryKey);
+        Assert.Equal("http://www.opengis.net/def/crs/OGC/1.3/CRS84", descriptor.Schema.SpatialReference);
+        Assert.Equal(-180, descriptor.Schema.Extent?.MinX);
+        Assert.Contains(FeatureCapabilities.QueryObjectIds, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.ApplyEdits, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
+        var name = Assert.Single(descriptor.Schema.Fields, field => field.Name == "name");
+        Assert.Equal("Name", name.Alias);
+        Assert.Equal("string", name.Type);
+        Assert.False(name.Nullable);
+        Assert.True(name.Required);
+        Assert.Equal(100, name.Length);
+        var status = Assert.Single(descriptor.Schema.Fields, field => field.Name == "status");
+        Assert.True(status.Nullable);
+        Assert.Equal("open", status.DefaultValue?.GetString());
+        Assert.Equal(JsonValueKind.Array, status.Domain?.ValueKind);
+    }
+
     // ── GetItemsAsync ───────────────────────────────────────────────
 
     [Fact]

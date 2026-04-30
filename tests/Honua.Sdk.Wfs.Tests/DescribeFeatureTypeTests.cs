@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Wfs.Exceptions;
 using Honua.Sdk.Wfs.Tests.Fixtures;
 
@@ -68,6 +69,54 @@ public sealed class DescribeFeatureTypeTests
         Assert.Equal("xsd:string", parcelId.Type);
         Assert.Equal(1, parcelId.MinOccurs);
         Assert.False(parcelId.Nillable);
+    }
+
+    [Fact]
+    public async Task GetDescriptorAsync_SharedAbstraction_MapsCapabilitiesAndSchema()
+    {
+        var capabilities = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wfs:WFS_Capabilities version="2.0.0"
+              xmlns:wfs="http://www.opengis.net/wfs/2.0"
+              xmlns:ows="http://www.opengis.net/ows/1.1">
+              <wfs:FeatureTypeList>
+                <wfs:FeatureType>
+                  <wfs:Name>parcels</wfs:Name>
+                  <wfs:DefaultCRS>urn:ogc:def:crs:EPSG::4326</wfs:DefaultCRS>
+                  <ows:WGS84BoundingBox>
+                    <ows:LowerCorner>-180 -90</ows:LowerCorner>
+                    <ows:UpperCorner>180 90</ows:UpperCorner>
+                  </ows:WGS84BoundingBox>
+                </wfs:FeatureType>
+              </wfs:FeatureTypeList>
+            </wfs:WFS_Capabilities>
+            """;
+        var client = TestHelpers.CreateClient(req =>
+        {
+            var query = req.RequestUri!.Query;
+            return Task.FromResult(query.Contains("REQUEST=GetCapabilities", StringComparison.Ordinal)
+                ? TestHelpers.CreateXmlResponse(capabilities)
+                : TestHelpers.CreateXmlResponse(ValidSchema));
+        });
+
+        var descriptor = await ((IHonuaFeatureDescriptorClient)client).GetDescriptorAsync(new SourceDescriptor
+        {
+            Id = "parcels",
+            Protocol = FeatureProtocolIds.Wfs,
+            Locator = new SourceLocator { TypeName = "parcels" }
+        });
+
+        Assert.NotNull(descriptor.Schema);
+        Assert.Equal(FeatureSpatialGeometryType.Point, descriptor.Schema.GeometryType);
+        Assert.Equal("urn:ogc:def:crs:EPSG::4326", descriptor.Schema.SpatialReference);
+        Assert.Equal("http://www.opengis.net/def/crs/OGC/1.3/CRS84", descriptor.Schema.Extent?.Crs);
+        Assert.Contains(FeatureCapabilities.QueryObjectIds, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, descriptor.Capabilities);
+        var parcelId = Assert.Single(descriptor.Schema.Fields, field => field.Name == "parcel_id");
+        Assert.Equal("xsd:string", parcelId.Type);
+        Assert.False(parcelId.Nullable);
+        Assert.True(parcelId.Required);
+        Assert.Equal("WFS-T Transaction", descriptor.Schema.EditCapabilities?.NativeSurface);
     }
 
     [Fact]

@@ -13,6 +13,7 @@ public sealed class HonuaSource : IHonuaSource
 {
     private readonly IHonuaFeatureQueryClient _queryClient;
     private readonly IHonuaFeatureEditClient? _editClient;
+    private readonly IHonuaFeatureDescriptorClient? _descriptorClient;
     private readonly object? _nativeClient;
 
     /// <summary>
@@ -27,6 +28,24 @@ public sealed class HonuaSource : IHonuaSource
         IHonuaFeatureQueryClient queryClient,
         IHonuaFeatureEditClient? editClient = null,
         object? nativeClient = null)
+        : this(descriptor, queryClient, editClient, nativeClient, descriptorClient: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaSource"/> class.
+    /// </summary>
+    /// <param name="descriptor">Serializable source descriptor.</param>
+    /// <param name="queryClient">Provider-neutral query client.</param>
+    /// <param name="editClient">Optional provider-neutral edit client.</param>
+    /// <param name="nativeClient">Optional native protocol client for <see cref="Protocol(string)"/>.</param>
+    /// <param name="descriptorClient">Optional provider-neutral descriptor discovery client.</param>
+    public HonuaSource(
+        SourceDescriptor descriptor,
+        IHonuaFeatureQueryClient queryClient,
+        IHonuaFeatureEditClient? editClient,
+        object? nativeClient,
+        IHonuaFeatureDescriptorClient? descriptorClient)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(queryClient);
@@ -35,6 +54,10 @@ public sealed class HonuaSource : IHonuaSource
         _queryClient = queryClient;
         _editClient = editClient;
         _nativeClient = nativeClient ?? queryClient;
+        _descriptorClient =
+            descriptorClient ??
+            queryClient as IHonuaFeatureDescriptorClient ??
+            nativeClient as IHonuaFeatureDescriptorClient;
         Capabilities = BuildCapabilities(descriptor, queryClient, editClient);
     }
 
@@ -43,6 +66,17 @@ public sealed class HonuaSource : IHonuaSource
 
     /// <inheritdoc />
     public IReadOnlyList<string> Capabilities { get; }
+
+    /// <inheritdoc />
+    public Task<SourceDescriptor> GetDescriptorAsync(CancellationToken ct = default)
+    {
+        if (_descriptorClient is null || !SupportsDescriptorProtocol(Descriptor, _descriptorClient))
+        {
+            return Task.FromResult(Descriptor);
+        }
+
+        return _descriptorClient.GetDescriptorAsync(Descriptor, ct);
+    }
 
     /// <inheritdoc />
     public Task<FeatureQueryResult> QueryAsync(SourceQuery? query = null, CancellationToken ct = default)
@@ -236,6 +270,10 @@ public sealed class HonuaSource : IHonuaSource
     private static bool SupportsEditProtocol(SourceDescriptor descriptor, IHonuaFeatureEditClient editClient)
         => FeatureProtocolIds.Matches(descriptor.Protocol, editClient.ProviderName) ||
            FeatureProtocolIds.Matches(descriptor.CanonicalProtocol, editClient.ProviderName);
+
+    private static bool SupportsDescriptorProtocol(SourceDescriptor descriptor, IHonuaFeatureDescriptorClient descriptorClient)
+        => FeatureProtocolIds.Matches(descriptor.Protocol, descriptorClient.ProviderName) ||
+           FeatureProtocolIds.Matches(descriptor.CanonicalProtocol, descriptorClient.ProviderName);
 
     private FeatureQueryRequest BuildQueryRequest(SourceQuery? query)
         => (query ?? new SourceQuery()).ToFeatureQueryRequest(Descriptor.ToFeatureSource());

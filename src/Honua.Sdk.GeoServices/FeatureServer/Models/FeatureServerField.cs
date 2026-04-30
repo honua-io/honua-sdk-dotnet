@@ -38,4 +38,8 @@ public sealed class FeatureServerField
     /// <summary>The default value for the field.</summary>
     [JsonPropertyName("defaultValue")]
     public JsonElement? DefaultValue { get; init; }
+
+    /// <summary>The provider-native domain metadata for the field.</summary>
+    [JsonPropertyName("domain")]
+    public JsonElement? Domain { get; init; }
 }

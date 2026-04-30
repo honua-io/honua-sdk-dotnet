@@ -14,14 +14,21 @@ public static class FeatureProtocolCapabilities
             [FeatureProtocolIds.Grpc] =
             [
                 FeatureCapabilities.Query,
+                FeatureCapabilities.QueryAggregate,
+                FeatureCapabilities.QueryExtent,
                 FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.SpatialRelationships,
                 FeatureCapabilities.ApplyEdits,
                 FeatureCapabilities.Stream
             ],
             [FeatureProtocolIds.GeoServicesFeatureService] =
             [
                 FeatureCapabilities.Query,
+                FeatureCapabilities.QueryAggregate,
+                FeatureCapabilities.QueryExtent,
                 FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.TimeFilter,
+                FeatureCapabilities.SpatialRelationships,
                 FeatureCapabilities.ApplyEdits,
                 FeatureCapabilities.Stream
             ],
@@ -29,6 +36,7 @@ public static class FeatureProtocolCapabilities
             [
                 FeatureCapabilities.Query,
                 FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.TimeFilter,
                 FeatureCapabilities.Stream
             ],
             [FeatureProtocolIds.Wfs] =

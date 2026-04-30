@@ -28,9 +28,63 @@ public sealed class SourceFacadeTests
         var wfs = FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.Wfs);
 
         Assert.Contains(FeatureCapabilities.Query, geoservices);
+        Assert.Contains(FeatureCapabilities.QueryAggregate, geoservices);
+        Assert.Contains(FeatureCapabilities.TimeFilter, geoservices);
+        Assert.Contains(FeatureCapabilities.SpatialRelationships, geoservices);
         Assert.Contains(FeatureCapabilities.ApplyEdits, geoservices);
         Assert.Contains(FeatureCapabilities.QueryObjectIds, wfs);
         Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, wfs);
+    }
+
+    [Fact]
+    public async Task HonuaSource_GetDescriptorAsync_UsesProviderDescriptorClient()
+    {
+        var discovered = new SourceDescriptor
+        {
+            Id = "parks",
+            Protocol = FeatureProtocolIds.GeoServicesFeatureService,
+            Locator = new SourceLocator { ServiceId = "svc", LayerId = 0 },
+            Capabilities = [FeatureCapabilities.Query, FeatureCapabilities.QueryExtent],
+            Schema = new SourceSchema
+            {
+                ObjectIdField = "OBJECTID",
+                PrimaryKey = "OBJECTID",
+                GeometryType = FeatureSpatialGeometryType.Point,
+                SpatialReference = "EPSG:4326",
+                Fields =
+                [
+                    new SourceField
+                    {
+                        Name = "NAME",
+                        Alias = "Park name",
+                        Type = "string",
+                        Nullable = true,
+                        Length = 128
+                    }
+                ]
+            }
+        };
+        var queryClient = new FakeQueryClient("geoservices-featureserver", _ => []);
+        var descriptorClient = new FakeDescriptorClient("geoservices-featureserver", discovered);
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parks",
+                Protocol = FeatureProtocolIds.GeoServicesFeatureService,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 0 }
+            },
+            queryClient,
+            editClient: null,
+            nativeClient: queryClient,
+            descriptorClient);
+
+        var descriptor = await source.GetDescriptorAsync();
+
+        Assert.Equal("OBJECTID", descriptor.Schema?.ObjectIdField);
+        Assert.Equal(FeatureSpatialGeometryType.Point, descriptor.Schema?.GeometryType);
+        Assert.Equal("Park name", descriptor.Schema?.Fields[0].Alias);
+        Assert.Contains(FeatureCapabilities.QueryExtent, descriptor.Capabilities);
+        Assert.Same(queryClient, source.Protocol<FakeQueryClient>());
     }
 
     [Fact]
@@ -453,5 +507,15 @@ public sealed class SourceFacadeTests
             ApplyCalls++;
             return Task.FromResult(new FeatureEditResponse { ProviderName = ProviderName });
         }
+    }
+
+    private sealed class FakeDescriptorClient(
+        string providerName,
+        SourceDescriptor descriptor) : IHonuaFeatureDescriptorClient
+    {
+        public string ProviderName { get; } = providerName;
+
+        public Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor sourceDescriptor, CancellationToken ct = default)
+            => Task.FromResult(descriptor);
     }
 }

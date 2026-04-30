@@ -47,6 +47,71 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task GetDescriptorAsync_SharedAbstraction_QueriesSchemaAndExtent()
+    {
+        var capturedRequests = new List<Proto.QueryFeaturesRequest>();
+        var schemaResponse = new Proto.QueryFeaturesResponse
+        {
+            ObjectIdFieldName = "OBJECTID",
+            GeometryType = Proto.GeometryType.Polygon,
+            SpatialReference = new Proto.SpatialReference { Wkid = 3857 }
+        };
+        schemaResponse.Fields.Add(new Proto.FieldDefinition
+        {
+            Name = "NAME",
+            FieldType = Proto.FieldType.String,
+            Length = 255,
+            Nullable = true
+        });
+        var extentResponse = new Proto.QueryFeaturesResponse
+        {
+            Extent = new Proto.Extent
+            {
+                Xmin = -180,
+                Ymin = -90,
+                Xmax = 180,
+                Ymax = 90,
+                SpatialReference = new Proto.SpatialReference { Wkid = 4326 }
+            }
+        };
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>((req, _, _, _) => capturedRequests.Add(req))
+            .Returns<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>(
+                (req, _, _, _) => CreateAsyncUnaryCall(req.ReturnExtentOnly ? extentResponse : schemaResponse));
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var descriptor = await ((IHonuaFeatureDescriptorClient)client).GetDescriptorAsync(new SourceDescriptor
+        {
+            Id = "parcels",
+            Protocol = FeatureProtocolIds.Grpc,
+            Locator = new SourceLocator { ServiceId = "svc", LayerId = 1 }
+        });
+
+        Assert.Equal(2, capturedRequests.Count);
+        Assert.Equal(0, capturedRequests[0].ResultRecordCount);
+        Assert.False(capturedRequests[0].ReturnGeometry);
+        Assert.True(capturedRequests[1].ReturnExtentOnly);
+        Assert.NotNull(descriptor.Schema);
+        Assert.Equal("OBJECTID", descriptor.Schema.ObjectIdField);
+        Assert.Equal(FeatureSpatialGeometryType.Polygon, descriptor.Schema.GeometryType);
+        Assert.Equal("EPSG:3857", descriptor.Schema.SpatialReference);
+        Assert.Equal("EPSG:4326", descriptor.Schema.Extent?.Crs);
+        Assert.Equal("NAME", descriptor.Schema.Fields[0].Name);
+        Assert.Equal("String", descriptor.Schema.Fields[0].Type);
+        Assert.Equal(255, descriptor.Schema.Fields[0].Length);
+        Assert.Contains(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.QueryExtent, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.SpatialRelationships, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
+    }
+
+    [Fact]
     public async Task QueryFeaturesAsync_AppliesConfiguredDeadline()
     {
         var timeout = TimeSpan.FromSeconds(30);
