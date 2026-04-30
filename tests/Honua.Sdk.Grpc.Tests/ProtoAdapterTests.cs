@@ -225,7 +225,8 @@ public class ProtoAdapterTests
                     {
                         new List<object?>
                         {
-                            new List<object?> { 0.0, 0.0, 5.0 }
+                            new List<object?> { 0.0, 0.0, 5.0 },
+                            new List<object?> { 1.0, 1.0, 6.0 }
                         }
                     },
                     ["hasM"] = true
@@ -632,6 +633,7 @@ public class ProtoAdapterTests
     {
         var path = new Proto.CoordinateSequence();
         path.Coords.Add(new Proto.Coordinate { X = 0, Y = 0, M = 5 });
+        path.Coords.Add(new Proto.Coordinate { X = 1, Y = 1, M = 6 });
         var geom = new Proto.Geometry
         {
             Polyline = new Proto.PolylineGeometry(),
@@ -670,6 +672,27 @@ public class ProtoAdapterTests
         var result = ProtoAdapter.FromProtoResponse(protoResponse);
 
         Assert.Null(result.SpatialReference);
+    }
+
+    [Fact]
+    public void FromProtoResponse_WktSpatialReferencePreservesLatestWkid()
+    {
+        var protoResponse = new Proto.QueryFeaturesResponse
+        {
+            SpatialReference = new Proto.SpatialReference
+            {
+                Wkid = 102100,
+                LatestWkid = 3857,
+                Wkt = "PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\"]",
+            },
+        };
+
+        var result = ProtoAdapter.FromProtoResponse(protoResponse);
+
+        Assert.NotNull(result.SpatialReference);
+        Assert.Equal(102100, result.SpatialReference.Wkid);
+        Assert.Equal(3857, result.SpatialReference.LatestWkid);
+        Assert.Equal(protoResponse.SpatialReference.Wkt, result.SpatialReference.Wkt);
     }
 
     [Fact]
