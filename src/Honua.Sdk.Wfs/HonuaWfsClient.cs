@@ -446,6 +446,7 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureSupportedFilterLanguage(request.FilterLanguage);
+        EnsureSupportedSharedQueryModes(request);
 
         if (string.IsNullOrWhiteSpace(request.Source.TypeName))
         {
@@ -480,6 +481,18 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         if (language is not FeatureFilterLanguage.ProviderDefault and not FeatureFilterLanguage.FesXml)
         {
             throw new NotSupportedException("WFS feature queries support provider-default or FES XML filters.");
+        }
+    }
+
+    private static void EnsureSupportedSharedQueryModes(FeatureQueryRequest request)
+    {
+        if (request.ReturnDistinct is true ||
+            request.ReturnCountOnly is true ||
+            request.ReturnIdsOnly is true ||
+            request.ReturnExtentOnly is true)
+        {
+            throw new NotSupportedException(
+                "WFS shared queries do not support distinct, count-only, IDs-only, or extent-only modes yet.");
         }
     }
 

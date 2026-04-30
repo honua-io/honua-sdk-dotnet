@@ -133,8 +133,9 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     public async Task<FeatureQueryResult> QueryAsync(
         FeatureQueryRequest request, CancellationToken ct = default)
     {
-        var response = await QueryFeaturesAsync(BuildGrpcQuery(request), ct).ConfigureAwait(false);
-        return ToFeatureQueryResult(response);
+        var grpcRequest = BuildGrpcQuery(request);
+        var response = await QueryFeaturesAsync(grpcRequest, ct).ConfigureAwait(false);
+        return ToFeatureQueryResult(response, grpcRequest.ReturnCountOnly);
     }
 
     /// <inheritdoc />
@@ -379,6 +380,10 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             ResultOffset = request.Offset ?? 0,
             ResultRecordCount = request.Limit ?? 0,
             OrderBy = request.OrderBy ?? string.Empty,
+            ReturnDistinct = request.ReturnDistinct ?? false,
+            ReturnCountOnly = request.ReturnCountOnly ?? false,
+            ReturnIdsOnly = request.ReturnIdsOnly ?? false,
+            ReturnExtentOnly = request.ReturnExtentOnly ?? false,
             SpatialFilter = BuildSpatialFilter(request.Bbox),
         };
     }
@@ -567,13 +572,18 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
         crs.EndsWith("/CRS84", StringComparison.OrdinalIgnoreCase) ||
         crs.EndsWith(":CRS84", StringComparison.OrdinalIgnoreCase);
 
-    private FeatureQueryResult ToFeatureQueryResult(Models.QueryFeaturesResponse response)
+    private FeatureQueryResult ToFeatureQueryResult(
+        Models.QueryFeaturesResponse response,
+        bool countRequested = false)
     {
         return new FeatureQueryResult
         {
             ProviderName = ProviderName,
             Features = response.Features.Select(feature => ToFeatureRecord(feature)).ToList(),
+            NumberMatched = countRequested || response.Count > 0 ? response.Count : null,
             NumberReturned = response.Features.Count,
+            ObjectIds = response.ObjectIds,
+            Extent = response.Extent is not null ? ToFeatureBoundingBox(response.Extent) : null,
             HasMoreResults = response.ExceededTransferLimit,
             ObjectIdFieldName = response.ObjectIdFieldName,
         };
@@ -588,6 +598,22 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             NumberReturned = page.Features.Count,
             HasMoreResults = !page.IsLastPage,
             ObjectIdFieldName = string.IsNullOrWhiteSpace(page.ObjectIdFieldName) ? null : page.ObjectIdFieldName,
+        };
+    }
+
+    private static FeatureBoundingBox ToFeatureBoundingBox(Models.Extent extent)
+    {
+        return new FeatureBoundingBox
+        {
+            MinX = extent.Xmin,
+            MinY = extent.Ymin,
+            MaxX = extent.Xmax,
+            MaxY = extent.Ymax,
+            Crs = extent.SpatialReference?.Wkid > 0
+                ? string.Create(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    $"EPSG:{extent.SpatialReference.Wkid}")
+                : null,
         };
     }
 

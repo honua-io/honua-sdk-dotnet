@@ -121,9 +121,12 @@ public sealed class HonuaSource : IHonuaSource
     {
         EnsureCapability(FeatureCapabilities.QueryObjectIds);
 
+        var useIdsOnlyMode =
+            FeatureProtocolIds.Matches(Descriptor.Protocol, FeatureProtocolIds.Grpc) ||
+            FeatureProtocolIds.Matches(Descriptor.Protocol, FeatureProtocolIds.GeoServicesFeatureService);
         var objectIdQuery = query is null
-            ? new SourceQuery { ReturnGeometry = false }
-            : query with { ReturnGeometry = false };
+            ? new SourceQuery { ReturnGeometry = false, ReturnIdsOnly = useIdsOnlyMode ? true : null }
+            : query with { ReturnGeometry = false, ReturnIdsOnly = useIdsOnlyMode ? true : query.ReturnIdsOnly };
         var request = BuildQueryRequest(objectIdQuery);
         var limit = query?.Limit;
         if (limit is <= 0)
@@ -134,20 +137,29 @@ public sealed class HonuaSource : IHonuaSource
         var idFieldName = Descriptor.Schema?.PrimaryKey;
         var ids = new List<string>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var maxIds = limit.GetValueOrDefault(int.MaxValue);
+
+        if (useIdsOnlyMode)
+        {
+            var result = await _queryClient.QueryAsync(request, ct).ConfigureAwait(false);
+            idFieldName ??= result.ObjectIdFieldName;
+            if (AddPageObjectIds(result, ids, seen, maxIds) ||
+                AddPageFeatureIds(result, idFieldName, ids, seen, maxIds) ||
+                !result.HasMoreResults)
+            {
+                return ids;
+            }
+
+            request = BuildQueryRequest(objectIdQuery with { ReturnIdsOnly = false });
+        }
 
         await foreach (var page in _queryClient.QueryPagesAsync(request, ct).ConfigureAwait(false))
         {
             idFieldName ??= page.ObjectIdFieldName;
-            foreach (var feature in page.Features)
+            if (AddPageObjectIds(page, ids, seen, maxIds) ||
+                AddPageFeatureIds(page, idFieldName, ids, seen, maxIds))
             {
-                if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
-                {
-                    ids.Add(id);
-                    if (ids.Count >= limit.GetValueOrDefault(int.MaxValue))
-                    {
-                        return ids;
-                    }
-                }
+                return ids;
             }
         }
 
@@ -244,6 +256,50 @@ public sealed class HonuaSource : IHonuaSource
     private bool MatchesProtocol(string protocolId)
         => FeatureProtocolIds.Matches(Descriptor.Protocol, protocolId) ||
            FeatureProtocolIds.Matches(_queryClient.ProviderName, protocolId);
+
+    private static bool AddPageObjectIds(
+        FeatureQueryResult page,
+        List<string> ids,
+        HashSet<string> seen,
+        int maxIds)
+    {
+        foreach (var objectId in page.ObjectIds)
+        {
+            var id = objectId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (seen.Add(id))
+            {
+                ids.Add(id);
+                if (ids.Count >= maxIds)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool AddPageFeatureIds(
+        FeatureQueryResult page,
+        string? idFieldName,
+        List<string> ids,
+        HashSet<string> seen,
+        int maxIds)
+    {
+        foreach (var feature in page.Features)
+        {
+            if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
+            {
+                ids.Add(id);
+                if (ids.Count >= maxIds)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     private static string? ResolveFeatureId(FeatureRecord feature, string? idFieldName)
     {

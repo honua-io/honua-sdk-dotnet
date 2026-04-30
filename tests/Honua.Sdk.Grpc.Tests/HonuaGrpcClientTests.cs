@@ -100,7 +100,17 @@ public class HonuaGrpcClientTests
             ObjectIdFieldName = "OBJECTID",
             GeometryType = Proto.GeometryType.Point,
             ExceededTransferLimit = true,
+            Count = 12,
+            Extent = new Proto.Extent
+            {
+                Xmin = -180,
+                Ymin = -90,
+                Xmax = 180,
+                Ymax = 90,
+                SpatialReference = new Proto.SpatialReference { Wkid = 4326 },
+            },
         };
+        protoResponse.ObjectIds.AddRange([42L, 43L]);
         var feature = new Proto.Feature { Id = 42 };
         feature.Attributes["name"] = new Proto.AttributeValue { StringValue = "Park" };
         protoResponse.Features.Add(feature);
@@ -128,6 +138,10 @@ public class HonuaGrpcClientTests
             Offset = 5,
             Limit = 10,
             OrderBy = "name ASC",
+            ReturnDistinct = true,
+            ReturnCountOnly = true,
+            ReturnIdsOnly = true,
+            ReturnExtentOnly = true,
             OutputCrs = "EPSG:3857",
         });
 
@@ -141,8 +155,16 @@ public class HonuaGrpcClientTests
         Assert.Equal(5, capturedRequest.ResultOffset);
         Assert.Equal(10, capturedRequest.ResultRecordCount);
         Assert.Equal("name ASC", capturedRequest.OrderBy);
+        Assert.True(capturedRequest.ReturnDistinct);
+        Assert.True(capturedRequest.ReturnCountOnly);
+        Assert.True(capturedRequest.ReturnIdsOnly);
+        Assert.True(capturedRequest.ReturnExtentOnly);
         Assert.Equal(3857, capturedRequest.OutSr.Wkid);
         Assert.Equal("grpc", result.ProviderName);
+        Assert.Equal(12, result.NumberMatched);
+        Assert.Equal([42L, 43L], result.ObjectIds);
+        Assert.NotNull(result.Extent);
+        Assert.Equal("EPSG:4326", result.Extent.Crs);
         Assert.True(result.HasMoreResults);
         Assert.Single(result.Features);
         Assert.Equal("42", result.Features[0].Id);

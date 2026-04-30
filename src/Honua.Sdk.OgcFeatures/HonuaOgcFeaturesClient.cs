@@ -453,6 +453,7 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureSupportedFilterLanguage(request.FilterLanguage);
+        EnsureSupportedSharedQueryModes(request);
 
         if (string.IsNullOrWhiteSpace(request.Source.CollectionId))
         {
@@ -486,6 +487,18 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
         if (language is not FeatureFilterLanguage.ProviderDefault and not FeatureFilterLanguage.Cql2Text)
         {
             throw new NotSupportedException("OGC API Features queries support provider-default or CQL2 text filters.");
+        }
+    }
+
+    private static void EnsureSupportedSharedQueryModes(FeatureQueryRequest request)
+    {
+        if (request.ReturnDistinct is true ||
+            request.ReturnCountOnly is true ||
+            request.ReturnIdsOnly is true ||
+            request.ReturnExtentOnly is true)
+        {
+            throw new NotSupportedException(
+                "OGC API Features shared queries do not support distinct, count-only, IDs-only, or extent-only modes yet.");
         }
     }
 

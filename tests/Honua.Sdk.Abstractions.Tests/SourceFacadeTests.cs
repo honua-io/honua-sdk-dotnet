@@ -186,6 +186,39 @@ public sealed class SourceFacadeTests
     }
 
     [Fact]
+    public async Task HonuaSource_QueryObjectIdsAsync_UsesIdsOnlyResultWhenAvailable()
+    {
+        FeatureQueryRequest? capturedRequest = null;
+        var queryClient = new FakeQueryClient(
+            "grpc",
+            _ => throw new InvalidOperationException("IDs-only object-id queries should not use paged feature streaming."),
+            request =>
+            {
+                capturedRequest = request;
+                return new FeatureQueryResult
+                {
+                    ProviderName = "grpc",
+                    ObjectIds = [10, 20, 10],
+                    NumberReturned = 0
+                };
+            });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parcels",
+                Protocol = FeatureProtocolIds.Grpc,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 0 }
+            },
+            queryClient);
+
+        var ids = await source.QueryObjectIdsAsync();
+
+        Assert.NotNull(capturedRequest);
+        Assert.True(capturedRequest.ReturnIdsOnly);
+        Assert.Equal(["10", "20"], ids);
+    }
+
+    [Fact]
     public async Task HonuaSource_QueryObjectIdsAsync_ZeroLimitReturnsEmpty()
     {
         var queryClient = new FakeQueryClient(
@@ -318,12 +351,13 @@ public sealed class SourceFacadeTests
 
     private sealed class FakeQueryClient(
         string providerName,
-        Func<FeatureQueryRequest, IReadOnlyList<FeatureQueryResult>> queryPages) : IHonuaFeatureQueryClient
+        Func<FeatureQueryRequest, IReadOnlyList<FeatureQueryResult>> queryPages,
+        Func<FeatureQueryRequest, FeatureQueryResult>? query = null) : IHonuaFeatureQueryClient
     {
         public string ProviderName { get; } = providerName;
 
         public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken ct = default)
-            => Task.FromResult(queryPages(request).FirstOrDefault() ?? new FeatureQueryResult { ProviderName = ProviderName });
+            => Task.FromResult(query?.Invoke(request) ?? queryPages(request).FirstOrDefault() ?? new FeatureQueryResult { ProviderName = ProviderName });
 
         public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
             FeatureQueryRequest request,

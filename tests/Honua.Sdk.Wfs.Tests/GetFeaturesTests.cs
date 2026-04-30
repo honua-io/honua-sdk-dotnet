@@ -187,6 +187,21 @@ public sealed class GetFeaturesTests
     }
 
     [Fact]
+    public async Task GetFeatures_SharedAbstraction_UnsupportedQueryModeThrows()
+    {
+        var client = TestHelpers.CreateClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { TypeName = "parcels" },
+                ReturnIdsOnly = true,
+            }));
+
+        Assert.Contains("IDs-only", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesWfsClientAndSuppressesUnsupportedEdits()
     {
         string? capturedQuery = null;
