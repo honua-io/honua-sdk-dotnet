@@ -19,11 +19,12 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Spec` | Candidate | REST validation/plan/cancel paths are browser candidates. Apply streaming uses SSE-style responses and still needs runtime validation under Blazor WebAssembly before being called supported. |
 | `Honua.Sdk.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.GeoServices` | Candidate | REST/JSON FeatureServer client over browser `HttpClient`; requires server CORS and browser-owned auth. |
+| Routing client in `Honua.Sdk.GeoServices` | Candidate | REST/JSON NAServer client over browser `HttpClient`; requires server CORS and browser-owned auth. Host apps own current-location acquisition, route display, and map interaction. |
 | `Honua.Sdk.Scenes` | Candidate | REST/JSON scene metadata client over browser `HttpClient`; requires server CORS and browser-owned auth. Display, Cesium, WebGL/WebGPU, and renderer caches remain outside the SDK. |
 | `Honua.Sdk.Field` | Candidate | Pure form, validation, calculated field, duplicate detection, and record workflow contracts. Browser hosts own rendering, storage, device capture, local media handling, and any map display. |
 | `Honua.Sdk.OgcFeatures` | Candidate | REST/JSON OGC API Features client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.Grpc` | Not supported for browser runtime | Native gRPC/HTTP2 is not a supported browser path. Treat current browser builds as compile-only. Add gRPC-Web support only after `honua-server` exposes a compatible endpoint and the SDK has a browser-specific transport plan. |
-| Routing, realtime feeds, plugins | Not implemented | Future packages should split pure contracts from runtime adapters and update this matrix before browser consumption. |
+| Realtime feeds and plugins | Not implemented | Future packages should split pure contracts from runtime adapters and update this matrix before browser consumption. |
 | Display/maps | Out of SDK core | MapLibre/deck.gl, Cesium, Mapsui, renderer caches, controls, and AR/VR anchors belong in viewer/mobile/admin apps or display adapter packages. SDK packages should hand back portable data/contracts. |
 
 ## Explicit Browser Exclusions
@@ -49,10 +50,36 @@ packages and registers the REST clients with retry disabled. That gate proves
 the packages can be consumed by a browser app without native compile-time
 dependencies.
 
-Runtime validation still belongs to the consuming app or a follow-up SDK sample:
+The smoke app also contains a compile-checked browser feature-map sample. It
+uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses
+`IHonuaGeocodingClient` to forward-geocode an address, and hands both to an
+injected `IBrowserGeoJsonDisplayAdapter`. The adapter is intentionally a no-op
+in this repository: MapLibre/deck.gl, Cesium, Mapsui, canvas/WebGL lifecycle,
+and picking controls remain in viewer packages or host apps.
+
+Live runtime validation still belongs to the consuming app or a follow-up SDK
+sample wired to a test Honua deployment:
 
 - browser `HttpClient` requests against a real or fake Honua server;
 - cross-origin CORS behavior where the deployment is not same-origin;
 - delegated bearer-token or BFF authentication;
 - `Honua.Sdk.Spec` apply-stream behavior;
 - offline storage adapters such as IndexedDB.
+
+Minimum browser host configuration for live REST validation:
+
+- use same-origin routes or configure CORS for the SDK REST origins;
+- allow `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, and `OPTIONS` as required by
+  the selected SDK clients;
+- allow `Authorization` and content headers used by the host auth flow;
+- never place privileged admin API keys or server-only connection secrets in
+  static browser configuration.
+
+## Browser gRPC Plan
+
+Browser consumers should not register `Honua.Sdk.Grpc` as a runtime transport.
+Feature reads and edits should route through OGC API Features or GeoServices
+REST clients until `honua-server` exposes a gRPC-Web endpoint and the SDK has a
+browser-specific transport package. That future package should be separate from
+the native gRPC package so browser apps do not accidentally assume raw HTTP/2
+channel support.

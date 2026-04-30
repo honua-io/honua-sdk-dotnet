@@ -1,5 +1,6 @@
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Admin;
+using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.BrowserSmoke;
 using Honua.Sdk.Field.Forms;
@@ -11,6 +12,8 @@ using Honua.Sdk.Offline;
 using Honua.Sdk.Offline.Abstractions;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.Scenes;
+using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Spec.Extensions;
 using Honua.Sdk.Wfs;
@@ -23,11 +26,14 @@ builder.RootComponents.Add<App>("#app");
 
 var server = new Uri("https://honua.example.test/");
 ConfigureRestClients(builder.Services, server);
+RegisterBrowserFeatureMapSample(builder.Services);
 RegisterFieldContracts(builder.Services);
 RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
 
-await builder.Build().RunAsync().ConfigureAwait(false);
+var host = builder.Build();
+_ = host.Services.GetRequiredService<BrowserFeatureMapSample>();
+await host.RunAsync().ConfigureAwait(false);
 
 static void ConfigureRestClients(IServiceCollection services, Uri server)
 {
@@ -51,9 +57,17 @@ static void ConfigureRestClients(IServiceCollection services, Uri server)
     {
         ConfigureGeoServicesBrowserCandidate(options, server);
     });
+    services.AddHonuaRouting(options =>
+    {
+        ConfigureGeoServicesBrowserCandidate(options, server);
+    });
     services.AddHonuaOgcFeatures(options =>
     {
         ConfigureOgcFeaturesBrowserCandidate(options, server);
+    });
+    services.AddHonuaScenes(options =>
+    {
+        ConfigureSceneBrowserCandidate(options, server);
     });
 }
 
@@ -92,6 +106,13 @@ static void ConfigureOgcFeaturesBrowserCandidate(HonuaOgcFeaturesClientOptions o
     options.EnableRetry = false;
 }
 
+static void ConfigureSceneBrowserCandidate(HonuaSceneClientOptions options, Uri server)
+{
+    options.BaseAddress = server;
+    options.BearerTokenProvider = NoBrowserTokenAsync;
+    options.EnableRetry = false;
+}
+
 static Task<string?> NoBrowserTokenAsync(CancellationToken cancellationToken)
 {
     cancellationToken.ThrowIfCancellationRequested();
@@ -102,6 +123,17 @@ static void RegisterGeometryContracts(IServiceCollection services)
 {
     services.AddSingleton(HonuaSpatialReference.Wgs84);
     services.AddSingleton<HonuaCoordinateTransformer>();
+}
+
+static void RegisterBrowserFeatureMapSample(IServiceCollection services)
+{
+    services.AddSingleton(new BrowserFeatureMapSampleOptions());
+    services.AddScoped<IBrowserGeoJsonDisplayAdapter>(_ => new NoopBrowserGeoJsonDisplayAdapter());
+    services.AddScoped(sp => new BrowserFeatureMapSample(
+        sp.GetRequiredService<IHonuaOgcFeaturesClient>(),
+        sp.GetRequiredService<IHonuaGeocodingClient>(),
+        sp.GetRequiredService<IBrowserGeoJsonDisplayAdapter>(),
+        sp.GetRequiredService<BrowserFeatureMapSampleOptions>()));
 }
 
 static void RegisterFieldContracts(IServiceCollection services)
