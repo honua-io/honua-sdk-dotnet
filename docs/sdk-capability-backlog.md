@@ -597,6 +597,18 @@ Acceptance criteria:
   workflows if supported by the server.
 - Treat display of trace results as a downstream viewer concern.
 
+SDK implementation:
+
+- `Honua.Sdk.Abstractions.UtilityNetworks` owns the provider-neutral contract
+  surface: trace capabilities, source identifiers, elements, associations,
+  terminals, starting points, barriers, trace configuration queries, named trace
+  configurations, and trace results.
+- `IHonuaUtilityNetworkTraceClient` defines connected, upstream, downstream,
+  and subnetwork trace methods. Concrete server adapters should implement that
+  interface only when Honua Server exposes the corresponding endpoint.
+- Map display, trace highlighting, graph diagrams, and viewer state stay in
+  mobile/admin/viewer repos or display adapter packages.
+
 ### P2.5 Raster, elevation, and enrichment data clients
 
 Outcome: future data APIs have a clear home without becoming display features.
