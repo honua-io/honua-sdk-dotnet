@@ -11,6 +11,7 @@ rendering stay in host applications or downstream adapter packages.
 | Package or capability | Browser/WASM status | Notes |
 | --- | --- | --- |
 | `Honua.Sdk.Abstractions` | Supported | Pure contracts and source/query/edit abstractions. No transport, storage, or native runtime dependency. |
+| `Honua.Sdk.Geometry` | Candidate | NetTopologySuite and ProjNET-backed geometry, CRS, and transform helpers. Pure managed compile smoke is covered, but host apps should still validate their projection set and payload sizes under their browser runtime. No display or map-rendering responsibility. |
 | `Honua.Sdk.Offline.Abstractions` | Supported | Offline manifests, checkpoints, sync state, change journals, storage interfaces, and conflict contracts only. |
 | `Honua.Sdk.Offline` | Conditional | Planner and sync engine are portable, but the host must provide browser-safe storage, scheduling, conflict-review, and auth adapters. This package is not a GeoPackage, SQLite, service-worker, or background-sync implementation. |
 | `Honua.Sdk.Admin` | Candidate | REST client over injected `HttpClient`. Browser hosts must use same-origin/BFF credentials or delegated bearer tokens, and the server must allow the required CORS policy when cross-origin. Static privileged admin API keys must not be shipped in browser config. |
