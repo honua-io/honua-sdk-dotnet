@@ -22,6 +22,7 @@ dotnet add package Honua.Sdk.Abstractions --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
+dotnet add package Honua.Sdk.Scenes --prerelease
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
 dotnet add package Microsoft.Extensions.Hosting
 ```
@@ -31,8 +32,8 @@ This pulls in the SDK packages and the Generic Host for dependency injection.
 ## Step 2: Configure the client with DI (60 seconds)
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
-up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, and OGC API
-Features clients so they can be injected anywhere.
+up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, scene metadata,
+and OGC API Features clients so they can be injected anywhere.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,7 @@ using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Wfs.Extensions;
 using Honua.Sdk.GeoServices.Extensions;
+using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -71,6 +73,12 @@ builder.Services.AddHonuaWfs(options =>
 
 // GeoServices FeatureServer client
 builder.Services.AddHonuaFeatureServer(options =>
+{
+    options.BaseAddress = new Uri("https://localhost:5001");
+});
+
+// Scene metadata client
+builder.Services.AddHonuaScenes(options =>
 {
     options.BaseAddress = new Uri("https://localhost:5001");
 });

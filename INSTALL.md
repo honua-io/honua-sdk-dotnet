@@ -10,6 +10,7 @@
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries and edits |
 | `Honua.Sdk.Wfs` | WFS 2.0 read/query client for GetCapabilities, GetFeature, DescribeFeatureType |
 | `Honua.Sdk.GeoServices` | GeoServices FeatureServer read/query client |
+| `Honua.Sdk.Scenes` | Scene metadata, endpoint resolution, and offline scene package contracts |
 | `Honua.Sdk.OgcFeatures` | OGC API Features read/query client |
 
 ## Prerequisites
@@ -37,6 +38,9 @@ dotnet add package Honua.Sdk.Wfs --prerelease
 
 # GeoServices FeatureServer client
 dotnet add package Honua.Sdk.GeoServices --prerelease
+
+# Scene metadata client
+dotnet add package Honua.Sdk.Scenes --prerelease
 
 # OGC API Features client
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
@@ -78,6 +82,7 @@ Then install:
 dotnet add package Honua.Sdk.Grpc --prerelease --source honua
 dotnet add package Honua.Sdk.Spec --prerelease --source honua
 dotnet add package Honua.Sdk.GeoServices --prerelease --source honua
+dotnet add package Honua.Sdk.Scenes --prerelease --source honua
 dotnet add package Honua.Sdk.OgcFeatures --prerelease --source honua
 ```
 

@@ -39,6 +39,7 @@ public sealed class MobileContractHarmonizationFixtureTests
         "Honua.Sdk.Offline",
         "Honua.Sdk.Grpc",
         "Honua.Sdk.GeoServices",
+        "Honua.Sdk.Scenes",
         "Honua.Sdk.OgcFeatures"
     ];
 
@@ -95,7 +96,7 @@ public sealed class MobileContractHarmonizationFixtureTests
             .ToArray();
 
         Assert.Equal(ExpectedSdkPackageIds, packages.Select(package => package.PackageId));
-        Assert.All(packages, package => Assert.Equal("0.1.4-alpha.1", package.Version));
+        Assert.All(packages, package => Assert.Equal("0.1.6-alpha.1", package.Version));
     }
 
     private static bool IsSdkOwnedFamily(JsonElement family)
@@ -106,6 +107,7 @@ public sealed class MobileContractHarmonizationFixtureTests
         return owner == "honua-sdk-dotnet" ||
             package == "Honua.Sdk.Abstractions" ||
             package == "Honua.Sdk.Offline.Abstractions" ||
+            package.Contains("Honua.Sdk.Abstractions", StringComparison.Ordinal) ||
             package.StartsWith("Honua.Sdk.Abstractions ", StringComparison.Ordinal);
     }
 
