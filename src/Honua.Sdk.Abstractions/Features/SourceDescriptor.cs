@@ -75,6 +75,9 @@ public sealed record SourceSchema
 
     /// <summary>Edit capabilities advertised by the source.</summary>
     public FeatureEditCapabilities? EditCapabilities { get; init; }
+
+    /// <summary>Attachment capabilities advertised by the source.</summary>
+    public FeatureAttachmentCapabilities? AttachmentCapabilities { get; init; }
 }
 
 /// <summary>

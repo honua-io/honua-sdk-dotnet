@@ -500,11 +500,15 @@ public class HonuaGrpcClientTests
 
         using var provider = services.BuildServiceProvider();
         var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
+        var attachmentClient = Assert.Single(provider.GetServices<IHonuaFeatureAttachmentClient>());
 
         Assert.Equal("grpc", editClient.ProviderName);
         Assert.True(editClient.EditCapabilities.SupportsAdds);
         Assert.True(editClient.EditCapabilities.SupportsUpdates);
         Assert.True(editClient.EditCapabilities.SupportsDeletes);
+        Assert.Equal("grpc", attachmentClient.ProviderName);
+        Assert.False(attachmentClient.AttachmentCapabilities.SupportsList);
+        Assert.Contains("attachment RPCs", attachmentClient.AttachmentCapabilities.UnsupportedReason);
     }
 
     [Fact]

@@ -25,15 +25,22 @@ public sealed class HonuaWfsClient :
     IHonuaWfsClient,
     IHonuaFeatureQueryClient,
     IHonuaFeatureEditClient,
-    IHonuaFeatureDescriptorClient
+    IHonuaFeatureDescriptorClient,
+    IHonuaFeatureAttachmentClient
 {
     private static readonly ActivitySource ActivitySource = new("Honua.Sdk.Wfs");
     private static readonly GeoJsonFeatureCollectionHandler DefaultGeoJsonHandler = new();
     private const string UnsupportedEditReason = "Honua.Sdk.Wfs does not currently implement WFS-T transactions.";
+    private const string UnsupportedAttachmentReason = "WFS does not expose attachment operations.";
     private static readonly FeatureEditCapabilities UnsupportedEditCapabilities = new()
     {
         NativeSurface = "WFS-T Transaction",
         UnsupportedReason = UnsupportedEditReason
+    };
+    private static readonly FeatureAttachmentCapabilities UnsupportedAttachmentCapabilities = new()
+    {
+        NativeSurface = "WFS attachments",
+        UnsupportedReason = UnsupportedAttachmentReason
     };
 
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
@@ -60,6 +67,9 @@ public sealed class HonuaWfsClient :
 
     /// <inheritdoc />
     public FeatureEditCapabilities EditCapabilities => UnsupportedEditCapabilities;
+
+    /// <inheritdoc />
+    public FeatureAttachmentCapabilities AttachmentCapabilities => UnsupportedAttachmentCapabilities;
 
     /// <inheritdoc />
     public async Task<WfsCapabilities> GetCapabilitiesAsync(CancellationToken ct = default)
@@ -193,6 +203,36 @@ public sealed class HonuaWfsClient :
         ct.ThrowIfCancellationRequested();
         throw new NotSupportedException(UnsupportedEditReason);
     }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
+        FeatureAttachmentListRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentContent> DownloadAttachmentAsync(
+        FeatureAttachmentDownloadRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> AddAttachmentAsync(
+        FeatureAttachmentAddRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> UpdateAttachmentAsync(
+        FeatureAttachmentUpdateRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> DeleteAttachmentAsync(
+        FeatureAttachmentDeleteRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
 
     /// <inheritdoc />
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Response ownership is transferred to ResponseOwningStream when the handler owns the response stream.")]
@@ -492,7 +532,15 @@ public sealed class HonuaWfsClient :
             Extent = ToFeatureBoundingBox(featureType),
             SpatialReference = featureType?.DefaultCrs,
             EditCapabilities = UnsupportedEditCapabilities,
+            AttachmentCapabilities = UnsupportedAttachmentCapabilities,
         };
+    }
+
+    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        throw new NotSupportedException(UnsupportedAttachmentReason);
     }
 
     private static SourceField ToSourceField(WfsSchemaProperty property)

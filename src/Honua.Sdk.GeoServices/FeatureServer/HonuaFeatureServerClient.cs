@@ -1,11 +1,14 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.GeoServices;
 using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 
@@ -19,7 +22,8 @@ public sealed class HonuaFeatureServerClient :
     IHonuaFeatureServerEditClient,
     IHonuaFeatureQueryClient,
     IHonuaFeatureEditClient,
-    IHonuaFeatureDescriptorClient
+    IHonuaFeatureDescriptorClient,
+    IHonuaFeatureAttachmentClient
 {
     private const int PostFallbackThreshold = 2000;
     private static readonly FeatureEditCapabilities ProviderEditCapabilities = new()
@@ -29,6 +33,15 @@ public sealed class HonuaFeatureServerClient :
         SupportsDeletes = true,
         SupportsRollbackOnFailure = true,
         NativeSurface = "GeoServices FeatureServer applyEdits"
+    };
+    private static readonly FeatureAttachmentCapabilities ProviderAttachmentCapabilities = new()
+    {
+        SupportsList = true,
+        SupportsDownload = true,
+        SupportsAdd = true,
+        SupportsUpdate = true,
+        SupportsDelete = true,
+        NativeSurface = "GeoServices FeatureServer attachments"
     };
 
     private readonly HttpClient _http;
@@ -47,6 +60,9 @@ public sealed class HonuaFeatureServerClient :
 
     /// <inheritdoc />
     public FeatureEditCapabilities EditCapabilities => ProviderEditCapabilities;
+
+    /// <inheritdoc />
+    public FeatureAttachmentCapabilities AttachmentCapabilities => ProviderAttachmentCapabilities;
 
     private static string ServicePath(string serviceId) =>
         $"/rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer";
@@ -249,6 +265,131 @@ public sealed class HonuaFeatureServerClient :
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
+        FeatureAttachmentListRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var (serviceId, layerId) = GetAttachmentSource(request.Source);
+        var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/attachments?f=json";
+        var body = await GetStringAsync(path, ct).ConfigureAwait(false);
+        var response = JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentQueryResponse)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize attachment response.", body);
+
+        return response.AttachmentInfos
+            .Select(info => ToFeatureAttachmentInfo(info, request.Source, request.ObjectId))
+            .ToList();
+    }
+
+    /// <inheritdoc />
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Response ownership is transferred to FeatureAttachmentContent.Content.")]
+    public async Task<FeatureAttachmentContent> DownloadAttachmentAsync(
+        FeatureAttachmentDownloadRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var (serviceId, layerId) = GetAttachmentSource(request.Source);
+        var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/attachments/{request.AttachmentId}";
+        var response = await _http.GetAsync(CreateRequestUri(path), HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            response.Dispose();
+            EnsureSuccess(response, body);
+        }
+
+        var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+        var contentType = response.Content.Headers.ContentType?.MediaType;
+        var contentLength = response.Content.Headers.ContentLength;
+        var contentDispositionName = response.Content.Headers.ContentDisposition?.FileNameStar ??
+            response.Content.Headers.ContentDisposition?.FileName;
+
+        return new FeatureAttachmentContent
+        {
+            Info = new FeatureAttachmentInfo
+            {
+                Source = request.Source,
+                ParentObjectId = request.ObjectId,
+                AttachmentId = request.AttachmentId,
+                Name = TrimHeaderFileName(contentDispositionName),
+                ContentType = contentType,
+                Size = contentLength,
+            },
+            Content = new ResponseOwningStream(stream, response),
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureAttachmentResult> AddAttachmentAsync(
+        FeatureAttachmentAddRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var (serviceId, layerId) = GetAttachmentSource(request.Source);
+        var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/addAttachment";
+        var response = await PostAttachmentAsync(
+            path,
+            request.Content,
+            request.Name,
+            request.ContentType,
+            request.Keywords,
+            ct).ConfigureAwait(false);
+
+        return ToFeatureAttachmentResult(response.AddAttachmentResult)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "FeatureServer did not return addAttachmentResult.");
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureAttachmentResult> UpdateAttachmentAsync(
+        FeatureAttachmentUpdateRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var (serviceId, layerId) = GetAttachmentSource(request.Source);
+        var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/updateAttachment";
+        var response = await PostAttachmentAsync(
+            path,
+            request.Content,
+            request.Name,
+            request.ContentType,
+            request.Keywords,
+            ct,
+            ("attachmentId", request.AttachmentId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
+
+        return ToFeatureAttachmentResult(response.UpdateAttachmentResult)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "FeatureServer did not return updateAttachmentResult.");
+    }
+
+    /// <inheritdoc />
+    public async Task<FeatureAttachmentResult> DeleteAttachmentAsync(
+        FeatureAttachmentDeleteRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var (serviceId, layerId) = GetAttachmentSource(request.Source);
+        var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/deleteAttachments";
+        var body = await PostFormAsync(
+            path,
+            [
+                ("f", "json"),
+                ("attachmentIds", request.AttachmentId.ToString(CultureInfo.InvariantCulture))
+            ],
+            ct).ConfigureAwait(false);
+        var response = JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentEditResponse)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize delete attachment response.", body);
+
+        var result = response.DeleteAttachmentResults is { Count: > 0 } results
+            ? results[0]
+            : null;
+
+        return ToFeatureAttachmentResult(result)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "FeatureServer did not return deleteAttachmentResults.");
+    }
+
+    /// <inheritdoc />
     public async Task<long> QueryCountAsync(
         string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default)
     {
@@ -409,6 +550,48 @@ public sealed class HonuaFeatureServerClient :
         var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
+    }
+
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "MultipartFormDataContent owns and disposes child HttpContent instances.")]
+    private async Task<FeatureServerAttachmentEditResponse> PostAttachmentAsync(
+        string path,
+        Stream content,
+        string name,
+        string contentType,
+        string? keywords,
+        CancellationToken ct,
+        params (string Key, string Value)[] extraParameters)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+
+        using var form = new MultipartFormDataContent();
+        form.Add(new StringContent("json"), "f");
+
+        if (!string.IsNullOrWhiteSpace(keywords))
+        {
+            form.Add(new StringContent(keywords), "keywords");
+        }
+
+        foreach (var parameter in extraParameters)
+        {
+            form.Add(new StringContent(parameter.Value), parameter.Key);
+        }
+
+        using var uploadStream = new NonDisposingStream(content);
+        using var attachment = new StreamContent(uploadStream);
+        attachment.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
+        form.Add(attachment, "attachment", name);
+
+        using var response = await _http.PostAsync(CreateRequestUri(path), form, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        EnsureSuccess(response, body);
+        return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentEditResponse)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize attachment edit response.", body);
     }
 
     private static void EnsureSuccess(HttpResponseMessage response, string body)
@@ -796,6 +979,7 @@ public sealed class HonuaFeatureServerClient :
                 }
                 : null,
             EditCapabilities = BuildLayerEditCapabilities(layer),
+            AttachmentCapabilities = BuildLayerAttachmentCapabilities(layer),
         };
     }
 
@@ -827,6 +1011,22 @@ public sealed class HonuaFeatureServerClient :
             SupportsRollbackOnFailure = supportsAnyEdit,
             NativeSurface = ProviderEditCapabilities.NativeSurface,
             UnsupportedReason = supportsAnyEdit ? null : "GeoServices FeatureServer layer does not advertise edit capabilities.",
+        };
+    }
+
+    private static FeatureAttachmentCapabilities BuildLayerAttachmentCapabilities(FeatureServerLayerInfo layer)
+    {
+        return new FeatureAttachmentCapabilities
+        {
+            SupportsList = layer.HasAttachments,
+            SupportsDownload = layer.HasAttachments,
+            SupportsAdd = layer.HasAttachments,
+            SupportsUpdate = layer.HasAttachments,
+            SupportsDelete = layer.HasAttachments,
+            NativeSurface = ProviderAttachmentCapabilities.NativeSurface,
+            UnsupportedReason = layer.HasAttachments
+                ? null
+                : "GeoServices FeatureServer layer does not advertise attachment support.",
         };
     }
 
@@ -900,6 +1100,21 @@ public sealed class HonuaFeatureServerClient :
         }
 
         return (request.Source.ServiceId, request.Source.LayerId.Value);
+    }
+
+    private static (string ServiceId, int LayerId) GetAttachmentSource(FeatureSource source)
+    {
+        if (string.IsNullOrWhiteSpace(source.ServiceId))
+        {
+            throw new ArgumentException("A service ID is required for FeatureServer attachments.", nameof(source));
+        }
+
+        if (!source.LayerId.HasValue)
+        {
+            throw new ArgumentException("A layer ID is required for FeatureServer attachments.", nameof(source));
+        }
+
+        return (source.ServiceId, source.LayerId.Value);
     }
 
     private async Task<string?> ResolveObjectIdFieldAsync(
@@ -1331,6 +1546,43 @@ public sealed class HonuaFeatureServerClient :
                 : null,
         };
     }
+
+    private static FeatureAttachmentInfo ToFeatureAttachmentInfo(
+        FeatureServerAttachmentInfo info,
+        FeatureSource source,
+        long fallbackParentObjectId)
+    {
+        return new FeatureAttachmentInfo
+        {
+            Source = source,
+            ParentObjectId = info.ParentObjectId ?? fallbackParentObjectId,
+            AttachmentId = info.Id,
+            GlobalId = info.GlobalId,
+            Name = info.Name,
+            ContentType = info.ContentType,
+            Size = info.Size,
+            Keywords = info.Keywords,
+            Url = info.Url,
+        };
+    }
+
+    private static FeatureAttachmentResult? ToFeatureAttachmentResult(FeatureServerAttachmentEditResult? result)
+    {
+        return result is null
+            ? null
+            : new FeatureAttachmentResult
+            {
+                AttachmentId = result.ObjectId,
+                GlobalId = result.GlobalId,
+                Succeeded = result.Success,
+                Error = result.Error is not null ? ToFeatureEditError(result.Error) : null,
+            };
+    }
+
+    private static string? TrimHeaderFileName(string? fileName)
+        => string.IsNullOrWhiteSpace(fileName)
+            ? null
+            : fileName.Trim('"');
 
     private FeatureEditResponse ToFeatureEditResponse(FeatureServerEditResponse response)
     {

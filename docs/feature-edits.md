@@ -53,6 +53,52 @@ return `SupportsAdds`, `SupportsUpdates`, and `SupportsDeletes` as `false`,
 populate `UnsupportedReason`, and throw `NotSupportedException` from
 `ApplyEditsAsync`.
 
+## Shared Attachment Abstraction
+
+Use `IHonuaFeatureAttachmentClient` when application code needs provider-neutral
+feature attachment operations. The shared contract supports listing attachment
+metadata, downloading attachment streams, adding attachment content, updating
+attachment content or metadata, and deleting attachments.
+
+```csharp
+using Honua.Sdk.Abstractions.Features;
+
+IHonuaFeatureAttachmentClient attachments = attachmentClients
+    .Single(c => c.ProviderName == "geoservices-featureserver");
+
+var listed = await attachments.ListAttachmentsAsync(new FeatureAttachmentListRequest
+{
+    Source = new FeatureSource { ServiceId = "parks", LayerId = 0 },
+    ObjectId = 42,
+}, ct);
+
+await using var file = File.OpenRead("photo.jpg");
+var addResult = await attachments.AddAttachmentAsync(new FeatureAttachmentAddRequest
+{
+    Source = new FeatureSource { ServiceId = "parks", LayerId = 0 },
+    ObjectId = 42,
+    Name = "photo.jpg",
+    ContentType = "image/jpeg",
+    Content = file,
+    Keywords = "field",
+}, ct);
+```
+
+Dispose downloaded `FeatureAttachmentContent.Content` streams when finished.
+
+| Provider | Shared attachment support | Native attachment support |
+|----------|---------------------------|---------------------------|
+| gRPC | Registered as unsupported via `IHonuaFeatureAttachmentClient` | Attachment RPCs are not exposed yet |
+| GeoServices FeatureServer | Yes, via `IHonuaFeatureAttachmentClient` | Yes, via FeatureServer attachment endpoints |
+| WFS | Registered as unsupported via `IHonuaFeatureAttachmentClient` | WFS does not expose attachment operations |
+| OGC API Features | Registered as unsupported via `IHonuaFeatureAttachmentClient` | Not defined by this SDK surface |
+| Admin | Not applicable | Admin has control-plane mutations, not data-plane feature attachments |
+
+Select from `IEnumerable<IHonuaFeatureAttachmentClient>` and inspect
+`AttachmentCapabilities` before attempting attachment operations. Unsupported
+providers return all operation flags as `false`, populate `UnsupportedReason`,
+and throw `NotSupportedException` from attachment methods.
+
 ## gRPC Notes
 
 The gRPC shared adapter maps:
