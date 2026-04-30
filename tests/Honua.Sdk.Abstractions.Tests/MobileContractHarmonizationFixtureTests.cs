@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Field.Forms;
 using Honua.Sdk.Offline.Abstractions;
 
 namespace Honua.Sdk.Abstractions.Tests;
@@ -13,6 +14,7 @@ public sealed class MobileContractHarmonizationFixtureTests
     private static readonly Assembly[] SdkContractAssemblies =
     [
         typeof(SourceDescriptor).Assembly,
+        typeof(FormDefinition).Assembly,
         typeof(OfflinePackageManifest).Assembly
     ];
 
@@ -40,6 +42,7 @@ public sealed class MobileContractHarmonizationFixtureTests
         "Honua.Sdk.Grpc",
         "Honua.Sdk.GeoServices",
         "Honua.Sdk.Scenes",
+        "Honua.Sdk.Field",
         "Honua.Sdk.OgcFeatures"
     ];
 
@@ -96,7 +99,7 @@ public sealed class MobileContractHarmonizationFixtureTests
             .ToArray();
 
         Assert.Equal(ExpectedSdkPackageIds, packages.Select(package => package.PackageId));
-        Assert.All(packages, package => Assert.Equal("0.1.6-alpha.1", package.Version));
+        Assert.All(packages, package => Assert.Equal("0.1.7-alpha.1", package.Version));
     }
 
     private static bool IsSdkOwnedFamily(JsonElement family)
@@ -107,7 +110,9 @@ public sealed class MobileContractHarmonizationFixtureTests
         return owner == "honua-sdk-dotnet" ||
             package == "Honua.Sdk.Abstractions" ||
             package == "Honua.Sdk.Offline.Abstractions" ||
+            package == "Honua.Sdk.Field" ||
             package.Contains("Honua.Sdk.Abstractions", StringComparison.Ordinal) ||
+            package.Contains("Honua.Sdk.Field", StringComparison.Ordinal) ||
             package.StartsWith("Honua.Sdk.Abstractions ", StringComparison.Ordinal);
     }
 

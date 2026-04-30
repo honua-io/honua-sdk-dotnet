@@ -1,7 +1,10 @@
 @using Honua.Sdk.Offline.Abstractions
+@using Honua.Sdk.Field.Forms
 @inject OfflinePackageManifest Manifest
+@inject FormDefinition FieldForm
 
 <main>
     <h1>Honua SDK browser smoke</h1>
     <p>@Manifest.PackageId</p>
+    <p>@FieldForm.FormId</p>
 </main>

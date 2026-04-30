@@ -15,6 +15,7 @@ The publish workflow builds and packs:
 - `Honua.Sdk.Wfs`
 - `Honua.Sdk.GeoServices`
 - `Honua.Sdk.Scenes`
+- `Honua.Sdk.Field`
 - `Honua.Sdk.OgcFeatures`
 - `Honua.Sdk.Offline.Abstractions`
 - `Honua.Sdk.Offline`
@@ -65,6 +66,7 @@ for project in \
   src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj \
   src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj \
   src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj \
+  src/Honua.Sdk.Field/Honua.Sdk.Field.csproj \
   src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj \
   src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj \
   src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj

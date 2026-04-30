@@ -17,6 +17,7 @@ endpoints.
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
 | **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
+| **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
 | **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
@@ -38,6 +39,7 @@ dotnet add package Honua.Sdk.Offline --prerelease
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
 dotnet add package Honua.Sdk.Spec --prerelease
+dotnet add package Honua.Sdk.Field --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.Scenes --prerelease
@@ -224,6 +226,27 @@ var result = await offlineSyncEngine.SyncAsync(manifest, cancellationToken);
 See [docs/offline-sync-core.md](docs/offline-sync-core.md) for package
 boundaries, adapter expectations, and mobile integration guidance.
 
+## Field form contracts
+
+Portable field collection code can use `Honua.Sdk.Field` for form definitions,
+field validation, calculated fields, duplicate detection, and record workflow
+rules. UI rendering, camera/media capture, local file paths, device permissions,
+and MAUI/mobile screens stay in host apps.
+
+```csharp
+using Honua.Sdk.Field.Forms;
+using Honua.Sdk.Field.Records;
+
+var form = FieldFormSchemaMapper.CreateForm(sourceDescriptor);
+
+var result = FormValidator.Validate(form, new FieldRecord
+{
+    RecordId = "record-1",
+    FormId = form.FormId,
+    Values = { ["asset_id"] = "A-100" },
+});
+```
+
 ## Retry
 
 The gRPC, WFS, GeoServices, and OGC API Features clients retry automatically on
@@ -367,6 +390,7 @@ src/
   Honua.Sdk.Grpc/          gRPC client package (query, stream, edit)
   Honua.Sdk.Admin/          Admin + Geocoding client package
   Honua.Sdk.Spec/           Spec workspace validate/plan/apply client package
+  Honua.Sdk.Field/          Field form, validation, and workflow contracts
   Honua.Sdk.Wfs/           WFS 2.0 read/query client package
   Honua.Sdk.GeoServices/   GeoServices FeatureServer read/query client package
   Honua.Sdk.Scenes/        Scene metadata and package contract client
@@ -376,6 +400,7 @@ tests/
   Honua.Sdk.Grpc.Tests/     gRPC client tests
   Honua.Sdk.Admin.Tests/    Admin + Geocoding tests
   Honua.Sdk.Spec.Tests/     Spec workspace contract/client tests
+  Honua.Sdk.Field.Tests/
   Honua.Sdk.Wfs.Tests/      WFS client tests
   Honua.Sdk.GeoServices.Tests/
   Honua.Sdk.Scenes.Tests/

@@ -63,6 +63,7 @@ jobs:
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
+            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
@@ -117,6 +118,7 @@ jobs:
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
+            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
@@ -137,6 +139,7 @@ jobs:
             "tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj"
             "tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj"
             "tests/Honua.Sdk.Scenes.Tests/Honua.Sdk.Scenes.Tests.csproj"
+            "tests/Honua.Sdk.Field.Tests/Honua.Sdk.Field.Tests.csproj"
             "tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj"
             "tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj"
           )
@@ -180,6 +183,7 @@ jobs:
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
+            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
@@ -214,6 +218,7 @@ jobs:
             "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
+            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
@@ -271,6 +276,7 @@ jobs:
           dotnet add package Honua.Sdk.Wfs --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.GeoServices --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Scenes --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Field --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline.Abstractions --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline --version "${PACKAGE_VERSION}"
@@ -290,6 +296,8 @@ jobs:
           using Honua.Sdk.Abstractions.Scenes;
           using Honua.Sdk.Scenes;
           using Honua.Sdk.Scenes.Extensions;
+          using Honua.Sdk.Field.Forms;
+          using Honua.Sdk.Field.Records;
           using Honua.Sdk.Grpc;
           using Honua.Sdk.Grpc.Extensions;
           using Honua.Sdk.Grpc.Models;
@@ -369,6 +377,31 @@ jobs:
           {
               Capabilities = [HonuaSceneCapabilities.ThreeDimensionalTiles]
           };
+
+          var form = new FormDefinition
+          {
+              FormId = "inspection",
+              Name = "Inspection",
+              Sections =
+              [
+                  new FormSection
+                  {
+                      SectionId = "main",
+                      Label = "Main",
+                      Fields =
+                      [
+                          new FormField { FieldId = "asset_id", Label = "Asset ID", Type = FormFieldType.Text, Required = true }
+                      ]
+                  }
+              ]
+          };
+
+          _ = FormValidator.Validate(form, new FieldRecord
+          {
+              RecordId = "record-1",
+              FormId = form.FormId,
+              Values = { ["asset_id"] = "A-100" }
+          });
 
           _ = new OgcItemsParams
           {

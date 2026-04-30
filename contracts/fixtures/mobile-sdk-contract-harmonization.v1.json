@@ -6,7 +6,7 @@
   "compatibility": {
     "mobileBaseline": {
       "repository": "honua-io/honua-mobile",
-      "ref": "main after honua-mobile#68",
+      "ref": "main after honua-mobile#69",
       "packageVersion": "unreleased-source"
     },
     "sdkBaseline": {
@@ -15,31 +15,35 @@
       "packages": [
         {
           "packageId": "Honua.Sdk.Abstractions",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Offline.Abstractions",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Offline",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Grpc",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.GeoServices",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Scenes",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
+        },
+        {
+          "packageId": "Honua.Sdk.Field",
+          "version": "0.1.7-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.OgcFeatures",
-          "version": "0.1.6-alpha.1"
+          "version": "0.1.7-alpha.1"
         }
       ]
     }
@@ -176,23 +180,56 @@
     {
       "id": "form-feature-schema",
       "displayName": "Form-related feature schemas and field workflows",
-      "owner": "shared-split",
-      "authoritativePackage": "Honua.Sdk.Abstractions for source schema; pending Honua.Sdk.Field for workflow contracts",
+      "owner": "honua-sdk-dotnet",
+      "authoritativePackage": "Honua.Sdk.Abstractions; Honua.Sdk.Field",
       "authoritativeTypes": [
         "Honua.Sdk.Abstractions.Features.SourceDescriptor",
         "Honua.Sdk.Abstractions.Features.SourceSchema",
-        "Honua.Sdk.Abstractions.Features.SourceField"
+        "Honua.Sdk.Abstractions.Features.SourceField",
+        "Honua.Sdk.Field.Forms.FormDefinition",
+        "Honua.Sdk.Field.Forms.FormTarget",
+        "Honua.Sdk.Field.Forms.FormSection",
+        "Honua.Sdk.Field.Forms.FormField",
+        "Honua.Sdk.Field.Forms.FormFieldType",
+        "Honua.Sdk.Field.Forms.FieldChoice",
+        "Honua.Sdk.Field.Forms.FieldValidationRule",
+        "Honua.Sdk.Field.Forms.FieldVisibilityRule",
+        "Honua.Sdk.Field.Forms.ComparisonOperator",
+        "Honua.Sdk.Field.Forms.FormValidator",
+        "Honua.Sdk.Field.Forms.FormValidationResult",
+        "Honua.Sdk.Field.Forms.FormValidationError",
+        "Honua.Sdk.Field.Forms.CalculatedFieldEvaluator",
+        "Honua.Sdk.Field.Forms.FieldFormSchemaMapper",
+        "Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions",
+        "Honua.Sdk.Field.Records.FieldRecord",
+        "Honua.Sdk.Field.Records.FieldMediaAttachment",
+        "Honua.Sdk.Field.Records.FieldGeoPoint",
+        "Honua.Sdk.Field.Records.FieldMediaType",
+        "Honua.Sdk.Field.Records.RecordStatus",
+        "Honua.Sdk.Field.Records.RecordWorkflow",
+        "Honua.Sdk.Field.Records.IFieldRecordDistanceCalculator",
+        "Honua.Sdk.Field.Records.SphericalFieldDistanceCalculator",
+        "Honua.Sdk.Field.Records.DuplicateDetector",
+        "Honua.Sdk.Field.Records.DuplicateDetectionOptions",
+        "Honua.Sdk.Field.Records.PotentialDuplicate"
       ],
       "mobileTypes": [
         "Honua.Mobile.Field.Forms.FormDefinition",
         "Honua.Mobile.Field.Forms.FormField",
         "Honua.Mobile.Field.Forms.FormValidation",
+        "Honua.Mobile.Field.Forms.CalculatedFieldEvaluator",
         "Honua.Mobile.Field.Records.FieldRecord",
+        "Honua.Mobile.Field.Records.DuplicateDetector",
         "Honua.Mobile.Field.Records.RecordWorkflow"
       ],
-      "mobileDisposition": "mobile-workflow-owned",
-      "migrationIssue": "honua-sdk-dotnet#71",
-      "notes": "SDK source schema owns provider-neutral field metadata. Mobile owns device form rendering, calculated fields, duplicate detection, and capture workflow until field contracts graduate."
+      "mobileDisposition": "mobile-runtime-adapter",
+      "migrationIssue": "honua-mobile#56",
+      "serverDependencyIssues": [
+        "honua-server#347",
+        "honua-server#371",
+        "honua-server#854"
+      ],
+      "notes": "SDK owns provider-neutral field form contracts, validation, calculated fields, duplicate detection, and record workflow rules. Mobile owns rendering, validation UX, device capture, local media paths, and runtime adapters."
     },
     {
       "id": "scene-metadata",
