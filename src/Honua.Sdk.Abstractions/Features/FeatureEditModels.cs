@@ -25,6 +25,21 @@ public sealed record FeatureEditCapabilities
     /// <summary>Whether the provider supports rollback-on-failure edit batches.</summary>
     public bool SupportsRollbackOnFailure { get; init; }
 
+    /// <summary>Whether structured editing-rule metadata can be discovered.</summary>
+    public bool SupportsEditingRuleMetadata { get; init; }
+
+    /// <summary>Whether edit validation can run without committing edits.</summary>
+    public bool SupportsValidateOnly { get; init; }
+
+    /// <summary>Whether contingent value metadata is advertised.</summary>
+    public bool SupportsContingentValues { get; init; }
+
+    /// <summary>Whether attribute rule metadata is advertised.</summary>
+    public bool SupportsAttributeRules { get; init; }
+
+    /// <summary>Whether branch or version-aware edit sessions are supported.</summary>
+    public bool SupportsVersionedEditSessions { get; init; }
+
     /// <summary>Native protocol surface used by the provider, when useful for diagnostics.</summary>
     public string? NativeSurface { get; init; }
 
@@ -60,6 +75,12 @@ public sealed record FeatureEditRequest
 
     /// <summary>Whether the provider should force writes that would otherwise be rejected by conflict detection.</summary>
     public bool ForceWrite { get; init; }
+
+    /// <summary>Edit session context for version-aware providers.</summary>
+    public FeatureEditSession? Session { get; init; }
+
+    /// <summary>Whether the provider should validate the edit batch without committing it.</summary>
+    public bool ValidateOnly { get; init; }
 }
 
 /// <summary>
@@ -119,9 +140,13 @@ public sealed record FeatureEditResponse
     /// <summary>Top-level error when the provider rejects the whole edit batch.</summary>
     public FeatureEditError? Error { get; init; }
 
+    /// <summary>Validation findings returned with the edit response.</summary>
+    public IReadOnlyList<FeatureEditValidationResult> ValidationResults { get; init; } = [];
+
     /// <summary>Whether the whole edit batch and all reported item results succeeded.</summary>
     public bool Succeeded =>
         Error is null &&
+        ValidationResults.All(result => !result.BlocksApply) &&
         AddResults.All(result => result.Succeeded) &&
         UpdateResults.All(result => result.Succeeded) &&
         PatchResults.All(result => result.Succeeded) &&

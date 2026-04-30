@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Plugins;
 using Honua.Sdk.Abstractions.UtilityNetworks;
@@ -32,6 +33,7 @@ RegisterBrowserFeatureMapSample(builder.Services);
 RegisterFieldContracts(builder.Services);
 RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
+RegisterAdvancedEditingContracts(builder.Services);
 RegisterPluginContracts(builder.Services);
 RegisterRealtimeContracts(builder.Services);
 RegisterUtilityNetworkContracts(builder.Services);
@@ -213,6 +215,67 @@ static void RegisterOfflineContracts(IServiceCollection services)
     services.AddSingleton(new OfflineSyncEngineOptions());
 }
 
+static void RegisterAdvancedEditingContracts(IServiceCollection services)
+{
+    var domain = new FeatureFieldDomain
+    {
+        DomainId = "status-domain",
+        Name = "Status",
+        FieldName = "status",
+        Type = FeatureFieldDomainType.CodedValue,
+        CodedValues =
+        [
+            new FeatureFieldDomainCode
+            {
+                Value = JsonValue("\"open\""),
+                Label = "Open",
+            },
+        ],
+    };
+    var metadata = new FeatureEditingRulesMetadata
+    {
+        Source = new FeatureSource { ServiceId = "parks", LayerId = 0 },
+        FieldDomains = [domain],
+        AttributeRules =
+        [
+            new FeatureAttributeRule
+            {
+                RuleId = "status-required",
+                Name = "Status is required",
+                Type = FeatureAttributeRuleType.Constraint,
+                FieldName = "status",
+                Triggers = [FeatureAttributeRuleTrigger.Insert, FeatureAttributeRuleTrigger.Update],
+                ErrorMessage = "Status is required.",
+            },
+        ],
+        Versioning = new FeatureEditVersioningCapabilities
+        {
+            SupportsVersionName = true,
+            SupportsEditSessions = true,
+            DefaultVersionName = "sde.DEFAULT",
+        },
+    };
+    var validation = new FeatureEditValidationResult
+    {
+        FieldName = "status",
+        RuleId = "status-required",
+        RuleName = "Status is required",
+        Severity = FeatureEditValidationSeverity.Warning,
+        Message = "Status should be reviewed.",
+        SuggestedFix = "Choose an active status.",
+    };
+
+    services.AddSingleton(domain);
+    services.AddSingleton(metadata);
+    services.AddSingleton(validation);
+    services.AddSingleton(new FeatureEditSession
+    {
+        SessionId = "browser-session",
+        VersionName = "sde.DEFAULT",
+        StartedAt = DateTimeOffset.UnixEpoch,
+    });
+}
+
 static void RegisterPluginContracts(IServiceCollection services)
 {
     var manifest = new HonuaPluginManifest
@@ -308,4 +371,10 @@ static void RegisterUtilityNetworkContracts(IServiceCollection services)
         SupportsAssociations = true,
         NativeSurface = "browser-host-adapter",
     });
+}
+
+static JsonElement JsonValue(string json)
+{
+    using var document = JsonDocument.Parse(json);
+    return document.RootElement.Clone();
 }

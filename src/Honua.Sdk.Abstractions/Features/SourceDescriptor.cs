@@ -78,6 +78,9 @@ public sealed record SourceSchema
 
     /// <summary>Attachment capabilities advertised by the source.</summary>
     public FeatureAttachmentCapabilities? AttachmentCapabilities { get; init; }
+
+    /// <summary>Structured editing-rule metadata advertised by the source.</summary>
+    public FeatureEditingRulesMetadata? EditingRules { get; init; }
 }
 
 /// <summary>
@@ -108,6 +111,9 @@ public sealed record SourceField
 
     /// <summary>Provider-native field domain metadata, when advertised.</summary>
     public JsonElement? Domain { get; init; }
+
+    /// <summary>Structured field domain metadata, when advertised.</summary>
+    public FeatureFieldDomain? DomainInfo { get; init; }
 
     /// <summary>Provider-native default value, when advertised.</summary>
     public JsonElement? DefaultValue { get; init; }
