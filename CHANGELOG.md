@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.12-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.11-alpha.1...dotnet-sdk-v0.1.12-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add host-neutral geofence evaluation ([#118](https://github.com/honua-io/honua-sdk-dotnet/issues/118)) ([f5e95b8](https://github.com/honua-io/honua-sdk-dotnet/commit/f5e95b8f6eec73dc71b1d6c9f71a1e02ed560fbb))
+
 ## [0.1.11-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.10-alpha.1...dotnet-sdk-v0.1.11-alpha.1) (2026-04-30)
 
 
