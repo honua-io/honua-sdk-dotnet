@@ -1,0 +1,303 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using System.Runtime.CompilerServices;
+
+namespace Honua.Sdk.Abstractions.Features;
+
+/// <summary>
+/// Outcome returned when a feature stream event is written to a bounded buffer.
+/// </summary>
+public enum FeatureStreamBufferWriteDecision
+{
+    /// <summary>The event was accepted into the buffer.</summary>
+    Accepted = 0,
+
+    /// <summary>The event was rejected by sequence tracking as a duplicate.</summary>
+    DuplicateSequence = 1,
+
+    /// <summary>The event was rejected by sequence tracking as stale.</summary>
+    StaleSequence = 2,
+
+    /// <summary>The buffer was full and the configured policy rejects incoming events.</summary>
+    BackpressureRejected = 3,
+
+    /// <summary>The buffer was full and the configured policy dropped the incoming event.</summary>
+    DroppedNewest = 4,
+
+    /// <summary>The buffer has been completed and does not accept new events.</summary>
+    Completed = 5
+}
+
+/// <summary>
+/// Result from writing a feature stream event to a bounded buffer.
+/// </summary>
+public sealed record FeatureStreamBufferWriteResult
+{
+    /// <summary>Write decision.</summary>
+    public required FeatureStreamBufferWriteDecision Decision { get; init; }
+
+    /// <summary>Whether the incoming event was accepted into the buffer.</summary>
+    public bool Accepted => Decision == FeatureStreamBufferWriteDecision.Accepted;
+
+    /// <summary>Whether an older buffered event was dropped to accept the incoming event.</summary>
+    public bool DroppedOldest { get; init; }
+
+    /// <summary>Sequence processing result, when a processor was configured.</summary>
+    public FeatureStreamEventProcessResult? SequenceResult { get; init; }
+}
+
+/// <summary>
+/// Browser-safe bounded buffer for normalized feature stream events.
+/// </summary>
+public sealed class FeatureStreamEventBuffer : IDisposable
+{
+    private readonly FeatureStreamBackpressureOptions _options;
+    private readonly FeatureStreamEventProcessor? _processor;
+    private readonly Queue<FeatureStreamEvent> _queue = new();
+    private readonly SemaphoreSlim _items = new(0);
+    private readonly SemaphoreSlim _space;
+    private readonly object _gate = new();
+    private bool _completed;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FeatureStreamEventBuffer"/> class.
+    /// </summary>
+    /// <param name="options">Bounded buffer options.</param>
+    /// <param name="processor">Optional sequence processor used before events enter the buffer.</param>
+    public FeatureStreamEventBuffer(
+        FeatureStreamBackpressureOptions? options = null,
+        FeatureStreamEventProcessor? processor = null)
+    {
+        _options = NormalizeOptions(options);
+        _processor = processor;
+        _space = new SemaphoreSlim(_options.Capacity, _options.Capacity);
+    }
+
+    /// <summary>
+    /// Attempts to write an event without waiting for buffer capacity.
+    /// </summary>
+    /// <param name="featureEvent">Event to write.</param>
+    /// <returns>Write result.</returns>
+    public FeatureStreamBufferWriteResult TryWrite(FeatureStreamEvent featureEvent)
+    {
+        ArgumentNullException.ThrowIfNull(featureEvent);
+
+        var sequenceResult = ProcessSequence(featureEvent);
+        if (sequenceResult is not null && !sequenceResult.Accepted)
+        {
+            return SequenceRejected(sequenceResult);
+        }
+
+        lock (_gate)
+        {
+            if (_completed)
+            {
+                return new FeatureStreamBufferWriteResult
+                {
+                    Decision = FeatureStreamBufferWriteDecision.Completed,
+                    SequenceResult = sequenceResult
+                };
+            }
+
+            if (_queue.Count >= _options.Capacity)
+            {
+                return _options.Mode switch
+                {
+                    FeatureStreamBackpressureMode.DropOldest => EnqueueDroppingOldest(featureEvent, sequenceResult),
+                    FeatureStreamBackpressureMode.DropNewest => new FeatureStreamBufferWriteResult
+                    {
+                        Decision = FeatureStreamBufferWriteDecision.DroppedNewest,
+                        SequenceResult = sequenceResult
+                    },
+                    _ => new FeatureStreamBufferWriteResult
+                    {
+                        Decision = FeatureStreamBufferWriteDecision.BackpressureRejected,
+                        SequenceResult = sequenceResult
+                    }
+                };
+            }
+
+            if (_options.Mode == FeatureStreamBackpressureMode.Wait && !_space.Wait(0))
+            {
+                return new FeatureStreamBufferWriteResult
+                {
+                    Decision = FeatureStreamBufferWriteDecision.BackpressureRejected,
+                    SequenceResult = sequenceResult
+                };
+            }
+
+            _queue.Enqueue(featureEvent);
+            _items.Release();
+            return new FeatureStreamBufferWriteResult
+            {
+                Decision = FeatureStreamBufferWriteDecision.Accepted,
+                SequenceResult = sequenceResult
+            };
+        }
+    }
+
+    /// <summary>
+    /// Writes an event, waiting for capacity when the mode is <see cref="FeatureStreamBackpressureMode.Wait"/>.
+    /// </summary>
+    /// <param name="featureEvent">Event to write.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Write result.</returns>
+    public async ValueTask<FeatureStreamBufferWriteResult> WriteAsync(
+        FeatureStreamEvent featureEvent,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(featureEvent);
+
+        if (_options.Mode != FeatureStreamBackpressureMode.Wait)
+        {
+            return TryWrite(featureEvent);
+        }
+
+        var sequenceResult = ProcessSequence(featureEvent);
+        if (sequenceResult is not null && !sequenceResult.Accepted)
+        {
+            return SequenceRejected(sequenceResult);
+        }
+
+        await _space.WaitAsync(ct).ConfigureAwait(false);
+        lock (_gate)
+        {
+            if (_completed)
+            {
+                _space.Release();
+                return new FeatureStreamBufferWriteResult
+                {
+                    Decision = FeatureStreamBufferWriteDecision.Completed,
+                    SequenceResult = sequenceResult
+                };
+            }
+
+            _queue.Enqueue(featureEvent);
+            _items.Release();
+            return new FeatureStreamBufferWriteResult
+            {
+                Decision = FeatureStreamBufferWriteDecision.Accepted,
+                SequenceResult = sequenceResult
+            };
+        }
+    }
+
+    /// <summary>
+    /// Reads buffered events until the buffer is completed or cancellation is requested.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Buffered events.</returns>
+    public async IAsyncEnumerable<FeatureStreamEvent> ReadAllAsync(
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        while (true)
+        {
+            await _items.WaitAsync(ct).ConfigureAwait(false);
+
+            FeatureStreamEvent? featureEvent = null;
+            var completeAfterYield = false;
+            var shouldStop = false;
+            lock (_gate)
+            {
+                if (_queue.Count == 0)
+                {
+                    shouldStop = _completed;
+                }
+                else
+                {
+                    featureEvent = _queue.Dequeue();
+                    if (_options.Mode == FeatureStreamBackpressureMode.Wait)
+                    {
+                        _space.Release();
+                    }
+
+                    completeAfterYield = _completed && _queue.Count == 0;
+                }
+            }
+
+            if (shouldStop)
+            {
+                yield break;
+            }
+
+            if (featureEvent is null)
+            {
+                continue;
+            }
+
+            yield return featureEvent;
+            if (completeAfterYield)
+            {
+                yield break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Completes the buffer and wakes pending readers.
+    /// </summary>
+    public void Complete()
+    {
+        lock (_gate)
+        {
+            if (_completed)
+            {
+                return;
+            }
+
+            _completed = true;
+            if (_queue.Count == 0)
+            {
+                _items.Release();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Completes the buffer and releases synchronization resources.
+    /// </summary>
+    public void Dispose()
+    {
+        Complete();
+        _items.Dispose();
+        _space.Dispose();
+    }
+
+    private FeatureStreamBufferWriteResult EnqueueDroppingOldest(
+        FeatureStreamEvent featureEvent,
+        FeatureStreamEventProcessResult? sequenceResult)
+    {
+        _queue.Dequeue();
+        _queue.Enqueue(featureEvent);
+        return new FeatureStreamBufferWriteResult
+        {
+            Decision = FeatureStreamBufferWriteDecision.Accepted,
+            DroppedOldest = true,
+            SequenceResult = sequenceResult
+        };
+    }
+
+    private FeatureStreamEventProcessResult? ProcessSequence(FeatureStreamEvent featureEvent)
+        => _processor?.Process(featureEvent);
+
+    private static FeatureStreamBufferWriteResult SequenceRejected(FeatureStreamEventProcessResult sequenceResult)
+        => new()
+        {
+            Decision = sequenceResult.Decision == FeatureStreamEventDecision.DuplicateSequence
+                ? FeatureStreamBufferWriteDecision.DuplicateSequence
+                : FeatureStreamBufferWriteDecision.StaleSequence,
+            SequenceResult = sequenceResult
+        };
+
+    private static FeatureStreamBackpressureOptions NormalizeOptions(FeatureStreamBackpressureOptions? options)
+    {
+        var normalized = options ?? new FeatureStreamBackpressureOptions();
+        if (normalized.Capacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options), "Feature stream buffer capacity must be greater than zero.");
+        }
+
+        return normalized;
+    }
+}

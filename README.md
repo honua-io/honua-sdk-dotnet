@@ -4,14 +4,14 @@ Official .NET client libraries for [Honua](https://github.com/honua-io/honua-ser
 an open-source geospatial feature server. The SDK provides typed clients for
 querying and editing features over gRPC, querying via OGC WFS 2.0, managing
 services through the Admin REST API, geocoding addresses, and reading features
-through GeoServices FeatureServer, OGC API Features, and scene metadata
-endpoints.
+through GeoServices FeatureServer, OGC API Features, scene metadata endpoints,
+and shared real-time feature stream contracts.
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| **Honua.Sdk.Abstractions** | Shared feature query/edit abstractions implemented by provider-specific clients |
+| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions implemented by provider-specific clients |
 | **Honua.Sdk.Offline.Abstractions** | Browser-safe offline manifests, sync state, checkpoints, conflicts, and storage contracts |
 | **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
@@ -208,6 +208,15 @@ var result = await edits.ApplyEditsAsync(new FeatureEditRequest
 
 See [docs/feature-edits.md](docs/feature-edits.md) for shared result models,
 provider support, and unsupported-provider behavior.
+
+## Shared stream abstraction
+
+Real-time feature feed clients use `IHonuaFeatureStreamClient` from
+`Honua.Sdk.Abstractions`. The contract covers connect, reconnect, heartbeat,
+subscribe, and unsubscribe workflows; normalizes insert/update/delete event
+envelopes; and includes bounded buffering plus duplicate/stale sequence
+rejection helpers. Concrete Honua Server transport wiring depends on
+honua-server#339 and honua-server#692.
 
 ## Offline sync core
 
