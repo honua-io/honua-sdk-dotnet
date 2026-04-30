@@ -494,6 +494,15 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
             throw new NotSupportedException(
                 "WFS shared queries do not support distinct, count-only, IDs-only, or extent-only modes yet.");
         }
+
+        if (request.TimeFilter is not null ||
+            request.OutStatistics is { Count: > 0 } ||
+            request.GroupBy is { Count: > 0 } ||
+            !string.IsNullOrWhiteSpace(request.Having))
+        {
+            throw new NotSupportedException(
+                "WFS shared queries do not support provider-neutral time filters, statistics, group-by, or having clauses yet.");
+        }
     }
 
     private static string? BuildResourceId(FeatureQueryRequest request)

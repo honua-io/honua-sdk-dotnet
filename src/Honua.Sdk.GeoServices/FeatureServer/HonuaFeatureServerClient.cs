@@ -540,6 +540,15 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         if (query.TimeRelation.HasValue)
             parameters.Add(("timeRelation", TimeRelationToString(query.TimeRelation.Value)));
 
+        if (query.OutStatistics is not null)
+            parameters.Add(("outStatistics", query.OutStatistics));
+
+        if (query.GroupByFieldsForStatistics is not null)
+            parameters.Add(("groupByFieldsForStatistics", query.GroupByFieldsForStatistics));
+
+        if (query.Having is not null)
+            parameters.Add(("having", query.Having));
+
         if (query.ReturnDistinctValues is true)
             parameters.Add(("returnDistinctValues", "true"));
 
@@ -668,6 +677,11 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             ReturnGeometry = request.ReturnGeometry,
             ResultOffset = request.Offset,
             ResultRecordCount = request.Limit,
+            Time = BuildFeatureServerTime(request.TimeFilter),
+            TimeRelation = ToFeatureServerTimeRelation(request.TimeFilter),
+            OutStatistics = BuildFeatureServerOutStatistics(request.OutStatistics),
+            GroupByFieldsForStatistics = request.GroupBy is { Count: > 0 } ? string.Join(",", request.GroupBy) : null,
+            Having = request.Having,
             ReturnDistinctValues = request.ReturnDistinct,
             ReturnCountOnly = request.ReturnCountOnly,
             ReturnIdsOnly = request.ReturnIdsOnly,
@@ -897,11 +911,82 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         }
 
         var separatorIndex = Math.Max(trimmed.LastIndexOf(':'), trimmed.LastIndexOf('/'));
-        return separatorIndex >= 0 &&
-            int.TryParse(trimmed[(separatorIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var wkid)
-                ? wkid
-                : null;
+        if (separatorIndex < 0)
+        {
+            return null;
+        }
+
+        return int.TryParse(trimmed[(separatorIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var wkid)
+            ? wkid
+            : null;
     }
+
+    private static string? BuildFeatureServerTime(FeatureTimeFilter? timeFilter)
+    {
+        if (timeFilter is null)
+        {
+            return null;
+        }
+
+        if (timeFilter.End is not { } end)
+        {
+            return timeFilter.Start.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (end < timeFilter.Start)
+        {
+            throw new ArgumentException("Feature query time filter end must be greater than or equal to start.", nameof(timeFilter));
+        }
+
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"{timeFilter.Start.ToUnixTimeMilliseconds()},{end.ToUnixTimeMilliseconds()}");
+    }
+
+    private static TimeRelation? ToFeatureServerTimeRelation(FeatureTimeFilter? timeFilter)
+    {
+        return timeFilter?.Relation switch
+        {
+            FeatureTimeRelation.Overlaps => TimeRelation.Overlaps,
+            FeatureTimeRelation.AfterStartWithinEnd => TimeRelation.AfterStartWithinEnd,
+            FeatureTimeRelation.Within => TimeRelation.Within,
+            _ => null,
+        };
+    }
+
+    private static string? BuildFeatureServerOutStatistics(IReadOnlyList<FeatureQueryStatistic>? statistics)
+    {
+        if (statistics is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var definitions = statistics.Select(statistic => new FeatureServerStatisticDefinition
+        {
+            StatisticType = ToFeatureServerStatisticType(statistic.StatisticType),
+            OnStatisticField = statistic.OnField,
+            OutStatisticFieldName = statistic.OutField,
+        }).ToArray();
+
+        return JsonSerializer.Serialize(
+            definitions,
+            FeatureServerJsonContext.Default.FeatureServerStatisticDefinitionArray);
+    }
+
+    private static string ToFeatureServerStatisticType(FeatureStatisticType statisticType) => statisticType switch
+    {
+        FeatureStatisticType.Count => "count",
+        FeatureStatisticType.Sum => "sum",
+        FeatureStatisticType.Min => "min",
+        FeatureStatisticType.Max => "max",
+        FeatureStatisticType.Average => "avg",
+        FeatureStatisticType.StandardDeviation => "stddev",
+        FeatureStatisticType.Variance => "var",
+        _ => throw new ArgumentOutOfRangeException(
+            nameof(statisticType),
+            statisticType,
+            "Feature statistic type must be specified."),
+    };
 
     private static bool IsCrs84(string crs) =>
         string.Equals(crs, "CRS84", StringComparison.OrdinalIgnoreCase) ||

@@ -39,6 +39,12 @@ var page = await source.QueryAsync(new SourceQuery
 });
 ```
 
+`SourceQuery` also carries the shared high-value query facets: output fields,
+order by, offset/count, distinct, count-only, IDs-only, extent-only, bounding
+boxes, output CRS, time filters, statistics, group-by fields, and having
+clauses. Adapters map only the facets their backing protocol supports. Unsupported
+facets fail with `NotSupportedException` instead of being ignored.
+
 ## Protocol IDs
 
 Use `FeatureProtocolIds` for stable protocol identifiers. The facade accepts

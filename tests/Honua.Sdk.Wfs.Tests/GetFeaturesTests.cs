@@ -202,6 +202,34 @@ public sealed class GetFeaturesTests
     }
 
     [Fact]
+    public async Task GetFeatures_SharedAbstraction_UnsupportedTimeAndStatisticsThrow()
+    {
+        var client = TestHelpers.CreateClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { TypeName = "parcels" },
+                TimeFilter = new FeatureTimeFilter
+                {
+                    Start = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
+                },
+                OutStatistics =
+                [
+                    new FeatureQueryStatistic
+                    {
+                        OnField = "parcel_id",
+                        StatisticType = FeatureStatisticType.Count,
+                        OutField = "COUNT_PARCELS"
+                    }
+                ],
+            }));
+
+        Assert.Contains("time filters", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("statistics", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesWfsClientAndSuppressesUnsupportedEdits()
     {
         string? capturedQuery = null;

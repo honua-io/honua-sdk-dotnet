@@ -238,6 +238,8 @@ public class HonuaOgcFeaturesClientTests
             capturedUrl = req.RequestUri?.ToString();
             return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
         });
+        var start = new DateTimeOffset(2024, 2, 1, 0, 0, 0, TimeSpan.Zero);
+        var end = new DateTimeOffset(2024, 2, 29, 0, 0, 0, TimeSpan.Zero);
 
         var result = await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
         {
@@ -249,6 +251,7 @@ public class HonuaOgcFeaturesClientTests
             Limit = 5,
             Offset = 10,
             OrderBy = "+name",
+            TimeFilter = new FeatureTimeFilter { Start = start, End = end },
             Bbox = new FeatureBoundingBox
             {
                 MinX = -118.5,
@@ -261,9 +264,11 @@ public class HonuaOgcFeaturesClientTests
         });
 
         Assert.NotNull(capturedUrl);
+        var decodedUrl = WebUtility.UrlDecode(capturedUrl);
         Assert.Contains("/ogc/features/collections/buildings/items", capturedUrl);
         Assert.Contains("limit=5", capturedUrl);
         Assert.Contains("offset=10", capturedUrl);
+        Assert.Contains($"datetime={start:O}/{end:O}", decodedUrl);
         Assert.Contains("filter=", capturedUrl);
         Assert.Contains("filter-lang=cql2-text", capturedUrl);
         Assert.Contains("ids=building-7", capturedUrl);
@@ -312,6 +317,29 @@ public class HonuaOgcFeaturesClientTests
             }));
 
         Assert.Contains("count-only", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GetItemsAsync_SharedAbstraction_UnsupportedStatisticsThrows()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { CollectionId = "buildings" },
+                OutStatistics =
+                [
+                    new FeatureQueryStatistic
+                    {
+                        OnField = "height",
+                        StatisticType = FeatureStatisticType.Max,
+                        OutField = "MAX_HEIGHT"
+                    }
+                ],
+            }));
+
+        Assert.Contains("statistics", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

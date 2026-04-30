@@ -197,6 +197,8 @@ public class HonuaFeatureServerClientTests
             capturedUrl = req.RequestUri?.ToString();
             return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
         });
+        var start = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var end = new DateTimeOffset(2024, 1, 31, 0, 0, 0, TimeSpan.Zero);
 
         var result = await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
         {
@@ -212,11 +214,29 @@ public class HonuaFeatureServerClientTests
             ReturnCountOnly = true,
             ReturnIdsOnly = true,
             ReturnExtentOnly = true,
+            TimeFilter = new FeatureTimeFilter
+            {
+                Start = start,
+                End = end,
+                Relation = FeatureTimeRelation.Within
+            },
+            OutStatistics =
+            [
+                new FeatureQueryStatistic
+                {
+                    OnField = "POP",
+                    StatisticType = FeatureStatisticType.Sum,
+                    OutField = "SUM_POP"
+                }
+            ],
+            GroupBy = ["STATE"],
+            Having = "SUM_POP > 10",
             Bbox = new FeatureBoundingBox { MinX = -118, MinY = 33, MaxX = -117, MaxY = 34, Crs = "EPSG:4326" },
             OutputCrs = "EPSG:3857",
         });
 
         Assert.NotNull(capturedUrl);
+        var decodedUrl = WebUtility.UrlDecode(capturedUrl);
         Assert.Contains("where=POP", capturedUrl);
         Assert.Contains("outFields=NAME%2CPOP", capturedUrl);
         Assert.Contains("returnGeometry=false", capturedUrl);
@@ -227,6 +247,13 @@ public class HonuaFeatureServerClientTests
         Assert.Contains("returnCountOnly=true", capturedUrl);
         Assert.Contains("returnIdsOnly=true", capturedUrl);
         Assert.Contains("returnExtentOnly=true", capturedUrl);
+        Assert.Contains($"time={start.ToUnixTimeMilliseconds()},{end.ToUnixTimeMilliseconds()}", decodedUrl);
+        Assert.Contains("timeRelation=esriTimeRelationWithin", capturedUrl);
+        Assert.Contains("\"statisticType\":\"sum\"", decodedUrl);
+        Assert.Contains("\"onStatisticField\":\"POP\"", decodedUrl);
+        Assert.Contains("\"outStatisticFieldName\":\"SUM_POP\"", decodedUrl);
+        Assert.Contains("groupByFieldsForStatistics=STATE", capturedUrl);
+        Assert.Contains("having=SUM_POP > 10", decodedUrl);
         Assert.Contains("geometryType=esriGeometryEnvelope", capturedUrl);
         Assert.Contains("inSR=4326", capturedUrl);
         Assert.Contains("outSR=3857", capturedUrl);

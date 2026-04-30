@@ -357,6 +357,7 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureSupportedFilterLanguage(request.FilterLanguage);
+        EnsureSupportedSharedQueryFacets(request);
 
         if (string.IsNullOrWhiteSpace(request.Source.ServiceId))
         {
@@ -384,6 +385,8 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             ReturnCountOnly = request.ReturnCountOnly ?? false,
             ReturnIdsOnly = request.ReturnIdsOnly ?? false,
             ReturnExtentOnly = request.ReturnExtentOnly ?? false,
+            OutStatistics = BuildGrpcStatistics(request.OutStatistics),
+            GroupBy = request.GroupBy,
             SpatialFilter = BuildSpatialFilter(request.Bbox),
         };
     }
@@ -487,6 +490,50 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
             throw new NotSupportedException("gRPC feature queries support provider-default or SQL WHERE filters.");
         }
     }
+
+    private static void EnsureSupportedSharedQueryFacets(FeatureQueryRequest request)
+    {
+        if (request.TimeFilter is not null)
+        {
+            throw new NotSupportedException("gRPC shared queries do not support provider-neutral time filters until the geospatial proto adds a time query contract.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Having))
+        {
+            throw new NotSupportedException("gRPC shared statistics queries do not support provider-neutral having clauses yet.");
+        }
+    }
+
+    private static List<Models.StatisticDefinition>? BuildGrpcStatistics(
+        IReadOnlyList<FeatureQueryStatistic>? statistics)
+    {
+        if (statistics is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        return statistics.Select(statistic => new Models.StatisticDefinition
+        {
+            OnStatisticField = statistic.OnField,
+            StatisticType = ToGrpcStatisticType(statistic.StatisticType),
+            OutStatisticFieldName = statistic.OutField,
+        }).ToList();
+    }
+
+    private static Models.StatisticType ToGrpcStatisticType(FeatureStatisticType statisticType) => statisticType switch
+    {
+        FeatureStatisticType.Count => Models.StatisticType.Count,
+        FeatureStatisticType.Sum => Models.StatisticType.Sum,
+        FeatureStatisticType.Min => Models.StatisticType.Min,
+        FeatureStatisticType.Max => Models.StatisticType.Max,
+        FeatureStatisticType.Average => Models.StatisticType.Avg,
+        FeatureStatisticType.StandardDeviation => Models.StatisticType.Stddev,
+        FeatureStatisticType.Variance => Models.StatisticType.Var,
+        _ => throw new ArgumentOutOfRangeException(
+            nameof(statisticType),
+            statisticType,
+            "Feature statistic type must be specified."),
+    };
 
     private static IReadOnlyList<long>? ResolveObjectIds(FeatureQueryRequest request)
     {

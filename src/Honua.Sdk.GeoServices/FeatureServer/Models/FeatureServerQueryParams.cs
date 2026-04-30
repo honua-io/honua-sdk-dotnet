@@ -48,6 +48,15 @@ public sealed record FeatureServerQueryParams
     /// <summary>Temporal relationship for the time filter.</summary>
     public TimeRelation? TimeRelation { get; init; }
 
+    /// <summary>Statistics definitions as JSON array.</summary>
+    public string? OutStatistics { get; init; }
+
+    /// <summary>Comma-separated list of fields to group statistics by.</summary>
+    public string? GroupByFieldsForStatistics { get; init; }
+
+    /// <summary>SQL HAVING clause for filtering grouped statistics.</summary>
+    public string? Having { get; init; }
+
     /// <summary>Whether to return only distinct values.</summary>
     public bool? ReturnDistinctValues { get; init; }
 
@@ -59,6 +68,15 @@ public sealed record FeatureServerQueryParams
 
     /// <summary>Whether to return only the extent of matching features.</summary>
     public bool? ReturnExtentOnly { get; init; }
+}
+
+internal sealed record FeatureServerStatisticDefinition
+{
+    public required string StatisticType { get; init; }
+
+    public required string OnStatisticField { get; init; }
+
+    public required string OutStatisticFieldName { get; init; }
 }
 
 /// <summary>
