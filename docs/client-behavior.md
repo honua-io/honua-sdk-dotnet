@@ -104,6 +104,15 @@ capabilities are available through `IHonuaFeatureEditClient`; gRPC,
 GeoServices FeatureServer, and OGC API Features currently advertise write
 support, while WFS reports unsupported edit capabilities with a reason.
 
+Shared real-time feed contracts are available through
+`IHonuaFeatureStreamClient` in `Honua.Sdk.Abstractions`. The SDK normalizes
+connect, reconnect, heartbeat, subscribe, unsubscribe, insert, update, and
+delete envelopes with source IDs, feature IDs, timestamps, geometry, attributes,
+sequence numbers, and sequence tokens. `FeatureStreamEventProcessor` rejects
+duplicate and stale sequence events, and `FeatureStreamEventBuffer` provides
+bounded backpressure behavior. Concrete server transport wiring remains tied to
+`honua-server#339` and `honua-server#692`.
+
 `Honua.Sdk.Abstractions` also exposes the source-oriented facade used for
 cross-provider application code: `SourceDescriptor`, `SourceLocator`,
 `SourceQuery`, `IHonuaSource`, and `HonuaSource`. It wraps the existing
