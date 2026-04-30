@@ -38,8 +38,21 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaSceneAuthHandler>();
         services.AddTransient<IHonuaSceneClient>(sp => sp.GetRequiredService<HonuaSceneClient>());
+        ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;
+    }
+
+    private static void ConfigurePrimaryHandler(
+        IHttpClientBuilder httpBuilder,
+        Action<HonuaSceneClientOptions> configure)
+    {
+        var opts = new HonuaSceneClientOptions();
+        configure(opts);
+        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        {
+            httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
+        }
     }
 
     private static void ConfigureResilience(

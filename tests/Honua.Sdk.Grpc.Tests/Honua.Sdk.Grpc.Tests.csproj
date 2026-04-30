@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Honua.Sdk.Abstractions\Honua.Sdk.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Grpc\Honua.Sdk.Grpc.csproj" />
   </ItemGroup>
 

@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Configuration;
+using Honua.Sdk.Abstractions.Authentication;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Grpc.Conversion;
 using Microsoft.Extensions.Options;
@@ -70,6 +71,10 @@ public sealed class HonuaGrpcClient :
                 HasCredentials(opts) && HonuaGrpcClientOptions.IsLocalDevelopmentHttp(address),
             ServiceConfig = BuildServiceConfig(opts)
         };
+        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        {
+            channelOptions.HttpHandler = primaryHandlerFactory();
+        }
 
         _ownedChannel = GrpcChannel.ForAddress(address, channelOptions);
         _client = new Proto.FeatureService.FeatureServiceClient(_ownedChannel);
@@ -171,7 +176,7 @@ public sealed class HonuaGrpcClient :
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
         try
         {
-            var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
+            var metadata = await BuildMetadataAsync("QueryFeatures", ct).ConfigureAwait(false);
             var protoResponse = await _client.QueryFeaturesAsync(
                 protoRequest,
                 metadata,
@@ -214,7 +219,7 @@ public sealed class HonuaGrpcClient :
         var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
         try
         {
-            var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
+            var metadata = await BuildMetadataAsync("ApplyEdits", ct).ConfigureAwait(false);
             var protoResponse = await _client.ApplyEditsAsync(
                 protoRequest,
                 metadata,
@@ -273,7 +278,7 @@ public sealed class HonuaGrpcClient :
         ArgumentNullException.ThrowIfNull(request);
 
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
-        var metadata = await BuildMetadataAsync(ct).ConfigureAwait(false);
+        var metadata = await BuildMetadataAsync("QueryFeaturesStream", ct).ConfigureAwait(false);
         var call = _client.QueryFeaturesStream(
             protoRequest,
             metadata,
@@ -351,7 +356,7 @@ public sealed class HonuaGrpcClient :
         return serviceConfig;
     }
 
-    private async Task<Metadata> BuildMetadataAsync(CancellationToken cancellationToken)
+    private async Task<Metadata> BuildMetadataAsync(string methodName, CancellationToken cancellationToken)
     {
         if (_metadataOverride is not null)
         {
@@ -359,16 +364,21 @@ public sealed class HonuaGrpcClient :
         }
 
         var metadata = new Metadata();
-        var apiKey = await ResolveApiKeyAsync(cancellationToken).ConfigureAwait(false);
+        var context = HonuaAuthenticationSupport.CreateGrpcRequest(_options, "grpc", methodName);
+        var apiKey = await HonuaAuthenticationSupport.ResolveApiKeyAsync(_options, cancellationToken).ConfigureAwait(false);
         if (!string.IsNullOrEmpty(apiKey))
         {
             metadata.Add("x-api-key", apiKey);
         }
 
-        var bearerToken = await ResolveBearerTokenAsync(cancellationToken).ConfigureAwait(false);
-        if (!string.IsNullOrEmpty(bearerToken))
+        var accessToken = await HonuaAuthenticationSupport.ResolveAccessTokenAsync(
+            _options,
+            context,
+            cancellationToken).ConfigureAwait(false);
+        if (accessToken is not null && !string.IsNullOrWhiteSpace(accessToken.Token))
         {
-            metadata.Add("authorization", $"Bearer {bearerToken}");
+            var tokenType = string.IsNullOrWhiteSpace(accessToken.TokenType) ? "Bearer" : accessToken.TokenType;
+            metadata.Add("authorization", $"{tokenType} {accessToken.Token}");
         }
 
         if (_options.EnableCompressionNegotiation && !string.IsNullOrWhiteSpace(_options.AcceptedCompressionEncodings))
@@ -376,21 +386,19 @@ public sealed class HonuaGrpcClient :
             metadata.Add("grpc-accept-encoding", _options.AcceptedCompressionEncodings);
         }
 
+        await HonuaAuthenticationSupport.EmitCredentialAppliedDiagnosticAsync(
+            _options,
+            context,
+            hasApiKey: !string.IsNullOrWhiteSpace(apiKey),
+            authorizationScheme: accessToken?.TokenType,
+            hasAuthorization: accessToken is not null && !string.IsNullOrWhiteSpace(accessToken.Token),
+            cancellationToken).ConfigureAwait(false);
+
         return metadata;
     }
 
     private DateTime CreateDeadline()
         => DateTime.UtcNow.Add(_options.Timeout);
-
-    private Task<string?> ResolveApiKeyAsync(CancellationToken cancellationToken)
-        => _options.ApiKeyProvider is { } provider
-            ? provider(cancellationToken)
-            : Task.FromResult(_options.ApiKey);
-
-    private Task<string?> ResolveBearerTokenAsync(CancellationToken cancellationToken)
-        => _options.BearerTokenProvider is { } provider
-            ? provider(cancellationToken)
-            : Task.FromResult(_options.BearerToken);
 
     private static void ValidateAuthenticationTransport(HonuaGrpcClientOptions opts, Uri address)
     {
@@ -408,10 +416,7 @@ public sealed class HonuaGrpcClient :
     }
 
     private static bool HasCredentials(HonuaGrpcClientOptions opts)
-        => !string.IsNullOrWhiteSpace(opts.ApiKey) ||
-           !string.IsNullOrWhiteSpace(opts.BearerToken) ||
-           opts.ApiKeyProvider is not null ||
-           opts.BearerTokenProvider is not null;
+        => HonuaAuthenticationSupport.HasCredentialSource(opts);
 
     private static Uri ResolveChannelAddress(GrpcChannel channel)
     {

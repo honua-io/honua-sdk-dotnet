@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
+        ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;
     }
@@ -74,8 +75,21 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
+        ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;
+    }
+
+    private static void ConfigurePrimaryHandler(
+        IHttpClientBuilder httpBuilder,
+        Action<HonuaGeoServicesClientOptions> configure)
+    {
+        var opts = new HonuaGeoServicesClientOptions();
+        configure(opts);
+        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        {
+            httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
+        }
     }
 
     private static void ConfigureResilience(

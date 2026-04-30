@@ -4,6 +4,7 @@
 using System.Text.Json;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Honua.Sdk.Abstractions.Authentication;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Grpc.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -749,6 +750,57 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task Metadata_UsesAccessTokenProviderContextAndDiagnostics()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        Metadata? capturedMetadata = null;
+        HonuaAuthenticationRequest? providerRequest = null;
+        HonuaAuthenticationDiagnostic? diagnostic = null;
+
+        var protoResponse = new Proto.QueryFeaturesResponse();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>(
+                (_, metadata, _, _) => capturedMetadata = metadata)
+            .Returns(CreateAsyncUnaryCall(protoResponse));
+
+        var client = new HonuaGrpcClient(mockClient.Object, new HonuaGrpcClientOptions
+        {
+            EnableCompressionNegotiation = false,
+            AccessTokenProvider = new DelegateAccessTokenProvider(request =>
+            {
+                providerRequest = request;
+                return new HonuaAccessToken { Token = "grpc-access" };
+            }),
+            AuthenticationScopes = ["features.read"],
+            AuthenticationAudience = "honua-grpc",
+            AuthenticationDiagnostics = (authDiagnostic, _) =>
+            {
+                diagnostic = authDiagnostic;
+                return ValueTask.CompletedTask;
+            }
+        });
+
+        await client.QueryFeaturesAsync(new Models.QueryFeaturesRequest { ServiceId = "svc" });
+
+        Assert.NotNull(capturedMetadata);
+        Assert.Equal("Bearer grpc-access", GetMetadataValue(capturedMetadata!, "authorization"));
+        Assert.NotNull(providerRequest);
+        Assert.Equal(HonuaAuthenticationTransport.Grpc, providerRequest!.Transport);
+        Assert.Equal("grpc", providerRequest.ServiceName);
+        Assert.Equal("QueryFeatures", providerRequest.Method);
+        Assert.Equal(["features.read"], providerRequest.Scopes);
+        Assert.Equal("honua-grpc", providerRequest.Audience);
+        Assert.NotNull(diagnostic);
+        Assert.Equal(HonuaAuthenticationSupport.CredentialAppliedEvent, diagnostic!.EventName);
+        Assert.Equal("present", diagnostic.Attributes["authorization"]);
+    }
+
+    [Fact]
     public async Task Metadata_ProviderReturningNullOrEmpty_OmitsCredentials()
     {
         var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
@@ -921,5 +973,18 @@ public class HonuaGrpcClientTests
 
         public Task<bool> MoveNext(CancellationToken cancellationToken)
             => Task.FromException<bool>(exception);
+    }
+
+    private sealed class DelegateAccessTokenProvider : IHonuaAccessTokenProvider
+    {
+        private readonly Func<HonuaAuthenticationRequest, HonuaAccessToken?> _provider;
+
+        public DelegateAccessTokenProvider(Func<HonuaAuthenticationRequest, HonuaAccessToken?> provider)
+            => _provider = provider;
+
+        public ValueTask<HonuaAccessToken?> GetAccessTokenAsync(
+            HonuaAuthenticationRequest request,
+            CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(_provider(request));
     }
 }

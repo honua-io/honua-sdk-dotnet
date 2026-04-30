@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
             client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
+        ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;
     }
@@ -69,8 +70,21 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
         httpBuilder.AddTypedClient<IHonuaGeocodingClient>(httpClient => new HonuaGeocodingClient(httpClient));
+        ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;
+    }
+
+    private static void ConfigurePrimaryHandler(
+        IHttpClientBuilder httpBuilder,
+        Action<HonuaAdminClientOptions> configure)
+    {
+        var opts = new HonuaAdminClientOptions();
+        configure(opts);
+        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        {
+            httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
+        }
     }
 
     private static void ConfigureResilience(
