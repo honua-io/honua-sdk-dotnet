@@ -47,6 +47,18 @@ public sealed record SourceQuery
     /// <summary>Whether to request only the matching feature extent.</summary>
     public bool? ReturnExtentOnly { get; init; }
 
+    /// <summary>Optional time instant or interval filter.</summary>
+    public FeatureTimeFilter? TimeFilter { get; init; }
+
+    /// <summary>Aggregate statistics to compute when the provider supports statistics queries.</summary>
+    public IReadOnlyList<FeatureQueryStatistic>? OutStatistics { get; init; }
+
+    /// <summary>Fields to group statistics by when the provider supports grouped statistics.</summary>
+    public IReadOnlyList<string>? GroupBy { get; init; }
+
+    /// <summary>Provider-native having expression for grouped statistics.</summary>
+    public string? Having { get; init; }
+
     /// <summary>Optional bounding box spatial filter.</summary>
     public FeatureBoundingBox? Bbox { get; init; }
 
@@ -70,6 +82,10 @@ public sealed record SourceQuery
             ReturnCountOnly = ReturnCountOnly,
             ReturnIdsOnly = ReturnIdsOnly,
             ReturnExtentOnly = ReturnExtentOnly,
+            TimeFilter = TimeFilter,
+            OutStatistics = OutStatistics,
+            GroupBy = GroupBy,
+            Having = Having,
             Bbox = Bbox,
             OutputCrs = OutputCrs
         };

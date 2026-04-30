@@ -474,6 +474,7 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
                 request.FilterLanguage == FeatureFilterLanguage.Cql2Text
                     ? "cql2-text"
                     : null,
+            Datetime = BuildOgcDatetime(request.TimeFilter),
             Ids = BuildIds(request),
             Properties = request.OutFields is { Count: > 0 } ? string.Join(",", request.OutFields) : null,
             Sortby = request.OrderBy,
@@ -500,6 +501,42 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
             throw new NotSupportedException(
                 "OGC API Features shared queries do not support distinct, count-only, IDs-only, or extent-only modes yet.");
         }
+
+        if (request.OutStatistics is { Count: > 0 } ||
+            request.GroupBy is { Count: > 0 } ||
+            !string.IsNullOrWhiteSpace(request.Having))
+        {
+            throw new NotSupportedException(
+                "OGC API Features shared queries do not support provider-neutral statistics, group-by, or having clauses yet.");
+        }
+
+        if (request.TimeFilter?.Relation is FeatureTimeRelation.AfterStartWithinEnd or FeatureTimeRelation.Within)
+        {
+            throw new NotSupportedException(
+                "OGC API Features shared time filters support only provider-default or overlap datetime intervals.");
+        }
+    }
+
+    private static string? BuildOgcDatetime(FeatureTimeFilter? timeFilter)
+    {
+        if (timeFilter is null)
+        {
+            return null;
+        }
+
+        if (timeFilter.End is not { } end)
+        {
+            return timeFilter.Start.ToString("O", CultureInfo.InvariantCulture);
+        }
+
+        if (end < timeFilter.Start)
+        {
+            throw new ArgumentException("Feature query time filter end must be greater than or equal to start.", nameof(timeFilter));
+        }
+
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"{timeFilter.Start:O}/{end:O}");
     }
 
     private static IReadOnlyList<string>? BuildIds(FeatureQueryRequest request)

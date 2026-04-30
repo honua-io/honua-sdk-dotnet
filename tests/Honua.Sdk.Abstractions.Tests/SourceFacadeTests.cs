@@ -147,6 +147,59 @@ public sealed class SourceFacadeTests
     }
 
     [Fact]
+    public async Task HonuaSource_QueryAsync_MapsTimeAndStatisticsFacets()
+    {
+        FeatureQueryRequest? capturedRequest = null;
+        var queryClient = new FakeQueryClient(
+            "geoservices-featureserver",
+            _ => throw new InvalidOperationException("Single-page query should not use paged streaming."),
+            request =>
+            {
+                capturedRequest = request;
+                return new FeatureQueryResult { ProviderName = "geoservices-featureserver" };
+            });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parcels",
+                Protocol = FeatureProtocolIds.GeoServicesFeatureService,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 2 }
+            },
+            queryClient);
+        var timeFilter = new FeatureTimeFilter
+        {
+            Start = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            End = new DateTimeOffset(2024, 1, 31, 0, 0, 0, TimeSpan.Zero),
+            Relation = FeatureTimeRelation.Within
+        };
+
+        await source.QueryAsync(new SourceQuery
+        {
+            TimeFilter = timeFilter,
+            OutStatistics =
+            [
+                new FeatureQueryStatistic
+                {
+                    OnField = "OBJECTID",
+                    StatisticType = FeatureStatisticType.Count,
+                    OutField = "COUNT_OBJECTID"
+                }
+            ],
+            GroupBy = ["STATE"],
+            Having = "COUNT_OBJECTID > 10"
+        });
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal(timeFilter, capturedRequest.TimeFilter);
+        Assert.Single(capturedRequest.OutStatistics!);
+        Assert.Equal("OBJECTID", capturedRequest.OutStatistics![0].OnField);
+        Assert.Equal(FeatureStatisticType.Count, capturedRequest.OutStatistics[0].StatisticType);
+        Assert.Equal("COUNT_OBJECTID", capturedRequest.OutStatistics[0].OutField);
+        Assert.Equal(["STATE"], capturedRequest.GroupBy);
+        Assert.Equal("COUNT_OBJECTID > 10", capturedRequest.Having);
+    }
+
+    [Fact]
     public async Task HonuaSource_QueryObjectIdsAsync_UsesFeatureIdsAndPrimaryKeyFallback()
     {
         var queryClient = new FakeQueryClient(

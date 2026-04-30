@@ -45,6 +45,84 @@ public sealed record FeatureBoundingBox
 }
 
 /// <summary>
+/// Temporal relationship for provider-neutral time filters.
+/// </summary>
+public enum FeatureTimeRelation
+{
+    /// <summary>Use the provider's default temporal relationship.</summary>
+    Unspecified = 0,
+
+    /// <summary>Features whose time extent overlaps the requested time or interval.</summary>
+    Overlaps = 1,
+
+    /// <summary>Features whose end time is after the requested start and whose start time is within the requested end.</summary>
+    AfterStartWithinEnd = 2,
+
+    /// <summary>Features whose time extent is fully within the requested time or interval.</summary>
+    Within = 3
+}
+
+/// <summary>
+/// Time instant or closed interval used by the shared feature query abstraction.
+/// </summary>
+public sealed record FeatureTimeFilter
+{
+    /// <summary>Inclusive start time, or the queried instant when <see cref="End"/> is not set.</summary>
+    public required DateTimeOffset Start { get; init; }
+
+    /// <summary>Inclusive end time for interval queries.</summary>
+    public DateTimeOffset? End { get; init; }
+
+    /// <summary>Optional temporal relationship to apply when the provider supports it.</summary>
+    public FeatureTimeRelation Relation { get; init; } = FeatureTimeRelation.Unspecified;
+}
+
+/// <summary>
+/// Aggregate statistic functions for provider-neutral feature queries.
+/// </summary>
+public enum FeatureStatisticType
+{
+    /// <summary>Unspecified statistic type.</summary>
+    Unspecified = 0,
+
+    /// <summary>Count of non-null values.</summary>
+    Count = 1,
+
+    /// <summary>Sum of values.</summary>
+    Sum = 2,
+
+    /// <summary>Minimum value.</summary>
+    Min = 3,
+
+    /// <summary>Maximum value.</summary>
+    Max = 4,
+
+    /// <summary>Average value.</summary>
+    Average = 5,
+
+    /// <summary>Standard deviation.</summary>
+    StandardDeviation = 6,
+
+    /// <summary>Variance.</summary>
+    Variance = 7
+}
+
+/// <summary>
+/// Provider-neutral aggregate statistic requested by a feature query.
+/// </summary>
+public sealed record FeatureQueryStatistic
+{
+    /// <summary>Field or provider-native expression to aggregate.</summary>
+    public required string OnField { get; init; }
+
+    /// <summary>Aggregate statistic to compute.</summary>
+    public required FeatureStatisticType StatisticType { get; init; }
+
+    /// <summary>Output field name that will contain the aggregate value.</summary>
+    public required string OutField { get; init; }
+}
+
+/// <summary>
 /// Provider-neutral feature query request for common read paths.
 /// </summary>
 public sealed record FeatureQueryRequest
@@ -90,6 +168,18 @@ public sealed record FeatureQueryRequest
 
     /// <summary>Whether to request only the matching feature extent.</summary>
     public bool? ReturnExtentOnly { get; init; }
+
+    /// <summary>Optional time instant or interval filter.</summary>
+    public FeatureTimeFilter? TimeFilter { get; init; }
+
+    /// <summary>Aggregate statistics to compute when the provider supports statistics queries.</summary>
+    public IReadOnlyList<FeatureQueryStatistic>? OutStatistics { get; init; }
+
+    /// <summary>Fields to group statistics by when the provider supports grouped statistics.</summary>
+    public IReadOnlyList<string>? GroupBy { get; init; }
+
+    /// <summary>Provider-native having expression for grouped statistics.</summary>
+    public string? Having { get; init; }
 
     /// <summary>Optional bounding box spatial filter.</summary>
     public FeatureBoundingBox? Bbox { get; init; }

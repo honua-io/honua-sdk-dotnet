@@ -142,6 +142,16 @@ public class HonuaGrpcClientTests
             ReturnCountOnly = true,
             ReturnIdsOnly = true,
             ReturnExtentOnly = true,
+            OutStatistics =
+            [
+                new FeatureQueryStatistic
+                {
+                    OnField = "POP",
+                    StatisticType = FeatureStatisticType.Average,
+                    OutField = "AVG_POP"
+                }
+            ],
+            GroupBy = ["STATE"],
             OutputCrs = "EPSG:3857",
         });
 
@@ -159,6 +169,11 @@ public class HonuaGrpcClientTests
         Assert.True(capturedRequest.ReturnCountOnly);
         Assert.True(capturedRequest.ReturnIdsOnly);
         Assert.True(capturedRequest.ReturnExtentOnly);
+        Assert.Single(capturedRequest.OutStatistics);
+        Assert.Equal("POP", capturedRequest.OutStatistics[0].OnStatisticField);
+        Assert.Equal(Proto.StatisticType.Avg, capturedRequest.OutStatistics[0].StatisticType);
+        Assert.Equal("AVG_POP", capturedRequest.OutStatistics[0].OutStatisticFieldName);
+        Assert.Equal(["STATE"], capturedRequest.GroupBy);
         Assert.Equal(3857, capturedRequest.OutSr.Wkid);
         Assert.Equal("grpc", result.ProviderName);
         Assert.Equal(12, result.NumberMatched);
@@ -169,6 +184,25 @@ public class HonuaGrpcClientTests
         Assert.Single(result.Features);
         Assert.Equal("42", result.Features[0].Id);
         Assert.Equal("Park", result.Features[0].Attributes["name"].GetString());
+    }
+
+    [Fact]
+    public async Task QueryAsync_SharedAbstraction_UnsupportedTimeFilterThrows()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { ServiceId = "test-svc", LayerId = 0 },
+                TimeFilter = new FeatureTimeFilter
+                {
+                    Start = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero)
+                },
+            }));
+
+        Assert.Contains("time filters", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

@@ -107,3 +107,12 @@ cross-provider application code: `SourceDescriptor`, `SourceLocator`,
 query/edit interfaces, normalizes protocol aliases such as
 `geoservices-featureserver` to `geoservices-feature-service`, and keeps native
 clients available through `IHonuaSource.Protocol<TClient>()`.
+
+Shared query support is intentionally provider-aware. GeoServices FeatureServer
+maps provider-neutral time filters, statistics, group-by, and having clauses to
+native query parameters. gRPC maps statistics and group-by through the
+geospatial proto, but rejects time filters and having clauses until those
+contracts exist in the proto. OGC API Features maps time filters to `datetime`
+and rejects provider-neutral statistics/group-by/having clauses. WFS rejects
+provider-neutral time and statistics facets until there is a dedicated shared
+mapping.
