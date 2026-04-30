@@ -96,6 +96,7 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
 | `Honua.Sdk.Scenes` | Scene list, scene metadata detail, render endpoint resolution, access envelopes, attribution metadata, and offline scene package manifest parsing/validation. |
 | `Honua.Sdk.Field` | Provider-neutral form definitions, source-schema-to-form mapping, field validation, visibility rules, calculated fields, duplicate detection contracts, and record workflow transitions. No transport or display behavior. |
+| `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, CRS parsing/projection, and planar geometry analysis helpers. |
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, next-link pagination, and create/update/patch/delete edits. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
@@ -149,3 +150,12 @@ maps time filters to `datetime` and rejects provider-neutral statistics,
 group-by, having, and explicit geometry spatial filters. WFS rejects
 provider-neutral time, statistics, and explicit geometry spatial-filter facets
 until there is a dedicated shared mapping.
+
+Local geometry analysis lives in `Honua.Sdk.Geometry`. `HonuaPlanarGeometryAnalyzer`
+wraps NetTopologySuite for planar distance, area, length, centroid, buffer,
+simplify, intersection, containment, overlap, nearest point, nearest vertex, and
+envelope operations. ProjNet projection is opt-in through
+`PlanarGeometryAnalysisOptions.AnalysisSpatialReference`; planar measurements on
+EPSG:4326 coordinates throw by default so callers do not accidentally treat
+degrees as meters. True geodesic behavior remains separate from the planar NTS
+surface.

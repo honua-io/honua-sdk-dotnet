@@ -18,6 +18,7 @@ and shared real-time feature stream contracts.
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
 | **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
+| **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, and planar analysis |
 | **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
 | **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
@@ -40,6 +41,7 @@ dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
 dotnet add package Honua.Sdk.Spec --prerelease
 dotnet add package Honua.Sdk.Field --prerelease
+dotnet add package Honua.Sdk.Geometry --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.Scenes --prerelease
