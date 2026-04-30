@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         .AddHttpMessageHandler<HonuaOgcFeaturesAuthHandler>();
         services.AddTransient<IHonuaOgcFeaturesClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaOgcFeaturesEditClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
+        services.AddTransient<IHonuaOgcFeaturesPatchClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());

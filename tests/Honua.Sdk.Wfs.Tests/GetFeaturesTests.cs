@@ -296,6 +296,7 @@ public sealed class GetFeaturesTests
         Assert.Equal("wfs", editClient.ProviderName);
         Assert.False(editClient.EditCapabilities.SupportsAdds);
         Assert.False(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsPatches);
         Assert.False(editClient.EditCapabilities.SupportsDeletes);
         Assert.False(editClient.EditCapabilities.SupportsRollbackOnFailure);
         Assert.Equal("WFS-T Transaction", editClient.EditCapabilities.NativeSurface);

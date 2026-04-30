@@ -506,6 +506,7 @@ public class HonuaGrpcClientTests
         Assert.Equal("grpc", editClient.ProviderName);
         Assert.True(editClient.EditCapabilities.SupportsAdds);
         Assert.True(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsPatches);
         Assert.True(editClient.EditCapabilities.SupportsDeletes);
         Assert.Equal("grpc", attachmentClient.ProviderName);
         Assert.False(attachmentClient.AttachmentCapabilities.SupportsList);
