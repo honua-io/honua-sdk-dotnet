@@ -1,4 +1,5 @@
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Abstractions.Plugins;
 using Honua.Sdk.Admin;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.Admin.Extensions;
@@ -30,6 +31,8 @@ RegisterBrowserFeatureMapSample(builder.Services);
 RegisterFieldContracts(builder.Services);
 RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
+RegisterPluginContracts(builder.Services);
+RegisterRealtimeContracts(builder.Services);
 
 var host = builder.Build();
 _ = host.Services.GetRequiredService<BrowserFeatureMapSample>();
@@ -206,4 +209,49 @@ static void RegisterOfflineContracts(IServiceCollection services)
     services.AddSingleton(source);
     services.AddSingleton(manifest);
     services.AddSingleton(new OfflineSyncEngineOptions());
+}
+
+static void RegisterPluginContracts(IServiceCollection services)
+{
+    var manifest = new HonuaPluginManifest
+    {
+        SchemaVersion = HonuaPluginManifest.CurrentSchemaVersion,
+        PluginId = "io.honua.browser-smoke",
+        DisplayName = "Browser Smoke",
+        Publisher = "Honua",
+        Version = "0.0.0-browser-smoke",
+        Compatibility = new HonuaPluginCompatibility
+        {
+            SupportedHosts = [HonuaPluginHostKinds.Web],
+        },
+        Capabilities = ["feature-stream"],
+    };
+
+    services.AddSingleton(manifest);
+    services.AddSingleton(manifest.Validate());
+}
+
+static void RegisterRealtimeContracts(IServiceCollection services)
+{
+    var processor = new FeatureStreamEventProcessor();
+    var featureEvent = new FeatureStreamEvent
+    {
+        SubscriptionId = "browser-stream",
+        Source = new FeatureSource { CollectionId = "parks" },
+        Kind = FeatureStreamEventKind.Update,
+        FeatureId = "park-1",
+        Timestamp = DateTimeOffset.UnixEpoch,
+        SequenceNumber = 1,
+    };
+
+    services.AddSingleton(processor);
+    services.AddSingleton(new FeatureStreamCapabilities
+    {
+        SupportsConnect = true,
+        SupportsSequenceNumbers = true,
+        SupportsResumeTokens = true,
+        NativeSurface = "browser-host-adapter",
+    });
+    services.AddSingleton(featureEvent);
+    services.AddSingleton(processor.Process(featureEvent));
 }

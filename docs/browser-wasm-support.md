@@ -24,7 +24,8 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Field` | Candidate | Pure form, validation, calculated field, duplicate detection, and record workflow contracts. Browser hosts own rendering, storage, device capture, local media handling, and any map display. |
 | `Honua.Sdk.OgcFeatures` | Candidate | REST/JSON OGC API Features client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.Grpc` | Not supported for browser runtime | Native gRPC/HTTP2 is not a supported browser path. Treat current browser builds as compile-only. Add gRPC-Web support only after `honua-server` exposes a compatible endpoint and the SDK has a browser-specific transport plan. |
-| Realtime feeds and plugins | Not implemented | Future packages should split pure contracts from runtime adapters and update this matrix before browser consumption. |
+| Realtime feed contracts | Candidate | `IHonuaFeatureStreamClient`, normalized event envelopes, bounded buffers, and duplicate/stale sequence processors are pure contracts. Browser hosts still own the SSE/WebSocket/gRPC-Web adapter and auth/CORS behavior. |
+| Plugin contracts | Supported | `HonuaPluginManifest` parsing, validation, compatibility metadata, permissions, safe configuration envelopes, and non-UI extension declarations are pure DTO/validator contracts. Browser hosts own plugin loading, sandboxing, UI composition, and execution. |
 | Display/maps | Out of SDK core | MapLibre/deck.gl, Cesium, Mapsui, renderer caches, controls, and AR/VR anchors belong in viewer/mobile/admin apps or display adapter packages. SDK packages should hand back portable data/contracts. |
 
 ## Explicit Browser Exclusions
@@ -48,7 +49,8 @@ The SDK keeps a Blazor WebAssembly compile smoke in
 `tests/Honua.Sdk.BrowserSmoke`. It references the supported/candidate browser
 packages and registers the REST clients with retry disabled. That gate proves
 the packages can be consumed by a browser app without native compile-time
-dependencies.
+dependencies. It also compile-checks pure contracts for field records, offline
+manifests, plugin manifests, and realtime stream envelopes.
 
 The smoke app also contains a compile-checked browser feature-map sample. It
 uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses
@@ -65,6 +67,12 @@ sample wired to a test Honua deployment:
 - delegated bearer-token or BFF authentication;
 - `Honua.Sdk.Spec` apply-stream behavior;
 - offline storage adapters such as IndexedDB.
+
+This live validation remains blocked on the shared Honua Server integration
+test substrate tracked in
+<https://github.com/honua-io/honua-server/issues/813>. Until that exists, this
+repo's CI can prove browser compilation and host-boundary discipline, but not
+deployment-specific CORS or auth behavior.
 
 Minimum browser host configuration for live REST validation:
 
