@@ -190,6 +190,11 @@ public sealed record HonuaSpatialReference
         var trimmed = value.Trim();
         if (int.TryParse(trimmed, NumberStyles.None, CultureInfo.InvariantCulture, out var wkid))
         {
+            if (wkid <= 0)
+            {
+                return false;
+            }
+
             spatialReference = FromWkid(wkid);
             return true;
         }
@@ -236,6 +241,11 @@ public sealed record HonuaSpatialReference
             !string.IsNullOrWhiteSpace(parts[0]) &&
             int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var code))
         {
+            if (code <= 0)
+            {
+                return false;
+            }
+
             spatialReference = parts[0].Equals("WKID", StringComparison.OrdinalIgnoreCase)
                 ? FromWkid(code)
                 : FromAuthorityCode(parts[0], code);
@@ -254,7 +264,8 @@ public sealed record HonuaSpatialReference
         {
             var parts = value.Split(':', StringSplitOptions.TrimEntries);
             if (parts.Length >= 7 &&
-                int.TryParse(parts[^1], NumberStyles.None, CultureInfo.InvariantCulture, out var urnCode))
+                int.TryParse(parts[^1], NumberStyles.None, CultureInfo.InvariantCulture, out var urnCode) &&
+                urnCode > 0)
             {
                 spatialReference = FromAuthorityCode(parts[4], urnCode);
                 return true;
@@ -267,7 +278,8 @@ public sealed record HonuaSpatialReference
             var crsIndex = Array.FindIndex(parts, part => part.Equals("crs", StringComparison.OrdinalIgnoreCase));
             if (crsIndex >= 0 &&
                 parts.Length > crsIndex + 3 &&
-                int.TryParse(parts[^1], NumberStyles.None, CultureInfo.InvariantCulture, out var uriCode))
+                int.TryParse(parts[^1], NumberStyles.None, CultureInfo.InvariantCulture, out var uriCode) &&
+                uriCode > 0)
             {
                 spatialReference = FromAuthorityCode(parts[crsIndex + 1], uriCode);
                 return true;

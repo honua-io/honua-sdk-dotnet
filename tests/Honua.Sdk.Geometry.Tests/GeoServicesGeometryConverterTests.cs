@@ -53,6 +53,33 @@ public class GeoServicesGeometryConverterTests
     }
 
     [Fact]
+    public void ReadGeometry_PreservesInteriorRingsForMultipolygon()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+                "rings": [
+                    [[0,0],[0,10],[10,10],[10,0],[0,0]],
+                    [[2,2],[8,2],[8,8],[2,8],[2,2]],
+                    [[20,0],[20,10],[30,10],[30,0],[20,0]],
+                    [[22,2],[28,2],[28,8],[22,8],[22,2]]
+                ],
+                "spatialReference": { "wkid": 4326 }
+            }
+            """);
+
+        var geometry = GeoServicesGeometryConverter.ReadGeometry(document.RootElement);
+
+        var multiPolygon = Assert.IsType<MultiPolygon>(geometry);
+        Assert.Equal(2, multiPolygon.NumGeometries);
+
+        var firstPolygon = Assert.IsType<Polygon>(multiPolygon.GetGeometryN(0));
+        var secondPolygon = Assert.IsType<Polygon>(multiPolygon.GetGeometryN(1));
+        Assert.Equal(1, firstPolygon.NumInteriorRings);
+        Assert.Equal(1, secondPolygon.NumInteriorRings);
+    }
+
+    [Fact]
     public void WriteGeometry_WritesLinePathWithDimensionality()
     {
         var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

@@ -191,14 +191,14 @@ public static class GeoServicesGeometryConverter
     {
         EnsureArray(rings, "rings");
 
-        var exteriorRings = new List<LinearRing>();
+        var shells = new List<PolygonShell>();
         var holeRings = new List<LinearRing>();
         foreach (var ring in rings.EnumerateArray())
         {
             var linearRing = factory.CreateLinearRing(CloseRing(ReadCoordinates(ring, hasZ, hasM)));
-            if (exteriorRings.Count == 0 || !Orientation.IsCCW(linearRing.Coordinates))
+            if (shells.Count == 0 || !Orientation.IsCCW(linearRing.Coordinates))
             {
-                exteriorRings.Add(linearRing);
+                shells.Add(new PolygonShell(linearRing));
             }
             else
             {
@@ -206,21 +206,49 @@ public static class GeoServicesGeometryConverter
             }
         }
 
-        if (exteriorRings.Count == 0)
+        if (shells.Count == 0)
         {
             return factory.CreatePolygon();
         }
 
-        if (exteriorRings.Count == 1)
+        foreach (var holeRing in holeRings)
         {
-            return factory.CreatePolygon(exteriorRings[0], holeRings.ToArray());
+            AssignHole(shells, holeRing, factory);
         }
 
-        var polygons = exteriorRings
-            .Select(ring => factory.CreatePolygon(ring))
+        if (shells.Count == 1)
+        {
+            return factory.CreatePolygon(shells[0].Shell, shells[0].Holes.ToArray());
+        }
+
+        var polygons = shells
+            .Select(shell => factory.CreatePolygon(shell.Shell, shell.Holes.ToArray()))
             .Cast<Polygon>()
             .ToArray();
         return factory.CreateMultiPolygon(polygons);
+    }
+
+    private static void AssignHole(
+        IReadOnlyList<PolygonShell> shells,
+        LinearRing holeRing,
+        GeometryFactory factory)
+    {
+        var holeInteriorPoint = factory.CreatePolygon(holeRing).InteriorPoint;
+        PolygonShell? containingShell = null;
+        var containingShellArea = double.PositiveInfinity;
+
+        foreach (var shell in shells)
+        {
+            var shellPolygon = factory.CreatePolygon(shell.Shell);
+            if (shellPolygon.Covers(holeInteriorPoint) &&
+                shellPolygon.Area < containingShellArea)
+            {
+                containingShell = shell;
+                containingShellArea = shellPolygon.Area;
+            }
+        }
+
+        (containingShell ?? shells[0]).Holes.Add(holeRing);
     }
 
     private static Coordinate[] ReadCoordinates(JsonElement coordinates, bool hasZ, bool hasM)
@@ -555,5 +583,12 @@ public static class GeoServicesGeometryConverter
         }
 
         writer.WriteEndObject();
+    }
+
+    private sealed class PolygonShell(LinearRing shell)
+    {
+        public LinearRing Shell { get; } = shell;
+
+        public List<LinearRing> Holes { get; } = [];
     }
 }

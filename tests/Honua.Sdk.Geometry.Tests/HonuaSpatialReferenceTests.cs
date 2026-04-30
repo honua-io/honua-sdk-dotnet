@@ -38,4 +38,18 @@ public class HonuaSpatialReferenceTests
         Assert.Equal(49900, spatialReference.Code);
         Assert.Null(spatialReference.Wkid);
     }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("EPSG:0")]
+    [InlineData("WKID:0")]
+    [InlineData("urn:ogc:def:crs:EPSG::0")]
+    [InlineData("http://www.opengis.net/def/crs/EPSG/0/0")]
+    public void TryParse_InvalidCodes_ReturnsFalse(string value)
+    {
+        var parsed = HonuaSpatialReference.TryParse(value, out var spatialReference);
+
+        Assert.False(parsed);
+        Assert.Null(spatialReference);
+    }
 }
