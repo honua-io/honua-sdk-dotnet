@@ -1,12 +1,14 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using Honua.Sdk.Abstractions.Authentication;
+
 namespace Honua.Sdk.OgcFeatures;
 
 /// <summary>
 /// Configuration options for the OGC API Features client.
 /// </summary>
-public sealed class HonuaOgcFeaturesClientOptions
+public sealed class HonuaOgcFeaturesClientOptions : IHonuaAuthenticationOptions
 {
     /// <summary>
     /// Base address of the Honua server.
@@ -36,6 +38,34 @@ public sealed class HonuaOgcFeaturesClientOptions
     /// an empty string omits the authorization header.
     /// </summary>
     public Func<CancellationToken, Task<string?>>? BearerTokenProvider { get; set; }
+
+    /// <summary>
+    /// Optional request-aware access token provider. When configured, this value
+    /// takes precedence over <see cref="BearerTokenProvider"/> and <see cref="BearerToken"/>.
+    /// </summary>
+    public IHonuaAccessTokenProvider? AccessTokenProvider { get; set; }
+
+    /// <summary>
+    /// Default OAuth/OIDC scopes requested by OGC API Features clients.
+    /// </summary>
+    public IReadOnlyList<string> AuthenticationScopes { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Default OAuth/OIDC audience or resource requested by OGC API Features clients.
+    /// </summary>
+    public string? AuthenticationAudience { get; set; }
+
+    /// <summary>
+    /// Optional sanitized authentication diagnostics callback. Raw credential
+    /// values are never supplied to this callback.
+    /// </summary>
+    public HonuaAuthenticationDiagnosticHandler? AuthenticationDiagnostics { get; set; }
+
+    /// <summary>
+    /// Optional primary HTTP message handler factory for certificate, mTLS, or
+    /// enterprise transport configuration.
+    /// </summary>
+    public Func<HttpMessageHandler>? PrimaryHttpMessageHandlerFactory { get; set; }
 
     /// <summary>
     /// Whether to enable automatic retry on transient HTTP failures (default: true).

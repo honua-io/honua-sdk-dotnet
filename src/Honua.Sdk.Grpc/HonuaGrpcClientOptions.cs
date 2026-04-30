@@ -1,12 +1,14 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using Honua.Sdk.Abstractions.Authentication;
+
 namespace Honua.Sdk.Grpc;
 
 /// <summary>
 /// Configuration options for the Honua gRPC client.
 /// </summary>
-public sealed class HonuaGrpcClientOptions
+public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions
 {
     /// <summary>
     /// Address of the Honua gRPC server.
@@ -36,6 +38,34 @@ public sealed class HonuaGrpcClientOptions
     /// an empty string omits the authorization metadata entry.
     /// </summary>
     public Func<CancellationToken, Task<string?>>? BearerTokenProvider { get; set; }
+
+    /// <summary>
+    /// Optional request-aware access token provider. When configured, this value
+    /// takes precedence over <see cref="BearerTokenProvider"/> and <see cref="BearerToken"/>.
+    /// </summary>
+    public IHonuaAccessTokenProvider? AccessTokenProvider { get; set; }
+
+    /// <summary>
+    /// Default OAuth/OIDC scopes requested by the gRPC client.
+    /// </summary>
+    public IReadOnlyList<string> AuthenticationScopes { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Default OAuth/OIDC audience or resource requested by the gRPC client.
+    /// </summary>
+    public string? AuthenticationAudience { get; set; }
+
+    /// <summary>
+    /// Optional sanitized authentication diagnostics callback. Raw credential
+    /// values are never supplied to this callback.
+    /// </summary>
+    public HonuaAuthenticationDiagnosticHandler? AuthenticationDiagnostics { get; set; }
+
+    /// <summary>
+    /// Optional primary HTTP message handler factory for certificate, mTLS, or
+    /// enterprise transport configuration.
+    /// </summary>
+    public Func<HttpMessageHandler>? PrimaryHttpMessageHandlerFactory { get; set; }
 
     /// <summary>
     /// Enables gRPC compression negotiation for responses.

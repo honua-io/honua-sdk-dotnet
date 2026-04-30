@@ -41,8 +41,21 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaWfsClient>());
+        ConfigurePrimaryHandler(httpBuilder, configure);
         ConfigureResilience(httpBuilder, configure);
         return services;
+    }
+
+    private static void ConfigurePrimaryHandler(
+        IHttpClientBuilder httpBuilder,
+        Action<HonuaWfsClientOptions> configure)
+    {
+        var opts = new HonuaWfsClientOptions();
+        configure(opts);
+        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        {
+            httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
+        }
     }
 
     private static void ConfigureResilience(

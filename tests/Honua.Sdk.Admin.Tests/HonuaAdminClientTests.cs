@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text.Json;
+using Honua.Sdk.Abstractions.Authentication;
 using Honua.Sdk.Admin.Exceptions;
 using Honua.Sdk.Admin.Tests.Fixtures;
 using Microsoft.Extensions.Options;
@@ -216,6 +217,58 @@ public sealed class HonuaAdminClientTests
     }
 
     [Fact]
+    public async Task AuthHandler_UsesAccessTokenProviderContextAndDiagnostics()
+    {
+        HonuaAuthenticationRequest? providerRequest = null;
+        HonuaAuthenticationDiagnostic? diagnostic = null;
+        string? capturedAuth = null;
+        var options = Options.Create(new HonuaAdminClientOptions
+        {
+            AccessTokenProvider = new DelegateAccessTokenProvider(request =>
+            {
+                providerRequest = request;
+                return new HonuaAccessToken { Token = "admin-access" };
+            }),
+            AuthenticationScopes = ["admin.read"],
+            AuthenticationAudience = "honua-admin",
+            AuthenticationDiagnostics = (authDiagnostic, _) =>
+            {
+                diagnostic = authDiagnostic;
+                return ValueTask.CompletedTask;
+            }
+        });
+
+        var innerHandler = new MockHttpHandler(req =>
+        {
+            capturedAuth = req.Headers.Authorization?.ToString();
+            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+        });
+
+        var authHandler = new HonuaAdminAuthHandler(options)
+        {
+            InnerHandler = innerHandler
+        };
+
+        var httpClient = new HttpClient(authHandler)
+        {
+            BaseAddress = new Uri("http://localhost:5000")
+        };
+
+        var client = new HonuaAdminClient(httpClient);
+        await client.ListServicesAsync();
+
+        Assert.Equal("Bearer admin-access", capturedAuth);
+        Assert.NotNull(providerRequest);
+        Assert.Equal("admin", providerRequest!.ServiceName);
+        Assert.Equal(HonuaAuthenticationTransport.Http, providerRequest.Transport);
+        Assert.Equal(["admin.read"], providerRequest.Scopes);
+        Assert.Equal("honua-admin", providerRequest.Audience);
+        Assert.NotNull(diagnostic);
+        Assert.Equal(HonuaAuthenticationSupport.CredentialAppliedEvent, diagnostic!.EventName);
+        Assert.Equal("present", diagnostic.Attributes["authorization"]);
+    }
+
+    [Fact]
     public async Task AuthHandler_RejectsCredentialsOverRemoteHttp()
     {
         var options = Options.Create(new HonuaAdminClientOptions
@@ -387,5 +440,18 @@ public sealed class HonuaAdminClientTests
 
         Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
         Assert.Equal("Operation failed.", ex.Message);
+    }
+
+    private sealed class DelegateAccessTokenProvider : IHonuaAccessTokenProvider
+    {
+        private readonly Func<HonuaAuthenticationRequest, HonuaAccessToken?> _provider;
+
+        public DelegateAccessTokenProvider(Func<HonuaAuthenticationRequest, HonuaAccessToken?> provider)
+            => _provider = provider;
+
+        public ValueTask<HonuaAccessToken?> GetAccessTokenAsync(
+            HonuaAuthenticationRequest request,
+            CancellationToken cancellationToken = default)
+            => ValueTask.FromResult(_provider(request));
     }
 }
