@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.11-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.10-alpha.1...dotnet-sdk-v0.1.11-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add host-neutral plugin contracts ([#116](https://github.com/honua-io/honua-sdk-dotnet/issues/116)) ([2513c2c](https://github.com/honua-io/honua-sdk-dotnet/commit/2513c2ce9bd90f59fae6d3d56a8b7832b47dbab1))
+
 ## [0.1.10-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.9-alpha.1...dotnet-sdk-v0.1.10-alpha.1) (2026-04-30)
 
 
