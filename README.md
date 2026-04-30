@@ -402,6 +402,9 @@ third_party/
   pagination, and typed endpoint coverage behavior across packages
 - **[Spec Workspace Contracts](docs/spec-workspace-contracts.md)** -- package
   ownership, repo boundaries, and JSON fixtures for spec plan/apply contracts
+- **[Mobile Contract Harmonization](docs/mobile-contract-harmonization.md)** --
+  ownership map and fixture baseline for moving reusable mobile contracts to
+  published `Honua.Sdk.*` packages
 - **[Release and NuGet Publishing](docs/release.md)** -- package versioning,
   release tags, dry runs, and GitHub Packages publishing
 - **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version

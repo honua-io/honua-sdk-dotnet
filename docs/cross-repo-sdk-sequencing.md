@@ -117,6 +117,12 @@ Reusable service clients/contracts move to SDK first:
 - Mobile umbrella: https://github.com/honua-io/honua-mobile/issues/48
 - Replace mobile SDK clients: https://github.com/honua-io/honua-mobile/issues/54
 
+The SDK-side ownership map and compatibility baseline live in
+[Mobile Contract Harmonization](mobile-contract-harmonization.md) and
+`contracts/fixtures/mobile-sdk-contract-harmonization.v1.json`. Keep the SDK
+fixture aligned with the mobile fixture before moving shared contracts or
+deleting mobile DTO shims.
+
 ### Gate 6: Capability Packages
 
 These move after foundation contracts are stable:
