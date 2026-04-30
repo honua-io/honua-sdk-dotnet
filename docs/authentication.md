@@ -49,6 +49,14 @@ application-owned stores:
 The SDK does not persist credentials. Provider delegates should read from your
 secure store or token cache and return the current API key or bearer token.
 
+Browser and Blazor WebAssembly apps need a stricter boundary: every value in
+static browser configuration is visible to clients. Do not ship privileged
+admin API keys, refresh tokens, client secrets, or server-side service tokens in
+`wwwroot`, environment-generated static assets, or downloaded appsettings
+files. Browser hosts should use delegated user bearer tokens, a same-origin
+BFF that injects privileged credentials server-side, or another application-
+owned auth flow that never exposes server-only secrets to JavaScript or WASM.
+
 ## Rotation and Revocation
 
 Use providers when credentials can change while the process is running. A

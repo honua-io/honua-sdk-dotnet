@@ -87,6 +87,11 @@ Foundation work should land before repo cutovers:
 - Server transport alignment: https://github.com/honua-io/honua-sdk-dotnet/issues/73
 - Browser/WASM matrix: https://github.com/honua-io/honua-sdk-dotnet/issues/62
 
+The browser/WASM package boundary lives in
+[Browser And WebAssembly Support](browser-wasm-support.md). Browser consumers
+should treat REST packages as candidates until runtime `HttpClient`, CORS, and
+auth validation exists in the consuming app.
+
 The SDK-side server transport inventory and first converter fixture slice lives
 in [Server Transport Ownership](server-transport-ownership.md).
 

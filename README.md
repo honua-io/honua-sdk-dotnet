@@ -21,6 +21,12 @@ through GeoServices FeatureServer and OGC API Features endpoints.
 | **Honua.Sdk.OgcFeatures** | OGC API Features read/query client -- landing page, conformance, collections, queryables, items |
 | *Geocoding* (in Admin) | Forward/reverse geocoding and autocomplete via `IHonuaGeocodingClient` |
 
+Browser and WebAssembly consumers should start with
+[docs/browser-wasm-support.md](docs/browser-wasm-support.md). The browser-safe
+surface is contracts plus REST clients over browser `HttpClient`; native gRPC,
+local storage engines, background schedulers, and display renderers stay out of
+SDK core.
+
 ## Install
 
 ```bash
