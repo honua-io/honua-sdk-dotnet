@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.15-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.14-alpha.1...dotnet-sdk-v0.1.15-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add raster elevation enrichment contracts ([#125](https://github.com/honua-io/honua-sdk-dotnet/issues/125)) ([cf3a7e3](https://github.com/honua-io/honua-sdk-dotnet/commit/cf3a7e3ec843e47d4c5a1c5bd196a505837d3a10))
+
 ## [0.1.14-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.13-alpha.1...dotnet-sdk-v0.1.14-alpha.1) (2026-04-30)
 
 
