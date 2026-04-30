@@ -666,6 +666,10 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             ReturnGeometry = request.ReturnGeometry,
             ResultOffset = request.Offset,
             ResultRecordCount = request.Limit,
+            ReturnDistinctValues = request.ReturnDistinct,
+            ReturnCountOnly = request.ReturnCountOnly,
+            ReturnIdsOnly = request.ReturnIdsOnly,
+            ReturnExtentOnly = request.ReturnExtentOnly,
             SpatialFilter = BuildSpatialFilter(request.Bbox),
             OutSR = ParseWkid(request.OutputCrs),
             InSR = ParseWkid(request.Bbox?.Crs),
@@ -911,9 +915,26 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         {
             ProviderName = ProviderName,
             Features = features,
+            NumberMatched = response.Count,
             NumberReturned = features.Count,
+            ObjectIds = response.ObjectIds ?? [],
+            Extent = response.Extent is not null ? ToFeatureBoundingBox(response.Extent) : null,
             HasMoreResults = response.ExceededTransferLimit,
             ObjectIdFieldName = response.ObjectIdFieldName,
+        };
+    }
+
+    private static FeatureBoundingBox ToFeatureBoundingBox(FeatureServerExtent extent)
+    {
+        return new FeatureBoundingBox
+        {
+            MinX = extent.Xmin,
+            MinY = extent.Ymin,
+            MaxX = extent.Xmax,
+            MaxY = extent.Ymax,
+            Crs = extent.SpatialReference?.Wkid > 0
+                ? string.Create(CultureInfo.InvariantCulture, $"EPSG:{extent.SpatialReference.Wkid}")
+                : null,
         };
     }
 

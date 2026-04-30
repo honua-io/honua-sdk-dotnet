@@ -186,6 +186,41 @@ public sealed class SourceFacadeTests
     }
 
     [Fact]
+    public async Task HonuaSource_QueryObjectIdsAsync_UsesIdsOnlyResultWhenAvailable()
+    {
+        FeatureQueryRequest? capturedRequest = null;
+        var queryClient = new FakeQueryClient(
+            "grpc",
+            request =>
+            {
+                capturedRequest = request;
+                return
+            [
+                new FeatureQueryResult
+                {
+                    ProviderName = "grpc",
+                    ObjectIds = [10, 20, 10],
+                    NumberReturned = 0
+                }
+            ];
+            });
+        var source = new HonuaSource(
+            new SourceDescriptor
+            {
+                Id = "parcels",
+                Protocol = FeatureProtocolIds.Grpc,
+                Locator = new SourceLocator { ServiceId = "svc", LayerId = 0 }
+            },
+            queryClient);
+
+        var ids = await source.QueryObjectIdsAsync();
+
+        Assert.NotNull(capturedRequest);
+        Assert.True(capturedRequest.ReturnIdsOnly);
+        Assert.Equal(["10", "20"], ids);
+    }
+
+    [Fact]
     public async Task HonuaSource_QueryObjectIdsAsync_ZeroLimitReturnsEmpty()
     {
         var queryClient = new FakeQueryClient(

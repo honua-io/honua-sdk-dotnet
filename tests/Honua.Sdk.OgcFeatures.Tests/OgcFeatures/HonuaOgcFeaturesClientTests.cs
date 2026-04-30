@@ -300,6 +300,21 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
+    public async Task GetItemsAsync_SharedAbstraction_UnsupportedQueryModeThrows()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { CollectionId = "buildings" },
+                ReturnCountOnly = true,
+            }));
+
+        Assert.Contains("count-only", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesOgcFeaturesClientAndExposesEditCapabilities()
     {
         string? capturedUrl = null;

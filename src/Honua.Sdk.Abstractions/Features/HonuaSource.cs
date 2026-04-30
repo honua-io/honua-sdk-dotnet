@@ -121,9 +121,12 @@ public sealed class HonuaSource : IHonuaSource
     {
         EnsureCapability(FeatureCapabilities.QueryObjectIds);
 
+        var useIdsOnlyMode =
+            FeatureProtocolIds.Matches(Descriptor.Protocol, FeatureProtocolIds.Grpc) ||
+            FeatureProtocolIds.Matches(Descriptor.Protocol, FeatureProtocolIds.GeoServicesFeatureService);
         var objectIdQuery = query is null
-            ? new SourceQuery { ReturnGeometry = false }
-            : query with { ReturnGeometry = false };
+            ? new SourceQuery { ReturnGeometry = false, ReturnIdsOnly = useIdsOnlyMode ? true : null }
+            : query with { ReturnGeometry = false, ReturnIdsOnly = useIdsOnlyMode ? true : query.ReturnIdsOnly };
         var request = BuildQueryRequest(objectIdQuery);
         var limit = query?.Limit;
         if (limit is <= 0)
@@ -138,6 +141,19 @@ public sealed class HonuaSource : IHonuaSource
         await foreach (var page in _queryClient.QueryPagesAsync(request, ct).ConfigureAwait(false))
         {
             idFieldName ??= page.ObjectIdFieldName;
+            foreach (var objectId in page.ObjectIds)
+            {
+                var id = objectId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                if (seen.Add(id))
+                {
+                    ids.Add(id);
+                    if (ids.Count >= limit.GetValueOrDefault(int.MaxValue))
+                    {
+                        return ids;
+                    }
+                }
+            }
+
             foreach (var feature in page.Features)
             {
                 if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))

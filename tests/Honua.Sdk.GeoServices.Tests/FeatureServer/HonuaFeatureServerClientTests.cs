@@ -177,6 +177,15 @@ public class HonuaFeatureServerClientTests
         var json = """
         {
             "objectIdFieldName": "OBJECTID",
+            "count": 12,
+            "objectIds": [7, 8],
+            "extent": {
+                "xmin": -180,
+                "ymin": -90,
+                "xmax": 180,
+                "ymax": 90,
+                "spatialReference": { "wkid": 4326 }
+            },
             "features": [
                 { "attributes": { "OBJECTID": 7, "NAME": "Point A" }, "geometry": { "x": -118.0, "y": 34.0 } }
             ],
@@ -199,6 +208,10 @@ public class HonuaFeatureServerClientTests
             Offset = 5,
             Limit = 10,
             OrderBy = "POP DESC",
+            ReturnDistinct = true,
+            ReturnCountOnly = true,
+            ReturnIdsOnly = true,
+            ReturnExtentOnly = true,
             Bbox = new FeatureBoundingBox { MinX = -118, MinY = 33, MaxX = -117, MaxY = 34, Crs = "EPSG:4326" },
             OutputCrs = "EPSG:3857",
         });
@@ -210,10 +223,18 @@ public class HonuaFeatureServerClientTests
         Assert.Contains("resultOffset=5", capturedUrl);
         Assert.Contains("resultRecordCount=10", capturedUrl);
         Assert.Contains("orderByFields=POP", capturedUrl);
+        Assert.Contains("returnDistinctValues=true", capturedUrl);
+        Assert.Contains("returnCountOnly=true", capturedUrl);
+        Assert.Contains("returnIdsOnly=true", capturedUrl);
+        Assert.Contains("returnExtentOnly=true", capturedUrl);
         Assert.Contains("geometryType=esriGeometryEnvelope", capturedUrl);
         Assert.Contains("inSR=4326", capturedUrl);
         Assert.Contains("outSR=3857", capturedUrl);
         Assert.Equal("geoservices-featureserver", result.ProviderName);
+        Assert.Equal(12, result.NumberMatched);
+        Assert.Equal([7L, 8L], result.ObjectIds);
+        Assert.NotNull(result.Extent);
+        Assert.Equal("EPSG:4326", result.Extent.Crs);
         Assert.Single(result.Features);
         Assert.Equal("7", result.Features[0].Id);
     }

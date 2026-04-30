@@ -35,6 +35,18 @@ public sealed record SourceQuery
     /// <summary>Provider-native order-by expression.</summary>
     public string? OrderBy { get; init; }
 
+    /// <summary>Whether to request distinct rows only when the provider supports it.</summary>
+    public bool? ReturnDistinct { get; init; }
+
+    /// <summary>Whether to request only the total matching count.</summary>
+    public bool? ReturnCountOnly { get; init; }
+
+    /// <summary>Whether to request only matching object or feature IDs.</summary>
+    public bool? ReturnIdsOnly { get; init; }
+
+    /// <summary>Whether to request only the matching feature extent.</summary>
+    public bool? ReturnExtentOnly { get; init; }
+
     /// <summary>Optional bounding box spatial filter.</summary>
     public FeatureBoundingBox? Bbox { get; init; }
 
@@ -54,6 +66,10 @@ public sealed record SourceQuery
             Offset = Offset,
             Limit = Limit,
             OrderBy = OrderBy,
+            ReturnDistinct = ReturnDistinct,
+            ReturnCountOnly = ReturnCountOnly,
+            ReturnIdsOnly = ReturnIdsOnly,
+            ReturnExtentOnly = ReturnExtentOnly,
             Bbox = Bbox,
             OutputCrs = OutputCrs
         };
