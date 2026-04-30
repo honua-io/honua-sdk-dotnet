@@ -137,33 +137,29 @@ public sealed class HonuaSource : IHonuaSource
         var idFieldName = Descriptor.Schema?.PrimaryKey;
         var ids = new List<string>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var maxIds = limit.GetValueOrDefault(int.MaxValue);
+
+        if (useIdsOnlyMode)
+        {
+            var result = await _queryClient.QueryAsync(request, ct).ConfigureAwait(false);
+            idFieldName ??= result.ObjectIdFieldName;
+            if (AddPageObjectIds(result, ids, seen, maxIds) ||
+                AddPageFeatureIds(result, idFieldName, ids, seen, maxIds) ||
+                !result.HasMoreResults)
+            {
+                return ids;
+            }
+
+            request = BuildQueryRequest(objectIdQuery with { ReturnIdsOnly = false });
+        }
 
         await foreach (var page in _queryClient.QueryPagesAsync(request, ct).ConfigureAwait(false))
         {
             idFieldName ??= page.ObjectIdFieldName;
-            foreach (var objectId in page.ObjectIds)
+            if (AddPageObjectIds(page, ids, seen, maxIds) ||
+                AddPageFeatureIds(page, idFieldName, ids, seen, maxIds))
             {
-                var id = objectId.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                if (seen.Add(id))
-                {
-                    ids.Add(id);
-                    if (ids.Count >= limit.GetValueOrDefault(int.MaxValue))
-                    {
-                        return ids;
-                    }
-                }
-            }
-
-            foreach (var feature in page.Features)
-            {
-                if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
-                {
-                    ids.Add(id);
-                    if (ids.Count >= limit.GetValueOrDefault(int.MaxValue))
-                    {
-                        return ids;
-                    }
-                }
+                return ids;
             }
         }
 
@@ -260,6 +256,50 @@ public sealed class HonuaSource : IHonuaSource
     private bool MatchesProtocol(string protocolId)
         => FeatureProtocolIds.Matches(Descriptor.Protocol, protocolId) ||
            FeatureProtocolIds.Matches(_queryClient.ProviderName, protocolId);
+
+    private static bool AddPageObjectIds(
+        FeatureQueryResult page,
+        List<string> ids,
+        HashSet<string> seen,
+        int maxIds)
+    {
+        foreach (var objectId in page.ObjectIds)
+        {
+            var id = objectId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (seen.Add(id))
+            {
+                ids.Add(id);
+                if (ids.Count >= maxIds)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool AddPageFeatureIds(
+        FeatureQueryResult page,
+        string? idFieldName,
+        List<string> ids,
+        HashSet<string> seen,
+        int maxIds)
+    {
+        foreach (var feature in page.Features)
+        {
+            if (ResolveFeatureId(feature, idFieldName) is { } id && seen.Add(id))
+            {
+                ids.Add(id);
+                if (ids.Count >= maxIds)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     private static string? ResolveFeatureId(FeatureRecord feature, string? idFieldName)
     {

@@ -191,18 +191,16 @@ public sealed class SourceFacadeTests
         FeatureQueryRequest? capturedRequest = null;
         var queryClient = new FakeQueryClient(
             "grpc",
+            _ => throw new InvalidOperationException("IDs-only object-id queries should not use paged feature streaming."),
             request =>
             {
                 capturedRequest = request;
-                return
-            [
-                new FeatureQueryResult
+                return new FeatureQueryResult
                 {
                     ProviderName = "grpc",
                     ObjectIds = [10, 20, 10],
                     NumberReturned = 0
-                }
-            ];
+                };
             });
         var source = new HonuaSource(
             new SourceDescriptor
@@ -353,12 +351,13 @@ public sealed class SourceFacadeTests
 
     private sealed class FakeQueryClient(
         string providerName,
-        Func<FeatureQueryRequest, IReadOnlyList<FeatureQueryResult>> queryPages) : IHonuaFeatureQueryClient
+        Func<FeatureQueryRequest, IReadOnlyList<FeatureQueryResult>> queryPages,
+        Func<FeatureQueryRequest, FeatureQueryResult>? query = null) : IHonuaFeatureQueryClient
     {
         public string ProviderName { get; } = providerName;
 
         public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken ct = default)
-            => Task.FromResult(queryPages(request).FirstOrDefault() ?? new FeatureQueryResult { ProviderName = ProviderName });
+            => Task.FromResult(query?.Invoke(request) ?? queryPages(request).FirstOrDefault() ?? new FeatureQueryResult { ProviderName = ProviderName });
 
         public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
             FeatureQueryRequest request,

@@ -282,7 +282,9 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             var page = await QueryAsync(serviceId, layerId, currentQuery, ct).ConfigureAwait(false);
             yield return page;
 
-            var count = page.Features?.Count ?? 0;
+            var count = currentQuery.ReturnIdsOnly is true
+                ? page.ObjectIds?.Count ?? 0
+                : page.Features?.Count ?? 0;
             if (count == 0 || !page.ExceededTransferLimit)
             {
                 yield break;

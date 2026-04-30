@@ -697,6 +697,51 @@ public class HonuaFeatureServerClientTests
         Assert.Single(pages);
     }
 
+    [Fact]
+    public async Task QueryPagesAsync_ContinuesIdsOnlyPagesWhenTransferLimitExceeded()
+    {
+        var callCount = 0;
+        var requestUrls = new List<string>();
+        var client = TestHelpers.CreateFeatureServerClient(req =>
+        {
+            callCount++;
+            requestUrls.Add(req.RequestUri?.ToString() ?? "");
+            var json = callCount switch
+            {
+                1 => """
+                {
+                    "objectIds": [1, 2],
+                    "exceededTransferLimit": true
+                }
+                """,
+                2 => """
+                {
+                    "objectIds": [3],
+                    "exceededTransferLimit": false
+                }
+                """,
+                _ => """{ "objectIds": [], "exceededTransferLimit": false }"""
+            };
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<FeatureServerQueryResponse>();
+        await foreach (var page in client.QueryPagesAsync(
+                           "svc",
+                           0,
+                           new FeatureServerQueryParams { ReturnIdsOnly = true }))
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal([1L, 2L], pages[0].ObjectIds);
+        Assert.Equal([3L], pages[1].ObjectIds);
+        Assert.Contains("returnIdsOnly=true", requestUrls[0]);
+        Assert.Contains("resultOffset=2", requestUrls[1]);
+        Assert.Equal(2, callCount);
+    }
+
     // ── QueryStatisticsAsync ────────────────────────────────────────
 
     [Fact]
