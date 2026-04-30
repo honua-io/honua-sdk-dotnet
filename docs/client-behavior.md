@@ -62,6 +62,7 @@ right failure surface without parsing strings.
 | `Honua.Sdk.Spec` | `HonuaSpecException` | Non-success spec REST responses, including structured problem-details payloads. |
 | `Honua.Sdk.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
+| `Honua.Sdk.Scenes` | `HonuaSceneException` | HTTP failures, invalid scene JSON, malformed scene contracts, and missing required scene capabilities. |
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code. |
 
@@ -93,6 +94,7 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
 | `Honua.Sdk.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
+| `Honua.Sdk.Scenes` | Scene list, scene metadata detail, render endpoint resolution, access envelopes, attribution metadata, and offline scene package manifest parsing/validation. |
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, and next-link pagination. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,

@@ -19,9 +19,10 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Spec` | Candidate | REST validation/plan/cancel paths are browser candidates. Apply streaming uses SSE-style responses and still needs runtime validation under Blazor WebAssembly before being called supported. |
 | `Honua.Sdk.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.GeoServices` | Candidate | REST/JSON FeatureServer client over browser `HttpClient`; requires server CORS and browser-owned auth. |
+| `Honua.Sdk.Scenes` | Candidate | REST/JSON scene metadata client over browser `HttpClient`; requires server CORS and browser-owned auth. Display, Cesium, WebGL/WebGPU, and renderer caches remain outside the SDK. |
 | `Honua.Sdk.OgcFeatures` | Candidate | REST/JSON OGC API Features client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.Grpc` | Not supported for browser runtime | Native gRPC/HTTP2 is not a supported browser path. Treat current browser builds as compile-only. Add gRPC-Web support only after `honua-server` exposes a compatible endpoint and the SDK has a browser-specific transport plan. |
-| Routing, scene metadata, realtime feeds, field forms, plugins | Not implemented | Future packages should split pure contracts from runtime adapters and update this matrix before browser consumption. |
+| Routing, realtime feeds, field forms, plugins | Not implemented | Future packages should split pure contracts from runtime adapters and update this matrix before browser consumption. |
 | Display/maps | Out of SDK core | MapLibre/deck.gl, Cesium, Mapsui, renderer caches, controls, and AR/VR anchors belong in viewer/mobile/admin apps or display adapter packages. SDK packages should hand back portable data/contracts. |
 
 ## Explicit Browser Exclusions

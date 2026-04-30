@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Honua.Sdk.Offline.Abstractions\Honua.Sdk.Offline.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Offline\Honua.Sdk.Offline.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.OgcFeatures\Honua.Sdk.OgcFeatures.csproj" />
+    <ProjectReference Include="..\..\src\Honua.Sdk.Scenes\Honua.Sdk.Scenes.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Spec\Honua.Sdk.Spec.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Wfs\Honua.Sdk.Wfs.csproj" />
   </ItemGroup>
