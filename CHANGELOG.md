@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.5-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.4-alpha.1...dotnet-sdk-v0.1.5-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add routing client contracts ([5fc9ffd](https://github.com/honua-io/honua-sdk-dotnet/commit/5fc9ffd3432016819fd54c1493fe52e184057816))
+
 ## [0.1.4-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.3-alpha.1...dotnet-sdk-v0.1.4-alpha.1) (2026-04-30)
 
 
