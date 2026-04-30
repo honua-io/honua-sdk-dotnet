@@ -16,7 +16,7 @@ SDK models, and converter fixtures.
 |-------------|----------------|---------------------------|
 | `src/Honua.Core/Transport/Clients/GrpcFeatureServiceClient.cs` | Portable feature gRPC client wrapper | Replace consumer-facing use with `Honua.Sdk.Grpc.HonuaGrpcClient`, `IHonuaGrpcClient`, `IHonuaFeatureQueryClient`, and `IHonuaFeatureEditClient`. Keep server-only logging/retry wrappers in server only if they are part of server runtime wiring. |
 | `src/Honua.Core/Transport/Clients/IFeatureServiceClient.cs` | Portable feature query/edit abstraction plus DTOs | Replace reusable client contracts with `Honua.Sdk.Abstractions.Features` and protocol-native `Honua.Sdk.Grpc.Models`. Keep server-domain query/edit models in server. |
-| `src/Honua.Core/Transport/Clients/IFormServiceClient.cs` | Portable form client and field/form DTO sketch | Align with the field/form package tracked by `honua-sdk-dotnet#71`; keep form persistence, validation execution, collaboration runtime, and endpoint behavior in server. |
+| `src/Honua.Core/Transport/Clients/IFormServiceClient.cs` | Portable form client and field/form DTO sketch | Align reusable DTOs with `Honua.Sdk.Field`; keep form persistence, validation execution, collaboration runtime, and endpoint behavior in server. |
 | `src/Honua.Core/Transport/Converters/AttributeConverter.cs` | Domain-to-protobuf adapter | SDK owns canonical SDK model to protobuf conversion through `HonuaGrpcProtoConverter`; server may keep domain-to-SDK mapping or server-domain adapters. |
 | `src/Honua.Core/Transport/Converters/ExtentConverter.cs` | Domain-to-protobuf adapter | SDK owns SDK extent/protobuf parity in `Honua.Sdk.Grpc`; server-specific `FeatureExtent` mapping stays server-owned. |
 | `src/Honua.Core/Transport/Converters/FeatureConverter.cs` | Server domain feature/query adapter | Keep server-domain query/edit pipeline mapping in server; use SDK fixtures to verify protocol parity. |
@@ -39,9 +39,8 @@ SDK models, and converter fixtures.
 
 - Replace server-local portable feature client usage with the published
   `Honua.Sdk.Grpc` NuGet package after `honua-server#854` lands on trunk.
-- Add form client/contracts in the SDK field/form package tracked by
-  `honua-sdk-dotnet#71`; do not treat the server-local `IFormServiceClient<T>`
-  as the long-term public contract.
+- Align server-local form client DTOs with `Honua.Sdk.Field`; do not treat the
+  server-local `IFormServiceClient<T>` as the long-term public contract.
 - Add server-side fixture tests that parse the same JSON fixtures or equivalent
   protobuf payloads and compare server protocol adapters with the SDK converter
   behavior.

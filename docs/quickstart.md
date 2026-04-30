@@ -20,6 +20,7 @@ cd HonuaDemo
 dotnet add package Honua.Sdk.Grpc --prerelease
 dotnet add package Honua.Sdk.Abstractions --prerelease
 dotnet add package Honua.Sdk.Admin --prerelease
+dotnet add package Honua.Sdk.Field --prerelease
 dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.Scenes --prerelease

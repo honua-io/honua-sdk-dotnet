@@ -534,6 +534,12 @@ Acceptance criteria:
 - Add fixture tests proving mobile form definitions, server form payloads, and
   SDK field contracts serialize identically.
 
+Implementation status: `Honua.Sdk.Field` owns the provider-neutral form,
+validation, calculated field, duplicate detection, source-schema mapping, and
+record workflow contract slice. `honua-mobile#56` consumes that package and
+keeps rendering, capture, local media paths, and native runtime behavior in
+mobile.
+
 ## Priority 2 -- Advanced GIS
 
 ### P2.1 Client-side geometry analysis

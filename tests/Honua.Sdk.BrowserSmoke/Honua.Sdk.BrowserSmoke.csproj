@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Honua.Sdk.Abstractions\Honua.Sdk.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Admin\Honua.Sdk.Admin.csproj" />
+    <ProjectReference Include="..\..\src\Honua.Sdk.Field\Honua.Sdk.Field.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Geometry\Honua.Sdk.Geometry.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.GeoServices\Honua.Sdk.GeoServices.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Offline.Abstractions\Honua.Sdk.Offline.Abstractions.csproj" />

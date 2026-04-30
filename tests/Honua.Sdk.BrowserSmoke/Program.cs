@@ -2,6 +2,8 @@ using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Admin;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.BrowserSmoke;
+using Honua.Sdk.Field.Forms;
+using Honua.Sdk.Field.Records;
 using Honua.Sdk.Geometry;
 using Honua.Sdk.GeoServices;
 using Honua.Sdk.GeoServices.Extensions;
@@ -21,6 +23,7 @@ builder.RootComponents.Add<App>("#app");
 
 var server = new Uri("https://honua.example.test/");
 ConfigureRestClients(builder.Services, server);
+RegisterFieldContracts(builder.Services);
 RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
 
@@ -99,6 +102,46 @@ static void RegisterGeometryContracts(IServiceCollection services)
 {
     services.AddSingleton(HonuaSpatialReference.Wgs84);
     services.AddSingleton<HonuaCoordinateTransformer>();
+}
+
+static void RegisterFieldContracts(IServiceCollection services)
+{
+    var form = new FormDefinition
+    {
+        FormId = "inspection",
+        Name = "Inspection",
+        Sections =
+        [
+            new FormSection
+            {
+                SectionId = "main",
+                Label = "Main",
+                Fields =
+                [
+                    new FormField
+                    {
+                        FieldId = "asset_id",
+                        Label = "Asset ID",
+                        Type = FormFieldType.Text,
+                        Required = true,
+                    },
+                ],
+            },
+        ],
+    };
+
+    var record = new FieldRecord
+    {
+        RecordId = "browser-record",
+        FormId = form.FormId,
+        Values =
+        {
+            ["asset_id"] = "A-100",
+        },
+    };
+
+    services.AddSingleton(form);
+    services.AddSingleton(FormValidator.Validate(form, record));
 }
 
 static void RegisterOfflineContracts(IServiceCollection services)

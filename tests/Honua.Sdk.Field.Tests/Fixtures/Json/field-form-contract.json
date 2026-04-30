@@ -1,0 +1,67 @@
+{
+  "formId": "inspection",
+  "name": "Inspection",
+  "version": "2026.04",
+  "description": "Fixture for portable field contracts.",
+  "target": {
+    "sourceId": "asset-inspections",
+    "serviceId": "svc-inspections",
+    "layerId": 0
+  },
+  "sections": [
+    {
+      "sectionId": "main",
+      "label": "Main",
+      "fields": [
+        {
+          "fieldId": "asset_id",
+          "label": "Asset ID",
+          "type": "Text",
+          "required": true,
+          "validation": {
+            "maxLength": 32
+          }
+        },
+        {
+          "fieldId": "condition",
+          "label": "Condition",
+          "type": "SingleChoice",
+          "required": true,
+          "choices": [
+            {
+              "value": "good",
+              "label": "Good"
+            },
+            {
+              "value": "needsRepair",
+              "label": "Needs repair"
+            }
+          ]
+        },
+        {
+          "fieldId": "repair_notes",
+          "label": "Repair notes",
+          "type": "Text",
+          "required": true,
+          "visibilityRule": {
+            "dependsOnFieldId": "condition",
+            "operator": "Equals",
+            "matchValue": "needsRepair"
+          }
+        },
+        {
+          "fieldId": "photos",
+          "label": "Photos",
+          "type": "Photo",
+          "required": true,
+          "validation": {
+            "minMediaCount": 2
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "fixtureOwner": "honua-sdk-dotnet"
+  }
+}
