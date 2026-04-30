@@ -191,6 +191,22 @@ Then add the following after the feature query:
         Console.WriteLine($"\nService '{settings.ServiceName}' details retrieved.");
 ```
 
+For richer non-display catalog discovery, inject `IHonuaCatalogClient` from
+`Honua.Sdk.Admin.Catalog`. `AddHonuaAdmin` registers it automatically, and
+`AddHonuaCatalog` is available when an app only needs discovery:
+
+```csharp
+var catalog = await catalogClient.SearchAsync(
+    new CatalogQueryOptions
+    {
+        Kinds = [CatalogItemKind.Layer],
+        ServiceTypes = ["FeatureServer"],
+        Tags = ["public"],
+        Limit = 10
+    },
+    ct);
+```
+
 ## Step 5: Add geocoding (60 seconds)
 
 Inject `IHonuaGeocodingClient` the same way and add a forward-geocode call:

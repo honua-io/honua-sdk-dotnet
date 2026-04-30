@@ -89,7 +89,7 @@ Current typed endpoint coverage is:
 
 | Package | Covered surfaces |
 |---------|------------------|
-| `Honua.Sdk.Admin` | Service listing/settings/protocols, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, observability, migrations, deploy preflight/plans/operations, and geocoding. |
+| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
 | `Honua.Sdk.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
@@ -117,6 +117,14 @@ returns enriched `SourceDescriptor` metadata when the backing client supports
 OGC API Features combines collection metadata with queryables, WFS combines
 capabilities with DescribeFeatureType, and gRPC derives schema from query
 metadata plus an extent-only query until the proto adds a dedicated schema RPC.
+
+Portal/catalog discovery is available through `IHonuaCatalogClient` in
+`Honua.Sdk.Admin.Catalog`. It aggregates existing Honua Server admin service
+summaries, FeatureServer service/layer metadata, and metadata resources into
+searchable service, layer, group, and saved source descriptor items. Groups and
+saved source descriptors are metadata-resource backed until the server exposes
+first-class typed catalog endpoints tracked by
+`honua-server#869`; display documents remain out of SDK scope.
 
 Shared query support is intentionally provider-aware. GeoServices FeatureServer
 maps provider-neutral time filters, statistics, group-by, and having clauses to

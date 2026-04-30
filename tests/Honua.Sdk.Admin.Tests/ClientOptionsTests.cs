@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Reflection;
+using Honua.Sdk.Admin.Catalog;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.Admin.Tests.Fixtures;
@@ -69,6 +70,24 @@ public sealed class ClientOptionsTests
         var client = provider.GetRequiredService<IHonuaBatchGeocodingClient>();
 
         Assert.IsType<HonuaGeocodingClient>(client);
+    }
+
+    [Fact]
+    public void AddHonuaCatalog_ConfiguresHttpClientTimeout()
+    {
+        var timeout = TimeSpan.FromSeconds(39);
+        var services = new ServiceCollection();
+        services.AddHonuaCatalog(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+            options.Timeout = timeout;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHonuaCatalogClient>();
+
+        Assert.Equal(timeout, GetHttpClient(client, "_http").Timeout);
     }
 
     [Fact]
