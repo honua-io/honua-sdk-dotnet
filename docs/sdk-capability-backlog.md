@@ -584,6 +584,20 @@ Acceptance criteria:
   suggested fix text.
 - Add branch/version-aware edit sessions if Honua Server exposes versioning.
 
+SDK implementation:
+
+- `Honua.Sdk.Abstractions.Features` owns structured editing-rule metadata for
+  domains, contingent values, attribute rules, relationship classes, validation
+  results, and version-aware edit sessions.
+- `IHonuaFeatureEditingRulesClient` is optional and should be implemented only
+  by providers that expose rule discovery, validate-only, or edit-session
+  endpoints. Existing edit clients are not forced to implement these methods.
+- `FeatureEditValidationResult.FieldName` maps to SDK field-form
+  `FormField.SourceFieldName`/`FieldId`; form rendering and validation UX stay
+  in field/mobile/admin consumers.
+- Server execution, storage validation, authorization, and branch-version
+  semantics remain blocked on the linked Honua Server issues.
+
 ### P2.4 Utility network and graph workflows
 
 Outcome: connected-asset workflows have explicit API space without overloading
