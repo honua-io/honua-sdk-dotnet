@@ -2,6 +2,8 @@
 
 This page documents the cross-cutting behavior that applies to the Honua SDK
 clients: timeouts, retries, errors, pagination, and current endpoint coverage.
+Runtime support is tracked separately in
+[Browser And WebAssembly Support](browser-wasm-support.md).
 
 ## Timeouts and cancellation
 
