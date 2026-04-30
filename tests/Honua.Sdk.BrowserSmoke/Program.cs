@@ -2,6 +2,7 @@ using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Admin;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.BrowserSmoke;
+using Honua.Sdk.Geometry;
 using Honua.Sdk.GeoServices;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.Offline;
@@ -20,6 +21,7 @@ builder.RootComponents.Add<App>("#app");
 
 var server = new Uri("https://honua.example.test/");
 ConfigureRestClients(builder.Services, server);
+RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
 
 await builder.Build().RunAsync().ConfigureAwait(false);
@@ -91,6 +93,12 @@ static Task<string?> NoBrowserTokenAsync(CancellationToken cancellationToken)
 {
     cancellationToken.ThrowIfCancellationRequested();
     return Task.FromResult<string?>(null);
+}
+
+static void RegisterGeometryContracts(IServiceCollection services)
+{
+    services.AddSingleton(HonuaSpatialReference.Wgs84);
+    services.AddSingleton<HonuaCoordinateTransformer>();
 }
 
 static void RegisterOfflineContracts(IServiceCollection services)
