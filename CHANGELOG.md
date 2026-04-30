@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.10-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.9-alpha.1...dotnet-sdk-v0.1.10-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add planar geometry analysis helpers ([#114](https://github.com/honua-io/honua-sdk-dotnet/issues/114)) ([134f954](https://github.com/honua-io/honua-sdk-dotnet/commit/134f954cae4837e716faf84e85319860571438ae))
+
 ## [0.1.9-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.8-alpha.1...dotnet-sdk-v0.1.9-alpha.1) (2026-04-30)
 
 
