@@ -541,6 +541,15 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         if (query.ReturnDistinctValues is true)
             parameters.Add(("returnDistinctValues", "true"));
 
+        if (query.ReturnCountOnly is true)
+            parameters.Add(("returnCountOnly", "true"));
+
+        if (query.ReturnIdsOnly is true)
+            parameters.Add(("returnIdsOnly", "true"));
+
+        if (query.ReturnExtentOnly is true)
+            parameters.Add(("returnExtentOnly", "true"));
+
         return parameters;
     }
 
@@ -551,6 +560,11 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
             ("f", "json"),
             ("rollbackOnFailure", request.RollbackOnFailure ? "true" : "false"),
         };
+
+        if (request.ForceWrite)
+        {
+            parameters.Add(("forceWrite", "true"));
+        }
 
         if (request.Adds is { Count: > 0 })
         {
@@ -700,17 +714,13 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         FeatureEditRequest request,
         string? objectIdField)
     {
-        if (request.ForceWrite)
-        {
-            throw new NotSupportedException("FeatureServer edits do not support force-write conflict overrides.");
-        }
-
         return new FeatureServerEditRequest
         {
             Adds = request.Adds.Select(feature => ToFeatureServerFeature(feature, objectIdField: null)).ToList(),
             Updates = request.Updates.Select(feature => ToFeatureServerFeature(feature, objectIdField)).ToList(),
             Deletes = ResolveDeleteObjectIds(request),
             RollbackOnFailure = request.RollbackOnFailure,
+            ForceWrite = request.ForceWrite,
         };
     }
 

@@ -119,6 +119,10 @@ public class HonuaFeatureServerClientTests
             ResultRecordCount = 5,
             OrderByFields = "POP DESC",
             OutSR = 3857,
+            ReturnDistinctValues = true,
+            ReturnCountOnly = true,
+            ReturnIdsOnly = true,
+            ReturnExtentOnly = true,
         };
 
         await client.QueryAsync("svc", 0, query);
@@ -131,6 +135,10 @@ public class HonuaFeatureServerClientTests
         Assert.Contains("resultRecordCount=5", capturedUrl);
         Assert.Contains("orderByFields=POP", capturedUrl);
         Assert.Contains("outSR=3857", capturedUrl);
+        Assert.Contains("returnDistinctValues=true", capturedUrl);
+        Assert.Contains("returnCountOnly=true", capturedUrl);
+        Assert.Contains("returnIdsOnly=true", capturedUrl);
+        Assert.Contains("returnExtentOnly=true", capturedUrl);
     }
 
     [Fact]
@@ -338,6 +346,7 @@ public class HonuaFeatureServerClientTests
             ],
             Deletes = [103],
             RollbackOnFailure = false,
+            ForceWrite = true,
         });
 
         Assert.Equal(HttpMethod.Post, capturedMethod);
@@ -345,6 +354,7 @@ public class HonuaFeatureServerClientTests
         Assert.NotNull(capturedForm);
         Assert.Equal("json", capturedForm!["f"]);
         Assert.Equal("false", capturedForm["rollbackOnFailure"]);
+        Assert.Equal("true", capturedForm["forceWrite"]);
         Assert.Equal("103", capturedForm["deletes"]);
 
         using var adds = JsonDocument.Parse(capturedForm["adds"]!);
@@ -412,11 +422,13 @@ public class HonuaFeatureServerClientTests
                 }
             ],
             DeleteIds = ["203"],
+            ForceWrite = true,
         });
 
         Assert.Equal(2, callCount);
         Assert.NotNull(capturedForm);
         Assert.Equal("203", capturedForm!["deletes"]);
+        Assert.Equal("true", capturedForm["forceWrite"]);
 
         using var updates = JsonDocument.Parse(capturedForm["updates"]!);
         var attributes = updates.RootElement[0].GetProperty("attributes");
