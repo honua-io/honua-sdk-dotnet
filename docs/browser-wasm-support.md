@@ -28,6 +28,7 @@ rendering stay in host applications or downstream adapter packages.
 | Realtime feed contracts | Candidate | `IHonuaFeatureStreamClient`, normalized event envelopes, bounded buffers, and duplicate/stale sequence processors are pure contracts. Browser hosts still own the SSE/WebSocket/gRPC-Web adapter and auth/CORS behavior. |
 | Plugin contracts | Supported | `HonuaPluginManifest` parsing, validation, compatibility metadata, permissions, safe configuration envelopes, and non-UI extension declarations are pure DTO/validator contracts. Browser hosts own plugin loading, sandboxing, UI composition, and execution. |
 | Utility network trace contracts | Supported | `IHonuaUtilityNetworkTraceClient`, trace requests/results, elements, associations, terminals, barriers, and named configurations are pure contracts. Browser hosts own transport adapters and trace-result display. |
+| Raster/elevation/enrichment contracts | Supported | `IHonuaRasterDataClient`, `IHonuaElevationDataClient`, and `IHonuaEnrichmentDataClient` expose portable data requests/results only. Browser hosts own transport adapters, CORS/auth, map display, terrain rendering, hillshade, and thematic styling. |
 | Display/maps | Out of SDK core | MapLibre/deck.gl, Cesium, Mapsui, renderer caches, controls, and AR/VR anchors belong in viewer/mobile/admin apps or display adapter packages. SDK packages should hand back portable data/contracts. |
 
 ## Explicit Browser Exclusions
@@ -53,7 +54,7 @@ packages and registers the REST clients with retry disabled. That gate proves
 the packages can be consumed by a browser app without native compile-time
 dependencies. It also compile-checks pure contracts for field records, offline
 manifests, advanced editing rules, plugin manifests, realtime stream envelopes,
-and utility-network trace requests.
+utility-network trace requests, and raster/elevation/enrichment data requests.
 
 The smoke app also contains a compile-checked browser feature-map sample. It
 uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses
@@ -61,6 +62,11 @@ uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses
 injected `IBrowserGeoJsonDisplayAdapter`. The adapter is intentionally a no-op
 in this repository: MapLibre/deck.gl, Cesium, Mapsui, canvas/WebGL lifecycle,
 and picking controls remain in viewer packages or host apps.
+
+Raster, elevation, and enrichment contracts are compile-checked in the same
+smoke app as DTOs and provider interfaces. Live service calls remain dependent
+on Honua Server endpoints, browser CORS/auth configuration, and a host-provided
+transport adapter.
 
 Live runtime validation still belongs to the consuming app or a follow-up SDK
 sample wired to a test Honua deployment:

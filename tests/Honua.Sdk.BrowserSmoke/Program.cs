@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Honua.Sdk.Abstractions.Data;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Plugins;
 using Honua.Sdk.Abstractions.UtilityNetworks;
@@ -34,6 +35,7 @@ RegisterFieldContracts(builder.Services);
 RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
 RegisterAdvancedEditingContracts(builder.Services);
+RegisterSpatialDataContracts(builder.Services);
 RegisterPluginContracts(builder.Services);
 RegisterRealtimeContracts(builder.Services);
 RegisterUtilityNetworkContracts(builder.Services);
@@ -273,6 +275,111 @@ static void RegisterAdvancedEditingContracts(IServiceCollection services)
         SessionId = "browser-session",
         VersionName = "sde.DEFAULT",
         StartedAt = DateTimeOffset.UnixEpoch,
+    });
+}
+
+static void RegisterSpatialDataContracts(IServiceCollection services)
+{
+    var source = new SpatialDataSource
+    {
+        ServiceId = "imagery",
+        DatasetId = "landcover-2025",
+        RasterId = "mosaic-1",
+    };
+    var band = new RasterBandMetadata
+    {
+        BandIndex = 1,
+        Name = "Class",
+        PixelType = RasterPixelType.UnsignedShort,
+        Unit = "class",
+    };
+    var metadata = new RasterDatasetMetadata
+    {
+        Source = source,
+        DatasetId = "landcover-2025",
+        SpatialReference = "EPSG:4326",
+        Extent = new FeatureBoundingBox
+        {
+            MinX = -158.25,
+            MinY = 21.20,
+            MaxX = -157.60,
+            MaxY = 21.75,
+            Crs = "EPSG:4326",
+        },
+        Bands = [band],
+        Capabilities = ["metadata", "statistics"],
+    };
+    var elevationRequest = new ElevationSamplingRequest
+    {
+        Source = new SpatialDataSource
+        {
+            ServiceId = "terrain",
+            DatasetId = "dem-1m",
+        },
+        Points = [SpatialDataPoint.FromLongitudeLatitude(-157.8557, 21.3045, "honolulu")],
+        Unit = "meters",
+    };
+    var enrichmentAttribute = new EnrichmentAttributeDefinition
+    {
+        AttributeId = "population_total",
+        Name = "Total population",
+        Category = "demographics",
+        ValueType = SpatialDataValueType.IntegralNumber,
+    };
+
+    services.AddSingleton(source);
+    services.AddSingleton(band);
+    services.AddSingleton(metadata);
+    services.AddSingleton(new RasterDataCapabilities
+    {
+        SupportsMetadata = true,
+        SupportsBandMetadata = true,
+        SupportsCoverageStatistics = true,
+        NativeSurface = "browser-host-adapter",
+    });
+    services.AddSingleton(new RasterCoverageStatisticsRequest
+    {
+        Source = source,
+        BandIndexes = [1],
+        StatisticTypes = [SpatialDataStatisticType.Count, SpatialDataStatisticType.Mean],
+    });
+    services.AddSingleton(elevationRequest);
+    services.AddSingleton(new ElevationSamplingResponse
+    {
+        Source = elevationRequest.Source,
+        Samples =
+        [
+            new ElevationSample
+            {
+                Location = elevationRequest.Points[0],
+                Elevation = 5.8,
+                Unit = "meters",
+            },
+        ],
+    });
+    services.AddSingleton(new ElevationDataCapabilities
+    {
+        SupportsPointSampling = true,
+        SupportsBatchSampling = true,
+        NativeSurface = "browser-host-adapter",
+    });
+    services.AddSingleton(enrichmentAttribute);
+    services.AddSingleton(new EnrichmentMetadata
+    {
+        Source = new SpatialDataSource
+        {
+            ServiceId = "enrichment",
+            DatasetId = "acs",
+        },
+        Attributes = [enrichmentAttribute],
+        Categories = ["demographics"],
+    });
+    services.AddSingleton(new EnrichmentDataCapabilities
+    {
+        SupportsMetadata = true,
+        SupportsGeometryEnrichment = true,
+        SupportsFeatureEnrichment = true,
+        NativeSurface = "browser-host-adapter",
     });
 }
 

@@ -644,6 +644,21 @@ Server dependencies:
 - https://github.com/honua-io/honua-server/issues/839
 - https://github.com/honua-io/honua-server/issues/840
 
+SDK implementation notes:
+
+- `Honua.Sdk.Abstractions.Data` owns provider-neutral contracts for raster
+  metadata, raster coverage statistics, elevation sampling, and enrichment
+  metadata/results.
+- `IHonuaRasterDataClient`, `IHonuaElevationDataClient`, and
+  `IHonuaEnrichmentDataClient` are optional service contracts. Concrete
+  adapters should implement them only after the corresponding Honua Server
+  endpoints are available.
+- The SDK returns portable values, extents, sample points, raw provider payloads,
+  and diagnostics. It does not render images, terrain, hillshade, map layers, or
+  thematic styling.
+- Server execution, persistence, authorization, large-raster streaming, and
+  tenant catalog semantics remain blocked on the linked Honua Server issues.
+
 ### P2.6 Non-UI plugin contracts
 
 Outcome: plugin extension contracts that are not UI/runtime-specific can be
