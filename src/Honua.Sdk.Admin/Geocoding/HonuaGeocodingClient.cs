@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Globalization;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using Honua.Sdk.Admin.Exceptions;
 
@@ -10,7 +11,7 @@ namespace Honua.Sdk.Admin.Geocoding;
 /// <summary>
 /// HTTP client implementation for the Honua Geocoding REST API (GeoServices-compatible).
 /// </summary>
-public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
+public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 {
     private const string DefaultLocatorName = "World";
     private const int DefaultSpatialReferenceWkid = 4326;
@@ -70,6 +71,13 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
         {
             queryParams.Add(("countryCode", string.Join(",", options.CountryCodes)));
         }
+
+        AddCommonSearchParameters(
+            queryParams,
+            options?.Location,
+            options?.SearchExtent,
+            options?.Categories,
+            options?.OutFields);
 
         var url = $"{ServicePath}/findAddressCandidates{BuildQuery(queryParams)}";
 
@@ -173,6 +181,13 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
             queryParams.Add(("countryCode", string.Join(",", options.CountryCodes)));
         }
 
+        AddCommonSearchParameters(
+            queryParams,
+            options?.Location,
+            options?.SearchExtent,
+            options?.Categories,
+            outFields: null);
+
         var url = $"{ServicePath}/suggest{BuildQuery(queryParams)}";
 
         using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
@@ -193,14 +208,76 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<GeocodeResult>> BatchGeocodeAsync(
+    public async Task<IReadOnlyList<GeocodeResult>> BatchGeocodeAsync(
         IReadOnlyList<string> addresses,
         BatchGeocodeOptions? options = null,
         CancellationToken ct = default)
     {
-        throw new NotSupportedException(
-            "Batch geocoding (geocodeAddresses) is not yet implemented server-side. " +
-            "Use ForwardGeocodeAsync for individual address geocoding.");
+        var detailedResults = await BatchGeocodeDetailedAsync(addresses, options, ct).ConfigureAwait(false);
+        return detailedResults
+            .Where(result => result.Result is not null)
+            .Select(result => result.Result!)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<BatchGeocodeResult>> BatchGeocodeDetailedAsync(
+        IReadOnlyList<string> addresses,
+        BatchGeocodeOptions? options = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(addresses);
+        if (addresses.Count == 0)
+        {
+            return [];
+        }
+
+        var payload = CreateBatchRequest(addresses);
+        var queryParams = new List<KeyValuePair<string, string>>
+        {
+            new(
+                "addresses",
+                JsonSerializer.Serialize(payload, GeocodingJsonContext.Default.GeoServicesBatchGeocodeRequest)),
+            new("f", "json"),
+        };
+
+        var wkid = options?.SpatialReferenceWkid ?? DefaultSpatialReferenceWkid;
+        queryParams.Add(new KeyValuePair<string, string>("outSR", wkid.ToString(CultureInfo.InvariantCulture)));
+
+        if (options?.CountryCodes is { Count: > 0 })
+        {
+            queryParams.Add(new KeyValuePair<string, string>("sourceCountry", string.Join(",", options.CountryCodes)));
+        }
+
+        if (options?.SearchExtent is { } searchExtent)
+        {
+            queryParams.Add(new KeyValuePair<string, string>("searchExtent", FormatExtent(searchExtent)));
+        }
+
+        if (JoinCsv(options?.Categories) is { } category)
+        {
+            queryParams.Add(new KeyValuePair<string, string>("category", category));
+        }
+
+        if (JoinCsv(options?.OutFields) is { } outFields)
+        {
+            queryParams.Add(new KeyValuePair<string, string>("outFields", outFields));
+        }
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            CreateRequestUri($"{ServicePath}/geocodeAddresses"))
+        {
+            Content = new FormUrlEncodedContent(queryParams)
+        };
+
+        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+
+        var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesBatchGeocodeResponse);
+        return MapBatchResults(addresses, result);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
@@ -303,6 +380,193 @@ public sealed class HonuaGeocodingClient : IHonuaGeocodingClient
 
         return result;
     }
+
+    private static void AddCommonSearchParameters(
+        List<(string Key, string? Value)> queryParams,
+        GeocodePoint? location,
+        GeocodeExtent? searchExtent,
+        IReadOnlyList<string>? categories,
+        IReadOnlyList<string>? outFields)
+    {
+        if (location is not null)
+        {
+            queryParams.Add(("location", FormatPoint(location)));
+        }
+
+        if (searchExtent is not null)
+        {
+            queryParams.Add(("searchExtent", FormatExtent(searchExtent)));
+        }
+
+        if (JoinCsv(categories) is { } category)
+        {
+            queryParams.Add(("category", category));
+        }
+
+        if (JoinCsv(outFields) is { } fields)
+        {
+            queryParams.Add(("outFields", fields));
+        }
+    }
+
+    private static string? JoinCsv(IReadOnlyList<string>? values)
+    {
+        if (values is null || values.Count == 0)
+        {
+            return null;
+        }
+
+        var normalized = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value.Trim())
+            .ToArray();
+        return normalized.Length == 0 ? null : string.Join(",", normalized);
+    }
+
+    private static string FormatPoint(GeocodePoint point)
+    {
+        if (!point.SpatialReferenceWkid.HasValue)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0},{1}", point.X, point.Y);
+        }
+
+        var requestPoint = new GeoServicesRequestPoint
+        {
+            X = point.X,
+            Y = point.Y,
+            SpatialReference = new GeoServicesRequestSpatialReference { Wkid = point.SpatialReferenceWkid.Value }
+        };
+        return JsonSerializer.Serialize(requestPoint, GeocodingJsonContext.Default.GeoServicesRequestPoint);
+    }
+
+    private static string FormatExtent(GeocodeExtent extent)
+    {
+        if (!extent.SpatialReferenceWkid.HasValue)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0},{1},{2},{3}",
+                extent.XMin,
+                extent.YMin,
+                extent.XMax,
+                extent.YMax);
+        }
+
+        var requestExtent = new GeoServicesRequestExtent
+        {
+            XMin = extent.XMin,
+            YMin = extent.YMin,
+            XMax = extent.XMax,
+            YMax = extent.YMax,
+            SpatialReference = new GeoServicesRequestSpatialReference { Wkid = extent.SpatialReferenceWkid.Value }
+        };
+        return JsonSerializer.Serialize(requestExtent, GeocodingJsonContext.Default.GeoServicesRequestExtent);
+    }
+
+    private static GeoServicesBatchGeocodeRequest CreateBatchRequest(IReadOnlyList<string> addresses)
+    {
+        var request = new GeoServicesBatchGeocodeRequest();
+        for (var index = 0; index < addresses.Count; index++)
+        {
+            var address = addresses[index];
+            if (address is null)
+            {
+                throw new ArgumentException("Batch geocode addresses cannot contain null values.", nameof(addresses));
+            }
+
+            request.Records.Add(new GeoServicesBatchAddressRecord
+            {
+                Attributes = new Dictionary<string, object?>(StringComparer.Ordinal)
+                {
+                    ["OBJECTID"] = index + 1,
+                    ["SingleLine"] = address
+                }
+            });
+        }
+
+        return request;
+    }
+
+    private static ReadOnlyCollection<BatchGeocodeResult> MapBatchResults(
+        IReadOnlyList<string> addresses,
+        GeoServicesBatchGeocodeResponse? response)
+    {
+        var byInputId = new Dictionary<int, BatchGeocodeResult>();
+        if (response?.Locations is not null)
+        {
+            foreach (var location in response.Locations)
+            {
+                var attributes = FlattenAttributes(location.Attributes);
+                var inputId = ReadInputId(attributes) ?? byInputId.Count + 1;
+                var status = attributes.TryGetValue("Status", out var statusValue) ? statusValue : null;
+                var inputAddress = inputId > 0 && inputId <= addresses.Count ? addresses[inputId - 1] : string.Empty;
+                var result = CreateGeocodeResult(location, attributes, status);
+                byInputId[inputId] = new BatchGeocodeResult(
+                    inputId,
+                    inputAddress,
+                    status,
+                    result,
+                    result is null ? CreateBatchFailureMessage(status) : null,
+                    attributes);
+            }
+        }
+
+        var results = new List<BatchGeocodeResult>(addresses.Count);
+        for (var index = 0; index < addresses.Count; index++)
+        {
+            var inputId = index + 1;
+            if (byInputId.TryGetValue(inputId, out var batchResult))
+            {
+                results.Add(batchResult);
+                continue;
+            }
+
+            results.Add(new BatchGeocodeResult(
+                inputId,
+                addresses[index],
+                Status: null,
+                Result: null,
+                ErrorMessage: "No candidate returned for this input address.",
+                Attributes: new Dictionary<string, string?>()));
+        }
+
+        return results.AsReadOnly();
+    }
+
+    private static GeocodeResult? CreateGeocodeResult(
+        GeoServicesBatchLocation location,
+        Dictionary<string, string?> attributes,
+        string? status)
+    {
+        if (location.Location is null ||
+            string.Equals(status, "U", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return new GeocodeResult(
+            Address: location.Address,
+            Latitude: location.Location.Y,
+            Longitude: location.Location.X,
+            Score: location.Score,
+            Attributes: attributes);
+    }
+
+    private static int? ReadInputId(Dictionary<string, string?> attributes)
+    {
+        if (attributes.TryGetValue("ResultID", out var resultId) &&
+            int.TryParse(resultId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private static string CreateBatchFailureMessage(string? status)
+        => string.IsNullOrWhiteSpace(status)
+            ? "No candidate returned for this input address."
+            : $"Geocoding service returned status '{status}' for this input address.";
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
     {

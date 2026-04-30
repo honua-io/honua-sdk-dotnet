@@ -52,9 +52,26 @@ public interface IHonuaGeocodingClient
     /// <param name="addresses">The list of addresses to geocode.</param>
     /// <param name="options">Optional parameters to control the batch geocoding request.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>A list of geocode results, one per input address.</returns>
-    /// <exception cref="NotSupportedException">Thrown because batch geocoding is not yet implemented server-side.</exception>
+    /// <returns>A list of matched geocode results.</returns>
     Task<IReadOnlyList<GeocodeResult>> BatchGeocodeAsync(
+        IReadOnlyList<string> addresses,
+        BatchGeocodeOptions? options = null,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// Extended batch geocoding client that preserves per-input partial-failure details.
+/// </summary>
+public interface IHonuaBatchGeocodingClient : IHonuaGeocodingClient
+{
+    /// <summary>
+    /// Geocodes multiple addresses and returns one result envelope for each input address.
+    /// </summary>
+    /// <param name="addresses">The list of addresses to geocode.</param>
+    /// <param name="options">Optional parameters to control the batch geocoding request.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Batch geocode results keyed to the original input order.</returns>
+    Task<IReadOnlyList<BatchGeocodeResult>> BatchGeocodeDetailedAsync(
         IReadOnlyList<string> addresses,
         BatchGeocodeOptions? options = null,
         CancellationToken ct = default);

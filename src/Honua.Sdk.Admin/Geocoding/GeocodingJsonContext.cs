@@ -14,6 +14,10 @@ namespace Honua.Sdk.Admin.Geocoding;
 [JsonSerializable(typeof(GeoServicesFindAddressCandidatesResponse))]
 [JsonSerializable(typeof(GeoServicesReverseGeocodeResponse))]
 [JsonSerializable(typeof(GeoServicesSuggestResponse))]
+[JsonSerializable(typeof(GeoServicesRequestPoint))]
+[JsonSerializable(typeof(GeoServicesRequestExtent))]
+[JsonSerializable(typeof(GeoServicesBatchGeocodeRequest))]
+[JsonSerializable(typeof(GeoServicesBatchGeocodeResponse))]
 internal sealed partial class GeocodingJsonContext : JsonSerializerContext
 {
 }
