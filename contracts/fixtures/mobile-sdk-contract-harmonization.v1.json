@@ -6,7 +6,7 @@
   "compatibility": {
     "mobileBaseline": {
       "repository": "honua-io/honua-mobile",
-      "ref": "main after honua-mobile#52",
+      "ref": "main after honua-mobile#67",
       "packageVersion": "unreleased-source"
     },
     "sdkBaseline": {
@@ -15,27 +15,27 @@
       "packages": [
         {
           "packageId": "Honua.Sdk.Abstractions",
-          "version": "0.1.2-alpha.1"
+          "version": "0.1.4-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Offline.Abstractions",
-          "version": "0.1.2-alpha.1"
+          "version": "0.1.4-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Offline",
-          "version": "0.1.2-alpha.1"
+          "version": "0.1.4-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.Grpc",
-          "version": "0.1.2-alpha.1"
+          "version": "0.1.4-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.GeoServices",
-          "version": "0.1.2-alpha.1"
+          "version": "0.1.4-alpha.1"
         },
         {
           "packageId": "Honua.Sdk.OgcFeatures",
-          "version": "0.1.2-alpha.1"
+          "version": "0.1.4-alpha.1"
         }
       ]
     }
@@ -94,6 +94,31 @@
       "mobileDisposition": "adapter-required",
       "migrationIssue": "honua-mobile#54",
       "notes": "Offline queue rows keep mobile retry metadata, but uploaded payloads should map to FeatureEditRequest."
+    },
+    {
+      "id": "feature-attachments",
+      "displayName": "Feature attachment metadata and edit requests",
+      "owner": "honua-sdk-dotnet",
+      "authoritativePackage": "Honua.Sdk.Abstractions",
+      "authoritativeTypes": [
+        "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentCapabilities",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentInfo",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentListRequest",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentDownloadRequest",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentContent",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentAddRequest",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentUpdateRequest",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentDeleteRequest",
+        "Honua.Sdk.Abstractions.Features.FeatureAttachmentResult"
+      ],
+      "mobileTypes": [
+        "Honua.Mobile.Sdk.Features.HonuaMobileSdkFeatureClient",
+        "Honua.Mobile.Offline.Sync.HonuaMobileSdkFeatureClient"
+      ],
+      "mobileDisposition": "adapter-only",
+      "migrationIssue": "honua-mobile#54",
+      "notes": "Attachment request/result shapes are SDK-owned. Mobile should delegate through the SDK feature attachment client and keep only platform/runtime adapter behavior."
     },
     {
       "id": "geometry",
@@ -198,9 +223,25 @@
     {
       "id": "routing",
       "displayName": "Routing and network analysis requests",
-      "owner": "shared-split",
-      "authoritativePackage": "pending Honua.Sdk.Routing contracts",
-      "authoritativeTypes": [],
+      "owner": "honua-sdk-dotnet",
+      "authoritativePackage": "Honua.Sdk.Abstractions",
+      "authoritativeTypes": [
+        "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+        "Honua.Sdk.Abstractions.Routing.RoutingCapabilities",
+        "Honua.Sdk.Abstractions.Routing.RouteServiceMetadataRequest",
+        "Honua.Sdk.Abstractions.Routing.RouteServiceMetadata",
+        "Honua.Sdk.Abstractions.Routing.RouteTravelMode",
+        "Honua.Sdk.Abstractions.Routing.RoutingCoordinate",
+        "Honua.Sdk.Abstractions.Routing.RoutingLocation",
+        "Honua.Sdk.Abstractions.Routing.RouteTimeWindow",
+        "Honua.Sdk.Abstractions.Routing.RouteDirectionsRequest",
+        "Honua.Sdk.Abstractions.Routing.RouteOptimizationRequest",
+        "Honua.Sdk.Abstractions.Routing.ServiceAreaRequest",
+        "Honua.Sdk.Abstractions.Routing.ClosestFacilityRequest",
+        "Honua.Sdk.Abstractions.Routing.RouteResult",
+        "Honua.Sdk.Abstractions.Routing.ServiceAreaResult",
+        "Honua.Sdk.Abstractions.Routing.ClosestFacilityResult"
+      ],
       "mobileTypes": [
         "Honua.Mobile.Sdk.Routing.RouteDirectionsRequest",
         "Honua.Mobile.Sdk.Routing.RouteOptimizationRequest",
@@ -210,12 +251,12 @@
         "Honua.Mobile.Sdk.Routing.HonuaRoutingClient",
         "Honua.Mobile.Sdk.Routing.IRoutingLocationProvider"
       ],
-      "mobileDisposition": "mobile-authoritative-until-sdk-routing",
+      "mobileDisposition": "adapter-required",
       "migrationIssue": "honua-sdk-dotnet#60",
       "serverDependencyIssues": [
         "honua-server#366"
       ],
-      "notes": "Routing contracts can move to SDK; device location providers and platform permission flows stay mobile-owned."
+      "notes": "Routing contracts are SDK-owned. Device location providers, platform permission flows, route display, and map interaction stay mobile-owned."
     },
     {
       "id": "geopackage-sync",

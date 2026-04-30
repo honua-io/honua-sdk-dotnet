@@ -20,6 +20,7 @@ public sealed class MobileContractHarmonizationFixtureTests
     [
         "feature-query",
         "feature-edit",
+        "feature-attachments",
         "geometry",
         "offline-sync-state",
         "form-feature-schema",
@@ -94,7 +95,7 @@ public sealed class MobileContractHarmonizationFixtureTests
             .ToArray();
 
         Assert.Equal(ExpectedSdkPackageIds, packages.Select(package => package.PackageId));
-        Assert.All(packages, package => Assert.Equal("0.1.2-alpha.1", package.Version));
+        Assert.All(packages, package => Assert.Equal("0.1.4-alpha.1", package.Version));
     }
 
     private static bool IsSdkOwnedFamily(JsonElement family)

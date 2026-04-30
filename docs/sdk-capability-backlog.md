@@ -418,6 +418,11 @@ Acceptance criteria:
 Outcome: route solving is available as a service client without tying the SDK to
 any map control.
 
+Implementation status: `Honua.Sdk.Abstractions.Routing` owns provider-neutral
+routing contracts. `Honua.Sdk.GeoServices.Routing.HonuaRoutingClient` provides
+the GeoServices NAServer implementation and keeps live navigation, voice
+guidance, current-location acquisition, and route display in downstream apps.
+
 Acceptance criteria:
 
 - Add route solve APIs for point-to-point and multi-stop routing.

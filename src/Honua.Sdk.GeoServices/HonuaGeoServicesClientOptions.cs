@@ -61,6 +61,26 @@ public sealed class HonuaGeoServicesClientOptions
 
     private int _maxRetryAttempts = 3;
 
+    /// <summary>
+    /// Default GeoServices NAServer service id used by routing clients.
+    /// </summary>
+    public string RoutingServiceId { get; set; } = "Routing";
+
+    /// <summary>
+    /// Default NAServer route layer name used for directions and route optimization.
+    /// </summary>
+    public string RoutingRouteLayerName { get; set; } = "Route";
+
+    /// <summary>
+    /// Default NAServer service-area layer name used for isochrone requests.
+    /// </summary>
+    public string RoutingServiceAreaLayerName { get; set; } = "ServiceArea";
+
+    /// <summary>
+    /// Default NAServer closest-facility layer name used for nearest-facility requests.
+    /// </summary>
+    public string RoutingClosestFacilityLayerName { get; set; } = "ClosestFacility";
+
     internal static void ValidateBaseAddress(Uri? baseAddress)
     {
         if (baseAddress is null)
