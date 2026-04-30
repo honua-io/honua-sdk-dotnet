@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "honua.plugin.v1",
+  "pluginId": "io.honua.plugins.asset-quality",
+  "displayName": "Asset Quality Rules",
+  "publisher": "Honua",
+  "version": "0.1.0-alpha.1",
+  "description": "Host-neutral validation, calculated field, transform, and workflow-hook contracts for asset inspections.",
+  "editionGate": "enterprise",
+  "compatibility": {
+    "supportedHosts": [
+      "mobile",
+      "web",
+      "server",
+      "admin"
+    ],
+    "minSdkVersion": "0.1.10-alpha.1",
+    "minServerVersion": "0.1.0-alpha.1",
+    "requiredFeatureFlags": [
+      "plugins",
+      "field-workflows"
+    ]
+  },
+  "capabilities": [
+    "field-validation",
+    "calculated-fields",
+    "data-transform",
+    "workflow-hooks"
+  ],
+  "permissions": [
+    {
+      "permission": "features:read",
+      "access": "read",
+      "required": true,
+      "reason": "Read asset attributes needed to validate inspection records."
+    },
+    {
+      "permission": "features:edit",
+      "access": "write",
+      "required": false,
+      "reason": "Write normalized quality score fields when the host enables calculated updates."
+    },
+    {
+      "permission": "workflow:inspection",
+      "access": "invoke",
+      "required": true,
+      "reason": "Run inspection-submitted workflow hooks after field validation succeeds."
+    }
+  ],
+  "configuration": {
+    "maxSerializedBytes": 8192,
+    "fields": [
+      {
+        "key": "inspectionMode",
+        "type": "enum",
+        "required": true,
+        "allowedValues": [
+          "strict",
+          "advisory"
+        ],
+        "description": "Controls whether validation failures block submission."
+      },
+      {
+        "key": "scoreThreshold",
+        "type": "number",
+        "required": false,
+        "description": "Minimum quality score that should pass automated review."
+      },
+      {
+        "key": "reviewWebhookToken",
+        "type": "string",
+        "required": false,
+        "sensitive": true,
+        "maxLength": 256,
+        "description": "Optional host-managed workflow credential. The manifest must not provide a default."
+      }
+    ],
+    "defaults": {
+      "inspectionMode": "strict",
+      "scoreThreshold": 85
+    }
+  },
+  "extensions": [
+    {
+      "extensionId": "asset-id-validator",
+      "type": "field-validator",
+      "target": "form:inspection.asset_id",
+      "handler": "assetQuality.validateAssetId",
+      "configurationKey": "inspectionMode",
+      "order": 10,
+      "input": {
+        "schemaRef": "#/schemas/FieldValidationInput",
+        "tags": [
+          "field-record",
+          "source-schema"
+        ]
+      },
+      "output": {
+        "schemaRef": "#/schemas/FieldValidationResult",
+        "tags": [
+          "validation-result"
+        ]
+      }
+    },
+    {
+      "extensionId": "quality-score-calculator",
+      "type": "calculated-field",
+      "target": "form:inspection.quality_score",
+      "handler": "assetQuality.calculateQualityScore",
+      "configurationKey": "scoreThreshold",
+      "order": 20,
+      "input": {
+        "schemaRef": "#/schemas/CalculatedFieldInput",
+        "tags": [
+          "field-record"
+        ]
+      },
+      "output": {
+        "schemaRef": "#/schemas/CalculatedFieldResult",
+        "tags": [
+          "field-value"
+        ]
+      }
+    },
+    {
+      "extensionId": "asset-transform",
+      "type": "data-transformer",
+      "target": "source:assets",
+      "handler": "assetQuality.normalizeAssetAttributes",
+      "order": 30,
+      "input": {
+        "schemaRef": "#/schemas/FeatureRecord",
+        "tags": [
+          "feature-record"
+        ]
+      },
+      "output": {
+        "schemaRef": "#/schemas/FeatureRecord",
+        "tags": [
+          "feature-record"
+        ]
+      }
+    },
+    {
+      "extensionId": "inspection-submitted-hook",
+      "type": "workflow-hook",
+      "target": "workflow:inspection.submitted",
+      "handler": "assetQuality.onInspectionSubmitted",
+      "order": 40,
+      "input": {
+        "schemaRef": "#/schemas/WorkflowEvent",
+        "tags": [
+          "workflow-event"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "sdkIssue": "honua-sdk-dotnet#72",
+    "mobileInputIssue": "honua-mobile#16",
+    "serverDependencyIssue": "honua-server#347"
+  }
+}

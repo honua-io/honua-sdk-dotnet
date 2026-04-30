@@ -89,6 +89,7 @@ Current typed endpoint coverage is:
 
 | Package | Covered surfaces |
 |---------|------------------|
+| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, and host-neutral plugin manifests. |
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
@@ -123,6 +124,14 @@ cross-provider application code: `SourceDescriptor`, `SourceLocator`,
 query/edit interfaces, normalizes protocol aliases such as
 `geoservices-featureserver` to `geoservices-feature-service`, and keeps native
 clients available through `IHonuaSource.Protocol<TClient>()`.
+
+`Honua.Sdk.Abstractions.Plugins` exposes the SDK-owned plugin contract surface:
+`HonuaPluginManifest`, declared permissions, compatibility and edition gates,
+capability flags, safe configuration envelopes, and non-UI extension point
+descriptors for field validators, calculated fields, data transformers, and
+workflow hooks. Host repos own runtime loading, UI registration, sandboxing,
+code signing, marketplace behavior, and map/display integration. See
+[Plugin Contracts](plugin-contracts.md).
 
 Source descriptor discovery is provider-aware. `IHonuaSource.GetDescriptorAsync`
 returns enriched `SourceDescriptor` metadata when the backing client supports
