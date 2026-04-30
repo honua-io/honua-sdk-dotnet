@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.3-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.2-alpha.1...dotnet-sdk-v0.1.3-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add feature rest parity knobs ([5d2c54c](https://github.com/honua-io/honua-sdk-dotnet/commit/5d2c54c57047caf723bfbc9b50a923471b27ba1d))
+* add feature REST parity knobs ([e2e82da](https://github.com/honua-io/honua-sdk-dotnet/commit/e2e82da0afc0152b9a9c3c811eaea33adfeac16a))
+
 ## [0.1.2-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.1-alpha.1...dotnet-sdk-v0.1.2-alpha.1) (2026-04-29)
 
 
