@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.13-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.12-alpha.1...dotnet-sdk-v0.1.13-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add utility network trace contracts ([#121](https://github.com/honua-io/honua-sdk-dotnet/issues/121)) ([006c34c](https://github.com/honua-io/honua-sdk-dotnet/commit/006c34ce3017c30dfab7bbaeec6f316c6f6c7a53))
+
 ## [0.1.12-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.11-alpha.1...dotnet-sdk-v0.1.12-alpha.1) (2026-04-30)
 
 
