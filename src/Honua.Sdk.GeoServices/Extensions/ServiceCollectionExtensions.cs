@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Abstractions.Routing;
 using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
@@ -43,6 +45,35 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
+        ConfigureResilience(httpBuilder, configure);
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Honua GeoServices NAServer routing client with the DI container.
+    /// </summary>
+    /// <param name="services">The service collection to register with.</param>
+    /// <param name="configure">Configuration delegate for client options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddHonuaRouting(
+        this IServiceCollection services,
+        Action<HonuaGeoServicesClientOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        services.Configure(configure);
+        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = services.AddHttpClient<HonuaRoutingClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
+            HonuaGeoServicesClientOptions.ValidateBaseAddress(options.BaseAddress);
+            HonuaGeoServicesClientOptions.ValidateTimeout(options.Timeout);
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
+        })
+        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
+        services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
         ConfigureResilience(httpBuilder, configure);
         return services;
     }
