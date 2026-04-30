@@ -351,18 +351,29 @@
     {
       "id": "plugin-contracts",
       "displayName": "Non-UI plugin manifests and workflow hooks",
-      "owner": "shared-split",
-      "authoritativePackage": "pending Honua.Sdk.Plugin contracts",
-      "authoritativeTypes": [],
+      "owner": "honua-sdk-dotnet",
+      "authoritativePackage": "Honua.Sdk.Abstractions",
+      "authoritativeTypes": [
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginManifest",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginCompatibility",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginPermissionDeclaration",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginConfigurationEnvelope",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginConfigurationField",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginExtensionPoint",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginDataContract",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginManifestValidator",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginValidationResult",
+        "Honua.Sdk.Abstractions.Plugins.HonuaPluginValidationIssue"
+      ],
       "mobileTypes": [
         "Honua.Mobile plugin host contracts"
       ],
-      "mobileDisposition": "host-runtime-owned-until-sdk-plugin",
+      "mobileDisposition": "host-runtime-adapter",
       "migrationIssue": "honua-sdk-dotnet#72",
       "serverDependencyIssues": [
         "honua-server#347"
       ],
-      "notes": "SDK should own manifests, declared permissions, compatibility requirements, and safe configuration envelopes. Hosts own runtime loading, UI registration, sandboxing, and code signing."
+      "notes": "SDK owns manifests, declared permissions, compatibility requirements, safe configuration envelopes, and non-UI extension point descriptors. Hosts own runtime loading, UI registration, sandboxing, and code signing."
     },
     {
       "id": "legacy-mobile-sdk",

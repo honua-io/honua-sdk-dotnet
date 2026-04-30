@@ -11,7 +11,7 @@ and shared real-time feature stream contracts.
 
 | Package | Description |
 |---------|-------------|
-| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions implemented by provider-specific clients |
+| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions, source facades, and host-neutral plugin manifests |
 | **Honua.Sdk.Offline.Abstractions** | Browser-safe offline manifests, sync state, checkpoints, conflicts, and storage contracts |
 | **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
@@ -186,6 +186,16 @@ var native = source.Protocol<IHonuaOgcFeaturesClient>(FeatureProtocolIds.OgcFeat
 
 See [docs/source-facade.md](docs/source-facade.md) for the descriptor,
 capability, and protocol alias model.
+
+## Plugin contracts
+
+`Honua.Sdk.Abstractions.Plugins` defines host-neutral plugin manifests,
+permission declarations, compatibility gates, safe configuration envelopes, and
+non-UI extension point descriptors. Runtime loading, UI/component registration,
+sandboxing, signing, and marketplace behavior stay in the host repos.
+
+See [docs/plugin-contracts.md](docs/plugin-contracts.md) for the contract
+boundary and shared fixture.
 
 ## Shared edit abstraction
 
