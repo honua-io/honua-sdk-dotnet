@@ -22,9 +22,11 @@ public sealed class HonuaGrpcClient :
     IHonuaFeatureQueryClient,
     IHonuaFeatureEditClient,
     IHonuaFeatureDescriptorClient,
+    IHonuaFeatureAttachmentClient,
     IDisposable
 {
     private const string FeatureServiceName = "geospatial.v1.FeatureService";
+    private const string UnsupportedAttachmentReason = "gRPC FeatureService does not expose attachment RPCs yet.";
 
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
@@ -37,6 +39,11 @@ public sealed class HonuaGrpcClient :
         SupportsDeletes = true,
         SupportsRollbackOnFailure = true,
         NativeSurface = "grpc FeatureService.ApplyEdits"
+    };
+    private static readonly FeatureAttachmentCapabilities GrpcAttachmentCapabilities = new()
+    {
+        NativeSurface = "grpc FeatureService attachments",
+        UnsupportedReason = UnsupportedAttachmentReason
     };
 
     private readonly Proto.FeatureService.FeatureServiceClient _client;
@@ -110,6 +117,9 @@ public sealed class HonuaGrpcClient :
 
     /// <inheritdoc />
     public FeatureEditCapabilities EditCapabilities => GrpcEditCapabilities;
+
+    /// <inheritdoc />
+    public FeatureAttachmentCapabilities AttachmentCapabilities => GrpcAttachmentCapabilities;
 
     /// <inheritdoc />
     public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
@@ -225,6 +235,36 @@ public sealed class HonuaGrpcClient :
         var response = await ApplyEditsAsync(BuildGrpcEditRequest(request), ct).ConfigureAwait(false);
         return ToFeatureEditResponse(response);
     }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
+        FeatureAttachmentListRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentContent> DownloadAttachmentAsync(
+        FeatureAttachmentDownloadRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> AddAttachmentAsync(
+        FeatureAttachmentAddRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> UpdateAttachmentAsync(
+        FeatureAttachmentUpdateRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> DeleteAttachmentAsync(
+        FeatureAttachmentDeleteRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<Models.FeaturePage> QueryFeaturesStreamAsync(
@@ -416,7 +456,15 @@ public sealed class HonuaGrpcClient :
             Extent = extent is not null ? ToFeatureBoundingBox(extent) : null,
             SpatialReference = FormatSpatialReference(response.SpatialReference),
             EditCapabilities = GrpcEditCapabilities,
+            AttachmentCapabilities = GrpcAttachmentCapabilities,
         };
+    }
+
+    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        throw new NotSupportedException(UnsupportedAttachmentReason);
     }
 
     private static SourceField ToSourceField(Models.FieldDefinition field)

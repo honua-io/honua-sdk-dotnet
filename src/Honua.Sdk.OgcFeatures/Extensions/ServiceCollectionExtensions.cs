@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaOgcFeaturesEditClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
+        services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         ConfigureResilience(httpBuilder, configure);
         return services;
     }

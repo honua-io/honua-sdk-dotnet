@@ -20,11 +20,14 @@ public sealed class HonuaOgcFeaturesClient :
     IHonuaOgcFeaturesEditClient,
     IHonuaFeatureQueryClient,
     IHonuaFeatureEditClient,
-    IHonuaFeatureDescriptorClient
+    IHonuaFeatureDescriptorClient,
+    IHonuaFeatureAttachmentClient
 {
     private const string BasePath = "/ogc/features";
     private const string RollbackUnsupportedReason =
         "OGC API Features create, update, and delete endpoints do not support rollback-on-failure edit batches.";
+    private const string UnsupportedAttachmentReason =
+        "OGC API Features does not define provider-neutral attachment operations in this SDK.";
 
     private static readonly FeatureEditCapabilities OgcEditCapabilities = new()
     {
@@ -32,6 +35,11 @@ public sealed class HonuaOgcFeaturesClient :
         SupportsUpdates = true,
         SupportsDeletes = true,
         NativeSurface = "OGC API Features create/update/delete"
+    };
+    private static readonly FeatureAttachmentCapabilities OgcAttachmentCapabilities = new()
+    {
+        NativeSurface = "OGC API Features attachments",
+        UnsupportedReason = UnsupportedAttachmentReason
     };
 
     private readonly HttpClient _http;
@@ -50,6 +58,9 @@ public sealed class HonuaOgcFeaturesClient :
 
     /// <inheritdoc />
     public FeatureEditCapabilities EditCapabilities => OgcEditCapabilities;
+
+    /// <inheritdoc />
+    public FeatureAttachmentCapabilities AttachmentCapabilities => OgcAttachmentCapabilities;
 
     /// <inheritdoc />
     public async Task<OgcLandingPage> GetLandingPageAsync(CancellationToken ct = default)
@@ -185,6 +196,36 @@ public sealed class HonuaOgcFeaturesClient :
             DeleteResults = deleteResults
         };
     }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
+        FeatureAttachmentListRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentContent> DownloadAttachmentAsync(
+        FeatureAttachmentDownloadRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> AddAttachmentAsync(
+        FeatureAttachmentAddRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> UpdateAttachmentAsync(
+        FeatureAttachmentUpdateRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+
+    /// <inheritdoc />
+    public Task<FeatureAttachmentResult> DeleteAttachmentAsync(
+        FeatureAttachmentDeleteRequest request,
+        CancellationToken ct = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
 
     /// <inheritdoc />
     public async Task<OgcFeature> GetItemAsync(string collectionId, string featureId, CancellationToken ct = default)
@@ -520,7 +561,15 @@ public sealed class HonuaOgcFeaturesClient :
             Extent = ToFeatureBoundingBox(collection.Extent?.Spatial, spatialReference),
             SpatialReference = spatialReference,
             EditCapabilities = OgcEditCapabilities,
+            AttachmentCapabilities = OgcAttachmentCapabilities,
         };
+    }
+
+    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        throw new NotSupportedException(UnsupportedAttachmentReason);
     }
 
     private static List<SourceField> BuildQueryableFields(OgcQueryables? queryables)

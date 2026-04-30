@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices.Extensions;
@@ -141,6 +143,11 @@ public class HonuaFeatureServerClientTests
         Assert.True(descriptor.Schema.EditCapabilities?.SupportsAdds);
         Assert.True(descriptor.Schema.EditCapabilities?.SupportsUpdates);
         Assert.True(descriptor.Schema.EditCapabilities?.SupportsDeletes);
+        Assert.True(descriptor.Schema.AttachmentCapabilities?.SupportsList);
+        Assert.True(descriptor.Schema.AttachmentCapabilities?.SupportsDownload);
+        Assert.True(descriptor.Schema.AttachmentCapabilities?.SupportsAdd);
+        Assert.True(descriptor.Schema.AttachmentCapabilities?.SupportsUpdate);
+        Assert.True(descriptor.Schema.AttachmentCapabilities?.SupportsDelete);
         Assert.Contains(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
         Assert.Contains(FeatureCapabilities.Attachments, descriptor.Capabilities);
         Assert.Contains(FeatureCapabilities.Offline, descriptor.Capabilities);
@@ -634,6 +641,160 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
+    public async Task AttachmentOperationsAsync_SharedAbstraction_UsesFeatureServerAttachmentEndpoints()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(async req =>
+        {
+            var path = req.RequestUri?.AbsolutePath;
+            if (req.Method == HttpMethod.Get &&
+                path == "/rest/services/parks/FeatureServer/0/42/attachments")
+            {
+                Assert.Equal("?f=json", req.RequestUri?.Query);
+                return TestHelpers.CreateRawJsonResponse("""
+                {
+                    "attachmentInfos": [
+                        {
+                            "id": 7,
+                            "parentObjectId": 42,
+                            "globalId": "attachment-global-id",
+                            "name": "photo.txt",
+                            "contentType": "text/plain",
+                            "size": 5,
+                            "keywords": "field",
+                            "url": "http://localhost/files/7"
+                        }
+                    ]
+                }
+                """);
+            }
+
+            if (req.Method == HttpMethod.Get &&
+                path == "/rest/services/parks/FeatureServer/0/42/attachments/7")
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(Encoding.UTF8.GetBytes("photo"))
+                };
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
+                response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                {
+                    FileName = "\"photo.txt\""
+                };
+                return response;
+            }
+
+            if (req.Method == HttpMethod.Post &&
+                path == "/rest/services/parks/FeatureServer/0/42/addAttachment")
+            {
+                var body = await req.Content!.ReadAsStringAsync();
+                Assert.Contains("name=f", body);
+                Assert.Contains("name=keywords", body);
+                Assert.Contains("field", body);
+                Assert.Contains("name=attachment", body);
+                Assert.Contains("filename=photo.txt", body);
+                Assert.Contains("text/plain", body);
+                return TestHelpers.CreateRawJsonResponse("""
+                { "addAttachmentResult": { "objectId": 8, "globalId": "added-global-id", "success": true } }
+                """);
+            }
+
+            if (req.Method == HttpMethod.Post &&
+                path == "/rest/services/parks/FeatureServer/0/42/updateAttachment")
+            {
+                var body = await req.Content!.ReadAsStringAsync();
+                Assert.Contains("name=attachmentId", body);
+                Assert.Contains("7", body);
+                return TestHelpers.CreateRawJsonResponse("""
+                { "updateAttachmentResult": { "objectId": 7, "globalId": "updated-global-id", "success": true } }
+                """);
+            }
+
+            if (req.Method == HttpMethod.Post &&
+                path == "/rest/services/parks/FeatureServer/0/42/deleteAttachments")
+            {
+                var body = await req.Content!.ReadAsStringAsync();
+                Assert.Contains("f=json", body);
+                Assert.Contains("attachmentIds=7", body);
+                return TestHelpers.CreateRawJsonResponse("""
+                { "deleteAttachmentResults": [{ "objectId": 7, "success": true }] }
+                """);
+            }
+
+            throw new InvalidOperationException($"Unexpected request: {req.Method} {req.RequestUri}");
+        });
+
+        var source = new FeatureSource { ServiceId = "parks", LayerId = 0 };
+        var attachments = (IHonuaFeatureAttachmentClient)client;
+
+        var listed = await attachments.ListAttachmentsAsync(new FeatureAttachmentListRequest
+        {
+            Source = source,
+            ObjectId = 42
+        });
+
+        var info = Assert.Single(listed);
+        Assert.Equal(7, info.AttachmentId);
+        Assert.Equal(42, info.ParentObjectId);
+        Assert.Equal("attachment-global-id", info.GlobalId);
+        Assert.Equal("photo.txt", info.Name);
+        Assert.Equal("text/plain", info.ContentType);
+        Assert.Equal(5, info.Size);
+        Assert.Equal("field", info.Keywords);
+        Assert.Equal(new Uri("http://localhost/files/7"), info.Url);
+
+        var downloaded = await attachments.DownloadAttachmentAsync(new FeatureAttachmentDownloadRequest
+        {
+            Source = source,
+            ObjectId = 42,
+            AttachmentId = 7
+        });
+        using var reader = new StreamReader(downloaded.Content, Encoding.UTF8);
+        Assert.Equal("photo", await reader.ReadToEndAsync());
+        Assert.Equal("photo.txt", downloaded.Info.Name);
+        Assert.Equal("text/plain", downloaded.Info.ContentType);
+
+        using var addContent = new MemoryStream(Encoding.UTF8.GetBytes("photo"));
+        var addResult = await attachments.AddAttachmentAsync(new FeatureAttachmentAddRequest
+        {
+            Source = source,
+            ObjectId = 42,
+            Name = "photo.txt",
+            ContentType = "text/plain",
+            Content = addContent,
+            Keywords = "field"
+        });
+        Assert.True(addResult.Succeeded);
+        Assert.Equal(8, addResult.AttachmentId);
+        Assert.Equal("added-global-id", addResult.GlobalId);
+        Assert.True(addContent.CanRead);
+
+        using var updateContent = new MemoryStream(Encoding.UTF8.GetBytes("photo2"));
+        var updateResult = await attachments.UpdateAttachmentAsync(new FeatureAttachmentUpdateRequest
+        {
+            Source = source,
+            ObjectId = 42,
+            AttachmentId = 7,
+            Name = "photo.txt",
+            ContentType = "text/plain",
+            Content = updateContent,
+            Keywords = "field"
+        });
+        Assert.True(updateResult.Succeeded);
+        Assert.Equal(7, updateResult.AttachmentId);
+        Assert.Equal("updated-global-id", updateResult.GlobalId);
+        Assert.True(updateContent.CanRead);
+
+        var deleteResult = await attachments.DeleteAttachmentAsync(new FeatureAttachmentDeleteRequest
+        {
+            Source = source,
+            ObjectId = 42,
+            AttachmentId = 7
+        });
+        Assert.True(deleteResult.Succeeded);
+        Assert.Equal(7, deleteResult.AttachmentId);
+    }
+
+    [Fact]
     public async Task GetEditCapabilitiesAsync_ParsesLayerCapabilities()
     {
         var client = TestHelpers.CreateFeatureServerClient(_ =>
@@ -663,12 +824,19 @@ public class HonuaFeatureServerClientTests
         using var provider = services.BuildServiceProvider();
         var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
         var featureServerEditClient = Assert.Single(provider.GetServices<IHonuaFeatureServerEditClient>());
+        var attachmentClient = Assert.Single(provider.GetServices<IHonuaFeatureAttachmentClient>());
 
         Assert.Equal("geoservices-featureserver", editClient.ProviderName);
         Assert.True(editClient.EditCapabilities.SupportsAdds);
         Assert.True(editClient.EditCapabilities.SupportsUpdates);
         Assert.True(editClient.EditCapabilities.SupportsDeletes);
         Assert.IsType<HonuaFeatureServerClient>(featureServerEditClient);
+        Assert.Equal("geoservices-featureserver", attachmentClient.ProviderName);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsList);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsDownload);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsAdd);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsUpdate);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsDelete);
     }
 
     // ── GetFeatureAsync ────────────────────────────────────────────

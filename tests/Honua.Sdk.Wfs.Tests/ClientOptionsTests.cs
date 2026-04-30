@@ -48,12 +48,16 @@ public sealed class ClientOptionsTests
 
         using var provider = services.BuildServiceProvider();
         var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
+        var attachmentClient = Assert.Single(provider.GetServices<IHonuaFeatureAttachmentClient>());
 
         Assert.Equal("wfs", editClient.ProviderName);
         Assert.False(editClient.EditCapabilities.SupportsAdds);
         Assert.False(editClient.EditCapabilities.SupportsUpdates);
         Assert.False(editClient.EditCapabilities.SupportsDeletes);
         Assert.Contains("WFS-T", editClient.EditCapabilities.UnsupportedReason);
+        Assert.Equal("wfs", attachmentClient.ProviderName);
+        Assert.False(attachmentClient.AttachmentCapabilities.SupportsList);
+        Assert.Contains("attachment operations", attachmentClient.AttachmentCapabilities.UnsupportedReason);
     }
 
     [Fact]
