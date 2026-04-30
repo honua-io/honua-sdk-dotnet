@@ -53,6 +53,7 @@ public sealed class ClientOptionsTests
         Assert.Equal("wfs", editClient.ProviderName);
         Assert.False(editClient.EditCapabilities.SupportsAdds);
         Assert.False(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsPatches);
         Assert.False(editClient.EditCapabilities.SupportsDeletes);
         Assert.Contains("WFS-T", editClient.EditCapabilities.UnsupportedReason);
         Assert.Equal("wfs", attachmentClient.ProviderName);

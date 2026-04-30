@@ -253,6 +253,7 @@ public sealed class HonuaFeatureServerClient :
         FeatureEditRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureNoPatchEdits(request);
         var (serviceId, layerId) = GetEditSource(request);
         var objectIdField = await ResolveObjectIdFieldAsync(serviceId, layerId, request, ct).ConfigureAwait(false);
         var response = await ApplyEditsAsync(
@@ -1136,6 +1137,14 @@ public sealed class HonuaFeatureServerClient :
         }
 
         return layer.ObjectIdField;
+    }
+
+    private static void EnsureNoPatchEdits(FeatureEditRequest request)
+    {
+        if (request.Patches.Count > 0)
+        {
+            throw new NotSupportedException("GeoServices FeatureServer shared edits do not support JSON Merge Patch operations.");
+        }
     }
 
     private static FeatureServerEditRequest BuildFeatureServerEditRequest(

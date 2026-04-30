@@ -44,7 +44,7 @@ provider object IDs, per-feature errors, top-level batch errors, and a
 | gRPC | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaGrpcClient.ApplyEditsAsync()` |
 | GeoServices FeatureServer | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaFeatureServerEditClient.ApplyEditsAsync()` plus add/update/delete convenience methods |
 | WFS | Registered as unsupported via `IHonuaFeatureEditClient` | WFS-T implementation decision tracked by #35 |
-| OGC API Features | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaOgcFeaturesEditClient.CreateItemAsync()`/`UpdateItemAsync()`/`DeleteItemAsync()` |
+| OGC API Features | Yes, via `IHonuaFeatureEditClient` | Yes, via `IHonuaOgcFeaturesEditClient.CreateItemAsync()`/`UpdateItemAsync()`/`DeleteItemAsync()` and `IHonuaOgcFeaturesPatchClient.PatchItemAsync()` |
 | Admin | Not applicable | Admin has control-plane mutations, not data-plane feature edits |
 
 Select from `IEnumerable<IHonuaFeatureEditClient>` and inspect
@@ -145,6 +145,9 @@ The OGC API Features shared adapter maps:
 - `Adds` to `POST` GeoJSON feature payloads.
 - `Updates` to `PUT` GeoJSON feature payloads at
   `/items/{featureId}` using `FeatureEditFeature.Id` or `ObjectId`.
+- `Patches` to `PATCH /items/{featureId}` with
+  `application/merge-patch+json` RFC 7396 JSON Merge Patch payloads using
+  `FeatureEditPatch.Id` or `ObjectId`.
 - `DeleteIds` and numeric `DeleteObjectIds` to `DELETE /items/{featureId}`.
 - OGC problem details and HTTP errors to shared `FeatureEditResult.Error`
   values.

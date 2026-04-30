@@ -829,6 +829,7 @@ public class HonuaFeatureServerClientTests
         Assert.Equal("geoservices-featureserver", editClient.ProviderName);
         Assert.True(editClient.EditCapabilities.SupportsAdds);
         Assert.True(editClient.EditCapabilities.SupportsUpdates);
+        Assert.False(editClient.EditCapabilities.SupportsPatches);
         Assert.True(editClient.EditCapabilities.SupportsDeletes);
         Assert.IsType<HonuaFeatureServerClient>(featureServerEditClient);
         Assert.Equal("geoservices-featureserver", attachmentClient.ProviderName);

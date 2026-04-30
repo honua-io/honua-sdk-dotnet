@@ -49,14 +49,17 @@ public sealed class ClientOptionsTests
         using var provider = services.BuildServiceProvider();
         var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
         var nativeEditClient = Assert.Single(provider.GetServices<IHonuaOgcFeaturesEditClient>());
+        var nativePatchClient = Assert.Single(provider.GetServices<IHonuaOgcFeaturesPatchClient>());
         var attachmentClient = Assert.Single(provider.GetServices<IHonuaFeatureAttachmentClient>());
 
         Assert.Equal("ogc-features", editClient.ProviderName);
         Assert.True(editClient.EditCapabilities.SupportsAdds);
         Assert.True(editClient.EditCapabilities.SupportsUpdates);
+        Assert.True(editClient.EditCapabilities.SupportsPatches);
         Assert.True(editClient.EditCapabilities.SupportsDeletes);
         Assert.False(editClient.EditCapabilities.SupportsRollbackOnFailure);
         Assert.IsType<HonuaOgcFeaturesClient>(nativeEditClient);
+        Assert.IsType<HonuaOgcFeaturesClient>(nativePatchClient);
         Assert.Equal("ogc-features", attachmentClient.ProviderName);
         Assert.False(attachmentClient.AttachmentCapabilities.SupportsList);
         Assert.Contains("attachment operations", attachmentClient.AttachmentCapabilities.UnsupportedReason);

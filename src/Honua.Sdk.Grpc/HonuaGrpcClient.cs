@@ -541,6 +541,11 @@ public sealed class HonuaGrpcClient :
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        if (request.Patches.Count > 0)
+        {
+            throw new NotSupportedException("gRPC shared edits do not support JSON Merge Patch operations.");
+        }
+
         if (string.IsNullOrWhiteSpace(request.Source.ServiceId))
         {
             throw new ArgumentException("A service ID is required for gRPC feature edits.", nameof(request));

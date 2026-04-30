@@ -248,7 +248,10 @@ public sealed class HonuaSource : IHonuaSource
 
         if (editClient?.EditCapabilities is { } editCapabilities &&
             SupportsEditProtocol(descriptor, editClient) &&
-            (editCapabilities.SupportsAdds || editCapabilities.SupportsUpdates || editCapabilities.SupportsDeletes))
+            (editCapabilities.SupportsAdds ||
+             editCapabilities.SupportsUpdates ||
+             editCapabilities.SupportsPatches ||
+             editCapabilities.SupportsDeletes))
         {
             if (declared.Contains(FeatureCapabilities.ApplyEdits, StringComparer.Ordinal) || descriptor.Capabilities.Count == 0)
             {

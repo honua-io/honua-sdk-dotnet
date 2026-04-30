@@ -567,7 +567,8 @@ public class HonuaOgcFeaturesClientTests
             }
         });
 
-        var result = await client.PatchItemAsync("buildings", "building-7", patch);
+        var patchClient = (IHonuaOgcFeaturesPatchClient)client;
+        var result = await patchClient.PatchItemAsync("buildings", "building-7", patch);
 
         Assert.Equal("application/merge-patch+json", capturedMediaType);
         Assert.Contains("\"Patched\"", capturedBody);
@@ -591,17 +592,20 @@ public class HonuaOgcFeaturesClientTests
     public async Task ApplyEditsAsync_SharedAbstraction_AppliesSequentialEdits()
     {
         var call = 0;
-        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        string? capturedPatchBody = null;
+        string? capturedPatchMediaType = null;
+        var client = TestHelpers.CreateOgcFeaturesClient(async req =>
         {
             call++;
             return call switch
             {
-                1 => Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                1 => TestHelpers.CreateRawJsonResponse(
                     """{ "type": "Feature", "id": "created-1", "properties": {} }""",
-                    HttpStatusCode.Created)),
-                2 => Task.FromResult(TestHelpers.CreateRawJsonResponse(
-                    """{ "type": "Feature", "id": "updated-1", "properties": {} }""")),
-                3 => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent)),
+                    HttpStatusCode.Created),
+                2 => TestHelpers.CreateRawJsonResponse(
+                    """{ "type": "Feature", "id": "updated-1", "properties": {} }"""),
+                3 => await CapturePatchAsync(req),
+                4 => new HttpResponseMessage(HttpStatusCode.NoContent),
                 _ => throw new InvalidOperationException("Unexpected edit request.")
             };
         });
@@ -630,6 +634,20 @@ public class HonuaOgcFeaturesClientTests
                     }
                 }
             ],
+            Patches =
+            [
+                new FeatureEditPatch
+                {
+                    Id = "patched-1",
+                    Patch = JsonSerializer.SerializeToElement(new
+                    {
+                        properties = new
+                        {
+                            status = "open"
+                        }
+                    })
+                }
+            ],
             DeleteIds = ["deleted-1"],
             RollbackOnFailure = false
         });
@@ -638,7 +656,19 @@ public class HonuaOgcFeaturesClientTests
         Assert.True(response.Succeeded);
         Assert.Equal("created-1", Assert.Single(response.AddResults).Id);
         Assert.Equal("updated-1", Assert.Single(response.UpdateResults).Id);
+        Assert.Equal("patched-1", Assert.Single(response.PatchResults).Id);
+        Assert.Equal("application/merge-patch+json", capturedPatchMediaType);
+        Assert.Contains("\"status\"", capturedPatchBody);
         Assert.Equal("deleted-1", Assert.Single(response.DeleteResults).Id);
+
+        async Task<HttpResponseMessage> CapturePatchAsync(HttpRequestMessage req)
+        {
+            Assert.Equal(HttpMethod.Patch, req.Method);
+            capturedPatchMediaType = req.Content?.Headers.ContentType?.MediaType;
+            capturedPatchBody = await req.Content!.ReadAsStringAsync();
+            return TestHelpers.CreateRawJsonResponse(
+                """{ "type": "Feature", "id": "patched-1", "properties": {} }""");
+        }
     }
 
     [Fact]
@@ -675,6 +705,37 @@ public class HonuaOgcFeaturesClientTests
         Assert.Equal("candidate-1", result.Id);
         Assert.Equal((int)HttpStatusCode.BadRequest, result.Error?.Code);
         Assert.Contains("outside", result.Error?.Message);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_MapsMalformedPatchResponseToEditResults()
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            Assert.Equal(HttpMethod.Patch, req.Method);
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                "{ this is not valid JSON }"));
+        });
+
+        var response = await ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+        {
+            Source = new FeatureSource { CollectionId = "buildings" },
+            Patches =
+            [
+                new FeatureEditPatch
+                {
+                    Id = "patched-1",
+                    Patch = JsonSerializer.SerializeToElement(new { properties = new { name = "Patched" } })
+                }
+            ]
+        });
+
+        var result = Assert.Single(response.PatchResults);
+        Assert.False(response.Succeeded);
+        Assert.False(result.Succeeded);
+        Assert.Equal("patched-1", result.Id);
+        Assert.Equal((int)HttpStatusCode.OK, result.Error?.Code);
+        Assert.Contains("deserialize patched", result.Error?.Message);
     }
 
     [Fact]

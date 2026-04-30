@@ -16,6 +16,9 @@ public sealed record FeatureEditCapabilities
     /// <summary>Whether the provider supports updating features.</summary>
     public bool SupportsUpdates { get; init; }
 
+    /// <summary>Whether the provider supports partial feature patch operations.</summary>
+    public bool SupportsPatches { get; init; }
+
     /// <summary>Whether the provider supports deleting features.</summary>
     public bool SupportsDeletes { get; init; }
 
@@ -30,7 +33,7 @@ public sealed record FeatureEditCapabilities
 }
 
 /// <summary>
-/// Provider-neutral edit request for add, update, and delete operations.
+/// Provider-neutral edit request for add, update, patch, and delete operations.
 /// </summary>
 public sealed record FeatureEditRequest
 {
@@ -42,6 +45,9 @@ public sealed record FeatureEditRequest
 
     /// <summary>Features to update. Providers that use object IDs require each update to include an ID.</summary>
     public IReadOnlyList<FeatureEditFeature> Updates { get; init; } = [];
+
+    /// <summary>Features to patch with provider-native partial update payloads.</summary>
+    public IReadOnlyList<FeatureEditPatch> Patches { get; init; } = [];
 
     /// <summary>String feature identifiers to delete.</summary>
     public IReadOnlyList<string> DeleteIds { get; init; } = [];
@@ -76,6 +82,21 @@ public sealed record FeatureEditFeature
 }
 
 /// <summary>
+/// Provider-neutral partial feature edit payload.
+/// </summary>
+public sealed record FeatureEditPatch
+{
+    /// <summary>Provider feature identifier, when available.</summary>
+    public string? Id { get; init; }
+
+    /// <summary>Provider object identifier, when available.</summary>
+    public long? ObjectId { get; init; }
+
+    /// <summary>Provider-native partial edit payload. OGC API Features uses RFC 7396 JSON Merge Patch.</summary>
+    public required JsonElement Patch { get; init; }
+}
+
+/// <summary>
 /// Provider-neutral response from applying a batch of feature edits.
 /// </summary>
 public sealed record FeatureEditResponse
@@ -89,6 +110,9 @@ public sealed record FeatureEditResponse
     /// <summary>Results for update operations.</summary>
     public IReadOnlyList<FeatureEditResult> UpdateResults { get; init; } = [];
 
+    /// <summary>Results for patch operations.</summary>
+    public IReadOnlyList<FeatureEditResult> PatchResults { get; init; } = [];
+
     /// <summary>Results for delete operations.</summary>
     public IReadOnlyList<FeatureEditResult> DeleteResults { get; init; } = [];
 
@@ -100,6 +124,7 @@ public sealed record FeatureEditResponse
         Error is null &&
         AddResults.All(result => result.Succeeded) &&
         UpdateResults.All(result => result.Succeeded) &&
+        PatchResults.All(result => result.Succeeded) &&
         DeleteResults.All(result => result.Succeeded);
 }
 

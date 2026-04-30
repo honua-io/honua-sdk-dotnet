@@ -96,13 +96,16 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
 | `Honua.Sdk.Scenes` | Scene list, scene metadata detail, render endpoint resolution, access envelopes, attribution metadata, and offline scene package manifest parsing/validation. |
 | `Honua.Sdk.Field` | Provider-neutral form definitions, source-schema-to-form mapping, field validation, visibility rules, calculated fields, duplicate detection contracts, and record workflow transitions. No transport or display behavior. |
-| `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, and next-link pagination. |
+| `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, next-link pagination, and create/update/patch/delete edits. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
 WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
 capabilities are available through `IHonuaFeatureEditClient`; gRPC,
 GeoServices FeatureServer, and OGC API Features currently advertise write
 support, while WFS reports unsupported edit capabilities with a reason.
+OGC API Features additionally supports shared RFC 7396 JSON Merge Patch edit
+payloads through `FeatureEditRequest.Patches` and native
+`IHonuaOgcFeaturesPatchClient.PatchItemAsync()`.
 
 Shared real-time feed contracts are available through
 `IHonuaFeatureStreamClient` in `Honua.Sdk.Abstractions`. The SDK normalizes
