@@ -17,7 +17,7 @@ protocol-specific method is needed.
   from the descriptor.
 - `IHonuaSource` is the runtime handle with `QueryAsync()`,
   `QueryPagesAsync()`, `QueryAllAsync()`, `QueryObjectIdsAsync()`,
-  `ApplyEditsAsync()`, and `Protocol<TClient>()`.
+  `GetDescriptorAsync()`, `ApplyEditsAsync()`, and `Protocol<TClient>()`.
 
 ```csharp
 var source = new HonuaSource(
@@ -46,6 +46,13 @@ group-by fields, and having
 clauses. Adapters map only the facets their backing protocol supports. Unsupported
 facets fail with `NotSupportedException` instead of being ignored.
 
+`GetDescriptorAsync()` asks a backing provider for source schema and capability
+metadata when the client implements descriptor discovery. GeoServices maps layer
+metadata directly; OGC API Features combines collection metadata with
+`queryables`; WFS combines `GetCapabilities` with `DescribeFeatureType`; gRPC
+uses feature query metadata plus an extent-only query because the current proto
+does not expose a dedicated schema RPC.
+
 ## Protocol IDs
 
 Use `FeatureProtocolIds` for stable protocol identifiers. The facade accepts
@@ -64,10 +71,11 @@ persisted descriptors may contain older provider names.
 ## Capabilities
 
 Use `FeatureCapabilities` for shared capability identifiers. The .NET facade
-currently advertises query, query-object-IDs, stream/page iteration, and edit
-capabilities where the wrapped client supports them. `FeatureProtocolCapabilities`
-contains protocol defaults and helpers for union/intersection when a caller is
-building a multi-source view.
+advertises query, statistics, extent, query-object-IDs, time-filter, spatial
+relationship, stream/page iteration, edit, attachment, relationship, and offline
+capabilities where the wrapped client or discovered metadata supports them.
+`FeatureProtocolCapabilities` contains protocol defaults and helpers for
+union/intersection when a caller is building a multi-source view.
 
 `HonuaSource` intersects declared descriptor capabilities with runtime client
 capabilities. For example, WFS can still be described as queryable while

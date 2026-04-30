@@ -14,7 +14,12 @@ namespace Honua.Sdk.GeoServices.FeatureServer;
 /// <summary>
 /// HTTP client implementation for the Honua FeatureServer (GeoServices) read/query API.
 /// </summary>
-public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonuaFeatureServerEditClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
+public sealed class HonuaFeatureServerClient :
+    IHonuaFeatureServerClient,
+    IHonuaFeatureServerEditClient,
+    IHonuaFeatureQueryClient,
+    IHonuaFeatureEditClient,
+    IHonuaFeatureDescriptorClient
 {
     private const int PostFallbackThreshold = 2000;
     private static readonly FeatureEditCapabilities ProviderEditCapabilities = new()
@@ -66,6 +71,27 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
         var body = await GetStringAsync(url, ct).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerLayerInfo)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize layer info.", body);
+    }
+
+    /// <inheritdoc />
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+
+        var locator = descriptor.Locator;
+        if (string.IsNullOrWhiteSpace(locator.ServiceId) || !locator.LayerId.HasValue)
+        {
+            throw new ArgumentException(
+                "GeoServices descriptor discovery requires SourceDescriptor.Locator.ServiceId and LayerId.",
+                nameof(descriptor));
+        }
+
+        var layer = await GetLayerInfoAsync(locator.ServiceId, locator.LayerId.Value, ct).ConfigureAwait(false);
+        return descriptor with
+        {
+            Capabilities = BuildDiscoveredCapabilities(layer),
+            Schema = BuildSourceSchema(layer),
+        };
     }
 
     /// <inheritdoc />
@@ -693,6 +719,173 @@ public sealed class HonuaFeatureServerClient : IHonuaFeatureServerClient, IHonua
 
         return (request.Source.ServiceId, request.Source.LayerId.Value, query);
     }
+
+    private static List<string> BuildDiscoveredCapabilities(FeatureServerLayerInfo layer)
+    {
+        var capabilities = new HashSet<string>(
+            FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.GeoServicesFeatureService),
+            StringComparer.Ordinal);
+        var advertised = SplitCapabilities(layer.Capabilities);
+        var hasAdvertisedCapabilities = advertised.Count > 0;
+        var supportsQuery = !hasAdvertisedCapabilities || advertised.Contains("Query");
+
+        if (!supportsQuery)
+        {
+            capabilities.Remove(FeatureCapabilities.Query);
+            capabilities.Remove(FeatureCapabilities.QueryAggregate);
+            capabilities.Remove(FeatureCapabilities.QueryExtent);
+            capabilities.Remove(FeatureCapabilities.QueryObjectIds);
+            capabilities.Remove(FeatureCapabilities.TimeFilter);
+            capabilities.Remove(FeatureCapabilities.SpatialRelationships);
+            capabilities.Remove(FeatureCapabilities.Stream);
+        }
+
+        if (!layer.SupportsStatistics)
+        {
+            capabilities.Remove(FeatureCapabilities.QueryAggregate);
+        }
+
+        if (!layer.SupportsAdvancedQueries && hasAdvertisedCapabilities && !advertised.Contains("Query"))
+        {
+            capabilities.Remove(FeatureCapabilities.QueryExtent);
+        }
+
+        if (layer.TimeInfo is null)
+        {
+            capabilities.Remove(FeatureCapabilities.TimeFilter);
+        }
+
+        if (!LayerSupportsEdits(advertised, hasAdvertisedCapabilities))
+        {
+            capabilities.Remove(FeatureCapabilities.ApplyEdits);
+        }
+
+        if (layer.HasAttachments)
+        {
+            capabilities.Add(FeatureCapabilities.Attachments);
+        }
+
+        if (advertised.Contains("Sync"))
+        {
+            capabilities.Add(FeatureCapabilities.Offline);
+        }
+
+        return FeatureCapabilities.All.Where(capabilities.Contains).ToList();
+    }
+
+    private static SourceSchema BuildSourceSchema(FeatureServerLayerInfo layer)
+    {
+        var spatialReference = FormatSpatialReference(layer.SpatialReference);
+        return new SourceSchema
+        {
+            Fields = layer.Fields?.Select(ToSourceField).ToList() ?? [],
+            PrimaryKey = layer.ObjectIdField,
+            ObjectIdField = layer.ObjectIdField,
+            GlobalIdField = layer.GlobalIdField,
+            GeometryType = ToSourceGeometryType(layer.GeometryType),
+            Extent = ToFeatureBoundingBox(layer.Extent, spatialReference),
+            SpatialReference = spatialReference,
+            TimeField = layer.TimeInfo?.StartTimeField,
+            TimeInfo = layer.TimeInfo is not null
+                ? new SourceTimeInfo
+                {
+                    StartTimeField = layer.TimeInfo.StartTimeField,
+                    EndTimeField = layer.TimeInfo.EndTimeField,
+                    TrackIdField = layer.TimeInfo.TrackIdField,
+                    TimeReference = JsonElementToRawText(layer.TimeInfo.TimeReference),
+                }
+                : null,
+            EditCapabilities = BuildLayerEditCapabilities(layer),
+        };
+    }
+
+    private static SourceField ToSourceField(FeatureServerField field)
+        => new()
+        {
+            Name = field.Name,
+            Alias = field.Alias,
+            Type = field.Type,
+            Nullable = field.Nullable,
+            Length = field.Length,
+            Editable = field.Editable,
+            Required = !field.Nullable,
+            DefaultValue = CloneJsonElement(field.DefaultValue),
+            Domain = CloneJsonElement(field.Domain),
+        };
+
+    private static FeatureEditCapabilities BuildLayerEditCapabilities(FeatureServerLayerInfo layer)
+    {
+        var advertised = SplitCapabilities(layer.Capabilities);
+        var hasAdvertisedCapabilities = advertised.Count > 0;
+        var supportsAnyEdit = LayerSupportsEdits(advertised, hasAdvertisedCapabilities);
+
+        return new FeatureEditCapabilities
+        {
+            SupportsAdds = supportsAnyEdit && (!hasAdvertisedCapabilities || advertised.Contains("Create") || advertised.Contains("Editing")),
+            SupportsUpdates = supportsAnyEdit && (!hasAdvertisedCapabilities || advertised.Contains("Update") || advertised.Contains("Editing")),
+            SupportsDeletes = supportsAnyEdit && (!hasAdvertisedCapabilities || advertised.Contains("Delete") || advertised.Contains("Editing")),
+            SupportsRollbackOnFailure = supportsAnyEdit,
+            NativeSurface = ProviderEditCapabilities.NativeSurface,
+            UnsupportedReason = supportsAnyEdit ? null : "GeoServices FeatureServer layer does not advertise edit capabilities.",
+        };
+    }
+
+    private static bool LayerSupportsEdits(HashSet<string> advertised, bool hasAdvertisedCapabilities)
+        => !hasAdvertisedCapabilities ||
+           advertised.Contains("Create") ||
+           advertised.Contains("Update") ||
+           advertised.Contains("Delete") ||
+           advertised.Contains("Editing");
+
+    private static HashSet<string> SplitCapabilities(string? capabilities)
+        => string.IsNullOrWhiteSpace(capabilities)
+            ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            : capabilities
+                .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    private static FeatureSpatialGeometryType ToSourceGeometryType(string? geometryType)
+        => geometryType switch
+        {
+            "esriGeometryPoint" => FeatureSpatialGeometryType.Point,
+            "esriGeometryEnvelope" => FeatureSpatialGeometryType.Envelope,
+            "esriGeometryMultipoint" => FeatureSpatialGeometryType.MultiPoint,
+            "esriGeometryPolyline" => FeatureSpatialGeometryType.Polyline,
+            "esriGeometryPolygon" => FeatureSpatialGeometryType.Polygon,
+            _ => FeatureSpatialGeometryType.Unspecified,
+        };
+
+    private static FeatureBoundingBox? ToFeatureBoundingBox(FeatureServerExtent? extent, string? fallbackCrs)
+    {
+        if (extent is null)
+        {
+            return null;
+        }
+
+        return new FeatureBoundingBox
+        {
+            MinX = extent.Xmin,
+            MinY = extent.Ymin,
+            MaxX = extent.Xmax,
+            MaxY = extent.Ymax,
+            Crs = FormatSpatialReference(extent.SpatialReference) ?? fallbackCrs,
+        };
+    }
+
+    private static string? FormatSpatialReference(FeatureServerSpatialReference? spatialReference)
+        => spatialReference?.Wkid > 0
+            ? string.Create(
+                CultureInfo.InvariantCulture,
+                $"EPSG:{spatialReference.Wkid}")
+            : null;
+
+    private static JsonElement? CloneJsonElement(JsonElement? element)
+        => element.HasValue ? element.Value.Clone() : null;
+
+    private static string? JsonElementToRawText(JsonElement? element)
+        => element.HasValue && element.Value.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null
+            ? element.Value.GetRawText()
+            : null;
 
     private static (string ServiceId, int LayerId) GetEditSource(FeatureEditRequest request)
     {

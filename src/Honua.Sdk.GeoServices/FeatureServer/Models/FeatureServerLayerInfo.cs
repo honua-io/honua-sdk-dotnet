@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.GeoServices.FeatureServer.Models;
@@ -54,6 +55,10 @@ public sealed class FeatureServerLayerInfo
     [JsonPropertyName("capabilities")]
     public string? Capabilities { get; init; }
 
+    /// <summary>Whether the layer advertises attachment support.</summary>
+    [JsonPropertyName("hasAttachments")]
+    public bool HasAttachments { get; init; }
+
     /// <summary>Whether the layer supports statistics.</summary>
     [JsonPropertyName("supportsStatistics")]
     public bool SupportsStatistics { get; init; }
@@ -61,4 +66,30 @@ public sealed class FeatureServerLayerInfo
     /// <summary>Whether the layer supports advanced queries.</summary>
     [JsonPropertyName("supportsAdvancedQueries")]
     public bool SupportsAdvancedQueries { get; init; }
+
+    /// <summary>Time metadata advertised by the layer.</summary>
+    [JsonPropertyName("timeInfo")]
+    public FeatureServerTimeInfo? TimeInfo { get; init; }
+}
+
+/// <summary>
+/// Time metadata advertised by a FeatureServer layer.
+/// </summary>
+public sealed class FeatureServerTimeInfo
+{
+    /// <summary>Start time field name.</summary>
+    [JsonPropertyName("startTimeField")]
+    public string? StartTimeField { get; init; }
+
+    /// <summary>End time field name.</summary>
+    [JsonPropertyName("endTimeField")]
+    public string? EndTimeField { get; init; }
+
+    /// <summary>Track ID field name.</summary>
+    [JsonPropertyName("trackIdField")]
+    public string? TrackIdField { get; init; }
+
+    /// <summary>Provider time reference payload.</summary>
+    [JsonPropertyName("timeReference")]
+    public JsonElement? TimeReference { get; init; }
 }

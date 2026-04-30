@@ -15,7 +15,12 @@ namespace Honua.Sdk.OgcFeatures;
 /// <summary>
 /// HTTP client implementation for the Honua OGC API Features read/query API.
 /// </summary>
-public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcFeaturesEditClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
+public sealed class HonuaOgcFeaturesClient :
+    IHonuaOgcFeaturesClient,
+    IHonuaOgcFeaturesEditClient,
+    IHonuaFeatureQueryClient,
+    IHonuaFeatureEditClient,
+    IHonuaFeatureDescriptorClient
 {
     private const string BasePath = "/ogc/features";
     private const string RollbackUnsupportedReason =
@@ -91,6 +96,27 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
         var body = await GetStringAsync(url, ct).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcQueryables)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize queryables.", body);
+    }
+
+    /// <inheritdoc />
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+
+        if (string.IsNullOrWhiteSpace(descriptor.Locator.CollectionId))
+        {
+            throw new ArgumentException(
+                "OGC API Features descriptor discovery requires SourceDescriptor.Locator.CollectionId.",
+                nameof(descriptor));
+        }
+
+        var collection = await GetCollectionAsync(descriptor.Locator.CollectionId, ct).ConfigureAwait(false);
+        var queryables = await TryGetQueryablesAsync(descriptor.Locator.CollectionId, ct).ConfigureAwait(false);
+        return descriptor with
+        {
+            Capabilities = BuildDiscoveredCapabilities(),
+            Schema = BuildSourceSchema(collection, queryables),
+        };
     }
 
     /// <inheritdoc />
@@ -448,6 +474,142 @@ public sealed class HonuaOgcFeaturesClient : IHonuaOgcFeaturesClient, IHonuaOgcF
         OgcFeaturesFormat.Parquet => "parquet",
         _ => "json",
     };
+
+    private async Task<OgcQueryables?> TryGetQueryablesAsync(string collectionId, CancellationToken ct)
+    {
+        try
+        {
+            return await GetQueryablesAsync(collectionId, ct).ConfigureAwait(false);
+        }
+        catch (HonuaOgcFeaturesException ex) when (
+            ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.NotImplemented)
+        {
+            return null;
+        }
+    }
+
+    private static List<string> BuildDiscoveredCapabilities()
+    {
+        var capabilities = new HashSet<string>(
+            FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.OgcFeatures),
+            StringComparer.Ordinal);
+
+        if (OgcEditCapabilities.SupportsAdds || OgcEditCapabilities.SupportsUpdates || OgcEditCapabilities.SupportsDeletes)
+        {
+            capabilities.Add(FeatureCapabilities.ApplyEdits);
+        }
+
+        return FeatureCapabilities.All.Where(capabilities.Contains).ToList();
+    }
+
+    private static SourceSchema BuildSourceSchema(OgcCollection collection, OgcQueryables? queryables)
+    {
+        var fields = BuildQueryableFields(queryables);
+        var spatialReference =
+            collection.StorageCrs ??
+            collection.Extent?.Spatial?.Crs ??
+            (collection.Crs is { Count: > 0 } ? collection.Crs[0] : null);
+        var primaryKey = fields.FirstOrDefault(
+            field => string.Equals(field.Name, "id", StringComparison.OrdinalIgnoreCase))?.Name;
+
+        return new SourceSchema
+        {
+            Fields = fields,
+            PrimaryKey = primaryKey,
+            GeometryType = FeatureSpatialGeometryType.Unspecified,
+            Extent = ToFeatureBoundingBox(collection.Extent?.Spatial, spatialReference),
+            SpatialReference = spatialReference,
+            EditCapabilities = OgcEditCapabilities,
+        };
+    }
+
+    private static List<SourceField> BuildQueryableFields(OgcQueryables? queryables)
+    {
+        if (queryables?.Properties is not { Count: > 0 } properties)
+        {
+            return [];
+        }
+
+        var required = new HashSet<string>(queryables.Required ?? [], StringComparer.Ordinal);
+        return properties.Select(property => ToSourceField(property.Key, property.Value, required)).ToList();
+    }
+
+    private static SourceField ToSourceField(string name, JsonElement schema, HashSet<string> required)
+        => new()
+        {
+            Name = name,
+            Alias = TryGetStringProperty(schema, "title"),
+            Type = GetJsonSchemaType(schema),
+            Nullable = GetJsonSchemaNullable(name, schema, required),
+            Length = TryGetIntProperty(schema, "maxLength"),
+            Required = required.Contains(name),
+            DefaultValue = TryGetPropertyClone(schema, "default"),
+            Domain = TryGetPropertyClone(schema, "enum"),
+        };
+
+    private static string? GetJsonSchemaType(JsonElement schema)
+    {
+        if (!schema.TryGetProperty("type", out var type))
+        {
+            return null;
+        }
+
+        return type.ValueKind switch
+        {
+            JsonValueKind.String => type.GetString(),
+            JsonValueKind.Array => string.Join(
+                "|",
+                type.EnumerateArray()
+                    .Where(item => item.ValueKind == JsonValueKind.String)
+                    .Select(item => item.GetString())),
+            _ => type.GetRawText(),
+        };
+    }
+
+    private static bool? GetJsonSchemaNullable(string name, JsonElement schema, HashSet<string> required)
+    {
+        if (schema.TryGetProperty("nullable", out var nullable) &&
+            nullable.ValueKind is JsonValueKind.True or JsonValueKind.False)
+        {
+            return nullable.GetBoolean();
+        }
+
+        return !required.Contains(name);
+    }
+
+    private static string? TryGetStringProperty(JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+
+    private static int? TryGetIntProperty(JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var property) && property.TryGetInt32(out var value)
+            ? value
+            : null;
+
+    private static JsonElement? TryGetPropertyClone(JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var property) &&
+           property.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null
+            ? property.Clone()
+            : null;
+
+    private static FeatureBoundingBox? ToFeatureBoundingBox(OgcSpatialExtent? spatialExtent, string? fallbackCrs)
+    {
+        var bbox = spatialExtent?.Bbox is { Count: > 0 } bboxes ? bboxes[0] : null;
+        if (bbox is not { Count: >= 4 })
+        {
+            return null;
+        }
+
+        return new FeatureBoundingBox
+        {
+            MinX = bbox[0],
+            MinY = bbox[1],
+            MaxX = bbox[2],
+            MaxY = bbox[3],
+            Crs = spatialExtent?.Crs ?? fallbackCrs,
+        };
+    }
 
     private static (string CollectionId, OgcItemsParams Query) BuildOgcQuery(FeatureQueryRequest request)
     {

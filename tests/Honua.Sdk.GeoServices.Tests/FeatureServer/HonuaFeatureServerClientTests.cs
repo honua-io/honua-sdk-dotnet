@@ -74,6 +74,89 @@ public class HonuaFeatureServerClientTests
         Assert.Equal(2, result.Fields.Count);
     }
 
+    [Fact]
+    public async Task GetDescriptorAsync_SharedAbstraction_MapsLayerSchemaAndCapabilities()
+    {
+        var json = """
+        {
+            "id": 0,
+            "name": "Parks",
+            "geometryType": "esriGeometryPoint",
+            "objectIdField": "OBJECTID",
+            "globalIdField": "GLOBALID",
+            "capabilities": "Query,Create,Update,Delete,Uploads,Sync",
+            "supportsStatistics": true,
+            "supportsAdvancedQueries": true,
+            "hasAttachments": true,
+            "spatialReference": { "wkid": 4326, "latestWkid": 4326 },
+            "extent": {
+                "xmin": -180,
+                "ymin": -90,
+                "xmax": 180,
+                "ymax": 90,
+                "spatialReference": { "wkid": 4326 }
+            },
+            "timeInfo": {
+                "startTimeField": "start_at",
+                "endTimeField": "end_at",
+                "trackIdField": "track_id",
+                "timeReference": { "timeZone": "UTC" }
+            },
+            "fields": [
+                { "name": "OBJECTID", "type": "esriFieldTypeOID", "alias": "Object ID", "nullable": false, "editable": false },
+                {
+                    "name": "STATUS",
+                    "type": "esriFieldTypeString",
+                    "alias": "Status",
+                    "nullable": false,
+                    "length": 20,
+                    "editable": true,
+                    "defaultValue": "open",
+                    "domain": { "type": "codedValue", "codedValues": [{ "name": "Open", "code": "open" }] }
+                }
+            ]
+        }
+        """;
+        var client = TestHelpers.CreateFeatureServerClient(req =>
+        {
+            Assert.Contains("/rest/services/parks/FeatureServer/0", req.RequestUri?.ToString());
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var descriptor = await ((IHonuaFeatureDescriptorClient)client).GetDescriptorAsync(new SourceDescriptor
+        {
+            Id = "parks",
+            Protocol = FeatureProtocolIds.GeoServicesFeatureService,
+            Locator = new SourceLocator { ServiceId = "parks", LayerId = 0 }
+        });
+
+        Assert.NotNull(descriptor.Schema);
+        Assert.Equal("OBJECTID", descriptor.Schema.ObjectIdField);
+        Assert.Equal("GLOBALID", descriptor.Schema.GlobalIdField);
+        Assert.Equal(FeatureSpatialGeometryType.Point, descriptor.Schema.GeometryType);
+        Assert.Equal("EPSG:4326", descriptor.Schema.SpatialReference);
+        Assert.Equal("EPSG:4326", descriptor.Schema.Extent?.Crs);
+        Assert.Equal("start_at", descriptor.Schema.TimeInfo?.StartTimeField);
+        Assert.Equal("end_at", descriptor.Schema.TimeInfo?.EndTimeField);
+        Assert.True(descriptor.Schema.EditCapabilities?.SupportsAdds);
+        Assert.True(descriptor.Schema.EditCapabilities?.SupportsUpdates);
+        Assert.True(descriptor.Schema.EditCapabilities?.SupportsDeletes);
+        Assert.Contains(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.Attachments, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.Offline, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
+        Assert.Contains(FeatureCapabilities.SpatialRelationships, descriptor.Capabilities);
+        var status = Assert.Single(descriptor.Schema.Fields, field => field.Name == "STATUS");
+        Assert.Equal("Status", status.Alias);
+        Assert.Equal("esriFieldTypeString", status.Type);
+        Assert.False(status.Nullable);
+        Assert.Equal(20, status.Length);
+        Assert.True(status.Editable);
+        Assert.True(status.Required);
+        Assert.Equal("open", status.DefaultValue?.GetString());
+        Assert.Equal("codedValue", status.Domain?.GetProperty("type").GetString());
+    }
+
     // ── QueryAsync ──────────────────────────────────────────────────
 
     [Fact]

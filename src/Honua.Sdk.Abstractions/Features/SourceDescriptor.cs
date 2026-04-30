@@ -1,6 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
+
 namespace Honua.Sdk.Abstractions.Features;
 
 /// <summary>
@@ -50,8 +52,29 @@ public sealed record SourceSchema
     /// <summary>Primary key or object ID field name.</summary>
     public string? PrimaryKey { get; init; }
 
+    /// <summary>Provider object ID field name, when the source has one.</summary>
+    public string? ObjectIdField { get; init; }
+
+    /// <summary>Provider global ID field name, when the source has one.</summary>
+    public string? GlobalIdField { get; init; }
+
+    /// <summary>Feature geometry type advertised by the source.</summary>
+    public FeatureSpatialGeometryType GeometryType { get; init; } = FeatureSpatialGeometryType.Unspecified;
+
+    /// <summary>Full source extent, when advertised by the provider.</summary>
+    public FeatureBoundingBox? Extent { get; init; }
+
+    /// <summary>Coordinate reference system identifier for the source geometry, when advertised.</summary>
+    public string? SpatialReference { get; init; }
+
     /// <summary>Temporal validity field name, when applicable.</summary>
     public string? TimeField { get; init; }
+
+    /// <summary>Temporal metadata advertised by the source.</summary>
+    public SourceTimeInfo? TimeInfo { get; init; }
+
+    /// <summary>Edit capabilities advertised by the source.</summary>
+    public FeatureEditCapabilities? EditCapabilities { get; init; }
 }
 
 /// <summary>
@@ -62,6 +85,9 @@ public sealed record SourceField
     /// <summary>Field name.</summary>
     public required string Name { get; init; }
 
+    /// <summary>Human-readable field alias or title.</summary>
+    public string? Alias { get; init; }
+
     /// <summary>Provider or canonical field type.</summary>
     public string? Type { get; init; }
 
@@ -70,6 +96,36 @@ public sealed record SourceField
 
     /// <summary>Maximum length for string fields.</summary>
     public int? Length { get; init; }
+
+    /// <summary>Whether the field can be edited by clients.</summary>
+    public bool? Editable { get; init; }
+
+    /// <summary>Whether the field is required for writes.</summary>
+    public bool? Required { get; init; }
+
+    /// <summary>Provider-native field domain metadata, when advertised.</summary>
+    public JsonElement? Domain { get; init; }
+
+    /// <summary>Provider-native default value, when advertised.</summary>
+    public JsonElement? DefaultValue { get; init; }
+}
+
+/// <summary>
+/// Temporal metadata for a source.
+/// </summary>
+public sealed record SourceTimeInfo
+{
+    /// <summary>Start time field name.</summary>
+    public string? StartTimeField { get; init; }
+
+    /// <summary>End time field name for interval-aware sources.</summary>
+    public string? EndTimeField { get; init; }
+
+    /// <summary>Track ID field name for moving-object or track-aware sources.</summary>
+    public string? TrackIdField { get; init; }
+
+    /// <summary>Provider time reference identifier or JSON summary.</summary>
+    public string? TimeReference { get; init; }
 }
 
 /// <summary>

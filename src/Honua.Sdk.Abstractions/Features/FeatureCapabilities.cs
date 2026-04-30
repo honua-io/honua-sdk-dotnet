@@ -20,6 +20,12 @@ public static class FeatureCapabilities
     /// <summary>Object or feature ID query support.</summary>
     public const string QueryObjectIds = "queryObjectIds";
 
+    /// <summary>Temporal query filter support.</summary>
+    public const string TimeFilter = "timeFilter";
+
+    /// <summary>Spatial relationship query support.</summary>
+    public const string SpatialRelationships = "spatialRelationships";
+
     /// <summary>Related-record query support.</summary>
     public const string QueryRelated = "queryRelated";
 
@@ -59,6 +65,9 @@ public static class FeatureCapabilities
     /// <summary>OGC API Processes support.</summary>
     public const string Processes = "processes";
 
+    /// <summary>Offline replica or sync support.</summary>
+    public const string Offline = "offline";
+
     /// <summary>All canonical capability identifiers supported by the shared vocabulary.</summary>
     public static IReadOnlyList<string> All { get; } =
     [
@@ -66,6 +75,8 @@ public static class FeatureCapabilities
         QueryAggregate,
         QueryExtent,
         QueryObjectIds,
+        TimeFilter,
+        SpatialRelationships,
         QueryRelated,
         ApplyEdits,
         Attachments,
@@ -78,7 +89,8 @@ public static class FeatureCapabilities
         Image,
         Geometry,
         Geoprocess,
-        Processes
+        Processes,
+        Offline
     ];
 
     /// <summary>

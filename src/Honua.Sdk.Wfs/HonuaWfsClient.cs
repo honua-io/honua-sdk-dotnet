@@ -21,7 +21,11 @@ namespace Honua.Sdk.Wfs;
 /// <summary>
 /// WFS 2.0 read/query client for Honua Server.
 /// </summary>
-public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient
+public sealed class HonuaWfsClient :
+    IHonuaWfsClient,
+    IHonuaFeatureQueryClient,
+    IHonuaFeatureEditClient,
+    IHonuaFeatureDescriptorClient
 {
     private static readonly ActivitySource ActivitySource = new("Honua.Sdk.Wfs");
     private static readonly GeoJsonFeatureCollectionHandler DefaultGeoJsonHandler = new();
@@ -88,6 +92,30 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return WfsDescribeFeatureTypeParser.Parse(body);
+    }
+
+    /// <inheritdoc />
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+
+        if (string.IsNullOrWhiteSpace(descriptor.Locator.TypeName))
+        {
+            throw new ArgumentException(
+                "WFS descriptor discovery requires SourceDescriptor.Locator.TypeName.",
+                nameof(descriptor));
+        }
+
+        var capabilities = await GetCapabilitiesAsync(ct).ConfigureAwait(false);
+        var featureType = capabilities.FeatureTypes.FirstOrDefault(
+            candidate => string.Equals(candidate.Name, descriptor.Locator.TypeName, StringComparison.Ordinal));
+        var schema = await DescribeFeatureTypeAsync(descriptor.Locator.TypeName, ct).ConfigureAwait(false);
+
+        return descriptor with
+        {
+            Capabilities = BuildDiscoveredCapabilities(),
+            Schema = BuildSourceSchema(featureType, schema),
+        };
     }
 
     /// <inheritdoc />
@@ -441,6 +469,92 @@ public sealed class HonuaWfsClient : IHonuaWfsClient, IHonuaFeatureQueryClient, 
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+
+    private static List<string> BuildDiscoveredCapabilities()
+        => FeatureCapabilities.All
+            .Where(FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.Wfs).Contains)
+            .ToList();
+
+    private static SourceSchema BuildSourceSchema(WfsFeatureType? featureType, WfsFeatureTypeSchema schema)
+    {
+        var fields = schema.Properties.Select(ToSourceField).ToList();
+        var geometryType = schema.Properties
+            .Select(property => ToSourceGeometryType(property.Type))
+            .FirstOrDefault(type => type != FeatureSpatialGeometryType.Unspecified);
+        var primaryKey = fields.FirstOrDefault(
+            field => string.Equals(field.Name, "id", StringComparison.OrdinalIgnoreCase))?.Name;
+
+        return new SourceSchema
+        {
+            Fields = fields,
+            PrimaryKey = primaryKey,
+            GeometryType = geometryType,
+            Extent = ToFeatureBoundingBox(featureType),
+            SpatialReference = featureType?.DefaultCrs,
+            EditCapabilities = UnsupportedEditCapabilities,
+        };
+    }
+
+    private static SourceField ToSourceField(WfsSchemaProperty property)
+        => new()
+        {
+            Name = property.Name,
+            Type = property.Type,
+            Nullable = property.Nillable || property.MinOccurs == 0,
+            Required = property.MinOccurs > 0 && !property.Nillable,
+        };
+
+    private static FeatureSpatialGeometryType ToSourceGeometryType(string? type)
+    {
+        if (string.IsNullOrWhiteSpace(type) ||
+            !type.Contains("gml:", StringComparison.OrdinalIgnoreCase))
+        {
+            return FeatureSpatialGeometryType.Unspecified;
+        }
+
+        if (type.Contains("Point", StringComparison.OrdinalIgnoreCase))
+        {
+            return type.Contains("Multi", StringComparison.OrdinalIgnoreCase)
+                ? FeatureSpatialGeometryType.MultiPoint
+                : FeatureSpatialGeometryType.Point;
+        }
+
+        if (type.Contains("Line", StringComparison.OrdinalIgnoreCase) ||
+            type.Contains("Curve", StringComparison.OrdinalIgnoreCase))
+        {
+            return FeatureSpatialGeometryType.Polyline;
+        }
+
+        if (type.Contains("Polygon", StringComparison.OrdinalIgnoreCase) ||
+            type.Contains("Surface", StringComparison.OrdinalIgnoreCase))
+        {
+            return FeatureSpatialGeometryType.Polygon;
+        }
+
+        if (type.Contains("Envelope", StringComparison.OrdinalIgnoreCase))
+        {
+            return FeatureSpatialGeometryType.Envelope;
+        }
+
+        return FeatureSpatialGeometryType.Unspecified;
+    }
+
+    private static FeatureBoundingBox? ToFeatureBoundingBox(WfsFeatureType? featureType)
+    {
+        if (featureType?.LowerCorner is not { } lower || featureType.UpperCorner is not { } upper)
+        {
+            return null;
+        }
+
+        return new FeatureBoundingBox
+        {
+            MinX = lower.X,
+            MinY = lower.Y,
+            MaxX = upper.X,
+            MaxY = upper.Y,
+            Crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        };
+    }
 
     private static GetFeaturesRequest BuildWfsQuery(FeatureQueryRequest request)
     {

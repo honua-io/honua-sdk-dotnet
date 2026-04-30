@@ -17,7 +17,12 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// gRPC client for the Honua FeatureService.
 /// </summary>
-public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient, IHonuaFeatureEditClient, IDisposable
+public sealed class HonuaGrpcClient :
+    IHonuaGrpcClient,
+    IHonuaFeatureQueryClient,
+    IHonuaFeatureEditClient,
+    IHonuaFeatureDescriptorClient,
+    IDisposable
 {
     private const string FeatureServiceName = "geospatial.v1.FeatureService";
 
@@ -105,6 +110,47 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
 
     /// <inheritdoc />
     public FeatureEditCapabilities EditCapabilities => GrpcEditCapabilities;
+
+    /// <inheritdoc />
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+
+        var locator = descriptor.Locator;
+        if (string.IsNullOrWhiteSpace(locator.ServiceId) || !locator.LayerId.HasValue)
+        {
+            throw new ArgumentException(
+                "gRPC descriptor discovery requires SourceDescriptor.Locator.ServiceId and LayerId.",
+                nameof(descriptor));
+        }
+
+        var schemaResponse = await QueryFeaturesAsync(
+            new Models.QueryFeaturesRequest
+            {
+                ServiceId = locator.ServiceId,
+                LayerId = locator.LayerId.Value,
+                Where = "1=1",
+                ReturnGeometry = false,
+                ResultRecordCount = 0,
+            },
+            ct).ConfigureAwait(false);
+        var extentResponse = await QueryFeaturesAsync(
+            new Models.QueryFeaturesRequest
+            {
+                ServiceId = locator.ServiceId,
+                LayerId = locator.LayerId.Value,
+                Where = "1=1",
+                ReturnGeometry = false,
+                ReturnExtentOnly = true,
+            },
+            ct).ConfigureAwait(false);
+
+        return descriptor with
+        {
+            Capabilities = BuildDiscoveredCapabilities(),
+            Schema = BuildSourceSchema(schemaResponse, extentResponse.Extent),
+        };
+    }
 
     /// <inheritdoc />
     public async Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
@@ -352,6 +398,53 @@ public sealed class HonuaGrpcClient : IHonuaGrpcClient, IHonuaFeatureQueryClient
     private static bool IsHttpOrHttps(Uri uri)
         => string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
            string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+
+    private static List<string> BuildDiscoveredCapabilities()
+        => FeatureCapabilities.All
+            .Where(FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.Grpc).Contains)
+            .ToList();
+
+    private static SourceSchema BuildSourceSchema(Models.QueryFeaturesResponse response, Models.Extent? extent)
+    {
+        var objectIdField = string.IsNullOrWhiteSpace(response.ObjectIdFieldName) ? null : response.ObjectIdFieldName;
+        return new SourceSchema
+        {
+            Fields = response.Fields.Select(ToSourceField).ToList(),
+            PrimaryKey = objectIdField,
+            ObjectIdField = objectIdField,
+            GeometryType = ToSourceGeometryType(response.GeometryType),
+            Extent = extent is not null ? ToFeatureBoundingBox(extent) : null,
+            SpatialReference = FormatSpatialReference(response.SpatialReference),
+            EditCapabilities = GrpcEditCapabilities,
+        };
+    }
+
+    private static SourceField ToSourceField(Models.FieldDefinition field)
+        => new()
+        {
+            Name = field.Name,
+            Type = field.FieldType.ToString(),
+            Nullable = field.Nullable,
+            Length = field.Length > 0 ? field.Length : null,
+            Required = !field.Nullable,
+        };
+
+    private static FeatureSpatialGeometryType ToSourceGeometryType(Models.GeometryType geometryType)
+        => geometryType switch
+        {
+            Models.GeometryType.Point => FeatureSpatialGeometryType.Point,
+            Models.GeometryType.MultiPoint => FeatureSpatialGeometryType.MultiPoint,
+            Models.GeometryType.LineString or Models.GeometryType.MultiLineString => FeatureSpatialGeometryType.Polyline,
+            Models.GeometryType.Polygon or Models.GeometryType.MultiPolygon => FeatureSpatialGeometryType.Polygon,
+            _ => FeatureSpatialGeometryType.Unspecified,
+        };
+
+    private static string? FormatSpatialReference(Models.SpatialReference? spatialReference)
+        => spatialReference?.Wkid > 0
+            ? string.Create(
+                System.Globalization.CultureInfo.InvariantCulture,
+                $"EPSG:{spatialReference.Wkid}")
+            : spatialReference?.Wkt;
 
     private static Models.QueryFeaturesRequest BuildGrpcQuery(FeatureQueryRequest request)
     {
