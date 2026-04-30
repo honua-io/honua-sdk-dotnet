@@ -1,5 +1,6 @@
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Plugins;
+using Honua.Sdk.Abstractions.UtilityNetworks;
 using Honua.Sdk.Admin;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.Admin.Extensions;
@@ -33,6 +34,7 @@ RegisterGeometryContracts(builder.Services);
 RegisterOfflineContracts(builder.Services);
 RegisterPluginContracts(builder.Services);
 RegisterRealtimeContracts(builder.Services);
+RegisterUtilityNetworkContracts(builder.Services);
 
 var host = builder.Build();
 _ = host.Services.GetRequiredService<BrowserFeatureMapSample>();
@@ -254,4 +256,56 @@ static void RegisterRealtimeContracts(IServiceCollection services)
     });
     services.AddSingleton(featureEvent);
     services.AddSingleton(processor.Process(featureEvent));
+}
+
+static void RegisterUtilityNetworkContracts(IServiceCollection services)
+{
+    var source = new UtilityNetworkSource
+    {
+        ServiceId = "electric",
+        NetworkId = "distribution",
+        NetworkName = "Electric Distribution",
+    };
+    var startingPoint = new UtilityNetworkTraceStartingPoint
+    {
+        Element = new UtilityNetworkElementReference
+        {
+            ElementId = "switch-1",
+            NetworkSourceId = "devices",
+            NetworkSourceName = "Electric Device",
+            TerminalId = "load",
+        },
+    };
+    var namedConfiguration = new UtilityNetworkNamedTraceConfiguration
+    {
+        ConfigurationId = "primary-upstream",
+        Name = "Primary upstream",
+        TraceType = UtilityNetworkTraceType.Upstream,
+        Configuration = new UtilityNetworkTraceConfiguration
+        {
+            TraceType = UtilityNetworkTraceType.Upstream,
+            DomainNetwork = "ElectricDistribution",
+            Tier = "MediumVoltage",
+            OutputNetworkAttributes = ["phase", "status"],
+        },
+    };
+    var traceRequest = new UtilityNetworkTraceRequest
+    {
+        Source = source,
+        NamedConfigurationId = namedConfiguration.ConfigurationId,
+        StartingPoints = [startingPoint],
+        ReturnGeometry = true,
+    };
+
+    services.AddSingleton(source);
+    services.AddSingleton(namedConfiguration);
+    services.AddSingleton(traceRequest);
+    services.AddSingleton(new UtilityNetworkTraceCapabilities
+    {
+        SupportsUpstreamTrace = true,
+        SupportsNamedTraceConfigurations = true,
+        SupportsTerminals = true,
+        SupportsAssociations = true,
+        NativeSurface = "browser-host-adapter",
+    });
 }
