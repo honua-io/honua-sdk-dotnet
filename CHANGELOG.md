@@ -2,6 +2,18 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.9-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.8-alpha.1...dotnet-sdk-v0.1.9-alpha.1) (2026-04-30)
+
+
+### Features
+
+* add catalog discovery client ([#110](https://github.com/honua-io/honua-sdk-dotnet/issues/110)) ([b988c82](https://github.com/honua-io/honua-sdk-dotnet/commit/b988c8212a9ad04a0819c4454f4c932e5947c8ac))
+* add feature stream contracts ([#111](https://github.com/honua-io/honua-sdk-dotnet/issues/111)) ([6b6e90a](https://github.com/honua-io/honua-sdk-dotnet/commit/6b6e90a692005f86d869d4c9b4c92a338fd48b2a))
+* add production auth provider hooks ([f1f6a3a](https://github.com/honua-io/honua-sdk-dotnet/commit/f1f6a3a8f2a149911576df27a3ccc3806ebd187d))
+* add production auth provider hooks ([64c3d0f](https://github.com/honua-io/honua-sdk-dotnet/commit/64c3d0f2e857934f202de79596c6aa319931a116))
+* expand geocoding parity ([1f7b449](https://github.com/honua-io/honua-sdk-dotnet/commit/1f7b449e00527f1f5b5a4fe1a64fff9e76df1948))
+* expand geocoding parity ([0472d63](https://github.com/honua-io/honua-sdk-dotnet/commit/0472d63367fbba2439236dc4710a1cf317d8e077))
+
 ## [0.1.8-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.7-alpha.1...dotnet-sdk-v0.1.8-alpha.1) (2026-04-30)
 
 
