@@ -241,6 +241,43 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task QueryAsync_SharedAbstraction_MapsExplicitSpatialFilter()
+    {
+        Proto.QueryFeaturesRequest? capturedRequest = null;
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.QueryFeaturesRequest, Metadata, DateTime?, CancellationToken>((req, _, _, _) => capturedRequest = req)
+            .Returns(CreateAsyncUnaryCall(new Proto.QueryFeaturesResponse()));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { ServiceId = "test-svc", LayerId = 0 },
+            SpatialFilter = new FeatureSpatialFilter
+            {
+                Geometry = JsonSerializer.SerializeToElement(new { x = -118.0, y = 34.0 }),
+                GeometryType = FeatureSpatialGeometryType.Point,
+                Crs = "EPSG:4326",
+                Relationship = FeatureSpatialRelationship.Within
+            }
+        });
+
+        Assert.NotNull(capturedRequest);
+        Assert.NotNull(capturedRequest.SpatialFilter);
+        Assert.Equal(Proto.SpatialRelationship.Within, capturedRequest.SpatialFilter.SpatialRelationship);
+        Assert.Equal(4326, capturedRequest.SpatialFilter.SpatialReference.Wkid);
+        Assert.Equal(Proto.Geometry.ShapeOneofCase.Point, capturedRequest.SpatialFilter.Geometry.ShapeCase);
+        Assert.Equal(-118.0, capturedRequest.SpatialFilter.Geometry.Point.X);
+        Assert.Equal(34.0, capturedRequest.SpatialFilter.Geometry.Point.Y);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesGrpcClientAndExposesNativeProtocol()
     {
         Proto.QueryFeaturesRequest? capturedRequest = null;

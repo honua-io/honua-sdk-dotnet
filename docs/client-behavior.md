@@ -110,9 +110,12 @@ clients available through `IHonuaSource.Protocol<TClient>()`.
 
 Shared query support is intentionally provider-aware. GeoServices FeatureServer
 maps provider-neutral time filters, statistics, group-by, and having clauses to
-native query parameters. gRPC maps statistics and group-by through the
-geospatial proto, but rejects time filters and having clauses until those
-contracts exist in the proto. OGC API Features maps time filters to `datetime`
-and rejects provider-neutral statistics/group-by/having clauses. WFS rejects
-provider-neutral time and statistics facets until there is a dedicated shared
-mapping.
+native query parameters. GeoServices FeatureServer and gRPC map explicit
+geometry spatial filters with CRS and spatial relationship values; simple bbox
+filters remain available as the cross-provider envelope path. gRPC maps
+statistics and group-by through the geospatial proto, but rejects time filters
+and having clauses until those contracts exist in the proto. OGC API Features
+maps time filters to `datetime` and rejects provider-neutral statistics,
+group-by, having, and explicit geometry spatial filters. WFS rejects
+provider-neutral time, statistics, and explicit geometry spatial-filter facets
+until there is a dedicated shared mapping.

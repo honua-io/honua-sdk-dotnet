@@ -230,6 +230,27 @@ public sealed class GetFeaturesTests
     }
 
     [Fact]
+    public async Task GetFeatures_SharedAbstraction_UnsupportedExplicitSpatialFilterThrows()
+    {
+        var client = TestHelpers.CreateClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { TypeName = "parcels" },
+                SpatialFilter = new FeatureSpatialFilter
+                {
+                    Geometry = JsonSerializer.SerializeToElement(new { x = -122.0, y = 38.0 }),
+                    GeometryType = FeatureSpatialGeometryType.Point,
+                    Crs = "EPSG:4326",
+                    Relationship = FeatureSpatialRelationship.Intersects
+                },
+            }));
+
+        Assert.Contains("spatial filters", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesWfsClientAndSuppressesUnsupportedEdits()
     {
         string? capturedQuery = null;

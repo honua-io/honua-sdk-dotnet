@@ -62,6 +62,9 @@ public sealed record SourceQuery
     /// <summary>Optional bounding box spatial filter.</summary>
     public FeatureBoundingBox? Bbox { get; init; }
 
+    /// <summary>Optional explicit geometry spatial filter.</summary>
+    public FeatureSpatialFilter? SpatialFilter { get; init; }
+
     /// <summary>Optional output coordinate reference system identifier.</summary>
     public string? OutputCrs { get; init; }
 
@@ -87,6 +90,7 @@ public sealed record SourceQuery
             GroupBy = GroupBy,
             Having = Having,
             Bbox = Bbox,
+            SpatialFilter = SpatialFilter,
             OutputCrs = OutputCrs
         };
 }

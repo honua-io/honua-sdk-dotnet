@@ -172,6 +172,7 @@ public sealed class SourceFacadeTests
             End = new DateTimeOffset(2024, 1, 31, 0, 0, 0, TimeSpan.Zero),
             Relation = FeatureTimeRelation.Within
         };
+        var spatialGeometry = JsonSerializer.SerializeToElement(new { x = -118.0, y = 34.0 });
 
         await source.QueryAsync(new SourceQuery
         {
@@ -186,7 +187,14 @@ public sealed class SourceFacadeTests
                 }
             ],
             GroupBy = ["STATE"],
-            Having = "COUNT_OBJECTID > 10"
+            Having = "COUNT_OBJECTID > 10",
+            SpatialFilter = new FeatureSpatialFilter
+            {
+                Geometry = spatialGeometry,
+                GeometryType = FeatureSpatialGeometryType.Point,
+                Crs = "EPSG:4326",
+                Relationship = FeatureSpatialRelationship.Within
+            }
         });
 
         Assert.NotNull(capturedRequest);
@@ -197,6 +205,11 @@ public sealed class SourceFacadeTests
         Assert.Equal("COUNT_OBJECTID", capturedRequest.OutStatistics[0].OutField);
         Assert.Equal(["STATE"], capturedRequest.GroupBy);
         Assert.Equal("COUNT_OBJECTID > 10", capturedRequest.Having);
+        Assert.NotNull(capturedRequest.SpatialFilter);
+        Assert.Equal(FeatureSpatialGeometryType.Point, capturedRequest.SpatialFilter.GeometryType);
+        Assert.Equal("EPSG:4326", capturedRequest.SpatialFilter.Crs);
+        Assert.Equal(FeatureSpatialRelationship.Within, capturedRequest.SpatialFilter.Relationship);
+        Assert.Equal(-118.0, capturedRequest.SpatialFilter.Geometry.GetProperty("x").GetDouble());
     }
 
     [Fact]

@@ -298,6 +298,38 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
+    public async Task QueryAsync_SharedAbstraction_MapsExplicitSpatialFilter()
+    {
+        string? capturedUrl = null;
+        var json = """{ "features": [], "exceededTransferLimit": false }""";
+        var client = TestHelpers.CreateFeatureServerClient(req =>
+        {
+            capturedUrl = req.RequestUri?.ToString();
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        await ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+        {
+            Source = new FeatureSource { ServiceId = "svc", LayerId = 0 },
+            SpatialFilter = new FeatureSpatialFilter
+            {
+                Geometry = JsonSerializer.SerializeToElement(new { x = -118.0, y = 34.0 }),
+                GeometryType = FeatureSpatialGeometryType.Point,
+                Crs = "EPSG:4326",
+                Relationship = FeatureSpatialRelationship.Contains
+            }
+        });
+
+        Assert.NotNull(capturedUrl);
+        var decodedUrl = WebUtility.UrlDecode(capturedUrl);
+        Assert.Contains("geometryType=esriGeometryPoint", capturedUrl);
+        Assert.Contains("spatialRel=esriSpatialRelContains", capturedUrl);
+        Assert.Contains("\"x\":-118", decodedUrl);
+        Assert.Contains("\"y\":34", decodedUrl);
+        Assert.Contains("inSR=4326", capturedUrl);
+    }
+
+    [Fact]
     public async Task HonuaSourceFacade_QueriesFeatureServerClientAndMatchesProviderAlias()
     {
         string? capturedUrl = null;
