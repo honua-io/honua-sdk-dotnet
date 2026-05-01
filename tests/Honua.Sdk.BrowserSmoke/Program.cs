@@ -137,6 +137,7 @@ static void RegisterGeometryContracts(IServiceCollection services)
 static void RegisterBrowserFeatureMapSample(IServiceCollection services)
 {
     services.AddSingleton(new BrowserFeatureMapSampleOptions());
+    services.AddScoped<BrowserRuntimeValidationService>();
     services.AddScoped<IBrowserGeoJsonDisplayAdapter>(_ => new NoopBrowserGeoJsonDisplayAdapter());
     services.AddScoped(sp => new BrowserFeatureMapSample(
         sp.GetRequiredService<IHonuaOgcFeaturesClient>(),

@@ -48,10 +48,10 @@ injects privileged admin credentials server-side.
 
 ## Validation Gates
 
-The SDK keeps a Blazor WebAssembly compile smoke in
+The SDK keeps a Blazor WebAssembly smoke app in
 `tests/Honua.Sdk.BrowserSmoke`. It references the supported/candidate browser
-packages and registers the REST clients with retry disabled. That gate proves
-the packages can be consumed by a browser app without native compile-time
+packages and registers the REST clients with retry disabled. The compile gate
+proves the packages can be consumed by a browser app without native compile-time
 dependencies. It also compile-checks pure contracts for field records, offline
 manifests, advanced editing rules, plugin manifests, realtime stream envelopes,
 utility-network trace requests, and raster/elevation/enrichment data requests.
@@ -68,8 +68,33 @@ smoke app as DTOs and provider interfaces. Live service calls remain dependent
 on Honua Server endpoints, browser CORS/auth configuration, and a host-provided
 transport adapter.
 
-Live runtime validation still belongs to the consuming app or a follow-up SDK
-sample wired to a test Honua deployment:
+The same smoke app has a runtime validation mode for browser `HttpClient`
+behavior. Launch it with `live=1` and a browser-safe `baseUrl` query parameter
+to call OGC API Features, Geocoding, GeoServices FeatureServer metadata, and WFS
+from inside WebAssembly. The optional `corsProbe=1` query parameter adds a
+non-secret probe header so cross-origin hosts must satisfy a real browser CORS
+preflight. The CI `Browser WASM Smoke` job runs this mode with a cross-origin
+fake Honua API so package changes cannot regress browser fetch/preflight
+behavior.
+
+Example local live run:
+
+```bash
+dotnet run --project tests/Honua.Sdk.BrowserSmoke/Honua.Sdk.BrowserSmoke.csproj
+# Open the printed localhost URL with:
+# ?live=1&baseUrl=https%3A%2F%2Fstaging.example.honua.test%2F&collectionId=sdk-demo&serviceName=sdk-demo&layerId=0&wfsTypeName=public%3Asdk_demo_points&address=Honolulu%2C%20HI
+```
+
+Example local automated browser run:
+
+```bash
+dotnet build tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release
+pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net10.0/playwright.ps1 install chromium
+HONUA_BROWSER_RUNTIME_SMOKE=true dotnet test tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release --no-build
+```
+
+Deployment-specific validation still belongs to the consuming app or a staging
+SDK sample wired to a test Honua deployment:
 
 - browser `HttpClient` requests against a real or fake Honua server;
 - cross-origin CORS behavior where the deployment is not same-origin;
@@ -77,11 +102,11 @@ sample wired to a test Honua deployment:
 - `Honua.Sdk.Spec` apply-stream behavior;
 - offline storage adapters such as IndexedDB.
 
-This live validation remains blocked on the shared Honua Server integration
-test substrate tracked in
-<https://github.com/honua-io/honua-server/issues/813>. Until that exists, this
-repo's CI can prove browser compilation and host-boundary discipline, but not
-deployment-specific CORS or auth behavior.
+This repo's CI proves browser compilation, browser fetch/preflight behavior,
+and host-boundary discipline with a fake server. Deployment-specific CORS,
+auth, and fixture correctness remain tied to the shared Honua Server
+integration test substrate tracked in
+<https://github.com/honua-io/honua-server/issues/813>.
 
 Minimum browser host configuration for live REST validation:
 

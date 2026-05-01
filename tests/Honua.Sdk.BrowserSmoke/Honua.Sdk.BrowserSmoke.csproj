@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Honua.Sdk.BrowserSmoke</RootNamespace>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <WasmEnableHotReload>false</WasmEnableHotReload>
   </PropertyGroup>
 
   <ItemGroup>
