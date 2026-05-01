@@ -1,10 +1,63 @@
 @using Honua.Sdk.Offline.Abstractions
 @using Honua.Sdk.Field.Forms
+@using Honua.Sdk.BrowserSmoke
 @inject OfflinePackageManifest Manifest
 @inject FormDefinition FieldForm
+@inject NavigationManager Navigation
+@inject BrowserRuntimeValidationService RuntimeValidation
 
-<main>
+<main data-browser-smoke-status="@StatusAttribute">
     <h1>Honua SDK browser smoke</h1>
     <p>@Manifest.PackageId</p>
     <p>@FieldForm.FormId</p>
+    <section>
+        <h2>Runtime validation</h2>
+        <p>@_report.Summary</p>
+        <ul>
+            @foreach (var check in _report.Checks)
+            {
+                <li data-browser-smoke-check="@check.Name" data-browser-smoke-check-status="@FormatCheckStatus(check.Status)">
+                    <strong>@check.Name</strong>: @check.Detail
+                </li>
+            }
+        </ul>
+    </section>
 </main>
+
+@code {
+    private BrowserRuntimeValidationReport _report = BrowserRuntimeValidationReport.NotRun(
+        "Runtime validation was not requested.");
+
+    private string StatusAttribute => FormatStatus(_report.Status);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var options = BrowserRuntimeValidationOptions.FromUri(new Uri(Navigation.Uri, UriKind.Absolute));
+        if (!options.Enabled)
+        {
+            return;
+        }
+
+        _report = BrowserRuntimeValidationReport.Running();
+        _report = await RuntimeValidation.RunAsync(options).ConfigureAwait(false);
+    }
+
+    private static string FormatStatus(BrowserRuntimeValidationStatus status)
+        => status switch
+        {
+            BrowserRuntimeValidationStatus.NotRun => "not-run",
+            BrowserRuntimeValidationStatus.Running => "running",
+            BrowserRuntimeValidationStatus.Passed => "passed",
+            BrowserRuntimeValidationStatus.Failed => "failed",
+            _ => "unknown",
+        };
+
+    private static string FormatCheckStatus(BrowserRuntimeValidationCheckStatus status)
+        => status switch
+        {
+            BrowserRuntimeValidationCheckStatus.Skipped => "skipped",
+            BrowserRuntimeValidationCheckStatus.Passed => "passed",
+            BrowserRuntimeValidationCheckStatus.Failed => "failed",
+            _ => "unknown",
+        };
+}
