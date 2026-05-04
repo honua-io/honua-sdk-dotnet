@@ -7,6 +7,8 @@ services through the Admin REST API, geocoding addresses, and reading features
 through GeoServices FeatureServer, OGC API Features, scene metadata endpoints,
 and shared real-time feature stream contracts.
 
+Current SDK capabilities are summarized in [docs/features/README.md](docs/features/README.md).
+
 ## Packages
 
 | Package | Description |
