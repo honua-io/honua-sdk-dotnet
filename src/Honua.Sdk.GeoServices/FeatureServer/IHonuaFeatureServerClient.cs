@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Honua.Sdk.GeoServices.FeatureServer.Models;
-
 namespace Honua.Sdk.GeoServices.FeatureServer;
 
 /// <summary>

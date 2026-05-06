@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Geometry.Vector;
 using Honua.Sdk.OgcFeatures.Exceptions;
 using Honua.Sdk.OgcFeatures.Models;
 
@@ -330,6 +331,25 @@ public sealed class HonuaOgcFeaturesClient :
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
         return await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<VectorPayloadFeatureSet> GetItemsVectorAsync(
+        string collectionId,
+        OgcItemsParams? query = null,
+        VectorPayloadFormat? format = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(collectionId);
+
+        var vectorFormat = format ?? OgcFeaturesVectorFormats.FromOgcFeaturesFormat(query?.Format);
+        var protocolFormat = OgcFeaturesVectorFormats.ToOgcFeaturesFormat(vectorFormat);
+        var vectorQuery = (query ?? new OgcItemsParams()) with { Format = protocolFormat };
+        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(vectorQuery)}";
+        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, ct: ct).ConfigureAwait(false);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
