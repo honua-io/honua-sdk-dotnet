@@ -458,6 +458,9 @@ third_party/
   pagination, and typed endpoint coverage behavior across packages
 - **[Spec Workspace Contracts](docs/spec-workspace-contracts.md)** -- package
   ownership, repo boundaries, and JSON fixtures for spec plan/apply contracts
+- **[Scene Metadata And Packages](docs/scenes.md)** -- scene discovery,
+  render endpoint resolution, offline package validation, and the Unreal/Cesium
+  integration spike recommendation
 - **[Mobile Contract Harmonization](docs/mobile-contract-harmonization.md)** --
   ownership map and fixture baseline for moving reusable mobile contracts to
   published `Honua.Sdk.*` packages
