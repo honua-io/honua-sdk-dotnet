@@ -21,6 +21,20 @@ contracts. It deliberately does not render scenes or manage viewer caches.
   and eviction.
 - AR/VR anchors, camera controls, display state, and user interaction.
 
+## Unreal Integration Spike
+
+The Unreal path is documented in
+[`../.specifica/unreal-integration-path-honua-scenes-dotnet-tooling/README.md`](../.specifica/unreal-integration-path-honua-scenes-dotnet-tooling/README.md).
+The current recommendation is:
+
+- keep the first 3D construction demo web/CesiumJS-first;
+- use `.NET` for scene manifest discovery, validation, handoff manifests, and
+  offline-package inspection;
+- use Cesium for Unreal plus native Unreal HTTP/OpenAPI calls for runtime scene
+  loading, selection, UI, input, physics, and packaged-cache behavior;
+- avoid embedding .NET into Unreal until a concrete runtime need outweighs the
+  packaging and debugging cost.
+
 ## Usage
 
 ```csharp
