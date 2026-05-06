@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Honua.Sdk.GeoServices\Honua.Sdk.GeoServices.csproj" />
+    <ProjectReference Include="..\..\src\Honua.Sdk.Geometry\Honua.Sdk.Geometry.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,11 +6,13 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices;
 using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
+using Honua.Sdk.Geometry.Vector;
 
 namespace Honua.Sdk.GeoServices.FeatureServer;
 
@@ -492,6 +494,29 @@ public sealed class HonuaFeatureServerClient :
         var body = await PostFormAsync(basePath, parameters, ct).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerValidateSqlResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize validateSQL response.", body);
+    }
+
+    /// <inheritdoc />
+    public async Task<VectorPayloadFeatureSet> QueryVectorAsync(
+        string serviceId,
+        int layerId,
+        FeatureServerQueryParams query,
+        VectorPayloadFormat? format = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceId);
+        ArgumentNullException.ThrowIfNull(query);
+
+        var vectorFormat = format ?? FeatureServerVectorFormats.FromFeatureServerFormat(query.Format);
+        var protocolFormat = FeatureServerVectorFormats.ToFeatureServerFormat(vectorFormat);
+        var body = await ExecuteQueryAsync(
+            serviceId,
+            layerId,
+            BuildQueryParams(query with { Format = protocolFormat }),
+            ct).ConfigureAwait(false);
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, ct: ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

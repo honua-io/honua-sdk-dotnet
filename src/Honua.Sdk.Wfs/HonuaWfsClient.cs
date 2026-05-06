@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Geometry.Vector;
 using Honua.Sdk.Wfs.Exceptions;
 using Honua.Sdk.Wfs.Formats;
 using Honua.Sdk.Wfs.Models;
@@ -278,6 +279,16 @@ public sealed class HonuaWfsClient :
             response.Dispose();
             throw;
         }
+    }
+
+    /// <inheritdoc />
+    public Task<VectorPayloadFeatureSet> GetFeaturesVectorAsync(
+        GetFeaturesRequest request,
+        VectorPayloadFormat format = VectorPayloadFormat.GeoJson,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return GetFeaturesAsync(request, new VectorPayloadFeatureSetHandler(format), ct);
     }
 
     /// <inheritdoc />
