@@ -418,8 +418,20 @@ jobs:
       - name: Build canonical sample
         run: dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
+      - name: Build spec plan apply sample
+        run: dotnet build examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Build realtime worker sample
+        run: dotnet build examples/RealtimeWorker/RealtimeWorker.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Build routing geofence sample
+        run: dotnet build examples/RoutingGeofenceConsole/RoutingGeofenceConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
       - name: Build field data reference sample
         run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Test canonical sample workflow
         run: dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Test deterministic demo suite
+        run: dotnet test tests/DemoSuite.Tests/DemoSuite.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true

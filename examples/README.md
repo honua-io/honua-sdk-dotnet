@@ -6,13 +6,13 @@ not replace mobile, server, or admin UI demos.
 
 ## Demo Suite
 
-| Demo | Status | Capability | Validation |
-|------|--------|------------|------------|
-| [AdminBootstrapConsole](AdminBootstrapConsole/) | Canonical runnable sample | Operator/admin bootstrap, PostGIS table discovery, layer publish, protocol enablement, bounded gRPC verification | `dotnet run --project examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj` against local Honua Server |
-| [SpecPlanApplyConsole](SpecPlanApplyConsole/) | Lightweight runnable scaffold | Spec document construction, plan request, apply SSE stream consumption, deterministic simulated apply fallback | `dotnet run --project examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj` |
-| Realtime worker | Planned | `IHonuaFeatureStreamClient` subscription processing, reconnect/buffer behavior, duplicate/stale sequence handling | Gated on Honua Server realtime transport support; use deterministic simulated stream events until server endpoints are ready |
-| Routing/geofence | Planned | `IHonuaRoutingClient` route solve plus `HonuaGeofenceEvaluator` enter/exit/approach/depart transitions | Routing requires configured GeoServices/NAServer; geofence evaluation can run offline with NTS fixtures |
-| Mobile offline boundary | Documented | Portable offline manifests, journals, checkpoints, conflicts, and `Honua.Sdk.Offline.OfflineSyncEngine` contracts | Contract tests in `tests/Honua.Sdk.Offline.Tests`; native GeoPackage/runtime validation remains in `honua-mobile` |
+| Demo | Target user | Status | Capability | Validation |
+|------|-------------|--------|------------|------------|
+| [AdminBootstrapConsole](AdminBootstrapConsole/) | Operators and platform engineers | Canonical runnable sample | Operator/admin bootstrap, PostGIS table discovery, layer publish, protocol enablement, bounded gRPC verification | `dotnet run --project examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj` against local Honua Server |
+| [SpecPlanApplyConsole](SpecPlanApplyConsole/) | Spec authors and automation engineers | Lightweight runnable scaffold | Spec document construction, plan request, apply SSE stream consumption, deterministic simulated apply fallback | `dotnet run --project examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj` |
+| [RealtimeWorker](RealtimeWorker/) | Worker and service developers | Runnable simulated worker; live transport gated | Feature stream subscription envelopes, event buffering, duplicate/stale sequence rejection, resume-token projection | `dotnet run --project examples/RealtimeWorker/RealtimeWorker.csproj`; `HONUA_REALTIME_MODE=server` documents the server dependency |
+| [RoutingGeofenceConsole](RoutingGeofenceConsole/) | Routing and operations developers | Runnable deterministic geofence plus simulated routing; live NAServer optional | `IHonuaRoutingClient` route solve plus `HonuaGeofenceEvaluator` enter/exit/approach/depart transitions | `dotnet run --project examples/RoutingGeofenceConsole/RoutingGeofenceConsole.csproj`; set `HONUA_ROUTE_MODE=server` for live routing |
+| Mobile offline boundary | Mobile/offline integrators | Documented SDK boundary | Portable offline manifests, journals, checkpoints, conflicts, and `Honua.Sdk.Offline.OfflineSyncEngine` contracts | Contract tests in `tests/Honua.Sdk.Offline.Tests`; native GeoPackage/runtime validation remains in `honua-mobile` |
 
 ## Cloud Configuration
 
@@ -38,5 +38,5 @@ a live Honua Server.
 - Keep native mobile runtime, GeoPackage file lifecycle, background scheduling,
   device permissions, and map display out of this repo's examples.
 
-See [../docs/demo-suite.md](../docs/demo-suite.md) for the issue #128 rollout
-plan and remaining work.
+See [../docs/demo-suite.md](../docs/demo-suite.md) for the issue #128 demo
+suite, smoke instructions, and SDK/mobile boundary notes.
