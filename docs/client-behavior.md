@@ -70,6 +70,24 @@ right failure surface without parsing strings.
 `NotSupportedException` are used for local input/configuration problems before
 or instead of a remote request.
 
+## Migration source scans
+
+`Honua.Sdk.Admin` exposes the migration scanner through
+`HonuaAdminClient.ScanMigrationSourceAsync()`. The method posts
+`MigrationInventoryScanRequest` to `/api/v1/admin/import/scan` and returns the
+raw `MigrationSourceInventoryArtifact`; this endpoint does not use the usual
+Admin `success/data` envelope.
+
+Pass `exportJson: true` to request `/api/v1/admin/import/scan?export=json`.
+The server still returns the same source inventory artifact shape, but may send
+it as an indented JSON attachment for migration project repositories.
+
+Treat the returned artifact as a planning document. `200 OK` only means the
+server produced an artifact; callers must inspect
+`scanCompleteness.status` and `overallCompatibility.level`. A successful HTTP
+response can still carry `scanCompleteness.status = "failed"` when discovery
+could not complete cleanly.
+
 ## Pagination
 
 Native clients expose provider-specific pagination helpers, and read clients
@@ -90,7 +108,7 @@ Current typed endpoint coverage is:
 | Package | Covered surfaces |
 |---------|------------------|
 | `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, and host-neutral plugin manifests. |
-| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, observability, migrations, deploy preflight/plans/operations, and geocoding. |
+| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
 | `Honua.Sdk.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |

@@ -447,6 +447,33 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         return result ?? throw new HonuaAdminOperationException("Server returned null discovery response.", "DiscoverTables");
     }
 
+    // ── Migration Toolkit ────────────────────────────────────────────────
+
+    /// <summary>
+    /// Scans a supported source environment and returns the migration source inventory artifact.
+    /// </summary>
+    /// <param name="request">The migration inventory scan request.</param>
+    /// <param name="exportJson">When true, requests the server's JSON attachment form with <c>export=json</c>.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The migration source inventory artifact returned by the server.</returns>
+    public async Task<MigrationSourceInventoryArtifact> ScanMigrationSourceAsync(
+        MigrationInventoryScanRequest request,
+        bool exportJson = false,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var query = exportJson ? BuildQuery(("export", "json")) : string.Empty;
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/import/scan{query}",
+            request,
+            HonuaAdminJsonContext.Default.MigrationInventoryScanRequest,
+            HonuaAdminJsonContext.Default.MigrationSourceInventoryArtifact,
+            ct).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null migration inventory artifact.", "ScanMigrationSource");
+    }
+
     // ── Styles ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
