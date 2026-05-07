@@ -8,7 +8,7 @@ namespace Honua.Sdk.Abstractions.Features;
 /// </summary>
 public static class FeatureProtocolIds
 {
-    /// <summary>.NET gRPC FeatureService transport identifier.</summary>
+    /// <summary>Canonical gRPC FeatureService protocol identifier.</summary>
     public const string Grpc = "grpc";
 
     /// <summary>Canonical GeoServices Feature Service protocol identifier.</summary>
@@ -151,6 +151,7 @@ public static class FeatureProtocolIds
     /// <summary>Canonical protocol identifiers shared across Honua SDKs.</summary>
     public static IReadOnlyList<string> All { get; } =
     [
+        Grpc,
         GeoServicesFeatureService,
         GeoServicesMapService,
         GeoServicesImageService,
