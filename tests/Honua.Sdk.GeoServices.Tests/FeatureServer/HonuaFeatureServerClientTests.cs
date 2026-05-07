@@ -150,9 +150,9 @@ public class HonuaFeatureServerClientTests
         Assert.True(descriptor.Schema.AttachmentCapabilities?.SupportsDelete);
         Assert.Contains(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
         Assert.Contains(FeatureCapabilities.Attachments, descriptor.Capabilities);
-        Assert.Contains(FeatureCapabilities.Offline, descriptor.Capabilities);
-        Assert.Contains(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
-        Assert.Contains(FeatureCapabilities.SpatialRelationships, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.Offline, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.SpatialRelationships, descriptor.Capabilities);
         var status = Assert.Single(descriptor.Schema.Fields, field => field.Name == "STATUS");
         Assert.Equal("Status", status.Alias);
         Assert.Equal("esriFieldTypeString", status.Type);

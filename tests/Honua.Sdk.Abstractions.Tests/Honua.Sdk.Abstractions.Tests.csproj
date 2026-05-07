@@ -20,4 +20,8 @@
     <ProjectReference Include="..\..\src\Honua.Sdk.Offline.Abstractions\Honua.Sdk.Offline.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Fixtures\sdk-contract\semantic-contract.v1.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -60,26 +60,42 @@ existing provider-name aliases and normalizes them to canonical IDs:
 
 | Canonical ID | Common aliases |
 | --- | --- |
-| `grpc` | `grpc` |
 | `geoservices-feature-service` | `geoservices-featureserver`, `featureserver`, `FeatureServer` |
-| `ogc-features` | `ogc-api-features`, `ogcapi-features`, `OgcFeatures` |
-| `wfs` | `wfs` |
+| `geoservices-map-service` | `map-server`, `mapserver` |
+| `geoservices-image-service` | `image-server`, `imageserver` |
+| `geoservices-geometry-service` | `geometry-server`, `geometryserver` |
+| `geoservices-gp-service` | `gp-server`, `gpserver` |
+| `ogc-features` | `ogc-api-features`, `ogcapi-features`, `ogc_features`, `OgcFeatures` |
+| `ogc-tiles` | `ogc-tiles` |
+| `ogc-maps` | `ogc-maps` |
+| `stac` | `stac` |
+| `wfs` | `wfs`, `wfs-2.0` |
+| `wms` | `wms`, `wms-1.3.0` |
+| `wmts` | `wmts`, `wmts-1.0.0` |
+| `odata` | `odata`, `odata-v4` |
+| `maplibre-vector` | `maplibre-vector` |
+| `maplibre-raster` | `maplibre-raster` |
+| `maplibre-geojson` | `maplibre-geojson` |
 
 Call `FeatureProtocolIds.Normalize()` or `FeatureProtocolIds.Matches()` when
-persisted descriptors may contain older provider names.
+persisted descriptors may contain older provider names. The .NET gRPC client
+continues to use `grpc` as a transport/provider identifier, but it is not part of
+the cross-SDK canonical protocol registry.
 
 ## Capabilities
 
 Use `FeatureCapabilities` for shared capability identifiers. The .NET facade
-advertises query, statistics, extent, query-object-IDs, time-filter, spatial
-relationship, stream/page iteration, edit, attachment, relationship, and offline
-capabilities where the wrapped client or discovered metadata supports them.
-`FeatureProtocolCapabilities` contains protocol defaults and helpers for
-union/intersection when a caller is building a multi-source view.
+advertises the cross-SDK capability vocabulary: query, aggregate query, spatial
+aggregate, extent, query-object-IDs, related records, edits, attachments, render,
+tiles, SQL, stream/page iteration, PBF, connect, image, geometry, geoprocess, and
+processes. Query facets such as `SourceQuery.TimeFilter` and spatial
+relationships remain modeled on the query request instead of being exported as
+shared capability IDs. `FeatureProtocolCapabilities` contains protocol defaults
+and helpers for union/intersection when a caller is building a multi-source view.
 
 `HonuaSource` intersects declared descriptor capabilities with runtime client
-capabilities. For example, WFS can still be described as queryable while
-`ApplyEditsAsync()` throws a clear `NotSupportedException` until WFS-T is
+capabilities. For example, the shared WFS default includes `applyEdits`, while
+the current .NET WFS descriptor discovery removes that capability until WFS-T is
 implemented.
 
 ## Native Escape Hatch

@@ -187,7 +187,7 @@ public class HonuaOgcFeaturesClientTests
         Assert.Equal("http://www.opengis.net/def/crs/OGC/1.3/CRS84", descriptor.Schema.SpatialReference);
         Assert.Equal(-180, descriptor.Schema.Extent?.MinX);
         Assert.Contains(FeatureCapabilities.QueryObjectIds, descriptor.Capabilities);
-        Assert.Contains(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
         Assert.Contains(FeatureCapabilities.ApplyEdits, descriptor.Capabilities);
         Assert.DoesNotContain(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
         var name = Assert.Single(descriptor.Schema.Fields, field => field.Name == "name");

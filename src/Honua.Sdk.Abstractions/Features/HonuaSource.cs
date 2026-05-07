@@ -237,7 +237,8 @@ public sealed class HonuaSource : IHonuaSource
         var declared = descriptor.Capabilities.Count > 0
             ? descriptor.Capabilities
             : FeatureProtocolCapabilities.DefaultsFor(descriptor.Protocol);
-        var capabilities = new HashSet<string>(declared, StringComparer.Ordinal);
+        var normalizedDeclared = declared.Select(FeatureCapabilities.Normalize).ToList();
+        var capabilities = new HashSet<string>(normalizedDeclared, StringComparer.Ordinal);
 
         if (!SupportsQueryProtocol(descriptor, queryClient))
         {
@@ -253,7 +254,7 @@ public sealed class HonuaSource : IHonuaSource
              editCapabilities.SupportsPatches ||
              editCapabilities.SupportsDeletes))
         {
-            if (declared.Contains(FeatureCapabilities.ApplyEdits, StringComparer.Ordinal) || descriptor.Capabilities.Count == 0)
+            if (FeatureCapabilities.Contains(normalizedDeclared, FeatureCapabilities.ApplyEdits) || descriptor.Capabilities.Count == 0)
             {
                 capabilities.Add(FeatureCapabilities.ApplyEdits);
             }

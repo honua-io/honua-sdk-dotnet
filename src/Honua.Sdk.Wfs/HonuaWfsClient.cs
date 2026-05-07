@@ -522,9 +522,16 @@ public sealed class HonuaWfsClient :
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static List<string> BuildDiscoveredCapabilities()
-        => FeatureCapabilities.All
-            .Where(FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.Wfs).Contains)
+    {
+        var capabilities = new HashSet<string>(
+            FeatureProtocolCapabilities.DefaultsFor(FeatureProtocolIds.Wfs),
+            StringComparer.Ordinal);
+        capabilities.Remove(FeatureCapabilities.ApplyEdits);
+
+        return FeatureCapabilities.All
+            .Where(capabilities.Contains)
             .ToList();
+    }
 
     private static SourceSchema BuildSourceSchema(WfsFeatureType? featureType, WfsFeatureTypeSchema schema)
     {
