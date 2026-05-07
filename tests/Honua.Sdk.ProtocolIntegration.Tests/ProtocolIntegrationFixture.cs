@@ -97,7 +97,7 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
                 .ForPort(Options.ServerPort)
                 .ForPath(Options.ServerHealthPath)
                 .ForStatusCodeMatching(statusCode => statusCode >= System.Net.HttpStatusCode.OK &&
-                    statusCode < System.Net.HttpStatusCode.InternalServerError)));
+                    statusCode < System.Net.HttpStatusCode.MultipleChoices)));
 
         foreach (var pair in Options.BuildContainerEnvironment())
         {
