@@ -68,35 +68,44 @@ public sealed record ProtocolIntegrationOptions
         ReverseGeocodeLatitude.HasValue &&
         ReverseGeocodeLongitude.HasValue;
 
-    public static ProtocolIntegrationOptions Load() => new()
+    public static ProtocolIntegrationOptions Load()
     {
-        Enabled = ReadBoolean("HONUA_PROTOCOL_INTEGRATION"),
-        ExternalBaseUri = ReadUri("HONUA_PROTOCOL_EXTERNAL_BASE_URL"),
-        ServerImage = ReadString("HONUA_PROTOCOL_SERVER_IMAGE"),
-        ServerPort = ReadUShort("HONUA_PROTOCOL_SERVER_PORT", 8080),
-        ServerScheme = ReadString("HONUA_PROTOCOL_SERVER_SCHEME") ?? "http",
-        ServerHealthPath = ReadString("HONUA_PROTOCOL_SERVER_HEALTH_PATH") ?? "/health",
-        ApiKey = ReadString("HONUA_PROTOCOL_API_KEY"),
-        BearerToken = ReadString("HONUA_PROTOCOL_BEARER_TOKEN"),
-        ServiceName = ReadString("HONUA_PROTOCOL_SERVICE_NAME") ?? "sdk_integration",
-        LayerId = ReadInt("HONUA_PROTOCOL_LAYER_ID", 0),
-        WfsTypeName = ReadString("HONUA_PROTOCOL_WFS_TYPENAME") ?? "public:sdk_integration_points",
-        OgcCollectionId = ReadString("HONUA_PROTOCOL_OGC_COLLECTION_ID") ?? "sdk_integration_points",
-        SceneId = ReadString("HONUA_PROTOCOL_SCENE_ID"),
-        SpecId = ReadString("HONUA_PROTOCOL_SPEC_ID"),
-        RouteServiceId = ReadString("HONUA_PROTOCOL_ROUTE_SERVICE_ID"),
-        RouteLayerName = ReadString("HONUA_PROTOCOL_ROUTE_LAYER"),
-        ServiceAreaLayerName = ReadString("HONUA_PROTOCOL_SERVICE_AREA_LAYER"),
-        ClosestFacilityLayerName = ReadString("HONUA_PROTOCOL_CLOSEST_FACILITY_LAYER"),
-        GeocodeText = ReadString("HONUA_PROTOCOL_GEOCODE_TEXT"),
-        ReverseGeocodeLatitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE"),
-        ReverseGeocodeLongitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE"),
-        DestructiveEnabled = ReadBoolean("HONUA_PROTOCOL_DESTRUCTIVE"),
-        SeedProfile = ReadString("HONUA_PROTOCOL_SEED_PROFILE"),
-        FeatureServerEditAddAttributesJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON"),
-        FeatureServerEditUpdateAttributesJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON"),
-        FeatureServerEditGeometryJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_GEOMETRY_JSON")
-    };
+        var enabled = ReadBoolean("HONUA_PROTOCOL_INTEGRATION");
+        if (!enabled)
+        {
+            return new ProtocolIntegrationOptions();
+        }
+
+        return new ProtocolIntegrationOptions
+        {
+            Enabled = true,
+            ExternalBaseUri = ReadUri("HONUA_PROTOCOL_EXTERNAL_BASE_URL"),
+            ServerImage = ReadString("HONUA_PROTOCOL_SERVER_IMAGE"),
+            ServerPort = ReadUShort("HONUA_PROTOCOL_SERVER_PORT", 8080),
+            ServerScheme = ReadString("HONUA_PROTOCOL_SERVER_SCHEME") ?? "http",
+            ServerHealthPath = ReadString("HONUA_PROTOCOL_SERVER_HEALTH_PATH") ?? "/health",
+            ApiKey = ReadString("HONUA_PROTOCOL_API_KEY"),
+            BearerToken = ReadString("HONUA_PROTOCOL_BEARER_TOKEN"),
+            ServiceName = ReadString("HONUA_PROTOCOL_SERVICE_NAME") ?? "sdk_integration",
+            LayerId = ReadInt("HONUA_PROTOCOL_LAYER_ID", 0),
+            WfsTypeName = ReadString("HONUA_PROTOCOL_WFS_TYPENAME") ?? "public:sdk_integration_points",
+            OgcCollectionId = ReadString("HONUA_PROTOCOL_OGC_COLLECTION_ID") ?? "sdk_integration_points",
+            SceneId = ReadString("HONUA_PROTOCOL_SCENE_ID"),
+            SpecId = ReadString("HONUA_PROTOCOL_SPEC_ID"),
+            RouteServiceId = ReadString("HONUA_PROTOCOL_ROUTE_SERVICE_ID"),
+            RouteLayerName = ReadString("HONUA_PROTOCOL_ROUTE_LAYER"),
+            ServiceAreaLayerName = ReadString("HONUA_PROTOCOL_SERVICE_AREA_LAYER"),
+            ClosestFacilityLayerName = ReadString("HONUA_PROTOCOL_CLOSEST_FACILITY_LAYER"),
+            GeocodeText = ReadString("HONUA_PROTOCOL_GEOCODE_TEXT"),
+            ReverseGeocodeLatitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE"),
+            ReverseGeocodeLongitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE"),
+            DestructiveEnabled = ReadBoolean("HONUA_PROTOCOL_DESTRUCTIVE"),
+            SeedProfile = ReadString("HONUA_PROTOCOL_SEED_PROFILE"),
+            FeatureServerEditAddAttributesJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON"),
+            FeatureServerEditUpdateAttributesJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON"),
+            FeatureServerEditGeometryJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_GEOMETRY_JSON")
+        };
+    }
 
     public static string? GetSkipReason(bool destructive = false)
     {

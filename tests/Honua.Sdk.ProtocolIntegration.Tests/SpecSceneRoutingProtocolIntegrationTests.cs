@@ -15,7 +15,7 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
     public async Task SpecValidatePlanAndApplyStream_AreReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
-        var document = CreateSpecDocument(_fixture.Options.SpecId!);
+        var document = CreateSpecDocument(_fixture.Options.SpecId!, _fixture.Options.ServiceName);
 
         var validation = await _fixture.SpecClient.ValidateAsync(
             new SpecValidateRequest
@@ -148,7 +148,7 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
     public Task RealtimeTransport_SubscribeHeartbeatReconnectAndCursorResume_AreReachable()
         => Task.CompletedTask;
 
-    private static SpecDocumentRequest CreateSpecDocument(string specId) => new()
+    private static SpecDocumentRequest CreateSpecDocument(string specId, string serviceName) => new()
     {
         GrammarVersion = "honua.spec.v1",
         ProcessFamilyVersion = "honua.process.v1",
@@ -161,9 +161,9 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
                 Kind = SpecResourceKind.Dataset,
                 SourcePins = new Dictionary<string, string>
                 {
-                    ["service"] = "sdk_integration"
+                    ["service"] = serviceName
                 },
-                CanonicalFragment = "source:sdk_integration"
+                CanonicalFragment = $"source:{serviceName}"
             },
             new SpecNodeRequest
             {
