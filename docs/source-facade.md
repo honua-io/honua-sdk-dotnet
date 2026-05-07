@@ -60,6 +60,7 @@ existing provider-name aliases and normalizes them to canonical IDs:
 
 | Canonical ID | Common aliases |
 | --- | --- |
+| `grpc` | `grpc` |
 | `geoservices-feature-service` | `geoservices-featureserver`, `featureserver`, `FeatureServer` |
 | `geoservices-map-service` | `map-server`, `mapserver` |
 | `geoservices-image-service` | `image-server`, `imageserver` |
@@ -78,9 +79,7 @@ existing provider-name aliases and normalizes them to canonical IDs:
 | `maplibre-geojson` | `maplibre-geojson` |
 
 Call `FeatureProtocolIds.Normalize()` or `FeatureProtocolIds.Matches()` when
-persisted descriptors may contain older provider names. The .NET gRPC client
-continues to use `grpc` as a transport/provider identifier, but it is not part of
-the cross-SDK canonical protocol registry.
+persisted descriptors may contain older provider names.
 
 ## Capabilities
 
