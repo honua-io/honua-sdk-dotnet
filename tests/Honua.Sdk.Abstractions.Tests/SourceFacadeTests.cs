@@ -29,11 +29,21 @@ public sealed class SourceFacadeTests
 
         Assert.Contains(FeatureCapabilities.Query, geoservices);
         Assert.Contains(FeatureCapabilities.QueryAggregate, geoservices);
-        Assert.Contains(FeatureCapabilities.TimeFilter, geoservices);
-        Assert.Contains(FeatureCapabilities.SpatialRelationships, geoservices);
+        Assert.Contains(FeatureCapabilities.QueryRelated, geoservices);
         Assert.Contains(FeatureCapabilities.ApplyEdits, geoservices);
+        Assert.Contains(FeatureCapabilities.Attachments, geoservices);
+        Assert.Contains(FeatureCapabilities.Pbf, geoservices);
+        Assert.Contains(FeatureCapabilities.Connect, geoservices);
+        Assert.Contains(FeatureCapabilities.QueryExtent, wfs);
         Assert.Contains(FeatureCapabilities.QueryObjectIds, wfs);
-        Assert.DoesNotContain(FeatureCapabilities.ApplyEdits, wfs);
+        Assert.Contains(FeatureCapabilities.ApplyEdits, wfs);
+    }
+
+    [Fact]
+    public void Contains_NormalizesCapabilitySpelling()
+    {
+        Assert.True(FeatureCapabilities.Contains(["Query Object IDs"], FeatureCapabilities.QueryObjectIds));
+        Assert.True(FeatureCapabilities.Contains(["queryaggregate"], FeatureCapabilities.QueryAggregate));
     }
 
     [Fact]

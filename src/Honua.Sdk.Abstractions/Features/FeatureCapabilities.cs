@@ -14,16 +14,19 @@ public static class FeatureCapabilities
     /// <summary>Aggregate query support.</summary>
     public const string QueryAggregate = "queryAggregate";
 
+    /// <summary>Indexed spatial aggregation support.</summary>
+    public const string SpatialAggregate = "spatialAggregate";
+
     /// <summary>Extent-only query support.</summary>
     public const string QueryExtent = "queryExtent";
 
     /// <summary>Object or feature ID query support.</summary>
     public const string QueryObjectIds = "queryObjectIds";
 
-    /// <summary>Temporal query filter support.</summary>
+    /// <summary>Temporal query filter support. This is a .NET query-facet extension, not part of the shared capability registry.</summary>
     public const string TimeFilter = "timeFilter";
 
-    /// <summary>Spatial relationship query support.</summary>
+    /// <summary>Spatial relationship query support. This is a .NET query-facet extension, not part of the shared capability registry.</summary>
     public const string SpatialRelationships = "spatialRelationships";
 
     /// <summary>Related-record query support.</summary>
@@ -65,7 +68,7 @@ public static class FeatureCapabilities
     /// <summary>OGC API Processes support.</summary>
     public const string Processes = "processes";
 
-    /// <summary>Offline replica or sync support.</summary>
+    /// <summary>Offline replica or sync support. This is a .NET extension, not part of the shared capability registry.</summary>
     public const string Offline = "offline";
 
     /// <summary>All canonical capability identifiers supported by the shared vocabulary.</summary>
@@ -73,10 +76,9 @@ public static class FeatureCapabilities
     [
         Query,
         QueryAggregate,
+        SpatialAggregate,
         QueryExtent,
         QueryObjectIds,
-        TimeFilter,
-        SpatialRelationships,
         QueryRelated,
         ApplyEdits,
         Attachments,
@@ -89,9 +91,26 @@ public static class FeatureCapabilities
         Image,
         Geometry,
         Geoprocess,
-        Processes,
-        Offline
+        Processes
     ];
+
+    private static readonly Dictionary<string, string> CanonicalIds =
+        All.ToDictionary(BuildKey, capability => capability, StringComparer.Ordinal);
+
+    /// <summary>
+    /// Normalizes a capability identifier to the shared canonical spelling when recognized.
+    /// </summary>
+    /// <param name="capability">Capability identifier.</param>
+    /// <returns>The canonical capability identifier, or the original value when unknown.</returns>
+    public static string Normalize(string capability)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(capability);
+
+        var key = BuildKey(capability);
+        return CanonicalIds.TryGetValue(key, out var canonical)
+            ? canonical
+            : capability;
+    }
 
     /// <summary>
     /// Returns whether a capability collection contains the requested canonical capability.
@@ -106,6 +125,12 @@ public static class FeatureCapabilities
         ArgumentNullException.ThrowIfNull(capabilities);
         ArgumentException.ThrowIfNullOrWhiteSpace(capability);
 
-        return capabilities.Any(value => string.Equals(value, capability, StringComparison.Ordinal));
+        var canonical = Normalize(capability);
+        return capabilities
+            .Select(Normalize)
+            .Any(value => string.Equals(value, canonical, StringComparison.Ordinal));
     }
+
+    private static string BuildKey(string capability)
+        => string.Concat(capability.Trim().ToUpperInvariant().Where(char.IsLetterOrDigit));
 }

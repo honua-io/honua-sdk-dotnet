@@ -17,7 +17,6 @@ public static class FeatureProtocolCapabilities
                 FeatureCapabilities.QueryAggregate,
                 FeatureCapabilities.QueryExtent,
                 FeatureCapabilities.QueryObjectIds,
-                FeatureCapabilities.SpatialRelationships,
                 FeatureCapabilities.ApplyEdits,
                 FeatureCapabilities.Stream
             ],
@@ -27,23 +26,107 @@ public static class FeatureProtocolCapabilities
                 FeatureCapabilities.QueryAggregate,
                 FeatureCapabilities.QueryExtent,
                 FeatureCapabilities.QueryObjectIds,
-                FeatureCapabilities.TimeFilter,
-                FeatureCapabilities.SpatialRelationships,
+                FeatureCapabilities.QueryRelated,
                 FeatureCapabilities.ApplyEdits,
+                FeatureCapabilities.Attachments,
+                FeatureCapabilities.Sql,
+                FeatureCapabilities.Stream,
+                FeatureCapabilities.Pbf,
+                FeatureCapabilities.Connect
+            ],
+            [FeatureProtocolIds.GeoServicesMapService] =
+            [
+                FeatureCapabilities.Query,
+                FeatureCapabilities.QueryAggregate,
+                FeatureCapabilities.QueryExtent,
+                FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.QueryRelated,
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles,
+                FeatureCapabilities.Sql,
                 FeatureCapabilities.Stream
+            ],
+            [FeatureProtocolIds.GeoServicesImageService] =
+            [
+                FeatureCapabilities.Query,
+                FeatureCapabilities.QueryExtent,
+                FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.Image,
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles,
+                FeatureCapabilities.Connect
+            ],
+            [FeatureProtocolIds.GeoServicesGeometryService] =
+            [
+                FeatureCapabilities.Geometry,
+                FeatureCapabilities.Connect
+            ],
+            [FeatureProtocolIds.GeoServicesGpService] =
+            [
+                FeatureCapabilities.Geoprocess,
+                FeatureCapabilities.Connect
             ],
             [FeatureProtocolIds.OgcFeatures] =
             [
                 FeatureCapabilities.Query,
                 FeatureCapabilities.QueryObjectIds,
-                FeatureCapabilities.TimeFilter,
+                FeatureCapabilities.ApplyEdits,
+                FeatureCapabilities.Stream
+            ],
+            [FeatureProtocolIds.OgcTiles] =
+            [
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles
+            ],
+            [FeatureProtocolIds.OgcMaps] =
+            [
+                FeatureCapabilities.Render
+            ],
+            [FeatureProtocolIds.Stac] =
+            [
+                FeatureCapabilities.Query,
+                FeatureCapabilities.QueryObjectIds,
                 FeatureCapabilities.Stream
             ],
             [FeatureProtocolIds.Wfs] =
             [
                 FeatureCapabilities.Query,
+                FeatureCapabilities.QueryExtent,
                 FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.ApplyEdits,
                 FeatureCapabilities.Stream
+            ],
+            [FeatureProtocolIds.Wms] =
+            [
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles,
+                FeatureCapabilities.Query
+            ],
+            [FeatureProtocolIds.Wmts] =
+            [
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles
+            ],
+            [FeatureProtocolIds.OData] =
+            [
+                FeatureCapabilities.Query,
+                FeatureCapabilities.QueryObjectIds,
+                FeatureCapabilities.Stream,
+                FeatureCapabilities.ApplyEdits
+            ],
+            [FeatureProtocolIds.MapLibreVector] =
+            [
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles
+            ],
+            [FeatureProtocolIds.MapLibreRaster] =
+            [
+                FeatureCapabilities.Render,
+                FeatureCapabilities.Tiles
+            ],
+            [FeatureProtocolIds.MapLibreGeoJson] =
+            [
+                FeatureCapabilities.Render
             ]
         };
 
@@ -73,10 +156,12 @@ public static class FeatureProtocolCapabilities
             return [];
         }
 
-        var result = new HashSet<string>(participants[0], StringComparer.Ordinal);
+        var result = new HashSet<string>(
+            participants[0].Select(FeatureCapabilities.Normalize),
+            StringComparer.Ordinal);
         foreach (var participant in participants.Skip(1))
         {
-            result.IntersectWith(participant);
+            result.IntersectWith(participant.Select(FeatureCapabilities.Normalize));
         }
 
         return FeatureCapabilities.All.Where(result.Contains).ToList();
@@ -94,7 +179,7 @@ public static class FeatureProtocolCapabilities
         var result = new HashSet<string>(StringComparer.Ordinal);
         foreach (var participant in participants)
         {
-            result.UnionWith(participant);
+            result.UnionWith(participant.Select(FeatureCapabilities.Normalize));
         }
 
         return FeatureCapabilities.All.Where(result.Contains).ToList();

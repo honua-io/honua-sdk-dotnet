@@ -108,7 +108,7 @@ public class HonuaGrpcClientTests
         Assert.Equal(255, descriptor.Schema.Fields[0].Length);
         Assert.Contains(FeatureCapabilities.QueryAggregate, descriptor.Capabilities);
         Assert.Contains(FeatureCapabilities.QueryExtent, descriptor.Capabilities);
-        Assert.Contains(FeatureCapabilities.SpatialRelationships, descriptor.Capabilities);
+        Assert.DoesNotContain(FeatureCapabilities.SpatialRelationships, descriptor.Capabilities);
         Assert.DoesNotContain(FeatureCapabilities.TimeFilter, descriptor.Capabilities);
     }
 
