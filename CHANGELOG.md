@@ -2,6 +2,18 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.16-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.15-alpha.1...dotnet-sdk-v0.1.16-alpha.1) (2026-05-07)
+
+
+### Features
+
+* add .NET demo suite scaffold ([2e43860](https://github.com/honua-io/honua-sdk-dotnet/commit/2e4386077ccbffc3d2ed1ad92ebdf85a465a94a9))
+
+
+### Documentation
+
+* add source-backed feature map ([555fda9](https://github.com/honua-io/honua-sdk-dotnet/commit/555fda9bbd5add0f6dc135b454516bf2105db107))
+
 ## [0.1.15-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.14-alpha.1...dotnet-sdk-v0.1.15-alpha.1) (2026-04-30)
 
 
