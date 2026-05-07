@@ -454,6 +454,9 @@ third_party/
 - **[Staging Integration Guide](docs/staging-integration.md)** -- staging
   environment inputs, CI evidence artifacts, common failures, and bounded
   follow-on tickets for shared staging ownership
+- **[Protocol Integration Tests](docs/protocol-integration-tests.md)** --
+  Testcontainers-backed local protocol coverage plan, fixture contract, and CI
+  setup notes for SDK clients
 - **[Client Behavior](docs/client-behavior.md)** -- timeout, retry, error,
   pagination, and typed endpoint coverage behavior across packages
 - **[Spec Workspace Contracts](docs/spec-workspace-contracts.md)** -- package

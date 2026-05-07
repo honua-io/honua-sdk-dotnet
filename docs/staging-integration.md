@@ -7,6 +7,11 @@ read-only and does not execute the mutating bootstrap sample against shared
 staging. A FeatureServer edit round-trip can be enabled only against a
 dedicated disposable edit fixture.
 
+For local throwaway server coverage, use the Testcontainers suite documented in
+[`protocol-integration-tests.md`](protocol-integration-tests.md). Staging
+validates a deployed environment; protocol integration validates SDK clients
+against a deterministic local server fixture.
+
 ## What The Suite Covers
 
 - Admin compatibility and service settings through `IHonuaAdminClient`
