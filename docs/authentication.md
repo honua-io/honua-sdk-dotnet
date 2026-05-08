@@ -17,6 +17,7 @@ These option types support `ApiKey`, `BearerToken`, `ApiKeyProvider`, and
 - `HonuaGeoServicesClientOptions` for GeoServices FeatureServer
 - `HonuaOgcFeaturesClientOptions` for OGC API Features
 - `HonuaOgcRecordsClientOptions` for OGC API Records
+- `HonuaStacClientOptions` for STAC
 - `HonuaSceneClientOptions` for scene metadata and offline scene packages
 - `HonuaSpecClientOptions` for spec workspace plan/apply APIs
 
@@ -45,7 +46,8 @@ Prefer `AccessTokenProvider` for production OAuth/OIDC integration. It receives
 a `HonuaAuthenticationRequest` with transport, service name, method, request
 URI when available, configured scopes, and configured audience. This lets one
 provider choose different tokens for Admin, OGC Features, FeatureServer, WFS,
-OGC Records, Scenes, Spec, or gRPC calls without parsing global SDK state.
+OGC Records, STAC, Scenes, Spec, or gRPC calls without parsing global SDK
+state.
 
 `AccessTokenProvider` takes precedence over `BearerTokenProvider` and
 `BearerToken`. API key sources remain independent and can be sent alongside an

@@ -66,6 +66,7 @@ jobs:
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
+            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
           )
@@ -122,6 +123,7 @@ jobs:
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
+            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
           )
@@ -144,6 +146,7 @@ jobs:
             "tests/Honua.Sdk.Field.Tests/Honua.Sdk.Field.Tests.csproj"
             "tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj"
             "tests/Honua.Sdk.OgcRecords.Tests/Honua.Sdk.OgcRecords.Tests.csproj"
+            "tests/Honua.Sdk.Stac.Tests/Honua.Sdk.Stac.Tests.csproj"
             "tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj"
           )
 
@@ -201,6 +204,7 @@ jobs:
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
+            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
           )
@@ -237,6 +241,7 @@ jobs:
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
+            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
             "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
           )
@@ -296,6 +301,7 @@ jobs:
           dotnet add package Honua.Sdk.Field --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.OgcRecords --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Stac --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline.Abstractions --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline --version "${PACKAGE_VERSION}"
 
@@ -327,6 +333,9 @@ jobs:
           using Honua.Sdk.OgcRecords;
           using Honua.Sdk.OgcRecords.Extensions;
           using Honua.Sdk.OgcRecords.Models;
+          using Honua.Sdk.Stac;
+          using Honua.Sdk.Stac.Extensions;
+          using Honua.Sdk.Stac.Models;
           using Honua.Sdk.Wfs;
           using Honua.Sdk.Wfs.Extensions;
           using Honua.Sdk.Wfs.Models;
@@ -345,6 +354,7 @@ jobs:
           builder.Services.AddHonuaScenes(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaOgcFeatures(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaOgcRecords(options => options.BaseAddress = baseUri);
+          builder.Services.AddHonuaStac(options => options.BaseAddress = baseUri);
 
           using var host = builder.Build();
 
@@ -357,6 +367,7 @@ jobs:
           _ = host.Services.GetRequiredService<IHonuaSceneClient>();
           _ = host.Services.GetRequiredService<IHonuaOgcFeaturesClient>();
           _ = host.Services.GetRequiredService<IHonuaOgcRecordsClient>();
+          _ = host.Services.GetRequiredService<IHonuaStacClient>();
           _ = host.Services.GetServices<IHonuaFeatureQueryClient>().ToArray();
           _ = HonuaSpatialReference.Wgs84;
 
@@ -435,6 +446,12 @@ jobs:
           {
               Limit = 1,
               Query = "parks"
+          };
+
+          _ = new StacSearchQuery
+          {
+              Collections = ["imagery"],
+              Limit = 1
           };
 
           _ = OfflineDownloadPlanner.CreatePlan(new OfflinePackageManifest

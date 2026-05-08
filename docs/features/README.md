@@ -8,7 +8,7 @@ This repository owns official .NET client libraries and shared host-neutral cont
 - gRPC FeatureService client for typed queries, streaming, edits, and spatial filters.
 - Admin REST client for services, layers, connections, styles, metadata, manifests, capabilities, identity, licensing, deployment, observability, secure connections, and publishing workflows.
 - Spec workspace client for validate, plan, apply stream, cancel, and problem contracts.
-- WFS 2.0, GeoServices FeatureServer, OGC API Features, OGC API Records, scene metadata, geocoding, routing, and geometry packages.
+- WFS 2.0, GeoServices FeatureServer, OGC API Features, OGC API Records, STAC, scene metadata, geocoding, routing, and geometry packages.
 - Offline sync planner and engine over shared query/edit abstractions.
 - Field form contracts for validation, calculated fields, duplicate detection, and record workflow.
 - Browser/WASM-safe boundary documentation for contracts and REST clients.
@@ -20,6 +20,7 @@ This repository owns official .NET client libraries and shared host-neutral cont
 - Spec client: `src/Honua.Sdk.Spec/`
 - Scene client: `src/Honua.Sdk.Scenes/`
 - OGC Records client: `src/Honua.Sdk.OgcRecords/`
+- STAC client: `src/Honua.Sdk.Stac/`
 - Offline and field packages: `src/Honua.Sdk.Offline*`, `src/Honua.Sdk.Field/`
 - Examples: `examples/`
 - Compatibility and release docs: `docs/compatibility.md`, `docs/release.md`

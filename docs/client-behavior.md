@@ -65,6 +65,7 @@ right failure surface without parsing strings.
 | `Honua.Sdk.Scenes` | `HonuaSceneException` | HTTP failures, invalid scene JSON, malformed scene contracts, and missing required scene capabilities. |
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.OgcRecords` | `HonuaOgcRecordsException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
+| `Honua.Sdk.Stac` | `HonuaStacException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code. |
 
 `ArgumentNullException`, `ArgumentException`, `InvalidOperationException`, and
@@ -100,6 +101,7 @@ also implement `IHonuaFeatureQueryClient.QueryPagesAsync` from
 | WFS | `GetFeaturesAsyncEnumerable` advances `STARTINDEX`; shared queries advance `FeatureQueryRequest.Offset`. Paging stops when `numberMatched` is reached or a page is empty, with a 100-page safety limit. |
 | GeoServices FeatureServer | `QueryPagesAsync` advances `resultOffset` while the server reports `exceededTransferLimit`. |
 | OGC API Features | `GetItemsPagesAsync` follows same-origin `rel=next` links. Cross-origin next links are rejected. |
+| STAC | `GetItemsPagesAsync` and `SearchPagesAsync` follow same-origin `rel=next` links. Cross-origin next links are rejected. GET search supports numeric `offset` and opaque `next` tokens. |
 | gRPC | `QueryFeaturesStreamAsync` returns server-streamed pages until `IsLastPage`; `QueryPagesAsync` maps those pages to the shared abstraction. |
 
 ## Endpoint coverage
@@ -119,6 +121,7 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, CRS parsing/projection, planar geometry analysis helpers, and host-neutral geofence evaluation. |
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, next-link pagination, and create/update/patch/delete edits. |
 | `Honua.Sdk.OgcRecords` | Records landing page, conformance, record collections, collection details, record search, record detail, raw JSON access, query filters, and same-origin next-link pagination. |
+| `Honua.Sdk.Stac` | STAC catalog, collections, collection details, collection item pages, item detail, GET search, POST search, raw JSON/HTTP access, bbox/time/fields/filter parameters, and same-origin next-link pagination. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
 WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
@@ -171,7 +174,9 @@ first-class typed catalog endpoints tracked by
 Public standards catalog discovery is available through
 `IHonuaOgcRecordsClient` in `Honua.Sdk.OgcRecords`. Use it for OGC API Records
 landing/conformance, record collection discovery, record search/detail, and raw
-JSON access. Keep STAC, admin catalog, migration inventory, and protocol-native
+JSON access. STAC asset catalog discovery is available through
+`IHonuaStacClient` in `Honua.Sdk.Stac` for catalog, collection, item, and
+search semantics. Keep admin catalog, migration inventory, and protocol-native
 metadata separate; see [Metadata And Catalog Reads](metadata-catalog-parity.md).
 
 Shared query support is intentionally provider-aware. GeoServices FeatureServer
