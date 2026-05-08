@@ -23,6 +23,7 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Scenes` | Candidate | REST/JSON scene metadata client over browser `HttpClient`; requires server CORS and browser-owned auth. Display, Cesium, WebGL/WebGPU, and renderer caches remain outside the SDK. |
 | `Honua.Sdk.Field` | Candidate | Pure form, validation, calculated field, duplicate detection, and record workflow contracts. Browser hosts own rendering, storage, device capture, local media handling, and any map display. |
 | `Honua.Sdk.OgcFeatures` | Candidate | REST/JSON OGC API Features client over browser `HttpClient`; requires server CORS and browser-owned auth. |
+| `Honua.Sdk.OgcRecords` | Candidate | REST/JSON OGC API Records catalog client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.Grpc` | Not supported for browser runtime | Native gRPC/HTTP2 is not a supported browser path. Treat current browser builds as compile-only. Add gRPC-Web support only after `honua-server` exposes a compatible endpoint and the SDK has a browser-specific transport plan. |
 | Advanced editing contracts | Supported | Structured domains, contingent values, attribute rules, relationship descriptors, validate-only results, and edit-session DTOs are pure contracts. Browser hosts own form UX and server adapters. |
 | Realtime feed contracts | Candidate | `IHonuaFeatureStreamClient`, normalized event envelopes, bounded buffers, and duplicate/stale sequence processors are pure contracts. Browser hosts still own the SSE/WebSocket/gRPC-Web adapter and auth/CORS behavior. |
@@ -55,6 +56,8 @@ proves the packages can be consumed by a browser app without native compile-time
 dependencies. It also compile-checks pure contracts for field records, offline
 manifests, advanced editing rules, plugin manifests, realtime stream envelopes,
 utility-network trace requests, and raster/elevation/enrichment data requests.
+The registered browser REST clients include Admin, Geocoding, Spec, WFS,
+GeoServices, OGC API Features, OGC API Records, and Scenes.
 
 The smoke app also contains a compile-checked browser feature-map sample. It
 uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses

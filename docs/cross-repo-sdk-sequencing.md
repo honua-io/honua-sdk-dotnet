@@ -70,8 +70,9 @@ Expected consumers:
 
 - `honua-server-admin` consumes `Honua.Sdk.Admin`.
 - `honua-mobile` consumes `Honua.Sdk.Abstractions`, `Honua.Sdk.Grpc`,
-  `Honua.Sdk.GeoServices`, `Honua.Sdk.Scenes`, `Honua.Sdk.OgcFeatures`, and
-  field/offline packages through published NuGet versions.
+  `Honua.Sdk.GeoServices`, `Honua.Sdk.Scenes`, `Honua.Sdk.OgcFeatures`,
+  `Honua.Sdk.OgcRecords`, and field/offline packages through published NuGet
+  versions.
 - Server-side tools/tests consume SDK packages only when they need client
   behavior.
 
