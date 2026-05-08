@@ -5,7 +5,7 @@ an open-source geospatial feature server. The SDK provides typed clients for
 querying and editing features over gRPC, querying via OGC WFS 2.0, managing
 services through the Admin REST API, geocoding addresses, and reading features
 through GeoServices FeatureServer, OGC API Features, scene metadata endpoints,
-and shared real-time feature stream contracts.
+OGC API Records catalog endpoints, and shared real-time feature stream contracts.
 
 Current SDK capabilities are summarized in [docs/features/README.md](docs/features/README.md).
 
@@ -25,6 +25,7 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
 | **Honua.Sdk.OgcFeatures** | OGC API Features read/query client -- landing page, conformance, collections, queryables, items |
+| **Honua.Sdk.OgcRecords** | OGC API Records catalog client -- landing page, conformance, record collections, search, record detail |
 | *Geocoding* (in Admin) | Forward/reverse geocoding and autocomplete via `IHonuaGeocodingClient` |
 
 Browser and WebAssembly consumers should start with
@@ -48,6 +49,7 @@ dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.Scenes --prerelease
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
+dotnet add package Honua.Sdk.OgcRecords --prerelease
 ```
 
 Pre-release builds are also available from
@@ -66,6 +68,7 @@ using Honua.Sdk.Wfs.Extensions;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.OgcRecords.Extensions;
 
 // Register clients
 builder.Services.AddHonuaGrpc(o => o.Address = "https://localhost:5001");
@@ -76,6 +79,7 @@ builder.Services.AddHonuaWfs(o => o.BaseAddress = new Uri("https://localhost:500
 builder.Services.AddHonuaFeatureServer(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaScenes(o => o.BaseAddress = new Uri("https://localhost:5001"));
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = new Uri("https://localhost:5001"));
+builder.Services.AddHonuaOgcRecords(o => o.BaseAddress = new Uri("https://localhost:5001"));
 
 // Query features (injected IHonuaGrpcClient)
 var response = await grpcClient.QueryFeaturesAsync(new QueryFeaturesRequest
@@ -188,6 +192,29 @@ var native = source.Protocol<IHonuaOgcFeaturesClient>(FeatureProtocolIds.OgcFeat
 
 See [docs/source-facade.md](docs/source-facade.md) for the descriptor,
 capability, and protocol alias model.
+
+## Metadata and catalog discovery
+
+Use `IHonuaOgcRecordsClient` from `Honua.Sdk.OgcRecords` for public,
+standards-oriented catalog discovery. Use `IHonuaCatalogClient` from
+`Honua.Sdk.Admin.Catalog` for operator/control-plane discovery over admin
+metadata resources and service inventory. STAC, migration inventory, and
+protocol-native metadata remain separate surfaces; see
+[docs/metadata-catalog-parity.md](docs/metadata-catalog-parity.md).
+
+```csharp
+using Honua.Sdk.OgcRecords;
+using Honua.Sdk.OgcRecords.Models;
+
+var records = await recordsClient.SearchAsync(
+    "default",
+    new OgcRecordsQuery
+    {
+        Query = "parks",
+        Types = ["service", "layer"],
+        Limit = 10
+    });
+```
 
 ## Plugin contracts
 
@@ -418,6 +445,7 @@ src/
   Honua.Sdk.GeoServices/   GeoServices FeatureServer read/query client package
   Honua.Sdk.Scenes/        Scene metadata and package contract client
   Honua.Sdk.OgcFeatures/   OGC API Features read/query client package
+  Honua.Sdk.OgcRecords/    OGC API Records catalog client package
   Honua.Sdk.Abstractions/  Shared provider-neutral feature query contracts
 tests/
   Honua.Sdk.Grpc.Tests/     gRPC client tests
@@ -428,6 +456,7 @@ tests/
   Honua.Sdk.GeoServices.Tests/
   Honua.Sdk.Scenes.Tests/
   Honua.Sdk.OgcFeatures.Tests/
+  Honua.Sdk.OgcRecords.Tests/
 examples/
   AdminBootstrapConsole/     Canonical console sample for admin bootstrap + gRPC verification
   FieldDataCollection/       Archived MAUI reference assets; buildable as a marker project

@@ -13,6 +13,7 @@
 | `Honua.Sdk.GeoServices` | GeoServices FeatureServer read/query client |
 | `Honua.Sdk.Scenes` | Scene metadata, endpoint resolution, and offline scene package contracts |
 | `Honua.Sdk.OgcFeatures` | OGC API Features read/query client |
+| `Honua.Sdk.OgcRecords` | OGC API Records metadata/catalog client |
 
 ## Prerequisites
 
@@ -48,6 +49,9 @@ dotnet add package Honua.Sdk.Scenes --prerelease
 
 # OGC API Features client
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
+
+# OGC API Records client
+dotnet add package Honua.Sdk.OgcRecords --prerelease
 ```
 
 All SDK packages share one package version from `Directory.Build.props`.
@@ -89,6 +93,7 @@ dotnet add package Honua.Sdk.Field --prerelease --source honua
 dotnet add package Honua.Sdk.GeoServices --prerelease --source honua
 dotnet add package Honua.Sdk.Scenes --prerelease --source honua
 dotnet add package Honua.Sdk.OgcFeatures --prerelease --source honua
+dotnet add package Honua.Sdk.OgcRecords --prerelease --source honua
 ```
 
 ## Quick Start

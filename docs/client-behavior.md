@@ -64,6 +64,7 @@ right failure surface without parsing strings.
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
 | `Honua.Sdk.Scenes` | `HonuaSceneException` | HTTP failures, invalid scene JSON, malformed scene contracts, and missing required scene capabilities. |
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
+| `Honua.Sdk.OgcRecords` | `HonuaOgcRecordsException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code. |
 
 `ArgumentNullException`, `ArgumentException`, `InvalidOperationException`, and
@@ -117,6 +118,7 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Field` | Provider-neutral form definitions, source-schema-to-form mapping, field validation, visibility rules, calculated fields, duplicate detection contracts, and record workflow transitions. No transport or display behavior. |
 | `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, CRS parsing/projection, planar geometry analysis helpers, and host-neutral geofence evaluation. |
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, next-link pagination, and create/update/patch/delete edits. |
+| `Honua.Sdk.OgcRecords` | Records landing page, conformance, record collections, collection details, record search, record detail, raw JSON access, query filters, and same-origin next-link pagination. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
 WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
@@ -165,6 +167,12 @@ searchable service, layer, group, and saved source descriptor items. Groups and
 saved source descriptors are metadata-resource backed until the server exposes
 first-class typed catalog endpoints tracked by
 `honua-server#869`; display documents remain out of SDK scope.
+
+Public standards catalog discovery is available through
+`IHonuaOgcRecordsClient` in `Honua.Sdk.OgcRecords`. Use it for OGC API Records
+landing/conformance, record collection discovery, record search/detail, and raw
+JSON access. Keep STAC, admin catalog, migration inventory, and protocol-native
+metadata separate; see [Metadata And Catalog Reads](metadata-catalog-parity.md).
 
 Shared query support is intentionally provider-aware. GeoServices FeatureServer
 maps provider-neutral time filters, statistics, group-by, and having clauses to

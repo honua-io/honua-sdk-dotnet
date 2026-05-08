@@ -5,7 +5,8 @@
 A .NET console app that connects to a Honua server, queries geospatial features
 over gRPC, queries via OGC WFS 2.0, queries FeatureServer and OGC API Features
 through a shared abstraction, lists services through the Admin REST API, and
-forward-geocodes an address -- all printed to the console.
+searches OGC API Records catalog metadata, and forward-geocodes an address --
+all printed to the console.
 
 ## Prerequisites
 
@@ -25,6 +26,7 @@ dotnet add package Honua.Sdk.Wfs --prerelease
 dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.Scenes --prerelease
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
+dotnet add package Honua.Sdk.OgcRecords --prerelease
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
@@ -34,7 +36,7 @@ This pulls in the SDK packages and the Generic Host for dependency injection.
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
 up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, scene metadata,
-and OGC API Features clients so they can be injected anywhere.
+OGC API Features, and OGC API Records clients so they can be injected anywhere.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +47,7 @@ using Honua.Sdk.Wfs.Extensions;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.OgcRecords.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -86,6 +89,12 @@ builder.Services.AddHonuaScenes(options =>
 
 // OGC API Features client
 builder.Services.AddHonuaOgcFeatures(options =>
+{
+    options.BaseAddress = new Uri("https://localhost:5001");
+});
+
+// OGC API Records client
+builder.Services.AddHonuaOgcRecords(options =>
 {
     options.BaseAddress = new Uri("https://localhost:5001");
 });
@@ -202,6 +211,24 @@ var catalog = await catalogClient.SearchAsync(
         Kinds = [CatalogItemKind.Layer],
         ServiceTypes = ["FeatureServer"],
         Tags = ["public"],
+        Limit = 10
+    },
+    ct);
+```
+
+Use `IHonuaOgcRecordsClient` when the server exposes the public OGC API Records
+catalog and the caller should discover standards-facing metadata records instead
+of operator/control-plane inventory:
+
+```csharp
+using Honua.Sdk.OgcRecords.Models;
+
+var records = await recordsClient.SearchAsync(
+    "default",
+    new OgcRecordsQuery
+    {
+        Query = "parks",
+        Types = ["service", "layer"],
         Limit = 10
     },
     ct);
