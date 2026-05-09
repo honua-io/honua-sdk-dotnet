@@ -18,6 +18,7 @@ The publish workflow builds and packs:
 - `Honua.Sdk.Field`
 - `Honua.Sdk.OgcFeatures`
 - `Honua.Sdk.OgcRecords`
+- `Honua.Sdk.Stac`
 - `Honua.Sdk.Offline.Abstractions`
 - `Honua.Sdk.Offline`
 
@@ -70,6 +71,7 @@ for project in \
   src/Honua.Sdk.Field/Honua.Sdk.Field.csproj \
   src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj \
   src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj \
+  src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj \
   src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj \
   src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj
 do

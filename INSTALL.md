@@ -14,6 +14,7 @@
 | `Honua.Sdk.Scenes` | Scene metadata, endpoint resolution, and offline scene package contracts |
 | `Honua.Sdk.OgcFeatures` | OGC API Features read/query client |
 | `Honua.Sdk.OgcRecords` | OGC API Records metadata/catalog client |
+| `Honua.Sdk.Stac` | STAC catalog, collection item, and search client |
 
 ## Prerequisites
 
@@ -52,6 +53,9 @@ dotnet add package Honua.Sdk.OgcFeatures --prerelease
 
 # OGC API Records client
 dotnet add package Honua.Sdk.OgcRecords --prerelease
+
+# STAC client
+dotnet add package Honua.Sdk.Stac --prerelease
 ```
 
 All SDK packages share one package version from `Directory.Build.props`.
@@ -94,6 +98,7 @@ dotnet add package Honua.Sdk.GeoServices --prerelease --source honua
 dotnet add package Honua.Sdk.Scenes --prerelease --source honua
 dotnet add package Honua.Sdk.OgcFeatures --prerelease --source honua
 dotnet add package Honua.Sdk.OgcRecords --prerelease --source honua
+dotnet add package Honua.Sdk.Stac --prerelease --source honua
 ```
 
 ## Quick Start

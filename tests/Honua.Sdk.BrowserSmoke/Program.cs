@@ -22,6 +22,8 @@ using Honua.Sdk.Scenes;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Spec.Extensions;
+using Honua.Sdk.Stac;
+using Honua.Sdk.Stac.Extensions;
 using Honua.Sdk.Wfs;
 using Honua.Sdk.Wfs.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -80,6 +82,10 @@ static void ConfigureRestClients(IServiceCollection services, Uri server)
     {
         ConfigureOgcRecordsBrowserCandidate(options, server);
     });
+    services.AddHonuaStac(options =>
+    {
+        ConfigureStacBrowserCandidate(options, server);
+    });
     services.AddHonuaScenes(options =>
     {
         ConfigureSceneBrowserCandidate(options, server);
@@ -122,6 +128,13 @@ static void ConfigureOgcFeaturesBrowserCandidate(HonuaOgcFeaturesClientOptions o
 }
 
 static void ConfigureOgcRecordsBrowserCandidate(HonuaOgcRecordsClientOptions options, Uri server)
+{
+    options.BaseAddress = server;
+    options.BearerTokenProvider = NoBrowserTokenAsync;
+    options.EnableRetry = false;
+}
+
+static void ConfigureStacBrowserCandidate(HonuaStacClientOptions options, Uri server)
 {
     options.BaseAddress = server;
     options.BearerTokenProvider = NoBrowserTokenAsync;

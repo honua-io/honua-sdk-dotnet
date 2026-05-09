@@ -52,6 +52,7 @@ projects=(
   "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj|Honua.Sdk.Field"
   "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures"
   "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj|Honua.Sdk.OgcRecords"
+  "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj|Honua.Sdk.Stac"
   "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj|Honua.Sdk.Offline.Abstractions"
   "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj|Honua.Sdk.Offline"
 )

@@ -5,8 +5,8 @@
 A .NET console app that connects to a Honua server, queries geospatial features
 over gRPC, queries via OGC WFS 2.0, queries FeatureServer and OGC API Features
 through a shared abstraction, lists services through the Admin REST API, and
-searches OGC API Records catalog metadata, and forward-geocodes an address --
-all printed to the console.
+searches OGC API Records and STAC catalog metadata, and forward-geocodes an
+address -- all printed to the console.
 
 ## Prerequisites
 
@@ -27,6 +27,7 @@ dotnet add package Honua.Sdk.GeoServices --prerelease
 dotnet add package Honua.Sdk.Scenes --prerelease
 dotnet add package Honua.Sdk.OgcFeatures --prerelease
 dotnet add package Honua.Sdk.OgcRecords --prerelease
+dotnet add package Honua.Sdk.Stac --prerelease
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
@@ -36,7 +37,8 @@ This pulls in the SDK packages and the Generic Host for dependency injection.
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
 up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, scene metadata,
-OGC API Features, and OGC API Records clients so they can be injected anywhere.
+OGC API Features, OGC API Records, and STAC clients so they can be injected
+anywhere.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +50,7 @@ using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
 using Honua.Sdk.OgcRecords.Extensions;
+using Honua.Sdk.Stac.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -95,6 +98,12 @@ builder.Services.AddHonuaOgcFeatures(options =>
 
 // OGC API Records client
 builder.Services.AddHonuaOgcRecords(options =>
+{
+    options.BaseAddress = new Uri("https://localhost:5001");
+});
+
+// STAC client
+builder.Services.AddHonuaStac(options =>
 {
     options.BaseAddress = new Uri("https://localhost:5001");
 });
@@ -229,6 +238,23 @@ var records = await recordsClient.SearchAsync(
     {
         Query = "parks",
         Types = ["service", "layer"],
+        Limit = 10
+    },
+    ct);
+```
+
+Use `IHonuaStacClient` when the caller needs STAC catalog, collection, item, and
+asset search semantics instead of Records metadata records:
+
+```csharp
+using Honua.Sdk.Stac.Models;
+
+var stacItems = await stacClient.SearchAsync(
+    new StacSearchQuery
+    {
+        Collections = ["imagery"],
+        Bbox = [-158.4, 21.2, -157.6, 21.9],
+        Datetime = "2026-05-01T00:00:00Z/..",
         Limit = 10
     },
     ct);
