@@ -371,7 +371,7 @@ jobs:
           _ = host.Services.GetServices<IHonuaFeatureQueryClient>().ToArray();
           _ = HonuaSpatialReference.Wgs84;
 
-          _ = new QueryFeaturesRequest
+          _ = new Honua.Sdk.Grpc.Models.QueryFeaturesRequest
           {
               ServiceId = "sdk_demo",
               LayerId = 0,
