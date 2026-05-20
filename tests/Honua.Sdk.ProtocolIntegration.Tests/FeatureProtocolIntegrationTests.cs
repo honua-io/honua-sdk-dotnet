@@ -20,7 +20,7 @@ public sealed class FeatureProtocolIntegrationTests(ProtocolIntegrationFixture f
         using var timeout = _fixture.CreateTimeoutScope();
 
         var response = await _fixture.GrpcClient.QueryFeaturesAsync(
-            new QueryFeaturesRequest
+            new Honua.Sdk.Grpc.Models.QueryFeaturesRequest
             {
                 ServiceId = _fixture.Options.ServiceName,
                 LayerId = _fixture.Options.LayerId,

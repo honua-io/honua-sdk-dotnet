@@ -71,7 +71,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             async ct =>
             {
                 var response = await _fixture.GrpcClient.QueryFeaturesAsync(
-                    new QueryFeaturesRequest
+                    new Honua.Sdk.Grpc.Models.QueryFeaturesRequest
                     {
                         ServiceId = _fixture.Options.ServiceName,
                         LayerId = _fixture.Options.LayerId,
