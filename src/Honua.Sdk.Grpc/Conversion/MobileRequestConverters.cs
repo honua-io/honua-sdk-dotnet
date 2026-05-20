@@ -12,15 +12,15 @@ namespace Honua.Sdk.Grpc.Conversion;
 
 
 /// <summary>
-/// Converts mobile-side request DTOs and gRPC response models for legacy
+/// Converts abstractions request DTOs and gRPC response models for legacy
 /// <c>JsonDocument</c>-returning surfaces.
 /// </summary>
 /// <remarks>
-/// Migrated from <c>Honua.Mobile.Sdk.SdkGrpcTransportMappings</c>. The converter
-/// is intentionally <c>internal</c> while the migration is in flight; only
-/// transport adapters inside this assembly are intended consumers.
+/// Migrated from <c>Honua.Mobile.Sdk.SdkGrpcTransportMappings</c>. Exposed as
+/// public surface so cross-assembly transport adapters (notably the mobile
+/// runtime) can compose these conversions without duplicating logic.
 /// </remarks>
-internal static class MobileRequestConverters
+public static class MobileRequestConverters
 {
     /// <summary>Converts an abstractions feature query request to its gRPC counterpart.</summary>
     public static GrpcModels.QueryFeaturesRequest ToGrpcQueryRequest(QueryFeaturesRequest request)
