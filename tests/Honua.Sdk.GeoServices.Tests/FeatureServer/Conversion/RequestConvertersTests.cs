@@ -155,6 +155,160 @@ public class RequestConvertersTests
     }
 
     [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonPointToXy()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "Point",
+                coordinates = new[] { -122.0, 37.5 },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.Equal(JsonValueKind.Object, geometry.ValueKind);
+        Assert.False(geometry.TryGetProperty("type", out _));
+        Assert.Equal(-122.0, geometry.GetProperty("x").GetDouble());
+        Assert.Equal(37.5, geometry.GetProperty("y").GetDouble());
+        Assert.False(geometry.TryGetProperty("z", out _));
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonPointWithZ()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "Point",
+                coordinates = new[] { -122.0, 37.5, 12.25 },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.Equal(-122.0, geometry.GetProperty("x").GetDouble());
+        Assert.Equal(37.5, geometry.GetProperty("y").GetDouble());
+        Assert.Equal(12.25, geometry.GetProperty("z").GetDouble());
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_PassesThroughFeatureServerShapedPoint()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                x = -122.0,
+                y = 37.5,
+                spatialReference = new { wkid = 4326 },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.Equal(-122.0, geometry.GetProperty("x").GetDouble());
+        Assert.Equal(37.5, geometry.GetProperty("y").GetDouble());
+        Assert.Equal(4326, geometry.GetProperty("spatialReference").GetProperty("wkid").GetInt32());
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonLineStringToPaths()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "LineString",
+                coordinates = new[]
+                {
+                    new[] { 0.0, 0.0 },
+                    new[] { 1.0, 1.0 },
+                    new[] { 2.0, 0.0 },
+                },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.False(geometry.TryGetProperty("type", out _));
+        var paths = geometry.GetProperty("paths");
+        Assert.Equal(JsonValueKind.Array, paths.ValueKind);
+        Assert.Equal(1, paths.GetArrayLength());
+        var path = paths[0];
+        Assert.Equal(3, path.GetArrayLength());
+        Assert.Equal(0.0, path[0][0].GetDouble());
+        Assert.Equal(0.0, path[0][1].GetDouble());
+        Assert.Equal(2.0, path[2][0].GetDouble());
+        Assert.Equal(0.0, path[2][1].GetDouble());
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonPolygonToRings()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "Polygon",
+                coordinates = new[]
+                {
+                    new[]
+                    {
+                        new[] { 0.0, 0.0 },
+                        new[] { 0.0, 1.0 },
+                        new[] { 1.0, 1.0 },
+                        new[] { 1.0, 0.0 },
+                        new[] { 0.0, 0.0 },
+                    },
+                },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.False(geometry.TryGetProperty("type", out _));
+        var rings = geometry.GetProperty("rings");
+        Assert.Equal(JsonValueKind.Array, rings.ValueKind);
+        Assert.Equal(1, rings.GetArrayLength());
+        var ring = rings[0];
+        Assert.Equal(5, ring.GetArrayLength());
+        Assert.Equal(0.0, ring[0][0].GetDouble());
+        Assert.Equal(0.0, ring[0][1].GetDouble());
+        var lastIndex = ring.GetArrayLength() - 1;
+        Assert.Equal(0.0, ring[lastIndex][0].GetDouble());
+        Assert.Equal(0.0, ring[lastIndex][1].GetDouble());
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_LeavesNullGeometryNull()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Attributes = new Dictionary<string, JsonElement>
+            {
+                ["NAME"] = JsonSerializer.SerializeToElement("Alpha"),
+            },
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.False(converted.Geometry.HasValue);
+    }
+
+    [Fact]
     public void ToFeatureServerDeleteObjectIds_CombinesNumericAndStringIds()
     {
         var request = new FeatureEditRequest
