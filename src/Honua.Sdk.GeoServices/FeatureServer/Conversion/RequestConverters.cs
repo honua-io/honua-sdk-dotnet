@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
+using Honua.Sdk.Geometry;
 
 namespace Honua.Sdk.GeoServices.FeatureServer.Conversion;
 
@@ -58,6 +59,13 @@ public static class RequestConverters
     }
 
     /// <summary>Converts a provider-neutral feature edit payload to a FeatureServer feature.</summary>
+    /// <remarks>
+    /// GeoJSON geometry payloads (<c>{"type":"Point","coordinates":[...]}</c> and friends) are
+    /// projected to FeatureServer's Esri JSON shape (<c>{"x":...,"y":...}</c>, <c>{"paths":[...]}</c>,
+    /// <c>{"rings":[...]}</c>, etc.) so callers can supply provider-neutral GeoJSON without each
+    /// caller re-implementing the conversion. Geometries that already match the FeatureServer
+    /// shape, or shapes the SDK cannot translate, are passed through unchanged.
+    /// </remarks>
     public static FeatureServerFeature ToFeatureServerFeature(FeatureEditFeature feature)
     {
         ArgumentNullException.ThrowIfNull(feature);
@@ -65,7 +73,75 @@ public static class RequestConverters
         return new FeatureServerFeature
         {
             Attributes = feature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone()),
-            Geometry = feature.Geometry?.Clone(),
+            Geometry = ProjectGeometryForFeatureServer(feature.Geometry),
+        };
+    }
+
+    /// <summary>
+    /// Projects an inbound geometry <see cref="JsonElement"/> to the FeatureServer (Esri JSON) shape.
+    /// Recognises GeoJSON Point/MultiPoint/LineString/MultiLineString/Polygon/MultiPolygon payloads
+    /// via their <c>"type"</c> discriminator and routes them through
+    /// <see cref="GeoJsonGeometryConverter"/> +
+    /// <see cref="GeoServicesGeometryConverter"/>. Geometries that already look like FeatureServer
+    /// shapes (have <c>x</c>/<c>y</c>, <c>rings</c>, <c>paths</c>, or <c>points</c>) or which we
+    /// cannot translate (GeometryCollection, etc.) are cloned and returned verbatim so the wire
+    /// payload is preserved for the server.
+    /// </summary>
+    private static JsonElement? ProjectGeometryForFeatureServer(JsonElement? geometry)
+    {
+        if (!geometry.HasValue)
+        {
+            return null;
+        }
+
+        var value = geometry.Value;
+        if (value.ValueKind != JsonValueKind.Object)
+        {
+            return value.Clone();
+        }
+
+        if (!IsGeoJsonGeometry(value))
+        {
+            // Already FeatureServer-shaped (or an unknown object we should not mutate).
+            return value.Clone();
+        }
+
+        try
+        {
+            var nts = GeoJsonGeometryConverter.ReadGeometry(value);
+            return GeoServicesGeometryConverter.WriteGeometry(nts);
+        }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException or ArgumentException)
+        {
+            // GeoJSON shape we cannot translate (e.g., GeometryCollection or malformed payload).
+            // Fall back to the original payload so callers/servers can surface a precise error
+            // rather than this converter silently swallowing the geometry.
+            return value.Clone();
+        }
+    }
+
+    private static bool IsGeoJsonGeometry(JsonElement geometry)
+    {
+        if (geometry.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!geometry.TryGetProperty("type", out var type) ||
+            type.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        return type.GetString() switch
+        {
+            "Point" or
+            "MultiPoint" or
+            "LineString" or
+            "MultiLineString" or
+            "Polygon" or
+            "MultiPolygon" => true,
+            _ => false,
         };
     }
 
