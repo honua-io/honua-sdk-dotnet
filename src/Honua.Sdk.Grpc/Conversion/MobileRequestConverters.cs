@@ -1,0 +1,435 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using System.Buffers;
+using System.Collections;
+using System.Globalization;
+using System.Text.Json;
+using Honua.Sdk.Abstractions.Features;
+using GrpcModels = Honua.Sdk.Grpc.Models;
+
+namespace Honua.Sdk.Grpc.Conversion;
+
+
+/// <summary>
+/// Converts mobile-side request DTOs and gRPC response models for legacy
+/// <c>JsonDocument</c>-returning surfaces.
+/// </summary>
+/// <remarks>
+/// Migrated from <c>Honua.Mobile.Sdk.SdkGrpcTransportMappings</c>. The converter
+/// is intentionally <c>internal</c> while the migration is in flight; only
+/// transport adapters inside this assembly are intended consumers.
+/// </remarks>
+internal static class MobileRequestConverters
+{
+    /// <summary>Converts an abstractions feature query request to its gRPC counterpart.</summary>
+    public static GrpcModels.QueryFeaturesRequest ToGrpcQueryRequest(QueryFeaturesRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return new GrpcModels.QueryFeaturesRequest
+        {
+            ServiceId = request.ServiceId,
+            LayerId = request.LayerId,
+            Where = request.Where,
+            ObjectIds = request.ObjectIds,
+            OutFields = request.OutFields,
+            ReturnGeometry = request.ReturnGeometry,
+            ResultOffset = request.ResultOffset ?? 0,
+            ResultRecordCount = request.ResultRecordCount ?? 0,
+            OrderBy = request.OrderBy ?? string.Empty,
+            ReturnDistinct = request.ReturnDistinct,
+            ReturnCountOnly = request.ReturnCountOnly,
+            ReturnIdsOnly = request.ReturnIdsOnly,
+            ReturnExtentOnly = request.ReturnExtentOnly,
+        };
+    }
+
+    /// <summary>Converts an abstractions apply-edits request to its gRPC counterpart.</summary>
+    public static GrpcModels.ApplyEditsRequest ToGrpcApplyEditsRequest(ApplyEditsRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return new GrpcModels.ApplyEditsRequest
+        {
+            ServiceId = request.ServiceId,
+            LayerId = request.LayerId,
+            Adds = ToGrpcFeatures(request.Adds, request.AddsJson),
+            Updates = ToGrpcFeatures(request.Updates, request.UpdatesJson),
+            Deletes = ToGrpcDeleteObjectIds(request.Deletes, request.DeletesCsv),
+            RollbackOnFailure = request.RollbackOnFailure,
+            ForceWrite = request.ForceWrite,
+        };
+    }
+
+    /// <summary>Serializes a gRPC feature query response to a legacy <see cref="JsonDocument"/> payload.</summary>
+    public static JsonDocument ToJsonDocument(GrpcModels.QueryFeaturesResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        var payload = new Dictionary<string, object?>
+        {
+            ["objectIdFieldName"] = response.ObjectIdFieldName,
+            ["geometryType"] = response.GeometryType.ToString(),
+            ["spatialReference"] = ToSpatialReference(response.SpatialReference),
+            ["fields"] = response.Fields.Select(ToField).ToArray(),
+            ["features"] = response.Features.Select(ToFeature).ToArray(),
+            ["exceededTransferLimit"] = response.ExceededTransferLimit,
+            ["count"] = response.Count,
+            ["objectIds"] = response.ObjectIds.ToArray(),
+            ["extent"] = ToExtent(response.Extent),
+        };
+
+        return SerializePayload(payload);
+    }
+
+    /// <summary>Serializes a gRPC streaming feature page to a legacy <see cref="JsonDocument"/> payload.</summary>
+    public static JsonDocument ToJsonDocument(GrpcModels.FeaturePage page)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        var payload = new Dictionary<string, object?>
+        {
+            ["objectIdFieldName"] = page.ObjectIdFieldName,
+            ["geometryType"] = page.GeometryType.ToString(),
+            ["spatialReference"] = ToSpatialReference(page.SpatialReference),
+            ["fields"] = page.Fields.Select(ToField).ToArray(),
+            ["features"] = page.Features.Select(ToFeature).ToArray(),
+            ["isLastPage"] = page.IsLastPage,
+        };
+
+        return SerializePayload(payload);
+    }
+
+    /// <summary>Serializes a gRPC apply-edits response to a legacy <see cref="JsonDocument"/> payload.</summary>
+    public static JsonDocument ToJsonDocument(GrpcModels.ApplyEditsResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        var payload = new Dictionary<string, object?>
+        {
+            ["addResults"] = response.AddResults.Select(ToEditResult).ToArray(),
+            ["updateResults"] = response.UpdateResults.Select(ToEditResult).ToArray(),
+            ["deleteResults"] = response.DeleteResults.Select(ToEditResult).ToArray(),
+            ["error"] = response.Error is null ? null : ToEditError(response.Error),
+        };
+
+        return SerializePayload(payload);
+    }
+
+    private static GrpcModels.Feature[]? ToGrpcFeatures(
+        IReadOnlyList<FeatureEditFeature>? features,
+        string? json)
+    {
+        if (features is { Count: > 0 })
+        {
+            return features.Select(ToGrpcFeature).ToArray();
+        }
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(json);
+        if (document.RootElement.ValueKind == JsonValueKind.Array)
+        {
+            return document.RootElement.EnumerateArray().Select(ToGrpcFeature).ToArray();
+        }
+
+        return document.RootElement.ValueKind == JsonValueKind.Object
+            ? [ToGrpcFeature(document.RootElement)]
+            : [];
+    }
+
+    private static IReadOnlyList<long>? ToGrpcDeleteObjectIds(IReadOnlyList<long>? deletes, string? deletesCsv)
+    {
+        if (deletes is { Count: > 0 })
+        {
+            return deletes;
+        }
+
+        if (string.IsNullOrWhiteSpace(deletesCsv))
+        {
+            return null;
+        }
+
+        var objectIds = new List<long>();
+        foreach (var token in deletesCsv.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (long.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var objectId))
+            {
+                objectIds.Add(objectId);
+            }
+        }
+
+        return objectIds;
+    }
+
+    private static GrpcModels.Feature ToGrpcFeature(FeatureEditFeature feature)
+    {
+        var attributes = feature.Attributes.ToDictionary(
+            kvp => kvp.Key,
+            kvp => (object?)ToObject(kvp.Value));
+
+        return new GrpcModels.Feature
+        {
+            Id = feature.ObjectId ??
+                (TryReadObjectId(feature.Attributes, out var objectId) ? objectId : 0L),
+            Attributes = attributes,
+            Geometry = feature.Geometry is { ValueKind: JsonValueKind.Object } geometry
+                ? ToObjectDictionary(geometry)
+                : null,
+        };
+    }
+
+    private static GrpcModels.Feature ToGrpcFeature(JsonElement feature)
+    {
+        var attributes = feature.TryGetProperty("attributes", out var attributesNode) &&
+            attributesNode.ValueKind == JsonValueKind.Object
+                ? ToObjectDictionary(attributesNode)
+                : new Dictionary<string, object?>();
+
+        return new GrpcModels.Feature
+        {
+            Id = TryReadObjectId(feature, attributes, out var objectId) ? objectId : 0,
+            Attributes = attributes,
+            Geometry = feature.TryGetProperty("geometry", out var geometryNode) &&
+                geometryNode.ValueKind == JsonValueKind.Object
+                    ? ToObjectDictionary(geometryNode)
+                    : null,
+        };
+    }
+
+    private static bool TryReadObjectId(
+        JsonElement feature,
+        Dictionary<string, object?> attributes,
+        out long objectId)
+    {
+        if (TryReadObjectId(feature, "id", out objectId) ||
+            TryReadObjectId(feature, "objectId", out objectId))
+        {
+            return true;
+        }
+
+        foreach (var key in new[] { "OBJECTID", "objectid", "ObjectID", "FID" })
+        {
+            if (attributes.TryGetValue(key, out var value) && TryConvertToInt64(value, out objectId))
+            {
+                return true;
+            }
+        }
+
+        objectId = 0;
+        return false;
+    }
+
+    private static bool TryReadObjectId(IReadOnlyDictionary<string, JsonElement> attributes, out long objectId)
+    {
+        foreach (var key in new[] { "OBJECTID", "objectid", "ObjectID", "FID" })
+        {
+            if (attributes.TryGetValue(key, out var value) && value.TryGetInt64(out objectId))
+            {
+                return true;
+            }
+        }
+
+        objectId = 0;
+        return false;
+    }
+
+    private static bool TryReadObjectId(JsonElement feature, string propertyName, out long objectId)
+    {
+        if (feature.TryGetProperty(propertyName, out var node))
+        {
+            if (node.TryGetInt64(out objectId))
+            {
+                return true;
+            }
+
+            if (node.ValueKind == JsonValueKind.String &&
+                long.TryParse(node.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out objectId))
+            {
+                return true;
+            }
+        }
+
+        objectId = 0;
+        return false;
+    }
+
+    private static Dictionary<string, object?> ToObjectDictionary(JsonElement value)
+        => value.EnumerateObject().ToDictionary(property => property.Name, property => ToObject(property.Value));
+
+    private static object? ToObject(JsonElement value)
+        => value.ValueKind switch
+        {
+            JsonValueKind.Null or JsonValueKind.Undefined => null,
+            JsonValueKind.String => value.GetString(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Number when value.TryGetInt64(out var int64Value) => int64Value,
+            JsonValueKind.Number => value.GetDouble(),
+            JsonValueKind.Array => value.EnumerateArray().Select(ToObject).ToArray(),
+            JsonValueKind.Object => ToObjectDictionary(value),
+            _ => value.GetRawText(),
+        };
+
+    private static bool TryConvertToInt64(object? value, out long objectId)
+    {
+        switch (value)
+        {
+            case long longValue:
+                objectId = longValue;
+                return true;
+            case int intValue:
+                objectId = intValue;
+                return true;
+            case string stringValue when long.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out objectId):
+                return true;
+            case JsonElement element when element.TryGetInt64(out objectId):
+                return true;
+            default:
+                objectId = 0;
+                return false;
+        }
+    }
+
+    private static Dictionary<string, object?> ToFeature(GrpcModels.Feature source)
+        => new()
+        {
+            ["id"] = source.Id,
+            ["attributes"] = source.Attributes,
+            ["geometry"] = source.Geometry,
+        };
+
+    private static Dictionary<string, object?> ToField(GrpcModels.FieldDefinition source)
+        => new()
+        {
+            ["name"] = source.Name,
+            ["fieldType"] = source.FieldType.ToString(),
+            ["length"] = source.Length,
+            ["nullable"] = source.Nullable,
+        };
+
+    private static Dictionary<string, object?>? ToSpatialReference(GrpcModels.SpatialReference? source)
+    {
+        if (source is null ||
+            (source.Wkid == 0 && source.LatestWkid == 0 && string.IsNullOrWhiteSpace(source.Wkt)))
+        {
+            return null;
+        }
+
+        return new Dictionary<string, object?>
+        {
+            ["wkid"] = source.Wkid,
+            ["latestWkid"] = source.LatestWkid,
+            ["wkt"] = source.Wkt,
+        };
+    }
+
+    private static Dictionary<string, object?>? ToExtent(GrpcModels.Extent? source)
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        return new Dictionary<string, object?>
+        {
+            ["xmin"] = source.Xmin,
+            ["ymin"] = source.Ymin,
+            ["xmax"] = source.Xmax,
+            ["ymax"] = source.Ymax,
+            ["spatialReference"] = ToSpatialReference(source.SpatialReference),
+        };
+    }
+
+    private static Dictionary<string, object?> ToEditResult(GrpcModels.EditResult source)
+        => new()
+        {
+            ["objectId"] = source.ObjectId,
+            ["success"] = source.Success,
+            ["error"] = source.Error is null ? null : ToEditError(source.Error),
+        };
+
+    private static Dictionary<string, object?> ToEditError(GrpcModels.EditError source)
+        => new()
+        {
+            ["code"] = source.Code,
+            ["message"] = source.Message,
+        };
+
+    // TODO: Callers that only need a JsonElement should bypass this hop entirely by
+    // consuming the gRPC response types directly. The Utf8JsonWriter -> JsonDocument.Parse
+    // round-trip below remains for legacy compatibility with JsonDocument-returning surfaces.
+    // We write into a pooled IBufferWriter<byte> rather than a MemoryStream + ToArray() to
+    // skip one allocation/copy of the serialized payload.
+    private static JsonDocument SerializePayload(IReadOnlyDictionary<string, object?> payload)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            WriteObject(writer, payload);
+        }
+
+        return JsonDocument.Parse(buffer.WrittenMemory);
+    }
+
+    private static void WriteObject(Utf8JsonWriter writer, IReadOnlyDictionary<string, object?> values)
+    {
+        writer.WriteStartObject();
+        foreach (var (name, value) in values)
+        {
+            writer.WritePropertyName(name);
+            WriteValue(writer, value);
+        }
+
+        writer.WriteEndObject();
+    }
+
+    private static void WriteValue(Utf8JsonWriter writer, object? value)
+    {
+        switch (value)
+        {
+            case null:
+                writer.WriteNullValue();
+                break;
+            case string stringValue:
+                writer.WriteStringValue(stringValue);
+                break;
+            case bool boolValue:
+                writer.WriteBooleanValue(boolValue);
+                break;
+            case int intValue:
+                writer.WriteNumberValue(intValue);
+                break;
+            case long longValue:
+                writer.WriteNumberValue(longValue);
+                break;
+            case float floatValue:
+                writer.WriteNumberValue(floatValue);
+                break;
+            case double doubleValue:
+                writer.WriteNumberValue(doubleValue);
+                break;
+            case decimal decimalValue:
+                writer.WriteNumberValue(decimalValue);
+                break;
+            case JsonElement element:
+                element.WriteTo(writer);
+                break;
+            case IReadOnlyDictionary<string, object?> objectDictionary:
+                WriteObject(writer, objectDictionary);
+                break;
+            case IEnumerable enumerable:
+                writer.WriteStartArray();
+                foreach (var item in enumerable)
+                {
+                    WriteValue(writer, item);
+                }
+
+                writer.WriteEndArray();
+                break;
+            default:
+                writer.WriteStringValue(value.ToString());
+                break;
+        }
+    }
+}
+
