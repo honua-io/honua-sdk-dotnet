@@ -11,14 +11,15 @@ namespace Honua.Sdk.OgcFeatures.Conversion;
 
 
 /// <summary>
-/// Converts mobile/abstractions request DTOs to OGC API Features request and
-/// payload shapes.
+/// Converts abstractions request DTOs to OGC API Features request and payload
+/// shapes.
 /// </summary>
 /// <remarks>
-/// Migrated from <c>Honua.Mobile.Sdk.SdkFeatureTransportMappings</c>. Methods
-/// are <c>internal</c> while the migration settles.
+/// Migrated from <c>Honua.Mobile.Sdk.SdkFeatureTransportMappings</c>. Exposed
+/// as public surface so cross-assembly consumers (notably the mobile runtime)
+/// can compose these conversions without duplicating logic.
 /// </remarks>
-internal static class RequestConverters
+public static class RequestConverters
 {
     /// <summary>Converts a provider-neutral feature edit payload to an OGC GeoJSON feature.</summary>
     public static OgcFeature ToOgcFeature(FeatureEditFeature feature, string? featureId = null)

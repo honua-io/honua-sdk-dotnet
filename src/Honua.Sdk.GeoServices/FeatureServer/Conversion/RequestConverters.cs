@@ -11,15 +11,15 @@ namespace Honua.Sdk.GeoServices.FeatureServer.Conversion;
 
 
 /// <summary>
-/// Converts mobile/abstractions request DTOs to FeatureServer REST request
-/// shapes (query parameters, edit payloads, and form bodies).
+/// Converts abstractions request DTOs to FeatureServer REST request shapes
+/// (query parameters, edit payloads, and form bodies).
 /// </summary>
 /// <remarks>
-/// Migrated from <c>Honua.Mobile.Sdk.SdkFeatureTransportMappings</c>. Methods
-/// are <c>internal</c> while the migration settles; promote to <c>public</c>
-/// once the abstractions DTO surface is finalised.
+/// Migrated from <c>Honua.Mobile.Sdk.SdkFeatureTransportMappings</c>. Exposed
+/// as public surface so cross-assembly consumers (notably the mobile runtime)
+/// can compose these conversions without duplicating logic.
 /// </remarks>
-internal static class RequestConverters
+public static class RequestConverters
 {
     /// <summary>Converts an abstractions apply-edits request to a FeatureServer edit request.</summary>
     public static FeatureServerEditRequest ToFeatureServerEditRequest(ApplyEditsRequest request)
