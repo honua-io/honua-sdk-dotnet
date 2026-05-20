@@ -2,6 +2,19 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [0.1.17-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.16-alpha.1...dotnet-sdk-v0.1.17-alpha.1) (2026-05-20)
+
+
+### Features
+
+* **abstractions:** migrate provider-neutral request DTOs from honua-mobile ([#152](https://github.com/honua-io/honua-sdk-dotnet/issues/152)) ([890e1ee](https://github.com/honua-io/honua-sdk-dotnet/commit/890e1eefb5b152e7460ec7497f7a57d37d5e823e))
+* add OGC API Records client ([#148](https://github.com/honua-io/honua-sdk-dotnet/issues/148)) ([59db134](https://github.com/honua-io/honua-sdk-dotnet/commit/59db1346cb793ceeac075a3e8dcb7767a7c0c88a))
+* add STAC catalog client ([#150](https://github.com/honua-io/honua-sdk-dotnet/issues/150)) ([223b1ab](https://github.com/honua-io/honua-sdk-dotnet/commit/223b1abdf86ade23efbbf35d54d40deabc8e98d8))
+* **geometry:** add GeographicBoundingBox WGS84 primitive ([#151](https://github.com/honua-io/honua-sdk-dotnet/issues/151)) ([cd0e066](https://github.com/honua-io/honua-sdk-dotnet/commit/cd0e066af630bf57cab761790d25dc803d0d8ede))
+* **grpc,abstractions:** migrate mobile-side transport mappings ([#154](https://github.com/honua-io/honua-sdk-dotnet/issues/154)) ([c94333f](https://github.com/honua-io/honua-sdk-dotnet/commit/c94333f9cd523110eb2f42953d7950613f9a2f69))
+* **grpc,geoservices,ogcfeatures,offline:** expose RequestConverters publicly and surface Geometry transitively ([#155](https://github.com/honua-io/honua-sdk-dotnet/issues/155)) ([919077a](https://github.com/honua-io/honua-sdk-dotnet/commit/919077a86caef9bc5a7ee05e2c6b96589f6d835a))
+* **offline:** migrate replica sync HTTP client from honua-mobile ([#153](https://github.com/honua-io/honua-sdk-dotnet/issues/153)) ([5c82ab8](https://github.com/honua-io/honua-sdk-dotnet/commit/5c82ab8d4b4258cae07cd591e62d208a9e2845f8))
+
 ## [0.1.16-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.15-alpha.1...dotnet-sdk-v0.1.16-alpha.1) (2026-05-07)
 
 
