@@ -8,7 +8,7 @@ namespace Honua.Sdk.Admin.Exceptions;
 /// <summary>
 /// Exception thrown when the Honua Admin API returns an error HTTP status code.
 /// </summary>
-public sealed class HonuaAdminApiException : Exception
+public sealed class HonuaAdminApiException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaAdminApiException"/> class.

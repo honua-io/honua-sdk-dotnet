@@ -3,7 +3,7 @@ using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 using Honua.Sdk.Grpc.Models;
 using Honua.Sdk.OgcFeatures.Models;
-using Honua.Sdk.Wfs.Models;
+using Honua.Sdk.OgcFeatures.Wfs.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.ProtocolIntegration.Tests;
@@ -60,7 +60,7 @@ public sealed class FeatureProtocolIntegrationTests(ProtocolIntegrationFixture f
 
         var count = await _fixture.WfsClient.GetFeatureCountAsync(
             _fixture.Options.WfsTypeName,
-            ct: timeout.Token).ConfigureAwait(false);
+            cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.True(count is null or >= 1);
     }
 

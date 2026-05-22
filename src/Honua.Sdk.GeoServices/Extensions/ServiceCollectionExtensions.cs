@@ -18,6 +18,9 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers the Honua FeatureServer client and related services with the DI container.
+    /// The supplied <paramref name="configure"/> delegate is invoked exactly once to capture
+    /// options; primary HTTP handler and resilience pipeline configuration are derived from
+    /// that snapshot.
     /// </summary>
     /// <param name="services">The service collection to register with.</param>
     /// <param name="configure">Configuration delegate for client options.</param>
@@ -29,13 +32,16 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        services.Configure(configure);
+        var snapshot = new HonuaGeoServicesClientOptions();
+        configure(snapshot);
+        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
         services.AddTransient<HonuaGeoServicesAuthHandler>();
         var httpBuilder = services.AddHttpClient<HonuaFeatureServerClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
-            HonuaGeoServicesClientOptions.ValidateBaseAddress(options.BaseAddress);
-            HonuaGeoServicesClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
             client.Timeout = options.Timeout;
         })
@@ -45,13 +51,16 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
-        ConfigurePrimaryHandler(httpBuilder, configure);
-        ConfigureResilience(httpBuilder, configure);
+
+        ApplyHandlerAndResilience(httpBuilder, snapshot);
         return services;
     }
 
     /// <summary>
     /// Registers the Honua GeoServices NAServer routing client with the DI container.
+    /// The supplied <paramref name="configure"/> delegate is invoked exactly once to capture
+    /// options; primary HTTP handler and resilience pipeline configuration are derived from
+    /// that snapshot.
     /// </summary>
     /// <param name="services">The service collection to register with.</param>
     /// <param name="configure">Configuration delegate for client options.</param>
@@ -63,56 +72,46 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        services.Configure(configure);
+        var snapshot = new HonuaGeoServicesClientOptions();
+        configure(snapshot);
+        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
         services.AddTransient<HonuaGeoServicesAuthHandler>();
         var httpBuilder = services.AddHttpClient<HonuaRoutingClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
-            HonuaGeoServicesClientOptions.ValidateBaseAddress(options.BaseAddress);
-            HonuaGeoServicesClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
             client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
-        ConfigurePrimaryHandler(httpBuilder, configure);
-        ConfigureResilience(httpBuilder, configure);
+
+        ApplyHandlerAndResilience(httpBuilder, snapshot);
         return services;
     }
 
-    private static void ConfigurePrimaryHandler(
+    private static void ApplyHandlerAndResilience(
         IHttpClientBuilder httpBuilder,
-        Action<HonuaGeoServicesClientOptions> configure)
+        HonuaGeoServicesClientOptions snapshot)
     {
-        var opts = new HonuaGeoServicesClientOptions();
-        configure(opts);
-        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        if (snapshot.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
         {
             httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
         }
-    }
 
-    private static void ConfigureResilience(
-        IHttpClientBuilder httpBuilder,
-        Action<HonuaGeoServicesClientOptions> configure)
-    {
-        var opts = new HonuaGeoServicesClientOptions();
-        configure(opts);
-        HonuaGeoServicesClientOptions.ValidateTimeout(opts.Timeout);
-
-        if (!opts.EnableRetry)
+        if (snapshot.EnableRetry)
         {
-            return;
+            httpBuilder.AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = snapshot.Timeout;
+                options.AttemptTimeout.Timeout = snapshot.Timeout;
+                options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
+                options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+                options.Retry.DisableForUnsafeHttpMethods();
+                options.Retry.UseJitter = true;
+            });
         }
-
-        httpBuilder.AddStandardResilienceHandler(options =>
-        {
-            options.TotalRequestTimeout.Timeout = opts.Timeout;
-            options.AttemptTimeout.Timeout = opts.Timeout;
-            options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
-            options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
-            options.Retry.DisableForUnsafeHttpMethods();
-            options.Retry.UseJitter = true;
-        });
     }
 }

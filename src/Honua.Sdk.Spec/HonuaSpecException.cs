@@ -9,7 +9,7 @@ namespace Honua.Sdk.Spec;
 /// <summary>
 /// Exception thrown when the spec REST API returns an unsuccessful response.
 /// </summary>
-public sealed class HonuaSpecException : Exception
+public sealed class HonuaSpecException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaSpecException"/> class.

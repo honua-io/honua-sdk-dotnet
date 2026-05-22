@@ -8,12 +8,14 @@ namespace Honua.Sdk.Scenes;
 /// <summary>
 /// Configuration options for the Honua scene metadata client.
 /// </summary>
-public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions
+public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions, Honua.Sdk.Abstractions.IHonuaClientOptions
 {
     /// <summary>
-    /// Base address of the Honua server.
+    /// Base address of the Honua server. Required; the SDK no longer assumes a
+    /// localhost default so that missing configuration surfaces loudly at
+    /// registration time via the static ValidateBaseAddress check.
     /// </summary>
-    public Uri BaseAddress { get; set; } = new("https://localhost:5001");
+    public Uri? BaseAddress { get; set; }
 
     /// <summary>
     /// Server-relative scene metadata API path.
@@ -84,7 +86,16 @@ public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions
     public int MaxRetryAttempts
     {
         get => _maxRetryAttempts;
-        set => _maxRetryAttempts = Math.Clamp(value, 2, 5);
+        set
+        {
+            if (value is < 2 or > 5)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value), value,
+                    "MaxRetryAttempts must be in the inclusive range [2, 5].");
+            }
+            _maxRetryAttempts = value;
+        }
     }
 
     private int _maxRetryAttempts = 3;
@@ -93,18 +104,18 @@ public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions
     {
         if (baseAddress is null)
         {
-            throw new InvalidOperationException("Honua scene base address must be configured.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene base address must be configured.");
         }
 
         if (!baseAddress.IsAbsoluteUri)
         {
-            throw new InvalidOperationException("Honua scene base address must be an absolute URI.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene base address must be an absolute URI.");
         }
 
         if (!string.Equals(baseAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(baseAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Honua scene base address must use HTTP or HTTPS.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene base address must use HTTP or HTTPS.");
         }
     }
 
@@ -112,8 +123,7 @@ public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions
     {
         if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
         {
-            throw new InvalidOperationException(
-                "Honua scene timeout must be greater than 10 milliseconds and less than 24 hours.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene timeout must be greater than 10 milliseconds and less than 24 hours.");
         }
     }
 

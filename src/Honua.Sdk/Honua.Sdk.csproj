@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Honua.Sdk</PackageId>
+    <Description>Umbrella / meta package for the Honua .NET SDK. Installing this package brings in every other Honua.Sdk.* package and exposes a single AddHonua(o =&gt; o.BaseAddress = ...) DI registration that fans out across every enabled sub-package. Use the narrower per-package facades (Honua.Sdk.Grpc, Honua.Sdk.Admin, etc.) directly if you want to depend on less.</Description>
+    <RootNamespace>Honua.Sdk</RootNamespace>
+    <Authors>Honua</Authors>
+    <Copyright>Copyright (c) Honua</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/honua-io/honua-sdk-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>geospatial;mobile;gis;grpc;rest;ogc;wfs;stac;sync;honua;meta</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Every other src/Honua.Sdk.* package fans out from this meta. Kept as
+      ProjectReference for in-repo builds; `dotnet pack` transforms each into
+      a versioned PackageReference dependency, which is what consumers see in
+      nuget.org. The publish workflow validates that all sibling packages
+      share the same PackageVersion.
+    -->
+    <ProjectReference Include="..\Honua.Sdk.Abstractions\Honua.Sdk.Abstractions.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Admin\Honua.Sdk.Admin.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Field\Honua.Sdk.Field.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.GeoServices\Honua.Sdk.GeoServices.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Geometry\Honua.Sdk.Geometry.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Grpc\Honua.Sdk.Grpc.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Offline\Honua.Sdk.Offline.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.OgcFeatures\Honua.Sdk.OgcFeatures.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Catalogs\Honua.Sdk.Catalogs.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Scenes\Honua.Sdk.Scenes.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Spec\Honua.Sdk.Spec.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Honua.Sdk.MetaSmoke.Tests" />
+  </ItemGroup>
+
+</Project>

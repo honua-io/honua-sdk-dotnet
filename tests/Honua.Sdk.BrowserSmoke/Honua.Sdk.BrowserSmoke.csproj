@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,14 +22,11 @@
     <ProjectReference Include="..\..\src\Honua.Sdk.Field\Honua.Sdk.Field.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Geometry\Honua.Sdk.Geometry.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.GeoServices\Honua.Sdk.GeoServices.csproj" />
-    <ProjectReference Include="..\..\src\Honua.Sdk.Offline.Abstractions\Honua.Sdk.Offline.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Offline\Honua.Sdk.Offline.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.OgcFeatures\Honua.Sdk.OgcFeatures.csproj" />
-    <ProjectReference Include="..\..\src\Honua.Sdk.OgcRecords\Honua.Sdk.OgcRecords.csproj" />
+    <ProjectReference Include="..\..\src\Honua.Sdk.Catalogs\Honua.Sdk.Catalogs.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Scenes\Honua.Sdk.Scenes.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Spec\Honua.Sdk.Spec.csproj" />
-    <ProjectReference Include="..\..\src\Honua.Sdk.Stac\Honua.Sdk.Stac.csproj" />
-    <ProjectReference Include="..\..\src\Honua.Sdk.Wfs\Honua.Sdk.Wfs.csproj" />
   </ItemGroup>
 
 </Project>

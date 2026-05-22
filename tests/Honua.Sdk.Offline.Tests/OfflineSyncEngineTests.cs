@@ -282,7 +282,7 @@ public sealed class OfflineSyncEngineTests
 
         public List<FeatureQueryRequest> Requests { get; } = [];
 
-        public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken ct = default)
+        public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken cancellationToken = default)
         {
             Requests.Add(request);
             return Task.FromResult(Pages.Peek());
@@ -290,12 +290,12 @@ public sealed class OfflineSyncEngineTests
 
         public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
             FeatureQueryRequest request,
-            [EnumeratorCancellation] CancellationToken ct = default)
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Requests.Add(request);
             while (Pages.Count > 0)
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 yield return Pages.Dequeue();
                 await Task.Yield();
             }
@@ -318,7 +318,7 @@ public sealed class OfflineSyncEngineTests
 
         public List<FeatureEditRequest> Requests { get; } = [];
 
-        public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+        public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default)
         {
             Requests.Add(request);
             return Task.FromResult(Responses.Dequeue());
@@ -333,7 +333,7 @@ public sealed class OfflineSyncEngineTests
 
         public List<OfflineSyncState> States { get; } = [];
 
-        public Task SaveFeaturesAsync(OfflineFeaturePage page, CancellationToken ct = default)
+        public Task SaveFeaturesAsync(OfflineFeaturePage page, CancellationToken cancellationToken = default)
         {
             Pages.Add(page);
             return Task.CompletedTask;
@@ -344,19 +344,19 @@ public sealed class OfflineSyncEngineTests
             string sourceId,
             IReadOnlyList<string> featureIds,
             IReadOnlyList<long> objectIds,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
         public Task<OfflineSyncCheckpoint?> GetCheckpointAsync(
             string packageId,
             string sourceId,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
         {
             Checkpoints.TryGetValue(sourceId, out var checkpoint);
             return Task.FromResult<OfflineSyncCheckpoint?>(checkpoint);
         }
 
-        public Task SaveCheckpointAsync(OfflineSyncCheckpoint checkpoint, CancellationToken ct = default)
+        public Task SaveCheckpointAsync(OfflineSyncCheckpoint checkpoint, CancellationToken cancellationToken = default)
         {
             Checkpoints[checkpoint.SourceId] = checkpoint;
             return Task.CompletedTask;
@@ -365,10 +365,10 @@ public sealed class OfflineSyncEngineTests
         public Task<OfflineSyncState?> GetStateAsync(
             string packageId,
             string? sourceId = null,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult<OfflineSyncState?>(States.LastOrDefault(state => state.PackageId == packageId && state.SourceId == sourceId));
 
-        public Task SaveStateAsync(OfflineSyncState state, CancellationToken ct = default)
+        public Task SaveStateAsync(OfflineSyncState state, CancellationToken cancellationToken = default)
         {
             States.Add(state);
             return Task.CompletedTask;
@@ -394,7 +394,7 @@ public sealed class OfflineSyncEngineTests
 
         public List<OfflineConflictEnvelope> Conflicts { get; } = [];
 
-        public Task EnqueueAsync(OfflineChangeJournalEntry entry, CancellationToken ct = default)
+        public Task EnqueueAsync(OfflineChangeJournalEntry entry, CancellationToken cancellationToken = default)
         {
             _pending.Add(entry);
             return Task.CompletedTask;
@@ -403,35 +403,35 @@ public sealed class OfflineSyncEngineTests
         public Task<IReadOnlyList<OfflineChangeJournalEntry>> GetPendingAsync(
             string packageId,
             int maxCount,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OfflineChangeJournalEntry>>(
                 _pending.Where(entry => entry.PackageId == packageId).Take(maxCount).ToArray());
 
-        public Task MarkSucceededAsync(string operationId, CancellationToken ct = default)
+        public Task MarkSucceededAsync(string operationId, CancellationToken cancellationToken = default)
         {
             Succeeded.Add(operationId);
             return Task.CompletedTask;
         }
 
-        public Task MarkPendingAsync(string operationId, CancellationToken ct = default)
+        public Task MarkPendingAsync(string operationId, CancellationToken cancellationToken = default)
         {
             PendingMarks.Add(operationId);
             return Task.CompletedTask;
         }
 
-        public Task MarkRetryAsync(OfflineRetryCheckpoint checkpoint, CancellationToken ct = default)
+        public Task MarkRetryAsync(OfflineRetryCheckpoint checkpoint, CancellationToken cancellationToken = default)
         {
             RetryCheckpoints.Add(checkpoint);
             return Task.CompletedTask;
         }
 
-        public Task MarkFailedAsync(string operationId, string reason, CancellationToken ct = default)
+        public Task MarkFailedAsync(string operationId, string reason, CancellationToken cancellationToken = default)
         {
             Failed[operationId] = reason;
             return Task.CompletedTask;
         }
 
-        public Task MarkConflictAsync(OfflineConflictEnvelope conflict, CancellationToken ct = default)
+        public Task MarkConflictAsync(OfflineConflictEnvelope conflict, CancellationToken cancellationToken = default)
         {
             Conflicts.Add(conflict);
             return Task.CompletedTask;
@@ -442,17 +442,17 @@ public sealed class OfflineSyncEngineTests
     {
         public List<OfflineConflictEnvelope> Conflicts { get; } = [];
 
-        public Task SaveConflictAsync(OfflineConflictEnvelope conflict, CancellationToken ct = default)
+        public Task SaveConflictAsync(OfflineConflictEnvelope conflict, CancellationToken cancellationToken = default)
         {
             Conflicts.Add(conflict);
             return Task.CompletedTask;
         }
 
-        public Task<IReadOnlyList<OfflineConflictEnvelope>> ListConflictsAsync(string packageId, CancellationToken ct = default)
+        public Task<IReadOnlyList<OfflineConflictEnvelope>> ListConflictsAsync(string packageId, CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<OfflineConflictEnvelope>>(
                 Conflicts.Where(conflict => conflict.PackageId == packageId).ToArray());
 
-        public Task ResolveConflictAsync(string operationId, CancellationToken ct = default)
+        public Task ResolveConflictAsync(string operationId, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 }

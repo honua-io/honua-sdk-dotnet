@@ -1,0 +1,37 @@
+name: Setup .NET + NuGet (Honua)
+description: >-
+  Shared bootstrap for Honua SDK CI jobs. Restores the NuGet cache, installs
+  the project-pinned .NET SDK, and authenticates the github-honua package
+  source. Centralising this step removes drift between the per-package matrix
+  legs and keeps the action versions consistent across the workflow.
+
+inputs:
+  dotnet-version:
+    description: .NET SDK version to install (matches workflow env DOTNET_VERSION).
+    required: true
+  github-actor:
+    description: GitHub actor used to authenticate the github-honua NuGet source.
+    required: true
+  github-token:
+    description: Token used to authenticate the github-honua NuGet source.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache NuGet packages
+      uses: actions/cache@v5
+      with:
+        path: ~/.nuget/packages
+        key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ github.repository }}-${{ runner.os }}-nuget-
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Configure GitHub Packages
+      shell: bash
+      run: dotnet nuget update source github-honua --username "${{ inputs.github-actor }}" --password "${{ inputs.github-token }}" --store-password-in-clear-text

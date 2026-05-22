@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers the Honua scene metadata client with the DI container.
+    /// The supplied <paramref name="configure"/> delegate is invoked exactly once to capture
+    /// options; primary HTTP handler and resilience pipeline configuration are derived from
+    /// that snapshot.
     /// </summary>
     /// <param name="services">The service collection to register with.</param>
     /// <param name="configure">Configuration delegate for client options.</param>
@@ -26,56 +29,40 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        services.Configure(configure);
+        var snapshot = new HonuaSceneClientOptions();
+        configure(snapshot);
+        HonuaSceneClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaSceneClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaSceneClientOptions>>(Options.Create(snapshot));
         services.AddTransient<HonuaSceneAuthHandler>();
         var httpBuilder = services.AddHttpClient<HonuaSceneClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaSceneClientOptions>>().Value;
-            HonuaSceneClientOptions.ValidateBaseAddress(options.BaseAddress);
-            HonuaSceneClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
             client.Timeout = options.Timeout;
         })
         .AddHttpMessageHandler<HonuaSceneAuthHandler>();
         services.AddTransient<IHonuaSceneClient>(sp => sp.GetRequiredService<HonuaSceneClient>());
-        ConfigurePrimaryHandler(httpBuilder, configure);
-        ConfigureResilience(httpBuilder, configure);
-        return services;
-    }
 
-    private static void ConfigurePrimaryHandler(
-        IHttpClientBuilder httpBuilder,
-        Action<HonuaSceneClientOptions> configure)
-    {
-        var opts = new HonuaSceneClientOptions();
-        configure(opts);
-        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        if (snapshot.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
         {
             httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
         }
-    }
 
-    private static void ConfigureResilience(
-        IHttpClientBuilder httpBuilder,
-        Action<HonuaSceneClientOptions> configure)
-    {
-        var opts = new HonuaSceneClientOptions();
-        configure(opts);
-        HonuaSceneClientOptions.ValidateTimeout(opts.Timeout);
-
-        if (!opts.EnableRetry)
+        if (snapshot.EnableRetry)
         {
-            return;
+            httpBuilder.AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = snapshot.Timeout;
+                options.AttemptTimeout.Timeout = snapshot.Timeout;
+                options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
+                options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+                options.Retry.DisableForUnsafeHttpMethods();
+                options.Retry.UseJitter = true;
+            });
         }
 
-        httpBuilder.AddStandardResilienceHandler(options =>
-        {
-            options.TotalRequestTimeout.Timeout = opts.Timeout;
-            options.AttemptTimeout.Timeout = opts.Timeout;
-            options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
-            options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
-            options.Retry.DisableForUnsafeHttpMethods();
-            options.Retry.UseJitter = true;
-        });
+        return services;
     }
 }

@@ -22,38 +22,38 @@ public interface IHonuaFeatureStreamClient
     /// Opens a stream connection and returns provider-neutral connection state.
     /// </summary>
     /// <param name="request">Connection request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral connection state.</returns>
-    Task<FeatureStreamConnection> ConnectAsync(FeatureStreamConnectRequest request, CancellationToken ct = default);
+    Task<FeatureStreamConnection> ConnectAsync(FeatureStreamConnectRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Reopens a stream connection using the last known resume and sequence tokens.
     /// </summary>
     /// <param name="request">Reconnect request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral connection state.</returns>
-    Task<FeatureStreamConnection> ReconnectAsync(FeatureStreamReconnectRequest request, CancellationToken ct = default);
+    Task<FeatureStreamConnection> ReconnectAsync(FeatureStreamReconnectRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Subscribes to feature events and returns a normalized event stream.
     /// </summary>
     /// <param name="request">Subscription request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Normalized feature stream events.</returns>
-    IAsyncEnumerable<FeatureStreamEvent> SubscribeAsync(FeatureStreamSubscribeRequest request, CancellationToken ct = default);
+    IAsyncEnumerable<FeatureStreamEvent> SubscribeAsync(FeatureStreamSubscribeRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Unsubscribes from a feature event subscription.
     /// </summary>
     /// <param name="request">Unsubscribe request.</param>
-    /// <param name="ct">Cancellation token.</param>
-    Task UnsubscribeAsync(FeatureStreamUnsubscribeRequest request, CancellationToken ct = default);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task UnsubscribeAsync(FeatureStreamUnsubscribeRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sends or observes a provider heartbeat for an active stream connection.
     /// </summary>
     /// <param name="request">Heartbeat request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral heartbeat state.</returns>
-    Task<FeatureStreamHeartbeat> HeartbeatAsync(FeatureStreamHeartbeatRequest request, CancellationToken ct = default);
+    Task<FeatureStreamHeartbeat> HeartbeatAsync(FeatureStreamHeartbeatRequest request, CancellationToken cancellationToken = default);
 }

@@ -17,6 +17,161 @@ permissions:
   packages: read
 
 jobs:
+  security-audit:
+    name: Security Audit (NuGet)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore Honua.Sdk.sln
+
+      - name: Audit transitive NuGet dependencies for known vulnerabilities
+        shell: bash
+        run: |
+          # Discover every shipped src project at scan time — keeps this step
+          # in sync with the actual repo layout instead of duplicating the
+          # publish-workflow project list.
+          mapfile -t projects < <(find src -maxdepth 2 -name 'Honua.Sdk.*.csproj' | sort)
+          if [[ ${#projects[@]} -eq 0 ]]; then
+            echo "::error::No Honua.Sdk.*.csproj found under src/ for vulnerability audit."
+            exit 1
+          fi
+          echo "Auditing ${#projects[@]} packages:"
+          printf '  %s\n' "${projects[@]}"
+
+          errors=0
+          for project in "${projects[@]}"; do
+            output_file="/tmp/$(basename "${project}").audit.txt"
+            dotnet list "${project}" package --vulnerable --include-transitive 2>&1 | tee "${output_file}"
+            if grep -qi "has the following vulnerable packages" "${output_file}"; then
+              echo "::error::Vulnerable NuGet dependencies detected in ${project}."
+              errors=1
+            fi
+          done
+
+          if [[ ${errors} -ne 0 ]]; then
+            exit 1
+          fi
+
+  code-coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
+      - name: Restore + Build
+        run: dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true
+
+      - name: Run unit tests with coverage
+        run: |
+          dotnet test Honua.Sdk.sln \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            --settings ./coverlet.runsettings \
+            --results-directory ./coverage \
+            --logger "trx;LogFileName=coverage-results.trx"
+
+      - name: Install ReportGenerator
+        run: dotnet tool update --global dotnet-reportgenerator-globaltool
+
+      - name: Aggregate coverage report
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          reportgenerator \
+            -reports:'./coverage/**/coverage.cobertura.xml' \
+            -targetdir:./coverage/report \
+            -reporttypes:'Cobertura;MarkdownSummaryGithub;Html'
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [[ -f ./coverage/report/SummaryGithub.md ]]; then
+            cat ./coverage/report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Enforce coverage threshold
+        shell: bash
+        # Coverage floors enforced against the merged ReportGenerator Cobertura
+        # report. The SDK currently runs at ~84% line / ~69% branch; these
+        # floors sit several points below actual so transient dips don't break
+        # PRs while the gate remains meaningful. Ratchet upward as coverage
+        # improves.
+        env:
+          COVERAGE_FLOOR_LINES: "80"
+          COVERAGE_FLOOR_BRANCHES: "65"
+        run: |
+          set -euo pipefail
+          report=./coverage/report/Cobertura.xml
+          if [[ ! -f "${report}" ]]; then
+            echo "::warning::Cobertura coverage report not found at ${report}; cannot enforce threshold."
+            exit 0
+          fi
+
+          line_rate=$(python3 -c "import xml.etree.ElementTree as ET; print(float(ET.parse('${report}').getroot().get('line-rate')) * 100)")
+          branch_rate=$(python3 -c "import xml.etree.ElementTree as ET; print(float(ET.parse('${report}').getroot().get('branch-rate')) * 100)")
+          line_int=$(printf '%.0f' "${line_rate}")
+          branch_int=$(printf '%.0f' "${branch_rate}")
+
+          echo "Line coverage: ${line_int}% (floor ${COVERAGE_FLOOR_LINES}%)"
+          echo "Branch coverage: ${branch_int}% (floor ${COVERAGE_FLOOR_BRANCHES}%)"
+          {
+            echo
+            echo "**Coverage gate**: lines ${line_int}% / floor ${COVERAGE_FLOOR_LINES}%, branches ${branch_int}% / floor ${COVERAGE_FLOOR_BRANCHES}%"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          status=0
+          if (( line_int < COVERAGE_FLOOR_LINES )); then
+            echo "::error::Line coverage ${line_int}% is below the floor of ${COVERAGE_FLOOR_LINES}%."
+            status=1
+          fi
+          if (( branch_int < COVERAGE_FLOOR_BRANCHES )); then
+            echo "::error::Branch coverage ${branch_int}% is below the floor of ${COVERAGE_FLOOR_BRANCHES}%."
+            status=1
+          fi
+          exit ${status}
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-${{ github.run_id }}
+          path: ./coverage/report
+          if-no-files-found: warn
+
   api-compat:
     name: API Compatibility
     runs-on: ubuntu-latest
@@ -38,372 +193,107 @@ jobs:
           HONUA_API_COMPAT_BASE_REF: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
         run: scripts/validate-api-compat.sh
 
-  dotnet-abstractions-sdk:
-    name: .NET Abstractions SDK
+  dotnet-sdk:
+    # Matrix replacement for the 13 previously-duplicated dotnet-<package>-sdk
+    # jobs. Each matrix leg builds one shipped SDK package (12 sub-packages plus
+    # the Honua.Sdk meta) under strict release flags and, when present, runs its
+    # dedicated test project. The strict flag set
+    # (TreatWarningsAsErrors=true / EnforceCodeStyleInBuild=true / Release) is
+    # preserved verbatim. fail-fast is disabled so one package's failure does
+    # not mask the others -- we want to see every red leg in a single run.
+    name: .NET SDK (${{ matrix.package.label }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - label: Abstractions
+            src: src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj
+            tests:
+              - tests/Honua.Sdk.Abstractions.Tests/Honua.Sdk.Abstractions.Tests.csproj
+          - label: Admin
+            src: src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj
+            tests:
+              - tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj
+          - label: Geometry
+            src: src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj
+            tests:
+              - tests/Honua.Sdk.Geometry.Tests/Honua.Sdk.Geometry.Tests.csproj
+          - label: Spec
+            src: src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj
+            tests:
+              - tests/Honua.Sdk.Spec.Tests/Honua.Sdk.Spec.Tests.csproj
+          - label: Grpc
+            src: src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj
+            tests:
+              - tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj
+          - label: GeoServices
+            src: src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj
+            tests:
+              - tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj
+          - label: Scenes
+            src: src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj
+            tests:
+              - tests/Honua.Sdk.Scenes.Tests/Honua.Sdk.Scenes.Tests.csproj
+          - label: Field
+            src: src/Honua.Sdk.Field/Honua.Sdk.Field.csproj
+            tests:
+              - tests/Honua.Sdk.Field.Tests/Honua.Sdk.Field.Tests.csproj
+          # OgcFeatures absorbed the standalone Honua.Sdk.Wfs package in the
+          # 14->12 consolidation. The WfsTests project still ships, so we keep
+          # exercising it here to guarantee Honua.Sdk.Wfs.* type-forwards stay
+          # green.
+          - label: OgcFeatures
+            src: src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj
+            tests:
+              - tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj
+              - tests/Honua.Sdk.OgcFeatures.WfsTests/Honua.Sdk.OgcFeatures.WfsTests.csproj
+          # Catalogs absorbed the standalone Honua.Sdk.Stac and Honua.Sdk.OgcRecords
+          # packages in the 12->11 consolidation. The StacTests and RecordsTests
+          # projects still ship and exercise the unified Honua.Sdk.Catalogs surface.
+          - label: Catalogs
+            src: src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj
+            tests:
+              - tests/Honua.Sdk.Catalogs.StacTests/Honua.Sdk.Catalogs.StacTests.csproj
+              - tests/Honua.Sdk.Catalogs.RecordsTests/Honua.Sdk.Catalogs.RecordsTests.csproj
+          - label: Offline
+            src: src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj
+            tests:
+              - tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj
+          # Umbrella meta package -- builds Honua.Sdk and runs the AddHonua DI
+          # smoke test that exercises the umbrella's registration surface.
+          - label: Meta
+            src: src/Honua.Sdk/Honua.Sdk.csproj
+            tests:
+              - tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj
     steps:
       - uses: actions/checkout@v6
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - name: Setup .NET + NuGet
+        uses: ./.github/actions/setup-dotnet-and-nuget
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Abstractions.Tests/Honua.Sdk.Abstractions.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-admin-sdk:
-    name: .NET Admin SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-geometry-sdk:
-    name: .NET Geometry SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Geometry.Tests/Honua.Sdk.Geometry.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-spec-sdk:
-    name: .NET Spec SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Spec.Tests/Honua.Sdk.Spec.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-grpc-sdk:
-    name: .NET gRPC SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-wfs-sdk:
-    name: .NET WFS SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-geoservices-sdk:
-    name: .NET GeoServices SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-scenes-sdk:
-    name: .NET Scenes SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Scenes.Tests/Honua.Sdk.Scenes.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-field-sdk:
-    name: .NET Field SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Field/Honua.Sdk.Field.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Field.Tests/Honua.Sdk.Field.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-ogc-features-sdk:
-    name: .NET OGC Features SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-ogc-records-sdk:
-    name: .NET OGC Records SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.OgcRecords.Tests/Honua.Sdk.OgcRecords.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-stac-sdk:
-    name: .NET STAC SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build
-        run: dotnet build src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Stac.Tests/Honua.Sdk.Stac.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-  dotnet-offline-sdk:
-    name: .NET Offline SDK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
-
-      - name: Build abstractions
-        run: dotnet build src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Build engine
-        run: dotnet build src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
-
-      - name: Test
-        run: dotnet test tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build ${{ matrix.package.label }}
+        run: dotnet build ${{ matrix.package.src }} --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Test ${{ matrix.package.label }}
+        if: ${{ matrix.package.tests != null }}
+        shell: bash
+        env:
+          TESTS_JSON: ${{ toJson(matrix.package.tests) }}
+        run: |
+          set -euo pipefail
+          # The matrix gives us a YAML list; serialize via toJson so bash can
+          # iterate without splitting on whitespace inside project paths.
+          mapfile -t tests < <(python3 -c "import json,sys; [print(p) for p in json.loads(sys.argv[1])]" "${TESTS_JSON}")
+          for test_proj in "${tests[@]}"; do
+            echo "::group::dotnet test ${test_proj}"
+            dotnet test "${test_proj}" --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+            echo "::endgroup::"
+          done
 
   browser-wasm-smoke:
     name: Browser WASM Smoke
@@ -411,21 +301,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - name: Setup .NET + NuGet
+        uses: ./.github/actions/setup-dotnet-and-nuget
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache Playwright browsers
         uses: actions/cache@v5
@@ -455,21 +336,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.nuget/packages
-          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ github.repository }}-${{ runner.os }}-nuget-
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - name: Setup .NET + NuGet
+        uses: ./.github/actions/setup-dotnet-and-nuget
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Configure GitHub Packages
-        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build canonical sample
         run: dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true

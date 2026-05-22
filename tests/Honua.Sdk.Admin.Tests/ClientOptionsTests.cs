@@ -95,8 +95,8 @@ public sealed class ClientOptionsTests
     {
         var services = new ServiceCollection();
 
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            services.AddHonuaAdmin(options => options.Timeout = TimeSpan.FromMilliseconds(10)));
+        var ex = Assert.Throws<Honua.Sdk.Abstractions.HonuaConfigurationException>(() =>
+            services.AddHonuaAdmin(options => { options.BaseAddress = new Uri("https://localhost:5001"); options.Timeout = TimeSpan.FromMilliseconds(10); }));
 
         Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
     }

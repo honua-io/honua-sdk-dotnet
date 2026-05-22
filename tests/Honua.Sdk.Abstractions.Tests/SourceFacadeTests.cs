@@ -486,16 +486,16 @@ public sealed class SourceFacadeTests
     {
         public string ProviderName { get; } = providerName;
 
-        public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken ct = default)
+        public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken cancellationToken = default)
             => Task.FromResult(query?.Invoke(request) ?? queryPages(request).FirstOrDefault() ?? new FeatureQueryResult { ProviderName = ProviderName });
 
         public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
             FeatureQueryRequest request,
-            [EnumeratorCancellation] CancellationToken ct = default)
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             foreach (var page in queryPages(request))
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 yield return page;
                 await Task.Yield();
             }
@@ -512,7 +512,7 @@ public sealed class SourceFacadeTests
 
         public int ApplyCalls { get; private set; }
 
-        public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+        public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default)
         {
             ApplyCalls++;
             return Task.FromResult(new FeatureEditResponse { ProviderName = ProviderName });
@@ -525,7 +525,7 @@ public sealed class SourceFacadeTests
     {
         public string ProviderName { get; } = providerName;
 
-        public Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor sourceDescriptor, CancellationToken ct = default)
+        public Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor sourceDescriptor, CancellationToken cancellationToken = default)
             => Task.FromResult(descriptor);
     }
 }

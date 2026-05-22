@@ -1,4 +1,64 @@
-# 5-Minute Quickstart: Query Features from a Console App
+# Quickstart
+
+This page has two paths:
+
+- [60-second hello-features](#60-second-hello-features) — one package, one
+  client, one call. Use this if you just want to confirm the SDK talks to
+  your server.
+- [Full quickstart (5 steps, ~10 minutes)](#full-quickstart-five-steps) —
+  gRPC + Admin + Geocoding + WFS + OGC API Features through the shared
+  abstraction. Use this if you want a guided tour of the SDK.
+
+## Prerequisites
+
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
+- A running Honua server (default: `https://localhost:5001`)
+
+## 60-second hello-features
+
+Single package, single async call. Replace the URL with your Honua server.
+
+```bash
+dotnet new console -n HonuaHello
+cd HonuaHello
+dotnet add package Honua.Sdk.Grpc
+dotnet add package Microsoft.Extensions.Hosting
+```
+
+```csharp
+// Program.cs
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Honua.Sdk.Grpc;
+using Honua.Sdk.Grpc.Extensions;
+using Honua.Sdk.Grpc.Models;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("https://localhost:5001"));
+
+using var host = builder.Build();
+var grpc = host.Services.GetRequiredService<IHonuaGrpcClient>();
+
+var response = await grpc.QueryFeaturesAsync(new QueryFeaturesRequest
+{
+    ServiceId      = "parks",
+    LayerId        = 0,
+    ResultRecordCount = 5,
+});
+
+Console.WriteLine($"Got {response.Features.Count} features.");
+```
+
+```bash
+dotnet run
+```
+
+That's the whole "is the SDK working?" path. If you want auth, paging,
+edits, scenes, or the cross-protocol abstraction, continue below.
+
+---
+
+## Full quickstart (five steps)
 
 ## What You'll Build
 
@@ -8,30 +68,27 @@ through a shared abstraction, lists services through the Admin REST API, and
 searches OGC API Records and STAC catalog metadata, and forward-geocodes an
 address -- all printed to the console.
 
-## Prerequisites
-
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
-- A running Honua server (default: `https://localhost:5001`)
-
 ## Step 1: Create project and install (30 seconds)
 
 ```bash
 dotnet new console -n HonuaDemo
 cd HonuaDemo
-dotnet add package Honua.Sdk.Grpc --prerelease
-dotnet add package Honua.Sdk.Abstractions --prerelease
-dotnet add package Honua.Sdk.Admin --prerelease
-dotnet add package Honua.Sdk.Field --prerelease
-dotnet add package Honua.Sdk.Wfs --prerelease
-dotnet add package Honua.Sdk.GeoServices --prerelease
-dotnet add package Honua.Sdk.Scenes --prerelease
-dotnet add package Honua.Sdk.OgcFeatures --prerelease
-dotnet add package Honua.Sdk.OgcRecords --prerelease
-dotnet add package Honua.Sdk.Stac --prerelease
+
+# Core packages this quickstart uses:
+dotnet add package Honua.Sdk.Grpc            # gRPC FeatureService
+dotnet add package Honua.Sdk.Abstractions    # shared query abstraction
+dotnet add package Honua.Sdk.Admin           # Admin + Geocoding REST
+dotnet add package Honua.Sdk.OgcFeatures     # OGC API Features + WFS 2.0
+
+# Generic Host for dependency injection
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
-This pulls in the SDK packages and the Generic Host for dependency injection.
+> Add the rest of the SDK -- `Honua.Sdk.GeoServices`, `Honua.Sdk.Scenes`,
+> `Honua.Sdk.Catalogs`, `Honua.Sdk.Field`,
+> `Honua.Sdk.Spec`, `Honua.Sdk.Geometry`, `Honua.Sdk.Offline` -- only when
+> you reach the step that needs them. The full catalog is in
+> [INSTALL.md](../INSTALL.md).
 
 ## Step 2: Configure the client with DI (60 seconds)
 
@@ -40,72 +97,28 @@ up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, scene metadata,
 OGC API Features, OGC API Records, and STAC clients so they can be injected
 anywhere.
 
+The recommended path is the **umbrella** `AddHonua` registration from the
+`Honua.Sdk` meta package: one call configures every enabled sub-package with a
+shared base address, auth, and retry / timeout policy. Add
+`dotnet add package Honua.Sdk` to the install step above when you
+take this path.
+
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Honua.Sdk.Grpc.Extensions;
-using Honua.Sdk.Admin.Extensions;
-using Honua.Sdk.Wfs.Extensions;
-using Honua.Sdk.GeoServices.Extensions;
-using Honua.Sdk.Scenes.Extensions;
-using Honua.Sdk.OgcFeatures.Extensions;
-using Honua.Sdk.OgcRecords.Extensions;
-using Honua.Sdk.Stac.Extensions;
+using Honua.Sdk;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// gRPC client -- used for feature queries
-builder.Services.AddHonuaGrpc(options =>
-{
-    options.Address = "https://localhost:5001";
-});
+var serverUri = new Uri("https://localhost:5001");
 
-// Admin REST client -- used for service management
-builder.Services.AddHonuaAdmin(options =>
+// One call registers every enabled Honua SDK client. Defaults register the
+// core query/edit/admin trio (gRPC, Admin + Catalog, Geocoding, OGC API
+// Features, WFS 2.0). Flip Use* flags to opt in to the more situational
+// sub-packages (Scenes, Spec, Stac, OgcRecords, GeoServices, Routing).
+builder.Services.AddHonua(o =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// Geocoding client -- shares the Admin base address and auth
-builder.Services.AddHonuaGeocoding(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// WFS 2.0 client -- OGC feature queries
-builder.Services.AddHonuaWfs(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// GeoServices FeatureServer client
-builder.Services.AddHonuaFeatureServer(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// Scene metadata client
-builder.Services.AddHonuaScenes(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// OGC API Features client
-builder.Services.AddHonuaOgcFeatures(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// OGC API Records client
-builder.Services.AddHonuaOgcRecords(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
-});
-
-// STAC client
-builder.Services.AddHonuaStac(options =>
-{
-    options.BaseAddress = new Uri("https://localhost:5001");
+    o.BaseAddress = serverUri;
 });
 
 builder.Services.AddHostedService<DemoWorker>();
@@ -113,6 +126,49 @@ builder.Services.AddHostedService<DemoWorker>();
 var app = builder.Build();
 await app.RunAsync();
 ```
+
+<details>
+<summary>Want explicit per-client registration instead?</summary>
+
+The per-package `AddHonua*` extensions still work unchanged. Use this form
+when you want strict, narrow control over which sub-packages register:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Honua.Sdk.Grpc.Extensions;
+using Honua.Sdk.Admin.Extensions;
+using Honua.Sdk.OgcFeatures.Wfs.Extensions;
+using Honua.Sdk.OgcFeatures.Extensions;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+var serverUri = new Uri("https://localhost:5001");
+
+// gRPC client -- used for feature queries.
+// BaseAddress is preferred for parity with the REST clients; Address (string)
+// is still supported.
+builder.Services.AddHonuaGrpc(options => options.BaseAddress = serverUri);
+
+// Admin REST client -- service management. Registers IHonuaCatalogClient too.
+builder.Services.AddHonuaAdmin(options => options.BaseAddress = serverUri);
+
+// Geocoding client -- shares the Admin base address and auth.
+builder.Services.AddHonuaGeocoding(options => options.BaseAddress = serverUri);
+
+// WFS 2.0 client -- OGC feature queries
+builder.Services.AddHonuaWfs(options => options.BaseAddress = serverUri);
+
+// OGC API Features client -- used in the shared-abstraction step below
+builder.Services.AddHonuaOgcFeatures(options => options.BaseAddress = serverUri);
+
+builder.Services.AddHostedService<DemoWorker>();
+
+var app = builder.Build();
+await app.RunAsync();
+```
+
+</details>
 
 ## Step 3: Query features (60 seconds)
 
@@ -214,6 +270,9 @@ For richer non-display catalog discovery, inject `IHonuaCatalogClient` from
 `AddHonuaCatalog` is available when an app only needs discovery:
 
 ```csharp
+using Honua.Sdk.Admin.Catalog; // CatalogQueryOptions, CatalogItemKind, IHonuaCatalogClient
+
+// constructor: ... IHonuaCatalogClient catalogClient ...
 var catalog = await catalogClient.SearchAsync(
     new CatalogQueryOptions
     {
@@ -227,10 +286,19 @@ var catalog = await catalogClient.SearchAsync(
 
 Use `IHonuaOgcRecordsClient` when the server exposes the public OGC API Records
 catalog and the caller should discover standards-facing metadata records instead
-of operator/control-plane inventory:
+of operator/control-plane inventory. First install and register the package:
+
+```bash
+dotnet add package Honua.Sdk.Catalogs
+```
 
 ```csharp
-using Honua.Sdk.OgcRecords.Models;
+using Honua.Sdk.Catalogs.Records.Extensions;
+builder.Services.AddHonuaOgcRecords(o => o.BaseAddress = serverUri);
+```
+
+```csharp
+using Honua.Sdk.Catalogs.Records.Models;
 
 var records = await recordsClient.SearchAsync(
     "default",
@@ -244,10 +312,20 @@ var records = await recordsClient.SearchAsync(
 ```
 
 Use `IHonuaStacClient` when the caller needs STAC catalog, collection, item, and
-asset search semantics instead of Records metadata records:
+asset search semantics instead of Records metadata records. First install and
+register the package:
+
+```bash
+dotnet add package Honua.Sdk.Catalogs
+```
 
 ```csharp
-using Honua.Sdk.Stac.Models;
+using Honua.Sdk.Catalogs.Stac.Extensions;
+builder.Services.AddHonuaStac(o => o.BaseAddress = serverUri);
+```
+
+```csharp
+using Honua.Sdk.Catalogs.Stac.Models;
 
 var stacItems = await stacClient.SearchAsync(
     new StacSearchQuery
@@ -329,8 +407,8 @@ Returned 5 features (geometry type: Point)
 Inject `IHonuaWfsClient` and query features using the OGC WFS protocol:
 
 ```csharp
-using Honua.Sdk.Wfs;
-using Honua.Sdk.Wfs.Models;
+using Honua.Sdk.OgcFeatures.Wfs;
+using Honua.Sdk.OgcFeatures.Wfs.Models;
 
 public sealed class DemoWorker(
     IHonuaGrpcClient grpcClient,

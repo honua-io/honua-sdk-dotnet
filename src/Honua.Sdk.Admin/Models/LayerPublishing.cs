@@ -8,25 +8,25 @@ namespace Honua.Sdk.Admin.Models;
 /// <summary>
 /// Request payload for publishing a PostGIS table as a layer.
 /// </summary>
-public sealed class PublishLayerRequest
+public sealed record PublishLayerRequest
 {
     /// <summary>
     /// Schema containing the source table.
     /// </summary>
     [JsonPropertyName("schema")]
-    public string Schema { get; init; } = string.Empty;
+    public required string Schema { get; init; }
 
     /// <summary>
     /// Source table name.
     /// </summary>
     [JsonPropertyName("table")]
-    public string Table { get; init; } = string.Empty;
+    public required string Table { get; init; }
 
     /// <summary>
     /// Display name for the layer.
     /// </summary>
     [JsonPropertyName("layerName")]
-    public string LayerName { get; init; } = string.Empty;
+    public required string LayerName { get; init; }
 
     /// <summary>
     /// Optional layer description.
@@ -152,11 +152,11 @@ public sealed class PublishedLayerSummary
 /// <summary>
 /// Request payload for enabling/disabling a layer.
 /// </summary>
-public sealed class LayerEnabledRequest
+public sealed record LayerEnabledRequest
 {
     /// <summary>
     /// Whether the layer should be enabled.
     /// </summary>
     [JsonPropertyName("enabled")]
-    public bool Enabled { get; init; }
+    public required bool Enabled { get; init; }
 }

@@ -235,7 +235,7 @@ public sealed class UtilityNetworkContractTests
 
         public Task<IReadOnlyList<UtilityNetworkNamedTraceConfiguration>> GetTraceConfigurationsAsync(
             UtilityNetworkTraceConfigurationQuery request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<UtilityNetworkNamedTraceConfiguration>>(
             [
                 new UtilityNetworkNamedTraceConfiguration
@@ -255,22 +255,22 @@ public sealed class UtilityNetworkContractTests
 
         public Task<UtilityNetworkTraceResult> TraceConnectedAsync(
             UtilityNetworkTraceRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(Result(UtilityNetworkTraceType.Connected));
 
         public Task<UtilityNetworkTraceResult> TraceUpstreamAsync(
             UtilityNetworkTraceRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(Result(UtilityNetworkTraceType.Upstream));
 
         public Task<UtilityNetworkTraceResult> TraceDownstreamAsync(
             UtilityNetworkTraceRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(Result(UtilityNetworkTraceType.Downstream));
 
         public Task<UtilityNetworkTraceResult> TraceSubnetworkAsync(
             UtilityNetworkTraceRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(Result(UtilityNetworkTraceType.Subnetwork));
     }
 }

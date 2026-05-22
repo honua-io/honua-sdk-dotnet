@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using Honua.Sdk.Wfs.Exceptions;
+using Honua.Sdk.OgcFeatures.Wfs.Exceptions;
 
 namespace Honua.Sdk.IntegrationTests;
 

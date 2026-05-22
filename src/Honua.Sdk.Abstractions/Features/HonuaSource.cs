@@ -68,38 +68,38 @@ public sealed class HonuaSource : IHonuaSource
     public IReadOnlyList<string> Capabilities { get; }
 
     /// <inheritdoc />
-    public Task<SourceDescriptor> GetDescriptorAsync(CancellationToken ct = default)
+    public Task<SourceDescriptor> GetDescriptorAsync(CancellationToken cancellationToken = default)
     {
         if (_descriptorClient is null || !SupportsDescriptorProtocol(Descriptor, _descriptorClient))
         {
             return Task.FromResult(Descriptor);
         }
 
-        return _descriptorClient.GetDescriptorAsync(Descriptor, ct);
+        return _descriptorClient.GetDescriptorAsync(Descriptor, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<FeatureQueryResult> QueryAsync(SourceQuery? query = null, CancellationToken ct = default)
+    public Task<FeatureQueryResult> QueryAsync(SourceQuery? query = null, CancellationToken cancellationToken = default)
     {
         EnsureCapability(FeatureCapabilities.Query);
-        return _queryClient.QueryAsync(BuildQueryRequest(query), ct);
+        return _queryClient.QueryAsync(BuildQueryRequest(query), cancellationToken);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
         SourceQuery? query = null,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         EnsureCapability(FeatureCapabilities.Stream);
 
-        await foreach (var page in _queryClient.QueryPagesAsync(BuildQueryRequest(query), ct).ConfigureAwait(false))
+        await foreach (var page in _queryClient.QueryPagesAsync(BuildQueryRequest(query), cancellationToken).ConfigureAwait(false))
         {
             yield return page;
         }
     }
 
     /// <inheritdoc />
-    public async Task<FeatureQueryResult> QueryAllAsync(SourceQuery? query = null, CancellationToken ct = default)
+    public async Task<FeatureQueryResult> QueryAllAsync(SourceQuery? query = null, CancellationToken cancellationToken = default)
     {
         EnsureCapability(FeatureCapabilities.Query);
 
@@ -110,7 +110,7 @@ public sealed class HonuaSource : IHonuaSource
         string? objectIdFieldName = null;
         var sawPage = false;
 
-        await foreach (var page in _queryClient.QueryPagesAsync(BuildQueryRequest(query), ct).ConfigureAwait(false))
+        await foreach (var page in _queryClient.QueryPagesAsync(BuildQueryRequest(query), cancellationToken).ConfigureAwait(false))
         {
             sawPage = true;
             providerName = page.ProviderName;
@@ -151,7 +151,7 @@ public sealed class HonuaSource : IHonuaSource
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<string>> QueryObjectIdsAsync(SourceQuery? query = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<string>> QueryObjectIdsAsync(SourceQuery? query = null, CancellationToken cancellationToken = default)
     {
         EnsureCapability(FeatureCapabilities.QueryObjectIds);
 
@@ -175,7 +175,7 @@ public sealed class HonuaSource : IHonuaSource
 
         if (useIdsOnlyMode)
         {
-            var result = await _queryClient.QueryAsync(request, ct).ConfigureAwait(false);
+            var result = await _queryClient.QueryAsync(request, cancellationToken).ConfigureAwait(false);
             idFieldName ??= result.ObjectIdFieldName;
             if (AddPageObjectIds(result, ids, seen, maxIds) ||
                 AddPageFeatureIds(result, idFieldName, ids, seen, maxIds) ||
@@ -187,7 +187,7 @@ public sealed class HonuaSource : IHonuaSource
             request = BuildQueryRequest(objectIdQuery with { ReturnIdsOnly = false });
         }
 
-        await foreach (var page in _queryClient.QueryPagesAsync(request, ct).ConfigureAwait(false))
+        await foreach (var page in _queryClient.QueryPagesAsync(request, cancellationToken).ConfigureAwait(false))
         {
             idFieldName ??= page.ObjectIdFieldName;
             if (AddPageObjectIds(page, ids, seen, maxIds) ||
@@ -201,7 +201,7 @@ public sealed class HonuaSource : IHonuaSource
     }
 
     /// <inheritdoc />
-    public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+    public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureCapability(FeatureCapabilities.ApplyEdits);
@@ -211,7 +211,7 @@ public sealed class HonuaSource : IHonuaSource
             throw new NotSupportedException(BuildUnsupportedMessage(FeatureCapabilities.ApplyEdits));
         }
 
-        return _editClient.ApplyEditsAsync(request with { Source = Descriptor.ToFeatureSource() }, ct);
+        return _editClient.ApplyEditsAsync(request with { Source = Descriptor.ToFeatureSource() }, cancellationToken);
     }
 
     /// <inheritdoc />

@@ -17,7 +17,7 @@ public interface IHonuaFeatureDescriptorClient
     /// Retrieves provider-neutral source schema and capability metadata for the supplied source descriptor.
     /// </summary>
     /// <param name="descriptor">Source descriptor containing the provider-specific locator.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The source descriptor enriched with discovered schema and capabilities.</returns>
-    Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default);
+    Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default);
 }

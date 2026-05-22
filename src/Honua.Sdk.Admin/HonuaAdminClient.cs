@@ -34,27 +34,27 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Services ──────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<ServiceSummary[]>(
             $"{ApiPrefix}/services/",
             HonuaAdminJsonContext.Default.ApiResponseServiceSummaryArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<ServiceSettingsResponse> GetServiceSettingsAsync(string serviceName, CancellationToken ct = default)
+    public async Task<ServiceSettingsResponse> GetServiceSettingsAsync(string serviceName, CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<ServiceSettingsResponse>(
             $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/settings",
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null service settings.", "GetServiceSettings");
     }
 
     /// <inheritdoc />
-    public async Task<ServiceSettingsResponse> UpdateProtocolsAsync(string serviceName, IReadOnlyList<string> protocols, CancellationToken ct = default)
+    public async Task<ServiceSettingsResponse> UpdateProtocolsAsync(string serviceName, IReadOnlyList<string> protocols, CancellationToken cancellationToken = default)
     {
         var body = new UpdateProtocolsRequest { EnabledProtocols = [.. protocols] };
         var data = await PutAsync<ServiceSettingsResponse>(
@@ -62,77 +62,77 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             body,
             HonuaAdminJsonContext.Default.UpdateProtocolsRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateProtocols");
     }
 
     /// <inheritdoc />
-    public async Task<ServiceSettingsResponse> UpdateMapServerSettingsAsync(string serviceName, UpdateMapServerSettingsRequest request, CancellationToken ct = default)
+    public async Task<ServiceSettingsResponse> UpdateMapServerSettingsAsync(string serviceName, UpdateMapServerSettingsRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<ServiceSettingsResponse>(
             $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/mapserver",
             request,
             HonuaAdminJsonContext.Default.UpdateMapServerSettingsRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateMapServerSettings");
     }
 
     /// <inheritdoc />
-    public async Task<ServiceSettingsResponse> UpdateAccessPolicyAsync(string serviceName, UpdateAccessPolicyRequest request, CancellationToken ct = default)
+    public async Task<ServiceSettingsResponse> UpdateAccessPolicyAsync(string serviceName, UpdateAccessPolicyRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<ServiceSettingsResponse>(
             $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/access-policy",
             request,
             HonuaAdminJsonContext.Default.UpdateAccessPolicyRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateAccessPolicy");
     }
 
     /// <inheritdoc />
-    public async Task<ServiceSettingsResponse> UpdateTimeInfoAsync(string serviceName, UpdateTimeInfoRequest request, CancellationToken ct = default)
+    public async Task<ServiceSettingsResponse> UpdateTimeInfoAsync(string serviceName, UpdateTimeInfoRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<ServiceSettingsResponse>(
             $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/timeinfo",
             request,
             HonuaAdminJsonContext.Default.UpdateTimeInfoRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateTimeInfo");
     }
 
     /// <inheritdoc />
-    public async Task<LayerMetadataResponse> UpdateLayerMetadataAsync(string serviceName, int layerId, UpdateLayerMetadataRequest request, CancellationToken ct = default)
+    public async Task<LayerMetadataResponse> UpdateLayerMetadataAsync(string serviceName, int layerId, UpdateLayerMetadataRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<LayerMetadataResponse>(
             $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/layers/{layerId}/metadata",
             request,
             HonuaAdminJsonContext.Default.UpdateLayerMetadataRequest,
             HonuaAdminJsonContext.Default.ApiResponseLayerMetadataResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateLayerMetadata");
     }
 
     // ── Metadata Resources ───────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<MetadataResource>> ListMetadataResourcesAsync(string? kind = null, string? ns = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<MetadataResource>> ListMetadataResourcesAsync(string? kind = null, string? ns = null, CancellationToken cancellationToken = default)
     {
         var query = BuildQuery(("kind", kind), ("namespace", ns));
         var data = await GetAsync<MetadataResource[]>(
             $"{ApiPrefix}/metadata/resources{query}",
             HonuaAdminJsonContext.Default.ApiResponseMetadataResourceArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<(MetadataResource Resource, string? ETag)> GetMetadataResourceAsync(string kind, string ns, string name, CancellationToken ct = default)
+    public async Task<(MetadataResource Resource, string? ETag)> GetMetadataResourceAsync(string kind, string ns, string name, CancellationToken cancellationToken = default)
     {
         var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
 
@@ -143,35 +143,35 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     }
 
     /// <inheritdoc />
-    public async Task<MetadataResource> CreateMetadataResourceAsync(MetadataResource resource, CancellationToken ct = default)
-        => (await CreateMetadataResourceWithResponseAsync(resource, ct).ConfigureAwait(false)).Resource;
+    public async Task<MetadataResource> CreateMetadataResourceAsync(MetadataResource resource, CancellationToken cancellationToken = default)
+        => (await CreateMetadataResourceWithResponseAsync(resource, cancellationToken).ConfigureAwait(false)).Resource;
 
     /// <inheritdoc />
-    public Task<MetadataResourceResponse> CreateMetadataResourceWithResponseAsync(MetadataResource resource, CancellationToken ct = default)
+    public Task<MetadataResourceResponse> CreateMetadataResourceWithResponseAsync(MetadataResource resource, CancellationToken cancellationToken = default)
         => SendMetadataResourceAsync(
             $"{ApiPrefix}/metadata/resources",
             HttpMethod.Post,
             resource,
             ifMatch: null,
             operation: "CreateMetadataResource",
-            ct);
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<MetadataResource> UpdateMetadataResourceAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken ct = default)
-        => (await UpdateMetadataResourceWithResponseAsync(kind, ns, name, resource, ifMatch, ct).ConfigureAwait(false)).Resource;
+    public async Task<MetadataResource> UpdateMetadataResourceAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken cancellationToken = default)
+        => (await UpdateMetadataResourceWithResponseAsync(kind, ns, name, resource, ifMatch, cancellationToken).ConfigureAwait(false)).Resource;
 
     /// <inheritdoc />
-    public Task<MetadataResourceResponse> UpdateMetadataResourceWithResponseAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken ct = default)
+    public Task<MetadataResourceResponse> UpdateMetadataResourceWithResponseAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken cancellationToken = default)
         => SendMetadataResourceAsync(
             $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}",
             HttpMethod.Put,
             resource,
             ifMatch,
             operation: "UpdateMetadataResource",
-            ct);
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task DeleteMetadataResourceAsync(string kind, string ns, string name, string? ifMatch = null, CancellationToken ct = default)
+    public async Task DeleteMetadataResourceAsync(string kind, string ns, string name, string? ifMatch = null, CancellationToken cancellationToken = default)
     {
         var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
         using var request = new HttpRequestMessage(HttpMethod.Delete, url);
@@ -181,8 +181,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
         }
 
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
     }
@@ -193,7 +193,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         MetadataResource resource,
         string? ifMatch,
         string operation,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var content = JsonContent.Create(resource, HonuaAdminJsonContext.Default.MetadataResource);
         using var request = new HttpRequestMessage(method, CreateRequestUri(url)) { Content = content };
@@ -203,8 +203,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
         }
 
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
 
@@ -220,104 +220,104 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Manifests ────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<AdminVersionResponse> GetVersionAsync(CancellationToken ct = default)
+    public async Task<AdminVersionResponse> GetVersionAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<AdminVersionResponse>(
             $"{ApiPrefix}/version",
             HonuaAdminJsonContext.Default.ApiResponseAdminVersionResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null version response.", "GetVersion");
     }
 
     /// <inheritdoc />
-    public async Task<AdminCapabilitiesResponse> GetCapabilitiesAsync(CancellationToken ct = default)
+    public async Task<AdminCapabilitiesResponse> GetCapabilitiesAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<AdminCapabilitiesResponse>(
             $"{ApiPrefix}/capabilities",
             HonuaAdminJsonContext.Default.ApiResponseAdminCapabilitiesResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null capabilities response.", "GetCapabilities");
     }
 
     /// <inheritdoc />
-    public async Task<ServerCompatibilityResult> CheckCompatibilityAsync(CancellationToken ct = default)
+    public async Task<ServerCompatibilityResult> CheckCompatibilityAsync(CancellationToken cancellationToken = default)
     {
-        var capabilities = await GetCapabilitiesAsync(ct).ConfigureAwait(false);
+        var capabilities = await GetCapabilitiesAsync(cancellationToken).ConfigureAwait(false);
         return HonuaAdminCompatibility.Evaluate(capabilities);
     }
 
     /// <inheritdoc />
-    public async Task<MetadataManifest> GetManifestAsync(string? ns = null, CancellationToken ct = default)
+    public async Task<MetadataManifest> GetManifestAsync(string? ns = null, CancellationToken cancellationToken = default)
     {
         var query = BuildQuery(("namespace", ns));
         var data = await GetAsync<MetadataManifest>(
             $"{ApiPrefix}/manifest{query}",
             HonuaAdminJsonContext.Default.ApiResponseMetadataManifest,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null manifest.", "GetManifest");
     }
 
     /// <inheritdoc />
-    public async Task<ManifestApplyResult> ApplyManifestAsync(ManifestApplyRequest request, CancellationToken ct = default)
+    public async Task<ManifestApplyResult> ApplyManifestAsync(ManifestApplyRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<ManifestApplyResult>(
             $"{ApiPrefix}/manifest/apply",
             request,
             HonuaAdminJsonContext.Default.ManifestApplyRequest,
             HonuaAdminJsonContext.Default.ApiResponseManifestApplyResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null apply result.", "ApplyManifest");
     }
 
     // ── Connections ──────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SecureConnectionSummary>> ListConnectionsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<SecureConnectionSummary>> ListConnectionsAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<SecureConnectionSummary[]>(
             $"{ApiPrefix}/connections/",
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionSummaryArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<SecureConnectionDetail> GetConnectionAsync(string id, CancellationToken ct = default)
+    public async Task<SecureConnectionDetail> GetConnectionAsync(string id, CancellationToken cancellationToken = default)
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await GetAsync<SecureConnectionDetail>(
             $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}",
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionDetail,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null connection.", "GetConnection");
     }
 
     /// <inheritdoc />
-    public async Task<SecureConnectionSummary> CreateConnectionAsync(CreateSecureConnectionRequest request, CancellationToken ct = default)
+    public async Task<SecureConnectionSummary> CreateConnectionAsync(CreateSecureConnectionRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<SecureConnectionSummary>(
             $"{ApiPrefix}/connections/",
             request,
             HonuaAdminJsonContext.Default.CreateSecureConnectionRequest,
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionSummary,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "CreateConnection");
     }
 
     /// <inheritdoc />
-    public async Task<ConnectionTestResult> TestDraftConnectionAsync(CreateSecureConnectionRequest request, CancellationToken ct = default)
+    public async Task<ConnectionTestResult> TestDraftConnectionAsync(CreateSecureConnectionRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<ConnectionTestResult>(
             $"{ApiPrefix}/connections/test",
             request,
             HonuaAdminJsonContext.Default.CreateSecureConnectionRequest,
             HonuaAdminJsonContext.Default.ApiResponseConnectionTestResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null test result.", "TestDraftConnection");
     }
 
     /// <inheritdoc />
-    public async Task<SecureConnectionSummary> UpdateConnectionAsync(string id, UpdateSecureConnectionRequest request, CancellationToken ct = default)
+    public async Task<SecureConnectionSummary> UpdateConnectionAsync(string id, UpdateSecureConnectionRequest request, CancellationToken cancellationToken = default)
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PutAsync<SecureConnectionSummary>(
@@ -325,71 +325,71 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request,
             HonuaAdminJsonContext.Default.UpdateSecureConnectionRequest,
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionSummary,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateConnection");
     }
 
     /// <inheritdoc />
-    public async Task<ConnectionTestResult> TestConnectionAsync(string id, CancellationToken ct = default)
+    public async Task<ConnectionTestResult> TestConnectionAsync(string id, CancellationToken cancellationToken = default)
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PostAsync<ConnectionTestResult>(
             $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/test",
             (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseConnectionTestResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null test result.", "TestConnection");
     }
 
     /// <inheritdoc />
-    public async Task DeleteConnectionAsync(string id, CancellationToken ct = default)
+    public async Task DeleteConnectionAsync(string id, CancellationToken cancellationToken = default)
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         using var response = await _http.DeleteAsync(
-            CreateRequestUri($"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}"), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            CreateRequestUri($"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}"), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
     }
 
     /// <inheritdoc />
-    public async Task<EncryptionValidationResult> ValidateEncryptionAsync(CancellationToken ct = default)
+    public async Task<EncryptionValidationResult> ValidateEncryptionAsync(CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<EncryptionValidationResult>(
             $"{ApiPrefix}/connections/encryption/validate",
             (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseEncryptionValidationResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null validation result.", "ValidateEncryption");
     }
 
     /// <inheritdoc />
-    public async Task<KeyRotationResult> RotateEncryptionKeyAsync(CancellationToken ct = default)
+    public async Task<KeyRotationResult> RotateEncryptionKeyAsync(CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<KeyRotationResult>(
             $"{ApiPrefix}/connections/encryption/rotate-key",
             (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseKeyRotationResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null rotation result.", "RotateEncryptionKey");
     }
 
     // ── Layers ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(string connectionId, string? serviceName = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(string connectionId, string? serviceName = null, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
         var data = await GetAsync<PublishedLayerSummary[]>(
             $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/{query}",
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<PublishedLayerSummary> PublishLayerAsync(string connectionId, PublishLayerRequest request, CancellationToken ct = default)
+    public async Task<PublishedLayerSummary> PublishLayerAsync(string connectionId, PublishLayerRequest request, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var data = await PostAsync<PublishedLayerSummary>(
@@ -397,12 +397,12 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request,
             HonuaAdminJsonContext.Default.PublishLayerRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummary,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "PublishLayer");
     }
 
     /// <inheritdoc />
-    public async Task<PublishedLayerSummary> SetLayerEnabledAsync(string connectionId, int layerId, bool enabled, string? serviceName = null, CancellationToken ct = default)
+    public async Task<PublishedLayerSummary> SetLayerEnabledAsync(string connectionId, int layerId, bool enabled, string? serviceName = null, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
@@ -412,12 +412,12 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             body,
             HonuaAdminJsonContext.Default.LayerEnabledRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummary,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "SetLayerEnabled");
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<PublishedLayerSummary>> SetServiceLayersEnabledAsync(string connectionId, bool enabled, string? serviceName = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PublishedLayerSummary>> SetServiceLayersEnabledAsync(string connectionId, bool enabled, string? serviceName = null, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
@@ -427,19 +427,19 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             body,
             HonuaAdminJsonContext.Default.LayerEnabledRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     // ── Discovery ────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<TableDiscoveryResponse> DiscoverTablesAsync(string connectionId, CancellationToken ct = default)
+    public async Task<TableDiscoveryResponse> DiscoverTablesAsync(string connectionId, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var url = $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/tables";
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         // Table discovery returns TableDiscoveryResponse directly (not wrapped in ApiResponse)
@@ -454,12 +454,12 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// </summary>
     /// <param name="request">The migration inventory scan request.</param>
     /// <param name="exportJson">When true, requests the server's JSON attachment form with <c>export=json</c>.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The migration source inventory artifact returned by the server.</returns>
     public async Task<MigrationSourceInventoryArtifact> ScanMigrationSourceAsync(
         MigrationInventoryScanRequest request,
         bool exportJson = false,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -469,7 +469,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request,
             HonuaAdminJsonContext.Default.MigrationInventoryScanRequest,
             HonuaAdminJsonContext.Default.MigrationSourceInventoryArtifact,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return data ?? throw new HonuaAdminOperationException("Server returned null migration inventory artifact.", "ScanMigrationSource");
     }
@@ -477,34 +477,34 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Styles ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<LayerStyleResponse> GetLayerStyleAsync(int layerId, CancellationToken ct = default)
+    public async Task<LayerStyleResponse> GetLayerStyleAsync(int layerId, CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<LayerStyleResponse>(
             $"{ApiPrefix}/metadata/layers/{layerId}/style",
             HonuaAdminJsonContext.Default.ApiResponseLayerStyleResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null style response.", "GetLayerStyle");
     }
 
     /// <inheritdoc />
-    public async Task<LayerStyleResponse> UpdateLayerStyleAsync(int layerId, LayerStyleUpdateRequest request, CancellationToken ct = default)
+    public async Task<LayerStyleResponse> UpdateLayerStyleAsync(int layerId, LayerStyleUpdateRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<LayerStyleResponse>(
             $"{ApiPrefix}/metadata/layers/{layerId}/style",
             request,
             HonuaAdminJsonContext.Default.LayerStyleUpdateRequest,
             HonuaAdminJsonContext.Default.ApiResponseLayerStyleResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null response.", "UpdateLayerStyle");
     }
 
     // ── Config ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<JsonElement> GetConfigAsync(CancellationToken ct = default)
+    public async Task<JsonElement> GetConfigAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await _http.GetAsync(CreateRequestUri($"{ApiPrefix}/config"), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri($"{ApiPrefix}/config"), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<JsonElement>(body);
@@ -513,21 +513,21 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Identity ────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<OidcProviderResponse>> ListOidcProvidersAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<OidcProviderResponse>> ListOidcProvidersAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<OidcProviderResponse[]>(
             $"{ApiPrefix}/oidc/providers",
             HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponseArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<OidcProviderResponse?> GetOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    public async Task<OidcProviderResponse?> GetOidcProviderAsync(Guid providerId, CancellationToken cancellationToken = default)
     {
         using var response = await _http.GetAsync(
-            CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return null;
@@ -541,62 +541,62 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     }
 
     /// <inheritdoc />
-    public async Task<OidcProviderResponse> CreateOidcProviderAsync(CreateOidcProviderRequest request, CancellationToken ct = default)
+    public async Task<OidcProviderResponse> CreateOidcProviderAsync(CreateOidcProviderRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<OidcProviderResponse>(
             $"{ApiPrefix}/oidc/providers",
             request,
             HonuaAdminJsonContext.Default.CreateOidcProviderRequest,
             HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null provider.", "CreateOidcProvider");
     }
 
     /// <inheritdoc />
-    public async Task<OidcProviderResponse> UpdateOidcProviderAsync(Guid providerId, UpdateOidcProviderRequest request, CancellationToken ct = default)
+    public async Task<OidcProviderResponse> UpdateOidcProviderAsync(Guid providerId, UpdateOidcProviderRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<OidcProviderResponse>(
             $"{ApiPrefix}/oidc/providers/{providerId:D}",
             request,
             HonuaAdminJsonContext.Default.UpdateOidcProviderRequest,
             HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null provider.", "UpdateOidcProvider");
     }
 
     /// <inheritdoc />
-    public async Task DeleteOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    public async Task DeleteOidcProviderAsync(Guid providerId, CancellationToken cancellationToken = default)
     {
         using var response = await _http.DeleteAsync(
-            CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
     }
 
     /// <inheritdoc />
-    public async Task<OidcProviderTestResponse> TestOidcProviderAsync(Guid providerId, CancellationToken ct = default)
+    public async Task<OidcProviderTestResponse> TestOidcProviderAsync(Guid providerId, CancellationToken cancellationToken = default)
     {
         var data = await PostAsync<OidcProviderTestResponse>(
             $"{ApiPrefix}/oidc/providers/{providerId:D}/test",
             (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseOidcProviderTestResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestOidcProvider");
     }
 
     /// <inheritdoc />
-    public async Task<IdentityProvidersResponse> GetIdentityProvidersAsync(CancellationToken ct = default)
+    public async Task<IdentityProvidersResponse> GetIdentityProvidersAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<IdentityProvidersResponse>(
             $"{ApiPrefix}/identity/providers",
             HonuaAdminJsonContext.Default.ApiResponseIdentityProvidersResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? new IdentityProvidersResponse();
     }
 
     /// <inheritdoc />
-    public async Task<IdentityProviderTestResult> TestIdentityProviderAsync(string providerType, CancellationToken ct = default)
+    public async Task<IdentityProviderTestResult> TestIdentityProviderAsync(string providerType, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(providerType))
         {
@@ -606,34 +606,34 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var data = await GetAsync<IdentityProviderTestResult>(
             $"{ApiPrefix}/identity/providers/{Uri.EscapeDataString(providerType)}/test",
             HonuaAdminJsonContext.Default.ApiResponseIdentityProviderTestResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestIdentityProvider");
     }
 
     // ── License ─────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<LicenseStatusResponse> GetLicenseStatusAsync(CancellationToken ct = default)
+    public async Task<LicenseStatusResponse> GetLicenseStatusAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<LicenseStatusResponse>(
             $"{ApiPrefix}/license",
             HonuaAdminJsonContext.Default.ApiResponseLicenseStatusResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null license status.", "GetLicenseStatus");
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<LicenseEntitlement>> GetLicenseEntitlementsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<LicenseEntitlement>> GetLicenseEntitlementsAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<LicenseEntitlement[]>(
             $"{ApiPrefix}/license/entitlements",
             HonuaAdminJsonContext.Default.ApiResponseLicenseEntitlementArray,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? [];
     }
 
     /// <inheritdoc />
-    public async Task<LicenseStatusResponse> UploadLicenseAsync(byte[] bytes, CancellationToken ct = default)
+    public async Task<LicenseStatusResponse> UploadLicenseAsync(byte[] bytes, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(bytes);
 
@@ -644,8 +644,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             Content = content
         };
 
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
 
@@ -656,120 +656,120 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Observability ────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken ct = default)
-        => (await GetRecentErrorsResponseAsync(limit, ct).ConfigureAwait(false)).Errors;
+    public async Task<IReadOnlyList<RecentError>> GetRecentErrorsAsync(int? limit = null, CancellationToken cancellationToken = default)
+        => (await GetRecentErrorsResponseAsync(limit, cancellationToken).ConfigureAwait(false)).Errors;
 
     /// <inheritdoc />
-    public async Task<RecentErrorsResponse> GetRecentErrorsResponseAsync(int? limit = null, CancellationToken ct = default)
+    public async Task<RecentErrorsResponse> GetRecentErrorsResponseAsync(int? limit = null, CancellationToken cancellationToken = default)
     {
         var query = BuildQuery(("limit", limit?.ToString(CultureInfo.InvariantCulture)));
         var data = await GetRawAsync<RecentErrorsResponse>(
             $"{ApiPrefix}/observability/errors{query}",
             HonuaAdminJsonContext.Default.RecentErrorsResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null recent errors response.", "GetRecentErrors");
     }
 
     /// <inheritdoc />
-    public async Task<TelemetryStatus> GetTelemetryStatusAsync(CancellationToken ct = default)
+    public async Task<TelemetryStatus> GetTelemetryStatusAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetRawAsync<TelemetryStatus>(
             $"{ApiPrefix}/observability/telemetry",
             HonuaAdminJsonContext.Default.TelemetryStatus,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null telemetry status.", "GetTelemetryStatus");
     }
 
     /// <inheritdoc />
-    public async Task<MigrationStatus> GetMigrationStatusAsync(CancellationToken ct = default)
+    public async Task<MigrationStatus> GetMigrationStatusAsync(CancellationToken cancellationToken = default)
     {
         var data = await GetRawAsync<MigrationStatus>(
             $"{ApiPrefix}/observability/migrations",
             HonuaAdminJsonContext.Default.MigrationStatus,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null migration status.", "GetMigrationStatus");
     }
 
     // ── Deploy Control ──────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken ct = default)
-        => await GetDeployPreflightAsync(includeDiagnostics: false, ct).ConfigureAwait(false);
+    public async Task<DeployPreflightResult> GetDeployPreflightAsync(CancellationToken cancellationToken = default)
+        => await GetDeployPreflightAsync(includeDiagnostics: false, cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<DeployPreflightResult> GetDeployPreflightAsync(bool includeDiagnostics, CancellationToken ct = default)
+    public async Task<DeployPreflightResult> GetDeployPreflightAsync(bool includeDiagnostics, CancellationToken cancellationToken = default)
     {
         var query = includeDiagnostics ? BuildQuery(("includeDiagnostics", "true")) : string.Empty;
         var data = await GetRawAsync<DeployPreflightResult>(
             $"{ApiPrefix}/deploy/preflight{query}",
             HonuaAdminJsonContext.Default.DeployPreflightResult,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null preflight result.", "GetDeployPreflight");
     }
 
     /// <inheritdoc />
-    public async Task<DeployPlan> CreateDeployPlanAsync(CreateDeployPlanRequest request, CancellationToken ct = default)
+    public async Task<DeployPlan> CreateDeployPlanAsync(CreateDeployPlanRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostRawAsync(
             $"{ApiPrefix}/deploy/plan",
             request,
             HonuaAdminJsonContext.Default.CreateDeployPlanRequest,
             HonuaAdminJsonContext.Default.DeployPlan,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy plan.", "CreateDeployPlan");
     }
 
     /// <inheritdoc />
-    public async Task<DeployOperation> CreateDeployOperationAsync(CreateDeployOperationRequest request, CancellationToken ct = default)
+    public async Task<DeployOperation> CreateDeployOperationAsync(CreateDeployOperationRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostRawAsync(
             $"{ApiPrefix}/deploy/operations",
             request,
             HonuaAdminJsonContext.Default.CreateDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "CreateDeployOperation");
     }
 
     /// <inheritdoc />
-    public async Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken ct = default)
+    public async Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken cancellationToken = default)
     {
         var data = await GetRawAsync<DeployOperation>(
             $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}",
             HonuaAdminJsonContext.Default.DeployOperation,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "GetDeployOperation");
     }
 
     /// <inheritdoc />
-    public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken ct = default)
-        => await SubmitDeployOperationAsync(operationId, new SubmitDeployOperationRequest(), ct).ConfigureAwait(false);
+    public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, CancellationToken cancellationToken = default)
+        => await SubmitDeployOperationAsync(operationId, new SubmitDeployOperationRequest(), cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, SubmitDeployOperationRequest request, CancellationToken ct = default)
+    public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, SubmitDeployOperationRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostRawAsync<DeployOperation>(
             $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/submit",
             request,
             HonuaAdminJsonContext.Default.SubmitDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "SubmitDeployOperation");
     }
 
     /// <inheritdoc />
-    public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken ct = default)
-        => await RollbackDeployOperationAsync(operationId, new RollbackDeployOperationRequest(), ct).ConfigureAwait(false);
+    public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, CancellationToken cancellationToken = default)
+        => await RollbackDeployOperationAsync(operationId, new RollbackDeployOperationRequest(), cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, RollbackDeployOperationRequest request, CancellationToken ct = default)
+    public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, RollbackDeployOperationRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostRawAsync<DeployOperation>(
             $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/rollback",
             request,
             HonuaAdminJsonContext.Default.RollbackDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "RollbackDeployOperation");
     }
 
@@ -778,10 +778,10 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     private async Task<T?> GetAsync<T>(
         string url,
         JsonTypeInfo<ApiResponse<T>> typeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
 
@@ -792,10 +792,10 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     private async Task<T?> GetRawAsync<T>(
         string url,
         JsonTypeInfo<T> typeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, typeInfo);
@@ -805,7 +805,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         string url,
         object? requestBody,
         JsonTypeInfo<ApiResponse<T>> responseTypeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         HttpContent content;
         if (requestBody is not null)
@@ -822,8 +822,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using (content)
         {
-            using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             await EnsureSuccessAsync(response, body).ConfigureAwait(false);
             EnsureEnvelopeSucceeded(response, body);
 
@@ -837,11 +837,11 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         object requestBody,
         JsonTypeInfo requestTypeInfo,
         JsonTypeInfo<ApiResponse<TResponse>> responseTypeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
 
@@ -853,7 +853,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         string url,
         object? requestBody,
         JsonTypeInfo<TResponse> responseTypeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         HttpContent content;
         if (requestBody is not null)
@@ -870,8 +870,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using (content)
         {
-            using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
             return JsonSerializer.Deserialize(body, responseTypeInfo);
@@ -883,11 +883,11 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         object requestBody,
         JsonTypeInfo requestTypeInfo,
         JsonTypeInfo<TResponse> responseTypeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, responseTypeInfo);
@@ -898,11 +898,11 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         object requestBody,
         JsonTypeInfo requestTypeInfo,
         JsonTypeInfo<ApiResponse<TResponse>> responseTypeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PutAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PutAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
         EnsureEnvelopeSucceeded(response, body);
 

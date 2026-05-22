@@ -4,17 +4,18 @@
 
 | Package | Description |
 |---------|-------------|
-| `Honua.Sdk.Abstractions` | Shared feature query abstractions implemented by provider-specific clients |
-| `Honua.Sdk.Admin` | Admin client for managing services, layers, and configuration |
+| `Honua.Sdk` | **Umbrella / meta** -- one install + one `AddHonua(o => o.BaseAddress = ...)` registers every enabled sub-package. Recommended starting point. The narrower per-package facades below remain available unchanged. |
+| `Honua.Sdk.Abstractions` | Shared feature query/edit/stream abstractions implemented by provider-specific clients, plus browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
+| `Honua.Sdk.Offline` | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
+| `Honua.Sdk.Admin` | Admin client for managing services, layers, connections, styles, and metadata. Also exposes Catalog discovery (`IHonuaCatalogClient`, `AddHonuaCatalog`) and Geocoding (`IHonuaGeocodingClient`, `AddHonuaGeocoding`) using the same options/auth handler. |
 | `Honua.Sdk.Spec` | Spec workspace client for validate, plan, apply stream, and cancel |
 | `Honua.Sdk.Field` | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries and edits |
-| `Honua.Sdk.Wfs` | WFS 2.0 read/query client for GetCapabilities, GetFeature, DescribeFeatureType |
-| `Honua.Sdk.GeoServices` | GeoServices FeatureServer read/query client |
+| `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
+| `Honua.Sdk.GeoServices` | GeoServices FeatureServer read/query/edit client. Also exposes NAServer Routing (`IHonuaRoutingClient`, `AddHonuaRouting`) using the same options/auth handler. |
 | `Honua.Sdk.Scenes` | Scene metadata, endpoint resolution, and offline scene package contracts |
-| `Honua.Sdk.OgcFeatures` | OGC API Features read/query client |
-| `Honua.Sdk.OgcRecords` | OGC API Records metadata/catalog client |
-| `Honua.Sdk.Stac` | STAC catalog, collection item, and search client |
+| `Honua.Sdk.OgcFeatures` | OGC API Features read/query client plus WFS 2.0 read surface (GetCapabilities, GetFeature, DescribeFeatureType) |
+| `Honua.Sdk.Catalogs` | OGC API Records + STAC catalog client (landing pages, conformance, collections, item / record search and paging) |
 
 ## Prerequisites
 
@@ -24,46 +25,50 @@
 ## Install via NuGet
 
 ```bash
-# gRPC client (most common)
-dotnet add package Honua.Sdk.Grpc --prerelease
+# Umbrella / meta package -- one install brings in every Honua.Sdk.* package
+# and exposes a single AddHonua(o => o.BaseAddress = ...) DI extension.
+dotnet add package Honua.Sdk
 
-# Shared read/query abstractions
-dotnet add package Honua.Sdk.Abstractions --prerelease
+# Or pick narrower packages individually:
 
-# Admin client
-dotnet add package Honua.Sdk.Admin --prerelease
+# Shared read/query/edit/stream abstractions (lightweight; depend on this from libraries)
+dotnet add package Honua.Sdk.Abstractions
+
+# Provider-neutral offline sync planner and engine
+# (Offline sync contracts now ship in Honua.Sdk.Abstractions.)
+dotnet add package Honua.Sdk.Offline
+
+# gRPC client (most common server transport)
+dotnet add package Honua.Sdk.Grpc
+
+# NTS/ProjNet-backed geometry, CRS, and geofence engine
+dotnet add package Honua.Sdk.Geometry
+
+# Admin / Catalog / Geocoding (REST) client
+dotnet add package Honua.Sdk.Admin
 
 # Spec workspace client
-dotnet add package Honua.Sdk.Spec --prerelease
+dotnet add package Honua.Sdk.Spec
 
 # Field form and record workflow contracts
-dotnet add package Honua.Sdk.Field --prerelease
+dotnet add package Honua.Sdk.Field
 
-# WFS 2.0 client
-dotnet add package Honua.Sdk.Wfs --prerelease
+# OGC / GeoServices read/query clients
+# (WFS 2.0 surface now ships inside Honua.Sdk.OgcFeatures.)
+dotnet add package Honua.Sdk.GeoServices
+dotnet add package Honua.Sdk.OgcFeatures
 
-# GeoServices FeatureServer client
-dotnet add package Honua.Sdk.GeoServices --prerelease
-
-# Scene metadata client
-dotnet add package Honua.Sdk.Scenes --prerelease
-
-# OGC API Features client
-dotnet add package Honua.Sdk.OgcFeatures --prerelease
-
-# OGC API Records client
-dotnet add package Honua.Sdk.OgcRecords --prerelease
-
-# STAC client
-dotnet add package Honua.Sdk.Stac --prerelease
+# Metadata / catalog clients
+dotnet add package Honua.Sdk.Scenes
+dotnet add package Honua.Sdk.Catalogs
 ```
 
 All SDK packages share one package version from `Directory.Build.props`.
 Release tags use `dotnet-sdk-v<PackageVersion>`, for example
-`dotnet-sdk-v0.1.0-alpha.1`. See [Release and NuGet Publishing](docs/release.md)
-for the publish workflow and stable/prerelease rules.
+`dotnet-sdk-v1.0.0`. See [Release and NuGet Publishing](docs/release.md)
+for the publish workflow and versioning rules.
 
-## Install from GitHub Packages (pre-release)
+## Install from GitHub Packages
 
 Add the Honua GitHub Packages source:
 
@@ -88,17 +93,24 @@ The SDK gRPC package depends on the generated `Geospatial.Grpc` protocol
 package from GitHub Packages; no sibling repo should copy protocol source files
 to satisfy that dependency.
 
-Then install:
+Then install -- pick the packages that match your transport / workload:
 
 ```bash
-dotnet add package Honua.Sdk.Grpc --prerelease --source honua
-dotnet add package Honua.Sdk.Spec --prerelease --source honua
-dotnet add package Honua.Sdk.Field --prerelease --source honua
-dotnet add package Honua.Sdk.GeoServices --prerelease --source honua
-dotnet add package Honua.Sdk.Scenes --prerelease --source honua
-dotnet add package Honua.Sdk.OgcFeatures --prerelease --source honua
-dotnet add package Honua.Sdk.OgcRecords --prerelease --source honua
-dotnet add package Honua.Sdk.Stac --prerelease --source honua
+# Umbrella / meta — easiest single install
+dotnet add package Honua.Sdk --source honua
+
+# Or pick narrower packages individually:
+dotnet add package Honua.Sdk.Abstractions --source honua
+dotnet add package Honua.Sdk.Offline --source honua
+dotnet add package Honua.Sdk.Grpc --source honua
+dotnet add package Honua.Sdk.Geometry --source honua
+dotnet add package Honua.Sdk.Admin --source honua
+dotnet add package Honua.Sdk.Spec --source honua
+dotnet add package Honua.Sdk.Field --source honua
+dotnet add package Honua.Sdk.GeoServices --source honua
+dotnet add package Honua.Sdk.Scenes --source honua
+dotnet add package Honua.Sdk.OgcFeatures --source honua
+dotnet add package Honua.Sdk.Catalogs --source honua
 ```
 
 ## Quick Start
@@ -111,7 +123,7 @@ using Honua.Sdk.Grpc.Models;
 // Register in DI
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.Address = "https://your-honua-server.com";
+    options.BaseAddress = new Uri("https://your-honua-server.com");
 });
 
 // Use in a service
@@ -133,10 +145,14 @@ public class MyService(IHonuaGrpcClient client)
 
 ## Version Policy
 
-- **Pre-release** (`-*`): Published to GitHub Packages on every release tag.
-- **Stable** (`1.0.0+`): Published to GitHub Packages after validation.
+- **Stable** (`1.0.0+`): All releases from `1.0.0` onward are stable and
+  follow [Semantic Versioning](https://semver.org/). Breaking changes are
+  gated behind a major version bump.
+- **Pre-1.0 history**: Releases prior to `1.0.0` shipped as `0.1.x-alpha.*`
+  on GitHub Packages and are retained for historical reference only. New
+  consumers should track `1.0.0` or later.
 
-All packages follow [Semantic Versioning](https://semver.org/). Major versions are coordinated across all Honua SDKs.
+Major versions are coordinated across all Honua SDKs.
 
 ## Server Compatibility Baseline
 

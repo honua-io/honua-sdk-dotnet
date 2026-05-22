@@ -1,3 +1,17 @@
 # .NET build artifacts
 **/bin/
 **/obj/
+
+# Test runner artifacts (per-test coverage + trx output)
+**/TestResults/
+coverage*/
+
+# Local agent / IDE state
+.claude/
+.vs/
+.vscode/
+.idea/
+
+# DocFX local build output
+docs/_site/
+docs/api/

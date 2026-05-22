@@ -60,15 +60,13 @@ jobs:
             "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
             "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
-            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
-            "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
+            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
           errors=0
@@ -117,15 +115,13 @@ jobs:
             "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
             "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
-            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
-            "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
+            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
           for project in "${projects[@]}"; do
@@ -140,14 +136,15 @@ jobs:
             "tests/Honua.Sdk.Geometry.Tests/Honua.Sdk.Geometry.Tests.csproj"
             "tests/Honua.Sdk.Spec.Tests/Honua.Sdk.Spec.Tests.csproj"
             "tests/Honua.Sdk.Grpc.Tests/Honua.Sdk.Grpc.Tests.csproj"
-            "tests/Honua.Sdk.Wfs.Tests/Honua.Sdk.Wfs.Tests.csproj"
             "tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj"
             "tests/Honua.Sdk.Scenes.Tests/Honua.Sdk.Scenes.Tests.csproj"
             "tests/Honua.Sdk.Field.Tests/Honua.Sdk.Field.Tests.csproj"
             "tests/Honua.Sdk.OgcFeatures.Tests/Honua.Sdk.OgcFeatures.Tests.csproj"
-            "tests/Honua.Sdk.OgcRecords.Tests/Honua.Sdk.OgcRecords.Tests.csproj"
-            "tests/Honua.Sdk.Stac.Tests/Honua.Sdk.Stac.Tests.csproj"
+            "tests/Honua.Sdk.OgcFeatures.WfsTests/Honua.Sdk.OgcFeatures.WfsTests.csproj"
+            "tests/Honua.Sdk.Catalogs.RecordsTests/Honua.Sdk.Catalogs.RecordsTests.csproj"
+            "tests/Honua.Sdk.Catalogs.StacTests/Honua.Sdk.Catalogs.StacTests.csproj"
             "tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj"
+            "tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj"
           )
 
           for project in "${projects[@]}"; do
@@ -198,15 +195,13 @@ jobs:
             "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
             "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
-            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
-            "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
+            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
           errors=0
@@ -235,20 +230,79 @@ jobs:
             "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
             "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
             "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj"
             "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
             "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
             "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj"
-            "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj"
-            "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj"
+            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
           for project in "${projects[@]}"; do
             dotnet pack "${project}" --configuration Release --no-build -o ./nupkgs
           done
+
+      - name: Generate CycloneDX SBOM per package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ./sboms
+          dotnet tool update --global CycloneDX --version 4.* >/dev/null
+          export PATH="$PATH:$HOME/.dotnet/tools"
+
+          for project in "${projects[@]}"; do
+            pkg_id="$(basename "$(dirname "${project}")")"
+            dotnet CycloneDX "${project}" \
+              --json \
+              --output "./sboms/${pkg_id}" \
+              --filename "${pkg_id}.cdx.json"
+          done
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-sboms
+          path: ./sboms/**/*.cdx.json
+          if-no-files-found: error
+
+      - name: Sign NuGet packages
+        if: env.NUGET_SIGNING_CERTIFICATE_BASE64 != '' && env.NUGET_SIGNING_PASSWORD != ''
+        env:
+          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
+          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+          NUGET_SIGNING_TIMESTAMP_URL: ${{ vars.NUGET_SIGNING_TIMESTAMP_URL || 'http://timestamp.digicert.com' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cert_path="$(mktemp --suffix=.pfx)"
+          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"' EXIT
+          echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
+
+          for nupkg in ./nupkgs/*.nupkg; do
+            dotnet nuget sign "${nupkg}" \
+              --certificate-path "${cert_path}" \
+              --certificate-password "${NUGET_SIGNING_PASSWORD}" \
+              --timestamper "${NUGET_SIGNING_TIMESTAMP_URL}"
+            dotnet nuget verify "${nupkg}"
+          done
+
+      - name: Package signing required on release tags
+        if: (env.NUGET_SIGNING_CERTIFICATE_BASE64 == '' || env.NUGET_SIGNING_PASSWORD == '') && startsWith(github.ref, 'refs/tags/dotnet-sdk-v')
+        env:
+          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
+          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+        run: |
+          echo "::error::Release-tag publish requires NUGET_SIGNING_CERTIFICATE_BASE64 and NUGET_SIGNING_PASSWORD secrets to sign packages. Failing the build."
+          exit 1
+
+      - name: Package signing notice (dry-run / non-tag)
+        if: (env.NUGET_SIGNING_CERTIFICATE_BASE64 == '' || env.NUGET_SIGNING_PASSWORD == '') && !startsWith(github.ref, 'refs/tags/dotnet-sdk-v')
+        env:
+          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
+          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+        run: |
+          echo "::warning::NUGET_SIGNING_CERTIFICATE_BASE64 / NUGET_SIGNING_PASSWORD not configured — packages will be published UNSIGNED. This is allowed for dry-runs and non-tag builds; release tags require signing."
 
       - name: Package install smoke
         shell: bash
@@ -295,17 +349,16 @@ jobs:
           dotnet add package Honua.Sdk.Geometry --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Spec --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Grpc --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Wfs --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.GeoServices --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Scenes --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Field --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.OgcRecords --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Stac --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Offline.Abstractions --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Catalogs --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk --version "${PACKAGE_VERSION}"
 
           cat <<'EOF' > Program.cs
+          using Honua.Sdk;
           using Honua.Sdk.Abstractions.Features;
           using Honua.Sdk.Admin;
           using Honua.Sdk.Admin.Extensions;
@@ -330,12 +383,12 @@ jobs:
           using Honua.Sdk.OgcFeatures;
           using Honua.Sdk.OgcFeatures.Extensions;
           using Honua.Sdk.OgcFeatures.Models;
-          using Honua.Sdk.OgcRecords;
-          using Honua.Sdk.OgcRecords.Extensions;
-          using Honua.Sdk.OgcRecords.Models;
-          using Honua.Sdk.Stac;
-          using Honua.Sdk.Stac.Extensions;
-          using Honua.Sdk.Stac.Models;
+          using Honua.Sdk.Catalogs.Records;
+          using Honua.Sdk.Catalogs.Records.Extensions;
+          using Honua.Sdk.Catalogs.Records.Models;
+          using Honua.Sdk.Catalogs.Stac;
+          using Honua.Sdk.Catalogs.Stac.Extensions;
+          using Honua.Sdk.Catalogs.Stac.Models;
           using Honua.Sdk.Wfs;
           using Honua.Sdk.Wfs.Extensions;
           using Honua.Sdk.Wfs.Models;
@@ -344,6 +397,23 @@ jobs:
 
           var builder = Host.CreateApplicationBuilder(args);
           var baseUri = new Uri("https://example.honua.test");
+
+          // Exercise the umbrella facade once to confirm the meta package is
+          // resolvable + AddHonua wires up. Use a throwaway service collection
+          // so it doesn't conflict with the per-package registrations below
+          // (those exercise the narrow extensions on the same project).
+          var metaSmokeServices = new ServiceCollection();
+          metaSmokeServices.AddHonua(o =>
+          {
+              o.BaseAddress = baseUri;
+              o.EnableRetry = false;
+          });
+          using (var metaProvider = metaSmokeServices.BuildServiceProvider())
+          {
+              _ = metaProvider.GetRequiredService<IHonuaGrpcClient>();
+              _ = metaProvider.GetRequiredService<IHonuaAdminClient>();
+              _ = metaProvider.GetRequiredService<IHonuaOgcFeaturesClient>();
+          }
 
           builder.Services.AddHonuaAdmin(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaGeocoding(options => options.BaseAddress = baseUri);
@@ -480,7 +550,7 @@ jobs:
           popd >/dev/null
 
       - name: Upload package artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs/*.nupkg
@@ -521,7 +591,7 @@ jobs:
       packages: write
     steps:
       - name: Download package artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs

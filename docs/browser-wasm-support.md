@@ -17,14 +17,13 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Admin` | Candidate | REST client over injected `HttpClient`. Browser hosts must use same-origin/BFF credentials or delegated bearer tokens, and the server must allow the required CORS policy when cross-origin. Static privileged admin API keys must not be shipped in browser config. |
 | Geocoding client in `Honua.Sdk.Admin` | Candidate | Same REST, CORS, and browser credential requirements as `Honua.Sdk.Admin`. |
 | `Honua.Sdk.Spec` | Candidate | REST validation/plan/cancel paths are browser candidates. Apply streaming uses SSE-style responses and still needs runtime validation under Blazor WebAssembly before being called supported. |
-| `Honua.Sdk.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. |
+| `Honua.Sdk.OgcFeatures.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. Ships inside `Honua.Sdk.OgcFeatures`. |
 | `Honua.Sdk.GeoServices` | Candidate | REST/JSON FeatureServer client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | Routing client in `Honua.Sdk.GeoServices` | Candidate | REST/JSON NAServer client over browser `HttpClient`; requires server CORS and browser-owned auth. Host apps own current-location acquisition, route display, and map interaction. |
 | `Honua.Sdk.Scenes` | Candidate | REST/JSON scene metadata client over browser `HttpClient`; requires server CORS and browser-owned auth. Display, Cesium, WebGL/WebGPU, and renderer caches remain outside the SDK. |
 | `Honua.Sdk.Field` | Candidate | Pure form, validation, calculated field, duplicate detection, and record workflow contracts. Browser hosts own rendering, storage, device capture, local media handling, and any map display. |
 | `Honua.Sdk.OgcFeatures` | Candidate | REST/JSON OGC API Features client over browser `HttpClient`; requires server CORS and browser-owned auth. |
-| `Honua.Sdk.OgcRecords` | Candidate | REST/JSON OGC API Records catalog client over browser `HttpClient`; requires server CORS and browser-owned auth. |
-| `Honua.Sdk.Stac` | Candidate | REST/JSON STAC catalog, item, and search client over browser `HttpClient`; requires server CORS and browser-owned auth. |
+| `Honua.Sdk.Catalogs` | Candidate | REST/JSON OGC API Records + STAC catalog clients over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | `Honua.Sdk.Grpc` | Not supported for browser runtime | Native gRPC/HTTP2 is not a supported browser path. Treat current browser builds as compile-only. Add gRPC-Web support only after `honua-server` exposes a compatible endpoint and the SDK has a browser-specific transport plan. |
 | Advanced editing contracts | Supported | Structured domains, contingent values, attribute rules, relationship descriptors, validate-only results, and edit-session DTOs are pure contracts. Browser hosts own form UX and server adapters. |
 | Realtime feed contracts | Candidate | `IHonuaFeatureStreamClient`, normalized event envelopes, bounded buffers, and duplicate/stale sequence processors are pure contracts. Browser hosts still own the SSE/WebSocket/gRPC-Web adapter and auth/CORS behavior. |

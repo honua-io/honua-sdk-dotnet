@@ -1,0 +1,75 @@
+name: Docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [trunk]
+  pull_request:
+    branches: [trunk]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    name: Build DocFX site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Configure GitHub Packages
+        run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore Honua.Sdk.sln
+
+      - name: Build solution
+        run: dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true
+
+      - name: Install DocFX
+        run: dotnet tool update --global docfx
+
+      - name: Build DocFX site
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          docfx docs/docfx.json
+
+      - name: Configure GitHub Pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/configure-pages@v5
+
+      - name: Upload DocFX site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/deploy-pages@v4

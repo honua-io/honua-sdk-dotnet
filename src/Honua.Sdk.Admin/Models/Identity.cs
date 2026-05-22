@@ -74,31 +74,31 @@ public sealed class OidcProviderResponse
 /// <summary>
 /// Request payload for creating an OIDC provider.
 /// </summary>
-public sealed class CreateOidcProviderRequest
+public sealed record CreateOidcProviderRequest
 {
     /// <summary>
     /// Operator-facing provider name.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; init; } = string.Empty;
+    public required string Name { get; init; }
 
     /// <summary>
     /// Provider type, such as generic, google, or azuread.
     /// </summary>
     [JsonPropertyName("providerType")]
-    public string ProviderType { get; init; } = string.Empty;
+    public required string ProviderType { get; init; }
 
     /// <summary>
     /// OIDC authority URL.
     /// </summary>
     [JsonPropertyName("authority")]
-    public string Authority { get; init; } = string.Empty;
+    public required string Authority { get; init; }
 
     /// <summary>
     /// Client identifier registered with the identity provider.
     /// </summary>
     [JsonPropertyName("clientId")]
-    public string ClientId { get; init; } = string.Empty;
+    public required string ClientId { get; init; }
 
     /// <summary>
     /// Plaintext client secret sent only to create or rotate credentials.
@@ -116,7 +116,7 @@ public sealed class CreateOidcProviderRequest
 /// <summary>
 /// Request payload for updating an OIDC provider.
 /// </summary>
-public sealed class UpdateOidcProviderRequest
+public sealed record UpdateOidcProviderRequest
 {
     /// <summary>
     /// Operator-facing provider name.

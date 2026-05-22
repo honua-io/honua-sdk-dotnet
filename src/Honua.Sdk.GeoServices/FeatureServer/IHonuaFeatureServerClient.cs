@@ -13,18 +13,18 @@ public interface IHonuaFeatureServerClient
     /// Gets service-level metadata for a FeatureServer service.
     /// </summary>
     /// <param name="serviceId">The service identifier.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Service metadata including layers, extent, and capabilities.</returns>
-    Task<FeatureServerServiceInfo> GetServiceInfoAsync(string serviceId, CancellationToken ct = default);
+    Task<FeatureServerServiceInfo> GetServiceInfoAsync(string serviceId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets detailed metadata for a specific layer in a FeatureServer service.
     /// </summary>
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Layer metadata including fields, extent, and capabilities.</returns>
-    Task<FeatureServerLayerInfo> GetLayerInfoAsync(string serviceId, int layerId, CancellationToken ct = default);
+    Task<FeatureServerLayerInfo> GetLayerInfoAsync(string serviceId, int layerId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a feature query and returns a single page of results.
@@ -32,9 +32,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters including filters, paging, and projection.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Query response containing features and metadata.</returns>
-    Task<FeatureServerQueryResponse> QueryAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default);
+    Task<FeatureServerQueryResponse> QueryAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a single feature by object ID.
@@ -43,14 +43,14 @@ public interface IHonuaFeatureServerClient
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="objectId">The object ID to read.</param>
     /// <param name="query">Optional query parameters for projection, geometry, and output spatial reference.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The matching feature, or <c>null</c> when no feature is returned.</returns>
     Task<FeatureServerFeature?> GetFeatureAsync(
         string serviceId,
         int layerId,
         long objectId,
         FeatureServerQueryParams? query = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
         => throw new NotSupportedException("This implementation does not support FeatureServer read-by-id.");
 
     /// <summary>
@@ -59,9 +59,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters for filtering.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The count of matching features.</returns>
-    Task<long> QueryCountAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default);
+    Task<long> QueryCountAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes an IDs-only query, returning object IDs of matching features.
@@ -69,9 +69,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters for filtering.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of matching object IDs.</returns>
-    Task<IReadOnlyList<long>> QueryIdsAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default);
+    Task<IReadOnlyList<long>> QueryIdsAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes an extent-only query, returning the bounding extent of matching features.
@@ -79,9 +79,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters for filtering.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The bounding extent of matching features.</returns>
-    Task<FeatureServerExtent> QueryExtentAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default);
+    Task<FeatureServerExtent> QueryExtentAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a feature query with automatic paging via <see cref="IAsyncEnumerable{T}"/>.
@@ -90,9 +90,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters. <c>ResultOffset</c> will be advanced automatically.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>An async enumerable of query response pages.</returns>
-    IAsyncEnumerable<FeatureServerQueryResponse> QueryPagesAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default);
+    IAsyncEnumerable<FeatureServerQueryResponse> QueryPagesAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a statistics query on a layer.
@@ -100,9 +100,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Statistics query parameters including outStatistics, groupBy, and having.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Query response containing statistics results as features.</returns>
-    Task<FeatureServerQueryResponse> QueryStatisticsAsync(string serviceId, int layerId, FeatureServerStatisticsParams query, CancellationToken ct = default);
+    Task<FeatureServerQueryResponse> QueryStatisticsAsync(string serviceId, int layerId, FeatureServerStatisticsParams query, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Validates a SQL WHERE clause against a layer.
@@ -110,9 +110,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="where">The SQL WHERE clause to validate.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Validation result indicating whether the SQL is valid.</returns>
-    Task<FeatureServerValidateSqlResponse> ValidateSqlAsync(string serviceId, int layerId, string where, CancellationToken ct = default);
+    Task<FeatureServerValidateSqlResponse> ValidateSqlAsync(string serviceId, int layerId, string where, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a query and returns the raw <see cref="HttpResponseMessage"/> for binary formats
@@ -121,7 +121,7 @@ public interface IHonuaFeatureServerClient
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters including the desired output format.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The raw HTTP response message.</returns>
-    Task<HttpResponseMessage> QueryRawAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default);
+    Task<HttpResponseMessage> QueryRawAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 }

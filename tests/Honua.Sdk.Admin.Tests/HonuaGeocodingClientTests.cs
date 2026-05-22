@@ -430,6 +430,7 @@ public sealed class HonuaGeocodingClientTests
 
         var options = Microsoft.Extensions.Options.Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKey = "geo-test-key"
         });
 
@@ -468,6 +469,7 @@ public sealed class HonuaGeocodingClientTests
 
         var options = Microsoft.Extensions.Options.Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             BearerToken = "geo-jwt-token"
         });
 

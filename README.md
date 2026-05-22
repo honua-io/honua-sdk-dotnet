@@ -8,26 +8,31 @@ through GeoServices FeatureServer, OGC API Features, scene metadata endpoints,
 OGC API Records and STAC catalog endpoints, and shared real-time feature stream
 contracts.
 
+> **New here? Pick your path:**
+> - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
+> - Want a map of the 12 packages before you choose → [docs/architecture.md](docs/architecture.md)
+> - Want to browse the public docs → [docs/README.md](docs/README.md)
+> - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
+> - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
+
 Current SDK capabilities are summarized in [docs/features/README.md](docs/features/README.md).
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions, source facades, and host-neutral plugin manifests |
-| **Honua.Sdk.Offline.Abstractions** | Browser-safe offline manifests, sync state, checkpoints, conflicts, and storage contracts |
+| **Honua.Sdk** | **Umbrella / meta package -- recommended starting point.** One install + one `AddHonua(o => o.BaseAddress = ...)` registers every enabled sub-package. Pick the narrower packages directly if you want fewer transitive dependencies. |
+| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions, source facades, host-neutral plugin manifests, and browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
 | **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
 | **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
-| **Honua.Sdk.Wfs** | WFS 2.0 read/query client -- GetCapabilities, GetFeature (GeoJSON), DescribeFeatureType |
 | **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
-| **Honua.Sdk.OgcFeatures** | OGC API Features read/query client -- landing page, conformance, collections, queryables, items |
-| **Honua.Sdk.OgcRecords** | OGC API Records catalog client -- landing page, conformance, record collections, search, record detail |
-| **Honua.Sdk.Stac** | STAC catalog client -- catalog, collections, item pages, item detail, GET/POST search, paging, raw JSON |
+| **Honua.Sdk.OgcFeatures** | OGC API Features and WFS 2.0 read/query client -- landing page, conformance, collections, queryables, items, plus WFS GetCapabilities / GetFeature (GeoJSON) / DescribeFeatureType |
+| **Honua.Sdk.Catalogs** | OGC API Records + STAC catalog client -- landing pages, conformance, collections, item / record pages, GET/POST search with paging, raw JSON |
 | *Geocoding* (in Admin) | Forward/reverse geocoding and autocomplete via `IHonuaGeocodingClient` |
 
 Browser and WebAssembly consumers should start with
@@ -39,492 +44,217 @@ SDK core.
 ## Install
 
 ```bash
-dotnet add package Honua.Sdk.Abstractions --prerelease
-dotnet add package Honua.Sdk.Offline.Abstractions --prerelease
-dotnet add package Honua.Sdk.Offline --prerelease
-dotnet add package Honua.Sdk.Grpc --prerelease
-dotnet add package Honua.Sdk.Admin --prerelease
-dotnet add package Honua.Sdk.Spec --prerelease
-dotnet add package Honua.Sdk.Field --prerelease
-dotnet add package Honua.Sdk.Geometry --prerelease
-dotnet add package Honua.Sdk.Wfs --prerelease
-dotnet add package Honua.Sdk.GeoServices --prerelease
-dotnet add package Honua.Sdk.Scenes --prerelease
-dotnet add package Honua.Sdk.OgcFeatures --prerelease
-dotnet add package Honua.Sdk.OgcRecords --prerelease
-dotnet add package Honua.Sdk.Stac --prerelease
+# Easiest: install the umbrella to get every Honua.Sdk.* package at once.
+dotnet add package Honua.Sdk
 ```
 
-Pre-release builds are also available from
-[GitHub Packages](INSTALL.md#install-from-github-packages-pre-release).
+<details>
+<summary>Want narrower dependencies? Install per-package instead.</summary>
+
+```bash
+dotnet add package Honua.Sdk.Abstractions
+dotnet add package Honua.Sdk.Offline
+dotnet add package Honua.Sdk.Grpc
+dotnet add package Honua.Sdk.Admin
+dotnet add package Honua.Sdk.Spec
+dotnet add package Honua.Sdk.Field
+dotnet add package Honua.Sdk.Geometry
+dotnet add package Honua.Sdk.GeoServices
+dotnet add package Honua.Sdk.Scenes
+dotnet add package Honua.Sdk.OgcFeatures
+dotnet add package Honua.Sdk.Catalogs
+```
+
+</details>
+
+Pre-1.0 / dry-run builds are also available from
+[GitHub Packages](INSTALL.md#install-from-github-packages).
 
 ## Quick usage
 
-Register the clients with dependency injection and query features:
+A complete `Program.cs` you can drop into a `dotnet new console` project
+(after installing the packages you use — see [docs/quickstart.md](docs/quickstart.md)
+for the minimal install set):
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Honua.Sdk;
+using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Models;
-using Honua.Sdk.Grpc.Extensions;
-using Honua.Sdk.Admin.Extensions;
-using Honua.Sdk.Spec.Extensions;
-using Honua.Sdk.Wfs.Extensions;
-using Honua.Sdk.GeoServices.Extensions;
-using Honua.Sdk.Scenes.Extensions;
-using Honua.Sdk.OgcFeatures.Extensions;
-using Honua.Sdk.OgcRecords.Extensions;
-using Honua.Sdk.Stac.Extensions;
 
-// Register clients
-builder.Services.AddHonuaGrpc(o => o.Address = "https://localhost:5001");
-builder.Services.AddHonuaAdmin(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaGeocoding(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaSpec(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaWfs(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaFeatureServer(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaScenes(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaOgcRecords(o => o.BaseAddress = new Uri("https://localhost:5001"));
-builder.Services.AddHonuaStac(o => o.BaseAddress = new Uri("https://localhost:5001"));
+var builder = Host.CreateApplicationBuilder(args);
+var serverUri = new Uri("https://localhost:5001");
 
-// Query features (injected IHonuaGrpcClient)
-var response = await grpcClient.QueryFeaturesAsync(new QueryFeaturesRequest
+// One call registers every enabled Honua SDK client. Defaults register the
+// core query/edit/admin trio (gRPC, Admin + Catalog, Geocoding, OGC API
+// Features, WFS 2.0). Flip the situational Use* flags to opt in to Scenes,
+// Spec, Stac, OgcRecords, GeoServices, or Routing.
+builder.Services.AddHonua(o =>
 {
-    ServiceId = "parks",
-    LayerId = 0,
-    Where = "status = 'open'",
+    o.BaseAddress = serverUri;
+    // o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
+});
+
+using var host = builder.Build();
+var grpc = host.Services.GetRequiredService<IHonuaGrpcClient>();
+
+var response = await grpc.QueryFeaturesAsync(new QueryFeaturesRequest
+{
+    ServiceId      = "parks",
+    LayerId        = 0,
+    Where          = "status = 'open'",
     ReturnGeometry = true,
 });
 
 foreach (var feature in response.Features)
+{
     Console.WriteLine($"{feature.Id}: {feature.Attributes["name"]}");
-```
-
-## Authentication and token refresh
-
-All client packages support static `ApiKey` / `BearerToken` values and
-request-time `ApiKeyProvider` / `BearerTokenProvider` delegates. Use providers
-when credentials can refresh, rotate, or be revoked while the process is
-running:
-
-```csharp
-builder.Services.AddHonuaGrpc(o =>
-{
-    o.Address = "https://localhost:5001";
-    o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
-});
-```
-
-Credentials are sent only over HTTPS except for loopback HTTP during local
-development. See [docs/authentication.md](docs/authentication.md) for secure
-storage guidance and retry/failure behavior.
-
-## Apply edits
-
-The gRPC client supports feature edits (adds, updates, deletes):
-
-```csharp
-var response = await grpcClient.ApplyEditsAsync(new ApplyEditsRequest
-{
-    ServiceId = "parks",
-    LayerId = 0,
-    Adds = [new Feature { Attributes = new() { ["name"] = "New Park" } }],
-    RollbackOnFailure = true,
-});
-
-Console.WriteLine($"Added: {response.AddResults.Count}");
-```
-
-## Streaming
-
-Stream large result sets without buffering the entire response:
-
-```csharp
-await foreach (var page in grpcClient.QueryFeaturesStreamAsync(request))
-{
-    foreach (var feature in page.Features)
-        Console.WriteLine(feature.Id);
 }
 ```
 
-## Shared query abstraction
+<details>
+<summary>Want to register individually instead of using the umbrella?</summary>
 
-Protocol packages keep their native APIs, and the read/query clients also
-implement `IHonuaFeatureQueryClient` from `Honua.Sdk.Abstractions` for common
-application code:
-
-```csharp
-using Honua.Sdk.Abstractions.Features;
-
-IHonuaFeatureQueryClient queryClient = featureQueryClients
-    .Single(c => c.ProviderName == "ogc-features");
-
-var page = await queryClient.QueryAsync(new FeatureQueryRequest
-{
-    Source = new FeatureSource { CollectionId = "parks" },
-    Filter = "status = 'open'",
-    FilterLanguage = FeatureFilterLanguage.Cql2Text,
-    OutFields = ["name", "status"],
-    Limit = 10,
-});
-```
-
-For source-oriented application code, wrap a provider client in
-`HonuaSource`. The source descriptor owns the provider locator, so query code
-does not switch on gRPC, WFS, GeoServices, or OGC-specific source fields:
+The per-package `AddHonua*` extensions remain available and unchanged for
+callers who want explicit, narrow control:
 
 ```csharp
-var source = new HonuaSource(
-    new SourceDescriptor
-    {
-        Id = "parks",
-        Protocol = FeatureProtocolIds.OgcFeatures,
-        Locator = new SourceLocator { CollectionId = "parks" }
-    },
-    queryClient,
-    editClient: queryClient as IHonuaFeatureEditClient,
-    nativeClient: queryClient);
+using Honua.Sdk.Grpc.Extensions;
+using Honua.Sdk.Admin.Extensions;
+using Honua.Sdk.OgcFeatures.Wfs.Extensions;
+using Honua.Sdk.OgcFeatures.Extensions;
 
-var result = await source.QueryAsync(new SourceQuery
-{
-    Where = "status = 'open'",
-    FilterLanguage = FeatureFilterLanguage.Cql2Text,
-    OutFields = ["name", "status"],
-    Limit = 10,
-});
-
-var native = source.Protocol<IHonuaOgcFeaturesClient>(FeatureProtocolIds.OgcFeatures);
+builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri); // + IHonuaCatalogClient
+builder.Services.AddHonuaGeocoding  (o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaWfs        (o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
 ```
 
-See [docs/source-facade.md](docs/source-facade.md) for the descriptor,
-capability, and protocol alias model.
+</details>
 
-## Metadata and catalog discovery
+## Beyond the quickstart
 
-Use `IHonuaOgcRecordsClient` from `Honua.Sdk.OgcRecords` for public,
-standards-oriented catalog discovery. Use `IHonuaStacClient` from
-`Honua.Sdk.Stac` when callers need STAC collection/item/search semantics and
-asset links. Use `IHonuaCatalogClient` from `Honua.Sdk.Admin.Catalog` for
-operator/control-plane discovery over admin metadata resources and service
-inventory. Migration inventory and protocol-native metadata remain separate
-surfaces; see [docs/metadata-catalog-parity.md](docs/metadata-catalog-parity.md).
+The deeper capabilities each have their own guide:
 
-```csharp
-using Honua.Sdk.OgcRecords;
-using Honua.Sdk.OgcRecords.Models;
-using Honua.Sdk.Stac;
-using Honua.Sdk.Stac.Models;
+| Topic | Guide |
+|---|---|
+| Authentication, providers, token refresh, mTLS | [docs/authentication.md](docs/authentication.md) |
+| Apply edits over gRPC / OGC / GeoServices | [docs/feature-edits.md](docs/feature-edits.md) |
+| Streaming + paging via `IAsyncEnumerable<T>` | [docs/client-behavior.md](docs/client-behavior.md) |
+| Shared `IHonuaFeatureQueryClient` abstraction | [docs/source-facade.md](docs/source-facade.md) |
+| Catalog / OGC Records / STAC discovery | [docs/metadata-catalog-parity.md](docs/metadata-catalog-parity.md) |
+| Plugin contracts (manifests, permissions) | [docs/plugin-contracts.md](docs/plugin-contracts.md) |
+| Offline sync (planner, conflicts, manifests) | [docs/offline-sync-core.md](docs/offline-sync-core.md) |
+| Field form / validation / record workflow | [Honua.Sdk.Field README](src/Honua.Sdk.Field/README.md) |
+| Retry / timeout / resilience defaults | [docs/client-behavior.md](docs/client-behavior.md) |
+| WFS 2.0 query surface | [Honua.Sdk.OgcFeatures README](src/Honua.Sdk.OgcFeatures/README.md) |
+| Admin compatibility gate | [docs/compatibility.md](docs/compatibility.md) |
+| Spec workspace validate / plan / apply | [docs/spec-workspace-contracts.md](docs/spec-workspace-contracts.md) |
+| Admin bootstrap end-to-end sample | [examples/AdminBootstrapConsole](examples/AdminBootstrapConsole/) |
+| Geometry, CRS, geofence evaluation | [docs/geometry-analysis.md](docs/geometry-analysis.md) + [docs/geofencing.md](docs/geofencing.md) |
+| Scene metadata + offline scene packages | [docs/scenes.md](docs/scenes.md) |
+| Browser / WASM hosting | [docs/browser-wasm-support.md](docs/browser-wasm-support.md) |
 
-var records = await recordsClient.SearchAsync(
-    "default",
-    new OgcRecordsQuery
-    {
-        Query = "parks",
-        Types = ["service", "layer"],
-        Limit = 10
-    });
-
-var stacItems = await stacClient.SearchAsync(new StacSearchQuery
-{
-    Collections = ["imagery"],
-    Bbox = [-158.4, 21.2, -157.6, 21.9],
-    Datetime = "2026-05-01T00:00:00Z/..",
-    Limit = 10
-});
-```
-
-## Plugin contracts
-
-`Honua.Sdk.Abstractions.Plugins` defines host-neutral plugin manifests,
-permission declarations, compatibility gates, safe configuration envelopes, and
-non-UI extension point descriptors. Runtime loading, UI/component registration,
-sandboxing, signing, and marketplace behavior stay in the host repos.
-
-See [docs/plugin-contracts.md](docs/plugin-contracts.md) for the contract
-boundary and shared fixture.
-
-## Shared edit abstraction
-
-Feature providers expose shared write support through `IHonuaFeatureEditClient`
-from `Honua.Sdk.Abstractions`. Today gRPC, GeoServices FeatureServer, and OGC
-API Features advertise write capabilities; WFS registers unsupported
-capabilities with a clear reason until WFS-T support is added.
-
-```csharp
-using Honua.Sdk.Abstractions.Features;
-
-IHonuaFeatureEditClient edits = featureEditClients
-    .Single(c => c.ProviderName == "grpc");
-
-var result = await edits.ApplyEditsAsync(new FeatureEditRequest
-{
-    Source = new FeatureSource { ServiceId = "parks", LayerId = 0 },
-    DeleteObjectIds = [42],
-    RollbackOnFailure = true,
-});
-```
-
-See [docs/feature-edits.md](docs/feature-edits.md) for shared result models,
-provider support, and unsupported-provider behavior.
-
-## Shared stream abstraction
-
-Real-time feature feed clients use `IHonuaFeatureStreamClient` from
-`Honua.Sdk.Abstractions`. The contract covers connect, reconnect, heartbeat,
-subscribe, and unsubscribe workflows; normalizes insert/update/delete event
-envelopes; and includes bounded buffering plus duplicate/stale sequence
-rejection helpers. Concrete Honua Server transport wiring depends on
-honua-server#339 and honua-server#692.
-
-## Offline sync core
-
-Offline-capable apps can use `Honua.Sdk.Offline.Abstractions` for package
-manifests, source descriptors, sync state, checkpoints, change journals,
-conflict envelopes, and storage adapter interfaces. `Honua.Sdk.Offline` adds a
-platform-neutral planner and sync engine over `IHonuaFeatureQueryClient` and
-`IHonuaFeatureEditClient`.
-
-```csharp
-using Honua.Sdk.Offline;
-
-var result = await offlineSyncEngine.SyncAsync(manifest, cancellationToken);
-```
-
-See [docs/offline-sync-core.md](docs/offline-sync-core.md) for package
-boundaries, adapter expectations, and mobile integration guidance.
-
-## Field form contracts
-
-Portable field collection code can use `Honua.Sdk.Field` for form definitions,
-field validation, calculated fields, duplicate detection, and record workflow
-rules. UI rendering, camera/media capture, local file paths, device permissions,
-and MAUI/mobile screens stay in host apps.
-
-```csharp
-using Honua.Sdk.Field.Forms;
-using Honua.Sdk.Field.Records;
-
-var form = FieldFormSchemaMapper.CreateForm(sourceDescriptor);
-
-var result = FormValidator.Validate(form, new FieldRecord
-{
-    RecordId = "record-1",
-    FormId = form.FormId,
-    Values = { ["asset_id"] = "A-100" },
-});
-```
-
-## Retry
-
-The gRPC, WFS, GeoServices, and OGC API Features clients retry automatically on
-transient read failures with exponential backoff and jitter. gRPC retries
-`QueryFeatures` and `QueryFeaturesStream` on `Unavailable` / `Internal`; HTTP
-clients retry safe methods on `429`, `502`, `503`. Each DI client also exposes
-a `Timeout` option that defaults to 100 seconds and accepts any value greater
-than 10 milliseconds and less than 24 hours. Configurable on each client:
-
-```csharp
-builder.Services.AddHonuaGrpc(o =>
-{
-    o.Address = "https://localhost:5001";
-    o.Timeout = TimeSpan.FromSeconds(30);
-    o.EnableRetry = true;       // default
-    o.MaxRetryAttempts = 3;     // default, range 2-5
-});
-
-builder.Services.AddHonuaWfs(o =>
-{
-    o.BaseAddress = new Uri("https://localhost:5001");
-    o.Timeout = TimeSpan.FromSeconds(30);
-    o.EnableRetry = true;       // default
-    o.MaxRetryAttempts = 3;     // default, range 2-5
-});
-```
-
-Timeout, retry, error, pagination, and endpoint coverage behavior is documented
-in [docs/client-behavior.md](docs/client-behavior.md).
-
-## WFS 2.0 queries
-
-Query features via OGC WFS 2.0 with GeoJSON output:
-
-```csharp
-var caps = await wfsClient.GetCapabilitiesAsync();
-Console.WriteLine($"WFS {caps.Version}: {caps.FeatureTypes.Count} feature types");
-
-var result = await wfsClient.GetFeaturesAsync(new GetFeaturesRequest
-{
-    TypeNames = "parcels",
-    Count = 10,
-    Bbox = new WfsBoundingBox { MinX = -122.5, MinY = 37.5, MaxX = -122.0, MaxY = 38.0 },
-});
-
-foreach (var feature in result.Features)
-    Console.WriteLine($"{feature.Id}: {feature.Properties["name"]}");
-```
-
-Auto-paginate large result sets with `IAsyncEnumerable`:
-
-```csharp
-await foreach (var feature in wfsClient.GetFeaturesAsyncEnumerable(new GetFeaturesRequest
-{
-    TypeNames = "parcels",
-    Count = 100,
-}))
-{
-    Console.WriteLine(feature.Id);
-}
-```
-
-## Admin compatibility checks
-
-`Honua.Sdk.Admin` validates a connected server against
-`GET /api/v1/admin/capabilities`:
-
-```csharp
-var compatibility = await adminClient.CheckCompatibilityAsync();
-
-if (!compatibility.IsSupported)
-{
-    throw new InvalidOperationException(
-        $"Honua Server {compatibility.ServerVersion} is not supported. " +
-        $"Minimum supported version: {compatibility.MinimumSupportedServerVersion}. " +
-        $"{compatibility.UnsupportedReason}");
-}
-```
-
-The current SDK compatibility policy and CI package API gate are documented in
-[docs/compatibility.md](docs/compatibility.md).
-
-## Spec workspace contracts
-
-`Honua.Sdk.Spec` provides the stable client surface for spec validation,
-planning, apply-event streaming, and cancellation:
-
-```csharp
-var document = new SpecDocumentRequest
-{
-    GrammarVersion = "spec/v1",
-    ProcessFamilyVersion = "process/v1",
-    Nodes =
-    [
-        new SpecNodeRequest
-        {
-            Id = "source",
-            Kind = SpecResourceKind.Dataset,
-            Op = "catalog.source"
-        }
-    ]
-};
-
-var plan = await specClient.PlanAsync(document);
-await using var apply = await specClient.ApplyAsync(document);
-await foreach (var evt in apply.Events)
-{
-    Console.WriteLine($"{evt.Sequence}: {evt.Kind}");
-}
-```
-
-Server implementation details stay in `honua-server`; admin editor state and
-local stubs stay in `honua-server-admin`. See
-[docs/spec-workspace-contracts.md](docs/spec-workspace-contracts.md).
-
-## Admin bootstrap flow
-
-For the canonical runnable sample app for this repo's bootstrap and publish
-operator flow, see
-[examples/AdminBootstrapConsole](examples/AdminBootstrapConsole/).
-
-- `CheckCompatibilityAsync()` is the first remote call. It validates server
-  version `0.1.0` or newer, release channel `preview` or newer, control-plane
-  API major `1`, and base path `/api/v1/admin`.
-- Existing connections are reused only when the configured name also matches
-  host, port, database, username, and SSL settings. Same-name connections that
-  point somewhere else fail fast.
-- Existing layers are reused only when the configured service and source table
-  match. The sample enables the layer and union-adds `Grpc` to the current
-  enabled protocol list instead of replacing it.
-- Publishing requires discovery metadata for the geometry column, geometry
-  type, SRID, and a single primary key.
-- Verification uses a bounded `QueryFeaturesAsync()` request with
-  `Where = "1=1"`, `ReturnGeometry = false`, `ResultRecordCount = 3`,
-  `OrderBy = primary key`, and `OutFields` selected from discovery metadata.
+For an overview diagram of the package layering, see
+[docs/architecture.md](docs/architecture.md). For the full doc index, see
+[docs/README.md](docs/README.md).
 
 ## Repository layout
 
 ```
 src/
-  Honua.Sdk.Grpc/          gRPC client package (query, stream, edit)
-  Honua.Sdk.Admin/          Admin + Geocoding client package
-  Honua.Sdk.Spec/           Spec workspace validate/plan/apply client package
-  Honua.Sdk.Field/          Field form, validation, and workflow contracts
-  Honua.Sdk.Wfs/           WFS 2.0 read/query client package
-  Honua.Sdk.GeoServices/   GeoServices FeatureServer read/query client package
-  Honua.Sdk.Scenes/        Scene metadata and package contract client
-  Honua.Sdk.OgcFeatures/   OGC API Features read/query client package
-  Honua.Sdk.OgcRecords/    OGC API Records catalog client package
-  Honua.Sdk.Stac/          STAC catalog/item/search client package
-  Honua.Sdk.Abstractions/  Shared provider-neutral feature query contracts
+  Honua.Sdk.Abstractions/        Shared feature query/edit/stream contracts + offline sync contracts (manifests, sync state, checkpoints, conflicts)
+  Honua.Sdk.Offline/             Offline push/pull planner and sync engine
+  Honua.Sdk.Grpc/                gRPC client package (query, stream, edit)
+  Honua.Sdk.Geometry/            NTS/ProjNet geometry, CRS, planar analysis, geofence
+  Honua.Sdk.Admin/               Admin + Catalog + Geocoding client package
+  Honua.Sdk.Spec/                Spec workspace validate/plan/apply client package
+  Honua.Sdk.Field/               Field form, validation, and workflow contracts
+  Honua.Sdk.GeoServices/         GeoServices FeatureServer + routing client package
+  Honua.Sdk.Scenes/              Scene metadata and offline package contract client
+  Honua.Sdk.OgcFeatures/         OGC API Features + WFS 2.0 read/query/edit client package
+  Honua.Sdk.Catalogs/            OGC API Records + STAC catalog client package
 tests/
-  Honua.Sdk.Grpc.Tests/     gRPC client tests
-  Honua.Sdk.Admin.Tests/    Admin + Geocoding tests
-  Honua.Sdk.Spec.Tests/     Spec workspace contract/client tests
-  Honua.Sdk.Field.Tests/
-  Honua.Sdk.Wfs.Tests/      WFS client tests
-  Honua.Sdk.GeoServices.Tests/
-  Honua.Sdk.Scenes.Tests/
-  Honua.Sdk.OgcFeatures.Tests/
-  Honua.Sdk.OgcRecords.Tests/
-  Honua.Sdk.Stac.Tests/
+  Honua.Sdk.*.Tests/             Unit tests per package
+  Honua.Sdk.IntegrationTests/    Staging-gated read-only protocol coverage
+  Honua.Sdk.BrowserSmoke[.Tests]/ Browser WASM runtime smoke harness
+  DemoSuite.Tests/               Deterministic end-to-end demo workflow tests
 examples/
-  AdminBootstrapConsole/     Canonical console sample for admin bootstrap + gRPC verification
-  FieldDataCollection/       Archived MAUI reference assets; buildable as a marker project
-docs/
-  quickstart.md             5-minute quickstart tutorial
-  scenes.md                 Scene metadata and offline package contract guide
-  staging-integration.md    Staging CI inputs, evidence, and troubleshooting
-third_party/
-  geospatial-grpc/          Vendored proto input from the geospatial-grpc source of truth
+  AdminBootstrapConsole/         Canonical operator/bootstrap sample (admin + gRPC verify)
+  SpecPlanApplyConsole/          Spec validate/plan/apply stream sample
+  RealtimeWorker/                Real-time feature stream worker sample
+  RoutingGeofenceConsole/        Routing + geofence evaluation sample
+  FieldDataCollection/           Archived MAUI reference assets for offline / forms
+docs/                            Per-topic guides (see Documentation below)
+contracts/                       Golden JSON/protobuf fixtures shared with consuming repos
+third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc source of truth
 ```
 
 ## Documentation
+
+- **[Hosted API reference](https://honua-io.github.io/honua-sdk-dotnet/)** -- full DocFX-generated reference for every public type and member, deployed from `trunk`.
+
+### Getting started
+
+- **[Quickstart](docs/quickstart.md)** -- build a console app that queries
+  features through native clients and the shared abstraction, lists services,
+  and geocodes an address in 5 minutes
+- **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
+  policy and server compatibility baseline
+- **[Authentication](docs/authentication.md)** -- credential providers,
+  refresh, HTTPS-only transport, and diagnostics
+- **[Troubleshooting](docs/troubleshooting.md)** -- common errors and fixes
+  for configuration, auth, retry, browser, and compatibility issues
+- **[Browser / WASM support](docs/browser-wasm-support.md)** -- supported
+  surface, gRPC-Web, and known browser-host constraints
+
+### Samples
 
 - **[Admin Bootstrap Console](examples/AdminBootstrapConsole/)** -- the
   canonical sample app for this repo; bootstrap a PostGIS table with
   `Honua.Sdk.Admin`, preserve existing protocols while enabling `Grpc`, verify
   it with a bounded `Honua.Sdk.Grpc` query, and troubleshoot the exact error
   surfaces returned by the sample
-- **[Quickstart](docs/quickstart.md)** -- build a console app that queries
-  features through native clients and the shared abstraction, lists services,
-  and geocodes an address in 5 minutes
-- **[Feature Edits](docs/feature-edits.md)** -- shared edit abstraction,
-  current gRPC support, and provider-specific write backlog boundaries
-- **[Staging Integration Guide](docs/staging-integration.md)** -- staging
-  environment inputs, CI evidence artifacts, common failures, and bounded
-  follow-on tickets for shared staging ownership
-- **[Protocol Integration Tests](docs/protocol-integration-tests.md)** --
-  Testcontainers-backed local protocol coverage plan, fixture contract, and CI
-  setup notes for SDK clients
-- **[Client Behavior](docs/client-behavior.md)** -- timeout, retry, error,
-  pagination, and typed endpoint coverage behavior across packages
-- **[Spec Workspace Contracts](docs/spec-workspace-contracts.md)** -- package
-  ownership, repo boundaries, and JSON fixtures for spec plan/apply contracts
-- **[Scene Metadata And Packages](docs/scenes.md)** -- scene discovery,
-  render endpoint resolution, offline package validation, and the Unreal/Cesium
-  integration spike recommendation
-- **[Mobile Contract Harmonization](docs/mobile-contract-harmonization.md)** --
-  ownership map and fixture baseline for moving reusable mobile contracts to
-  published `Honua.Sdk.*` packages
-- **[Release and NuGet Publishing](docs/release.md)** -- package versioning,
-  release tags, dry runs, and GitHub Packages publishing
-- **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
-  policy and server compatibility baseline
-- **[Backlog cadence](docs/backlog-cadence.md)** -- weekly triage, scope gate,
-  and close hygiene for this repository
-- **[SDK Capability Backlog](docs/sdk-capability-backlog.md)** -- prioritized
-  non-display SDK feature backlog mapped against mature GIS SDK capability
-  areas, plus a separate display/maps approach
 - **[Field Data Collection](examples/FieldDataCollection/)** -- archived MAUI
   reference assets for offline sync and map views
+- **[Demo Suite](docs/demo-suite.md)** -- deterministic end-to-end demo
+  workflows used in CI
+
+### Capability guides
+
+- **[Feature Edits](docs/feature-edits.md)** -- shared edit abstraction,
+  current gRPC support, and provider-specific write backlog boundaries
+- **[Geometry analysis](docs/geometry-analysis.md)** -- NTS/ProjNet-backed
+  geometry, CRS transforms, planar predicates, and spatial indexes
+- **[Geofencing](docs/geofencing.md)** -- evaluation contracts, dwell logic,
+  and geofence sources
+- **[Scene metadata and packages](docs/scenes.md)** -- scene discovery,
+  render endpoint resolution, and offline scene package validation
+- **[Offline sync core](docs/offline-sync-core.md)** -- planner, checkpoints,
+  conflict envelopes, change journals, and storage contracts
+- **[Spec workspace contracts](docs/spec-workspace-contracts.md)** -- package
+  ownership, repo boundaries, and JSON fixtures for spec plan/apply contracts
+- **[Source facade](docs/source-facade.md)** -- source descriptors, protocol
+  aliases, capabilities, and native protocol escape hatches
+- **[Plugin contracts](docs/plugin-contracts.md)** -- host-neutral plugin
+  manifests, permissions, edition gates, and compatibility requirements
+- **[Client behavior](docs/client-behavior.md)** -- timeout, retry, error,
+  pagination, and typed endpoint coverage behavior across packages
+- **[Metadata catalog parity](docs/metadata-catalog-parity.md)** -- discovery,
+  Catalog, Records, and STAC surface comparisons
+
+### Operations
+
+- **[Release and NuGet publishing](docs/release.md)** -- package versioning,
+  release tags, dry runs, and GitHub Packages publishing
+- **[Compatibility](docs/compatibility.md)** -- server matrix and CI API
+  compatibility gate used before publish
+- **[Staging integration guide](docs/staging-integration.md)** -- staging
+  environment inputs, CI evidence artifacts, and bounded follow-on tickets
+- **[Protocol integration tests](docs/protocol-integration-tests.md)** --
+  Testcontainers-backed local protocol coverage and fixture contract
 
 ## License
 

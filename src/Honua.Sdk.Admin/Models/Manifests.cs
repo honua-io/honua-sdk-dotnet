@@ -44,7 +44,7 @@ public sealed class MetadataManifest
 /// <summary>
 /// Request payload for applying a metadata manifest.
 /// </summary>
-public sealed class ManifestApplyRequest
+public sealed record ManifestApplyRequest
 {
     /// <summary>
     /// Resources to apply.

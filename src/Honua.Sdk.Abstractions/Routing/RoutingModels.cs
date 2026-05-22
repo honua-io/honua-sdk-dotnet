@@ -219,7 +219,7 @@ public sealed class RouteSolveOptions
 /// <summary>
 /// Directions request for point-to-point and multi-stop routing.
 /// </summary>
-public sealed class RouteDirectionsRequest
+public sealed record RouteDirectionsRequest
 {
     /// <summary>Origin stop.</summary>
     public required RoutingLocation Origin { get; init; }
@@ -294,7 +294,7 @@ public sealed class RouteOptimizationOptions
 /// <summary>
 /// Optimizes a sequence of stops using best-sequence routing.
 /// </summary>
-public sealed class RouteOptimizationRequest
+public sealed record RouteOptimizationRequest
 {
     /// <summary>Stops to sequence and solve.</summary>
     public required IReadOnlyList<RoutingLocation> Stops { get; init; }
@@ -342,7 +342,7 @@ public sealed class ServiceAreaOptions
 /// <summary>
 /// Service-area / isochrone request centered on one location.
 /// </summary>
-public sealed class ServiceAreaRequest
+public sealed record ServiceAreaRequest
 {
     /// <summary>Center location.</summary>
     public required RoutingLocation Center { get; init; }
@@ -399,7 +399,7 @@ public sealed class ClosestFacilityOptions
 /// <summary>
 /// Finds the nearest facilities for one or more incident locations.
 /// </summary>
-public sealed class ClosestFacilityRequest
+public sealed record ClosestFacilityRequest
 {
     /// <summary>Incident locations.</summary>
     public required IReadOnlyList<RoutingLocation> Incidents { get; init; }

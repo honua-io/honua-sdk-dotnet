@@ -16,13 +16,13 @@ public sealed class BootstrapWorkflow(
     private readonly IHonuaGrpcClient _grpcClient = grpcClient;
     private readonly BootstrapOptions _options = options;
 
-    public async Task<BootstrapRunSummary> RunAsync(TextWriter output, CancellationToken ct = default)
+    public async Task<BootstrapRunSummary> RunAsync(TextWriter output, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(output);
 
         await WriteStepHeaderAsync(output, "Preflight", includeLeadingBlankLine: false);
 
-        var compatibility = await _adminClient.CheckCompatibilityAsync(ct);
+        var compatibility = await _adminClient.CheckCompatibilityAsync(cancellationToken);
         await output.WriteLineAsync(
             $"Server: {_options.ServerUri} | Version: {compatibility.ServerVersion} | Release channel: {compatibility.ReleaseChannel}");
 
@@ -33,12 +33,12 @@ public sealed class BootstrapWorkflow(
 
         await output.WriteLineAsync("Compatibility check passed.");
 
-        var connection = await EnsureConnectionAsync(output, ct);
-        var table = await DiscoverTableAsync(output, connection.Connection.ConnectionId.ToString("D"), ct);
-        var layer = await EnsureLayerAsync(output, connection.Connection.ConnectionId.ToString("D"), table, ct);
-        var configuration = await ConfigureAsync(output, connection.Connection.ConnectionId.ToString("D"), layer.Layer, ct);
+        var connection = await EnsureConnectionAsync(output, cancellationToken);
+        var table = await DiscoverTableAsync(output, connection.Connection.ConnectionId.ToString("D"), cancellationToken);
+        var layer = await EnsureLayerAsync(output, connection.Connection.ConnectionId.ToString("D"), table, cancellationToken);
+        var configuration = await ConfigureAsync(output, connection.Connection.ConnectionId.ToString("D"), layer.Layer, cancellationToken);
         var verificationFields = SelectVerificationFields(table);
-        var verification = await VerifyAsync(output, configuration.Layer, verificationFields, ct);
+        var verification = await VerifyAsync(output, configuration.Layer, verificationFields, cancellationToken);
 
         await WriteStepHeaderAsync(output, "Summary");
         await output.WriteLineAsync(
@@ -66,12 +66,12 @@ public sealed class BootstrapWorkflow(
             configuration.ProtocolsUpdated);
     }
 
-    private async Task<ConnectionOutcome> EnsureConnectionAsync(TextWriter output, CancellationToken ct)
+    private async Task<ConnectionOutcome> EnsureConnectionAsync(TextWriter output, CancellationToken cancellationToken)
     {
         await WriteStepHeaderAsync(output, "Connection");
 
         var request = _options.ToCreateConnectionRequest();
-        var draftTest = await _adminClient.TestDraftConnectionAsync(request, ct);
+        var draftTest = await _adminClient.TestDraftConnectionAsync(request, cancellationToken);
 
         if (!draftTest.IsHealthy)
         {
@@ -83,12 +83,12 @@ public sealed class BootstrapWorkflow(
         await output.WriteLineAsync(
             $"Draft connection test passed for '{_options.ConnectionName}' targeting {_options.DbHost}:{_options.DbPort}/{_options.DbName}.");
 
-        var existing = (await _adminClient.ListConnectionsAsync(ct))
+        var existing = (await _adminClient.ListConnectionsAsync(cancellationToken))
             .FirstOrDefault(connection => string.Equals(connection.Name, _options.ConnectionName, StringComparison.OrdinalIgnoreCase));
 
         if (existing is null)
         {
-            var created = await _adminClient.CreateConnectionAsync(request, ct);
+            var created = await _adminClient.CreateConnectionAsync(request, cancellationToken);
             await output.WriteLineAsync(
                 $"Created connection '{created.Name}' ({created.ConnectionId:D}).");
             return new ConnectionOutcome(created, Created: true);
@@ -104,7 +104,7 @@ public sealed class BootstrapWorkflow(
                 "CreateConnection");
         }
 
-        var health = await _adminClient.TestConnectionAsync(existing.ConnectionId.ToString("D"), ct);
+        var health = await _adminClient.TestConnectionAsync(existing.ConnectionId.ToString("D"), cancellationToken);
         if (!health.IsHealthy)
         {
             throw new HonuaAdminOperationException(
@@ -117,11 +117,11 @@ public sealed class BootstrapWorkflow(
         return new ConnectionOutcome(existing, Created: false);
     }
 
-    private async Task<TableInfo> DiscoverTableAsync(TextWriter output, string connectionId, CancellationToken ct)
+    private async Task<TableInfo> DiscoverTableAsync(TextWriter output, string connectionId, CancellationToken cancellationToken)
     {
         await WriteStepHeaderAsync(output, "Discovery");
 
-        var discovery = await _adminClient.DiscoverTablesAsync(connectionId, ct);
+        var discovery = await _adminClient.DiscoverTablesAsync(connectionId, cancellationToken);
         var table = discovery.Tables.FirstOrDefault(candidate =>
             string.Equals(candidate.Schema, _options.Schema, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(candidate.Table, _options.Table, StringComparison.OrdinalIgnoreCase));
@@ -163,11 +163,11 @@ public sealed class BootstrapWorkflow(
         TextWriter output,
         string connectionId,
         TableInfo table,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         await WriteStepHeaderAsync(output, "Publish");
 
-        var layers = await _adminClient.ListLayersAsync(connectionId, _options.ServiceName, ct);
+        var layers = await _adminClient.ListLayersAsync(connectionId, _options.ServiceName, cancellationToken);
 
         var sameSourceLayer = layers.FirstOrDefault(candidate =>
             string.Equals(candidate.Schema, table.Schema, StringComparison.OrdinalIgnoreCase) &&
@@ -208,7 +208,7 @@ public sealed class BootstrapWorkflow(
             Enabled = true
         };
 
-        var published = await _adminClient.PublishLayerAsync(connectionId, publishRequest, ct);
+        var published = await _adminClient.PublishLayerAsync(connectionId, publishRequest, cancellationToken);
         await output.WriteLineAsync(
             $"Published layer '{published.LayerName}' (layerId={published.LayerId}) to service '{published.ServiceName}'.");
         return new LayerOutcome(published, Published: true);
@@ -218,15 +218,15 @@ public sealed class BootstrapWorkflow(
         TextWriter output,
         string connectionId,
         PublishedLayerSummary layer,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         await WriteStepHeaderAsync(output, "Configure");
 
-        var configuredLayer = await _adminClient.SetLayerEnabledAsync(connectionId, layer.LayerId, true, layer.ServiceName, ct);
+        var configuredLayer = await _adminClient.SetLayerEnabledAsync(connectionId, layer.LayerId, true, layer.ServiceName, cancellationToken);
         await output.WriteLineAsync(
             $"Enabled layer '{configuredLayer.LayerName}' (layerId={configuredLayer.LayerId}) on service '{configuredLayer.ServiceName}'.");
 
-        var serviceSettings = await _adminClient.GetServiceSettingsAsync(configuredLayer.ServiceName, ct);
+        var serviceSettings = await _adminClient.GetServiceSettingsAsync(configuredLayer.ServiceName, cancellationToken);
         var protocolsUpdated = false;
 
         if (!serviceSettings.EnabledProtocols.Contains("Grpc", StringComparer.OrdinalIgnoreCase))
@@ -236,7 +236,7 @@ public sealed class BootstrapWorkflow(
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            serviceSettings = await _adminClient.UpdateProtocolsAsync(configuredLayer.ServiceName, mergedProtocols, ct);
+            serviceSettings = await _adminClient.UpdateProtocolsAsync(configuredLayer.ServiceName, mergedProtocols, cancellationToken);
             protocolsUpdated = true;
             await output.WriteLineAsync(
                 $"Enabled Grpc for service '{configuredLayer.ServiceName}'.");
@@ -254,7 +254,7 @@ public sealed class BootstrapWorkflow(
         TextWriter output,
         PublishedLayerSummary layer,
         IReadOnlyList<string> verificationFields,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         await WriteStepHeaderAsync(output, "Verify");
 
@@ -270,7 +270,7 @@ public sealed class BootstrapWorkflow(
             ReturnGeometry = false,
             ResultRecordCount = 3,
             OrderBy = verificationFields[0]
-        }, ct);
+        }, cancellationToken);
 
         if (response.Features.Count == 0)
         {

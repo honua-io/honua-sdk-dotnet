@@ -64,14 +64,14 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     /// <inheritdoc />
     public async Task<RouteServiceMetadata> GetServiceMetadataAsync(
         RouteServiceMetadataRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var serviceId = ResolveServiceId(request.ServiceId);
         var layerName = ResolveLayerName(request.RouteLayerName, _options.RoutingRouteLayerName);
         var path = BuildNasLayerPath(serviceId, layerName);
-        var body = await GetStringAsync($"{path}?f=json", ct).ConfigureAwait(false);
+        var body = await GetStringAsync($"{path}?f=json", cancellationToken).ConfigureAwait(false);
 
         using var document = JsonDocument.Parse(body);
         var root = document.RootElement;
@@ -99,14 +99,14 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     /// <param name="destination">Destination stop.</param>
     /// <param name="waypoints">Optional intermediate stops.</param>
     /// <param name="options">Routing options.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Route result.</returns>
     public Task<RouteResult> GetDirectionsAsync(
         RoutingLocation origin,
         RoutingLocation destination,
         IReadOnlyList<RoutingLocation>? waypoints = null,
         RouteSolveOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(origin);
         ArgumentNullException.ThrowIfNull(destination);
@@ -119,11 +119,11 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 Waypoints = waypoints,
                 Options = options ?? new RouteSolveOptions(),
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<RouteResult> GetDirectionsAsync(RouteDirectionsRequest request, CancellationToken ct = default)
+    public async Task<RouteResult> GetDirectionsAsync(RouteDirectionsRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Origin);
@@ -147,7 +147,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
         var body = await PostFormAsync(
             BuildNasOperationPath(options.ServiceId, options.RouteLayerName, "solve", _options.RoutingRouteLayerName),
             form,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return RoutingResultParser.ParseRoute(body);
     }
@@ -158,13 +158,13 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     /// <param name="center">Center location.</param>
     /// <param name="travelTime">Travel time break.</param>
     /// <param name="options">Service-area options.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Service-area result.</returns>
     public Task<ServiceAreaResult> GetServiceAreaAsync(
         RoutingLocation center,
         TimeSpan travelTime,
         ServiceAreaOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(center);
 
@@ -175,11 +175,11 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 TravelTime = travelTime,
                 Options = options ?? new ServiceAreaOptions(),
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<ServiceAreaResult> GetServiceAreaAsync(ServiceAreaRequest request, CancellationToken ct = default)
+    public async Task<ServiceAreaResult> GetServiceAreaAsync(ServiceAreaRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Center);
@@ -213,7 +213,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 "solveServiceArea",
                 _options.RoutingServiceAreaLayerName),
             form,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return RoutingResultParser.ParseServiceArea(body);
     }
@@ -224,13 +224,13 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     /// <param name="incidents">Incident locations.</param>
     /// <param name="facilities">Candidate facility locations.</param>
     /// <param name="options">Closest-facility options.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Closest-facility result.</returns>
     public Task<ClosestFacilityResult> FindClosestFacilityAsync(
         IReadOnlyList<RoutingLocation> incidents,
         IReadOnlyList<RoutingLocation> facilities,
         ClosestFacilityOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         return FindClosestFacilityAsync(
             new ClosestFacilityRequest
@@ -239,11 +239,11 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 Facilities = facilities,
                 Options = options ?? new ClosestFacilityOptions(),
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<ClosestFacilityResult> FindClosestFacilityAsync(ClosestFacilityRequest request, CancellationToken ct = default)
+    public async Task<ClosestFacilityResult> FindClosestFacilityAsync(ClosestFacilityRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Incidents);
@@ -276,7 +276,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 "solveClosestFacility",
                 _options.RoutingClosestFacilityLayerName),
             form,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return RoutingResultParser.ParseClosestFacility(body);
     }
@@ -286,12 +286,12 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     /// </summary>
     /// <param name="stops">Stops to sequence and solve.</param>
     /// <param name="options">Optimization options.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Route result.</returns>
     public Task<RouteResult> OptimizeRouteAsync(
         IReadOnlyList<RoutingLocation> stops,
         RouteOptimizationOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         return OptimizeRouteAsync(
             new RouteOptimizationRequest
@@ -299,11 +299,11 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 Stops = stops,
                 Options = options ?? new RouteOptimizationOptions(),
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<RouteResult> OptimizeRouteAsync(RouteOptimizationRequest request, CancellationToken ct = default)
+    public async Task<RouteResult> OptimizeRouteAsync(RouteOptimizationRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Stops);
@@ -317,15 +317,15 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
         var body = await PostFormAsync(
             BuildNasOperationPath(options.ServiceId, options.RouteLayerName, "solve", _options.RoutingRouteLayerName),
             form,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return RoutingResultParser.ParseRoute(body);
     }
 
-    private async Task<string> GetStringAsync(string url, CancellationToken ct)
+    private async Task<string> GetStringAsync(string url, CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
     }
@@ -333,15 +333,15 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     private async Task<string> PostFormAsync(
         string path,
         List<(string Key, string? Value)> parameters,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var content = new FormUrlEncodedContent(
             parameters
                 .Where(parameter => !string.IsNullOrWhiteSpace(parameter.Value))
                 .Select(parameter => new KeyValuePair<string, string>(parameter.Key, parameter.Value!)));
 
-        using var response = await _http.PostAsync(CreateRequestUri(path), content, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(path), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
     }
@@ -903,9 +903,9 @@ public sealed class RouteDirectionsBuilder
     }
 
     /// <summary>Executes the built route solve request.</summary>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Route result.</returns>
-    public Task<RouteResult> ExecuteAsync(CancellationToken ct = default)
+    public Task<RouteResult> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         if (_origin is null)
         {
@@ -917,7 +917,7 @@ public sealed class RouteDirectionsBuilder
             throw new InvalidOperationException("Route destination has not been set.");
         }
 
-        return _client.GetDirectionsAsync(_origin, _destination, _waypoints, _options, ct);
+        return _client.GetDirectionsAsync(_origin, _destination, _waypoints, _options, cancellationToken);
     }
 
     private RouteSolveOptions CopyOptions(

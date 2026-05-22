@@ -44,7 +44,7 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
     /// <inheritdoc />
     public async Task<IReadOnlyList<HonuaSceneSummary>> ListScenesAsync(
         HonuaSceneListRequest? request = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         request ??= new HonuaSceneListRequest();
         var query = new Dictionary<string, string?>
@@ -55,19 +55,19 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
         };
         AddAdditionalParameters(query, request.AdditionalParameters);
 
-        using var response = await SendJsonAsync(ScenePath(), query, ct).ConfigureAwait(false);
+        using var response = await SendJsonAsync(ScenePath(), query, cancellationToken).ConfigureAwait(false);
 
         return HonuaSceneJsonParser.ParseSceneList(response);
     }
 
     /// <inheritdoc />
-    public async Task<HonuaSceneMetadata> GetSceneAsync(string sceneId, CancellationToken ct = default)
+    public async Task<HonuaSceneMetadata> GetSceneAsync(string sceneId, CancellationToken cancellationToken = default)
     {
         var resolvedSceneId = RequireSceneId(sceneId);
         using var response = await SendJsonAsync(
             ScenePath(resolvedSceneId),
             new Dictionary<string, string?> { ["f"] = "json" },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return HonuaSceneJsonParser.ParseSceneMetadata(response);
     }
@@ -76,7 +76,7 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
     public async Task<HonuaSceneResolution> ResolveSceneAsync(
         string sceneId,
         HonuaSceneResolveRequest? request = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         var resolvedSceneId = RequireSceneId(sceneId);
         request ??= new HonuaSceneResolveRequest();
@@ -88,7 +88,7 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
         };
         AddAdditionalParameters(query, request.AdditionalParameters);
 
-        using var response = await SendJsonAsync(ScenePath(resolvedSceneId, "resolve"), query, ct).ConfigureAwait(false);
+        using var response = await SendJsonAsync(ScenePath(resolvedSceneId, "resolve"), query, cancellationToken).ConfigureAwait(false);
 
         var resolution = HonuaSceneJsonParser.ParseSceneResolution(response, resolvedSceneId);
         EnsureCapabilities(resolution.SceneId, resolution.Capabilities, request.RequiredCapabilities);
@@ -148,11 +148,11 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
     private async Task<JsonDocument> SendJsonAsync(
         string relativePath,
         IReadOnlyDictionary<string, string?>? query,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, BuildUri(relativePath, query));
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var raw = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var raw = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {

@@ -3,7 +3,7 @@ using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 using Honua.Sdk.Grpc.Models;
 using Honua.Sdk.OgcFeatures.Models;
-using Honua.Sdk.Wfs.Models;
+using Honua.Sdk.OgcFeatures.Wfs.Models;
 
 namespace Honua.Sdk.IntegrationTests;
 
@@ -23,9 +23,9 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "admin-compatibility",
             "IHonuaAdminClient.CheckCompatibilityAsync",
             "/api/v1/admin/capabilities",
-            async ct =>
+            async cancellationToken =>
             {
-                var compatibility = await _fixture.AdminClient.CheckCompatibilityAsync(ct).ConfigureAwait(false);
+                var compatibility = await _fixture.AdminClient.CheckCompatibilityAsync(cancellationToken).ConfigureAwait(false);
 
                 Assert.True(
                     compatibility.IsSupported,
@@ -42,11 +42,11 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "admin-service-settings",
             "IHonuaAdminClient.GetServiceSettingsAsync",
             $"/api/v1/admin/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/settings",
-            async ct =>
+            async cancellationToken =>
             {
                 var settings = await _fixture.AdminClient.GetServiceSettingsAsync(
                     _fixture.Options.ServiceName,
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 Assert.Equal(_fixture.Options.ServiceName, settings.ServiceName);
                 Assert.Contains(settings.EnabledProtocols, protocol => string.Equals(protocol, "Grpc", StringComparison.OrdinalIgnoreCase));
@@ -68,7 +68,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "grpc-query",
             "IHonuaGrpcClient.QueryFeaturesAsync",
             "grpc://FeatureService/QueryFeatures",
-            async ct =>
+            async cancellationToken =>
             {
                 var response = await _fixture.GrpcClient.QueryFeaturesAsync(
                     new Honua.Sdk.Grpc.Models.QueryFeaturesRequest
@@ -79,7 +79,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
                         ReturnGeometry = false,
                         ResultRecordCount = 3
                     },
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 Assert.InRange(response.Features.Count, 1, 3);
                 Assert.All(response.Features, feature => Assert.Null(feature.Geometry));
@@ -98,9 +98,9 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "wfs-capabilities",
             "IHonuaWfsClient.GetCapabilitiesAsync",
             "/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities",
-            async ct =>
+            async cancellationToken =>
             {
-                var capabilities = await _fixture.WfsClient.GetCapabilitiesAsync(ct).ConfigureAwait(false);
+                var capabilities = await _fixture.WfsClient.GetCapabilitiesAsync(cancellationToken).ConfigureAwait(false);
 
                 Assert.False(string.IsNullOrWhiteSpace(capabilities.Version));
                 Assert.Contains(
@@ -115,7 +115,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "wfs-get-features",
             "IHonuaWfsClient.GetFeaturesAsync",
             "/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature",
-            async ct =>
+            async cancellationToken =>
             {
                 var features = await _fixture.WfsClient.GetFeaturesAsync(
                     new GetFeaturesRequest
@@ -123,7 +123,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
                         TypeNames = _fixture.Options.WfsTypeName,
                         Count = 2
                     },
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 Assert.InRange(features.Features.Count, 1, 2);
 
@@ -143,11 +143,11 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "features-service-info",
             "IHonuaFeatureServerClient.GetServiceInfoAsync",
             $"/rest/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/FeatureServer",
-            async ct =>
+            async cancellationToken =>
             {
                 var serviceInfo = await _fixture.FeatureServerClient.GetServiceInfoAsync(
                     _fixture.Options.ServiceName,
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 Assert.Contains(
                     serviceInfo.Layers ?? [],
@@ -163,7 +163,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "features-query",
             "IHonuaFeatureServerClient.QueryAsync",
             $"/rest/services/{Uri.EscapeDataString(_fixture.Options.ServiceName)}/FeatureServer/{_fixture.Options.LayerId}/query",
-            async ct =>
+            async cancellationToken =>
             {
                 var response = await _fixture.FeatureServerClient.QueryAsync(
                     _fixture.Options.ServiceName,
@@ -174,7 +174,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
                         ReturnGeometry = false,
                         ResultRecordCount = 3
                     },
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 var features = response.Features ?? [];
                 Assert.InRange(features.Count, 1, 3);
@@ -198,7 +198,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "source-facade-query",
             "IHonuaSource.QueryAsync",
             "source://grpc,geoservices-feature-service,wfs,ogc-features",
-            async ct =>
+            async cancellationToken =>
             {
                 var sources = new[]
                 {
@@ -233,7 +233,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
                             ReturnGeometry = false,
                             Limit = 1
                         },
-                        ct).ConfigureAwait(false);
+                        cancellationToken).ConfigureAwait(false);
 
                     Assert.InRange(result.Features.Count, 1, 1);
                     summaries.Add($"{source.Descriptor.Id}:{result.ProviderName}:rows={result.Features.Count}");
@@ -253,9 +253,9 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "ogc-collections",
             "IHonuaOgcFeaturesClient.ListCollectionsAsync",
             "/ogc/features/collections",
-            async ct =>
+            async cancellationToken =>
             {
-                var collections = await _fixture.OgcFeaturesClient.ListCollectionsAsync(ct).ConfigureAwait(false);
+                var collections = await _fixture.OgcFeaturesClient.ListCollectionsAsync(cancellationToken).ConfigureAwait(false);
 
                 Assert.Contains(
                     collections,
@@ -271,7 +271,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "ogc-items",
             "IHonuaOgcFeaturesClient.GetItemsAsync",
             $"/ogc/features/collections/{Uri.EscapeDataString(_fixture.Options.OgcCollectionId)}/items",
-            async ct =>
+            async cancellationToken =>
             {
                 var items = await _fixture.OgcFeaturesClient.GetItemsAsync(
                     _fixture.Options.OgcCollectionId,
@@ -279,7 +279,7 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
                     {
                         Limit = 2
                     },
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 var features = items.Features ?? [];
                 Assert.InRange(features.Count, 1, 2);
@@ -297,14 +297,14 @@ public sealed class StagingReadOnlyIntegrationTests(StagingIntegrationFixture fi
             "ogc-item",
             "IHonuaOgcFeaturesClient.GetItemAsync",
             $"/ogc/features/collections/{Uri.EscapeDataString(_fixture.Options.OgcCollectionId)}/items/{{featureId}}",
-            async ct =>
+            async cancellationToken =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(firstItemId));
 
                 var item = await _fixture.OgcFeaturesClient.GetItemAsync(
                     _fixture.Options.OgcCollectionId,
                     firstItemId!,
-                    ct).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
 
                 Assert.Equal("Feature", item.Type);
                 Assert.True(item.Id.HasValue);

@@ -8,12 +8,15 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// Configuration options for the Honua gRPC client.
 /// </summary>
-public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions
+public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions, Honua.Sdk.Abstractions.IHonuaClientOptions
 {
     /// <summary>
-    /// Address of the Honua gRPC server.
+    /// Base address of the Honua gRPC server. Required; the SDK no longer assumes a
+    /// localhost default so that missing configuration surfaces loudly at
+    /// registration time via the static <see cref="ParseAndValidateAddress"/> check.
+    /// Matches the <c>BaseAddress</c> property exposed by every REST SDK options class.
     /// </summary>
-    public string Address { get; set; } = "https://localhost:5001";
+    public Uri? BaseAddress { get; set; }
 
     /// <summary>
     /// API key for authentication (sent as grpc-metadata header).
@@ -90,28 +93,53 @@ public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
 
     /// <summary>
-    /// Maximum number of retry attempts (including the original call).
-    /// Only used when <see cref="EnableRetry"/> is <c>true</c>. Defaults to 3.
-    /// Must be between 2 and 5 inclusive.
+    /// Maximum number of retry attempts (including the original call). Only used
+    /// when <see cref="EnableRetry"/> is <c>true</c>. Defaults to 3. Must be in
+    /// the inclusive range [2, 5]; the setter throws
+    /// <see cref="ArgumentOutOfRangeException"/> for values outside that range.
     /// </summary>
-    public int MaxRetryAttempts { get; set; } = 3;
-
-    internal static Uri ParseAndValidateAddress(string? address)
+    public int MaxRetryAttempts
     {
-        if (string.IsNullOrWhiteSpace(address))
+        get => _maxRetryAttempts;
+        set
         {
-            throw new InvalidOperationException("Honua gRPC address must be configured.");
+            if (value is < 2 or > 5)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value), value,
+                    "MaxRetryAttempts must be in the inclusive range [2, 5].");
+            }
+            _maxRetryAttempts = value;
+        }
+    }
+
+    private int _maxRetryAttempts = 3;
+
+    internal static Uri ParseAndValidateAddress(HonuaGrpcClientOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.BaseAddress is not { } baseAddress)
+        {
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException(
+                "Honua gRPC address must be configured. Set HonuaGrpcClientOptions.BaseAddress " +
+                "to your Honua server's URL.");
         }
 
-        if (!Uri.TryCreate(address, UriKind.Absolute, out var uri))
+        return ValidateUri(baseAddress);
+    }
+
+    private static Uri ValidateUri(Uri uri)
+    {
+        if (!uri.IsAbsoluteUri)
         {
-            throw new InvalidOperationException("Honua gRPC address must be an absolute URI.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua gRPC address must be an absolute URI.");
         }
 
         if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Honua gRPC address must use HTTP or HTTPS.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua gRPC address must use HTTP or HTTPS.");
         }
 
         return uri;
@@ -121,8 +149,7 @@ public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions
     {
         if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
         {
-            throw new InvalidOperationException(
-                "Honua gRPC timeout must be greater than 10 milliseconds and less than 24 hours.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua gRPC timeout must be greater than 10 milliseconds and less than 24 hours.");
         }
     }
 

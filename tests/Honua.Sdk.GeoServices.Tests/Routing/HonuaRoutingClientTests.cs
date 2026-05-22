@@ -20,11 +20,11 @@ public sealed class HonuaRoutingClientTests
         Dictionary<string, string>? form = null;
         HttpMethod? method = null;
         Uri? uri = null;
-        var client = CreateClient(async (request, ct) =>
+        var client = CreateClient(async (request, cancellationToken) =>
         {
             method = request.Method;
             uri = request.RequestUri;
-            form = await ReadFormAsync(request, ct);
+            form = await ReadFormAsync(request, cancellationToken);
             return JsonResponse("""
             {
               "routes": {
@@ -72,9 +72,9 @@ public sealed class HonuaRoutingClientTests
     public async Task OptimizeRouteAsync_SendsBestSequenceParameters()
     {
         Dictionary<string, string>? form = null;
-        var client = CreateClient(async (request, ct) =>
+        var client = CreateClient(async (request, cancellationToken) =>
         {
-            form = await ReadFormAsync(request, ct);
+            form = await ReadFormAsync(request, cancellationToken);
             return JsonResponse("{}");
         });
 
@@ -101,10 +101,10 @@ public sealed class HonuaRoutingClientTests
     {
         Dictionary<string, string>? form = null;
         Uri? uri = null;
-        var client = CreateClient(async (request, ct) =>
+        var client = CreateClient(async (request, cancellationToken) =>
         {
             uri = request.RequestUri;
-            form = await ReadFormAsync(request, ct);
+            form = await ReadFormAsync(request, cancellationToken);
             return JsonResponse("{}");
         });
 
@@ -125,10 +125,10 @@ public sealed class HonuaRoutingClientTests
     {
         Dictionary<string, string>? form = null;
         Uri? uri = null;
-        var client = CreateClient(async (request, ct) =>
+        var client = CreateClient(async (request, cancellationToken) =>
         {
             uri = request.RequestUri;
-            form = await ReadFormAsync(request, ct);
+            form = await ReadFormAsync(request, cancellationToken);
             return JsonResponse("{}");
         });
 
@@ -177,9 +177,9 @@ public sealed class HonuaRoutingClientTests
     public async Task RouteBuilder_AppliesTrafficRestrictionsBarriersAndLanguage()
     {
         Dictionary<string, string>? form = null;
-        var client = CreateClient(async (request, ct) =>
+        var client = CreateClient(async (request, cancellationToken) =>
         {
-            form = await ReadFormAsync(request, ct);
+            form = await ReadFormAsync(request, cancellationToken);
             return JsonResponse("{}");
         });
 
@@ -255,9 +255,9 @@ public sealed class HonuaRoutingClientTests
                 ["Priority"] = priority.RootElement.Clone(),
             },
         };
-        var client = CreateClient(async (request, ct) =>
+        var client = CreateClient(async (request, cancellationToken) =>
         {
-            form = await ReadFormAsync(request, ct);
+            form = await ReadFormAsync(request, cancellationToken);
             return JsonResponse("{}");
         });
 
@@ -315,9 +315,9 @@ public sealed class HonuaRoutingClientTests
         Content = new StringContent(json, Encoding.UTF8, "application/json"),
     };
 
-    private static async Task<Dictionary<string, string>> ReadFormAsync(HttpRequestMessage request, CancellationToken ct)
+    private static async Task<Dictionary<string, string>> ReadFormAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var body = await request.Content!.ReadAsStringAsync(ct);
+        var body = await request.Content!.ReadAsStringAsync(cancellationToken);
         return body.Split('&', StringSplitOptions.RemoveEmptyEntries)
             .Select(part => part.Split('=', 2))
             .ToDictionary(

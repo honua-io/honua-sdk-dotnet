@@ -1,0 +1,50 @@
+- name: Get started
+  items:
+    - name: Architecture overview
+      href: architecture.md
+    - name: Quickstart
+      href: quickstart.md
+    - name: Install
+      href: ../INSTALL.md
+    - name: Authentication
+      href: authentication.md
+    - name: Troubleshooting
+      href: troubleshooting.md
+    - name: Browser / WASM
+      href: browser-wasm-support.md
+- name: API reference
+  href: api/
+- name: Capability guides
+  items:
+    - name: Client behavior (timeout/retry/error)
+      href: client-behavior.md
+    - name: Feature edits
+      href: feature-edits.md
+    - name: Geometry analysis
+      href: geometry-analysis.md
+    - name: Geofencing
+      href: geofencing.md
+    - name: Scenes
+      href: scenes.md
+    - name: Offline sync core
+      href: offline-sync-core.md
+    - name: Spec workspace contracts
+      href: spec-workspace-contracts.md
+    - name: Source facade
+      href: source-facade.md
+    - name: Plugin contracts
+      href: plugin-contracts.md
+    - name: Metadata catalog parity
+      href: metadata-catalog-parity.md
+- name: Operations
+  items:
+    - name: Release
+      href: release.md
+    - name: Compatibility
+      href: compatibility.md
+    - name: Staging integration
+      href: staging-integration.md
+    - name: Protocol integration tests
+      href: protocol-integration-tests.md
+    - name: Demo suite
+      href: demo-suite.md

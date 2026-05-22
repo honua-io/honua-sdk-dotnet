@@ -27,14 +27,14 @@ public static class VectorPayloadReaders
     /// <param name="stream">Payload stream.</param>
     /// <param name="format">The payload format.</param>
     /// <param name="options">Optional reader settings.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The typed feature collection.</returns>
     public static Task<VectorPayloadFeatureSet> ReadAsync(
         Stream stream,
         VectorPayloadFormat format,
         VectorPayloadReadOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
-        return ForFormat(format).ReadAsync(stream, options, ct);
+        return ForFormat(format).ReadAsync(stream, options, cancellationToken);
     }
 }

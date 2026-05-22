@@ -33,7 +33,7 @@ builder.Services.AddHonuaAdmin(config =>
 });
 builder.Services.AddHonuaGrpc(config =>
 {
-    config.Address = options.ServerUri.ToString();
+    config.BaseAddress = options.ServerUri;
     config.ApiKey = options.ApiKey;
     config.BearerToken = options.BearerToken;
 });

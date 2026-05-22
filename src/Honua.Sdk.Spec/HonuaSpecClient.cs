@@ -31,7 +31,7 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
     }
 
     /// <inheritdoc />
-    public async Task<SpecValidateResponse> ValidateAsync(SpecValidateRequest request, CancellationToken ct = default)
+    public async Task<SpecValidateResponse> ValidateAsync(SpecValidateRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -40,13 +40,13 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
             request,
             SpecJsonContext.Default.SpecValidateRequest,
             SpecJsonContext.Default.SpecValidateResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return response ?? throw new HonuaSpecException(System.Net.HttpStatusCode.OK, "Server returned null validation response.");
     }
 
     /// <inheritdoc />
-    public async Task<SpecPlanResponse> PlanAsync(SpecDocumentRequest request, CancellationToken ct = default)
+    public async Task<SpecPlanResponse> PlanAsync(SpecDocumentRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -55,13 +55,13 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
             request,
             SpecJsonContext.Default.SpecDocumentRequest,
             SpecJsonContext.Default.SpecPlanResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return response ?? throw new HonuaSpecException(System.Net.HttpStatusCode.OK, "Server returned null plan response.");
     }
 
     /// <inheritdoc />
-    public async Task<SpecApplyStream> ApplyAsync(SpecDocumentRequest request, CancellationToken ct = default)
+    public async Task<SpecApplyStream> ApplyAsync(SpecDocumentRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -72,13 +72,13 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
         };
         message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
 
-        var response = await _http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        var response = await _http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         var disposeResponse = true;
         try
         {
             var applyToken = TryGetHeader(response, ApplyTokenHeader);
-            await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
-            var events = ReadApplyEventsAsync(response, ct);
+            await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+            var events = ReadApplyEventsAsync(response, cancellationToken);
             disposeResponse = false;
             return new SpecApplyStream(applyToken, events, response);
         }
@@ -92,7 +92,7 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
     }
 
     /// <inheritdoc />
-    public async Task<SpecCancelResponse> CancelAsync(string applyToken, CancellationToken ct = default)
+    public async Task<SpecCancelResponse> CancelAsync(string applyToken, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(applyToken))
         {
@@ -104,7 +104,7 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
             new SpecCancelRequest { ApplyToken = applyToken },
             SpecJsonContext.Default.SpecCancelRequest,
             SpecJsonContext.Default.SpecCancelResponse,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return response ?? throw new HonuaSpecException(System.Net.HttpStatusCode.OK, "Server returned null cancel response.");
     }
@@ -114,28 +114,28 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
         TRequest requestBody,
         JsonTypeInfo<TRequest> requestTypeInfo,
         JsonTypeInfo<TResponse> responseTypeInfo,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
-        using var response = await _http.PostAsync(CreateRequestUri(url), content, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return JsonSerializer.Deserialize(body, responseTypeInfo);
     }
 
     private static async IAsyncEnumerable<SpecApplyEvent> ReadApplyEventsAsync(
         HttpResponseMessage response,
-        [EnumeratorCancellation] CancellationToken ct)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         try
         {
-            using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var data = new StringBuilder();
 
             while (true)
             {
-                var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+                var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
                 if (line is null)
                 {
                     break;
@@ -183,14 +183,14 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
         }
     }
 
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
+    private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)
         {
             return;
         }
 
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
     }
 

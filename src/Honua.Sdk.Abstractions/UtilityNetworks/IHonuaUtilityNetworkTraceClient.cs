@@ -18,49 +18,49 @@ public interface IHonuaUtilityNetworkTraceClient
     /// Lists named trace configurations advertised by the provider.
     /// </summary>
     /// <param name="request">Trace configuration query.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Named trace configurations that can be referenced by trace requests.</returns>
     Task<IReadOnlyList<UtilityNetworkNamedTraceConfiguration>> GetTraceConfigurationsAsync(
         UtilityNetworkTraceConfigurationQuery request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Traces all elements connected to the request's starting points.
     /// </summary>
     /// <param name="request">Trace request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Trace result data for downstream workflow or display adapters.</returns>
     Task<UtilityNetworkTraceResult> TraceConnectedAsync(
         UtilityNetworkTraceRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Traces upstream from the request's starting points.
     /// </summary>
     /// <param name="request">Trace request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Trace result data for downstream workflow or display adapters.</returns>
     Task<UtilityNetworkTraceResult> TraceUpstreamAsync(
         UtilityNetworkTraceRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Traces downstream from the request's starting points.
     /// </summary>
     /// <param name="request">Trace request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Trace result data for downstream workflow or display adapters.</returns>
     Task<UtilityNetworkTraceResult> TraceDownstreamAsync(
         UtilityNetworkTraceRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Traces the subnetwork reachable from the request's starting points.
     /// </summary>
     /// <param name="request">Trace request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Trace result data for downstream workflow or display adapters.</returns>
     Task<UtilityNetworkTraceResult> TraceSubnetworkAsync(
         UtilityNetworkTraceRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 }

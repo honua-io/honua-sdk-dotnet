@@ -280,10 +280,10 @@ public sealed class HonuaGeofenceEvaluatorTests
     }
 
     private static async IAsyncEnumerable<FeatureStreamEvent> CreateCancellableFeatureEventStream(
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return FeatureEvent(1, x: 14, y: 5);
-        await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
     }
 
     private static FeatureStreamEvent FeatureEvent(long sequenceNumber, double x, double y)

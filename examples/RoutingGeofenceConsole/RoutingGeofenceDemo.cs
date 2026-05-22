@@ -18,7 +18,7 @@ public static class RoutingGeofenceDemo
         string mode,
         string? serviceId = null,
         string? routeLayerName = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(routingClient);
@@ -27,7 +27,7 @@ public static class RoutingGeofenceDemo
         await output.WriteLineAsync($"Routing provider: {routingClient.ProviderName}");
         await output.WriteLineAsync();
 
-        var route = await routingClient.GetDirectionsAsync(CreateDirectionsRequest(serviceId, routeLayerName), ct);
+        var route = await routingClient.GetDirectionsAsync(CreateDirectionsRequest(serviceId, routeLayerName), cancellationToken);
         var routeSummary = route.Routes.Count > 0 ? route.Routes[0] : null;
         await output.WriteLineAsync("Route:");
         await output.WriteLineAsync(
@@ -162,7 +162,7 @@ public sealed class SimulatedRoutingClient : IHonuaRoutingClient
 
     public Task<RouteServiceMetadata> GetServiceMetadataAsync(
         RouteServiceMetadataRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -176,7 +176,7 @@ public sealed class SimulatedRoutingClient : IHonuaRoutingClient
         });
     }
 
-    public Task<RouteResult> GetDirectionsAsync(RouteDirectionsRequest request, CancellationToken ct = default)
+    public Task<RouteResult> GetDirectionsAsync(RouteDirectionsRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -189,12 +189,12 @@ public sealed class SimulatedRoutingClient : IHonuaRoutingClient
             ]));
     }
 
-    public Task<RouteResult> OptimizeRouteAsync(RouteOptimizationRequest request, CancellationToken ct = default)
+    public Task<RouteResult> OptimizeRouteAsync(RouteOptimizationRequest request, CancellationToken cancellationToken = default)
         => throw new NotSupportedException("The simulated routing client only supports directions.");
 
-    public Task<ServiceAreaResult> GetServiceAreaAsync(ServiceAreaRequest request, CancellationToken ct = default)
+    public Task<ServiceAreaResult> GetServiceAreaAsync(ServiceAreaRequest request, CancellationToken cancellationToken = default)
         => throw new NotSupportedException("The simulated routing client only supports directions.");
 
-    public Task<ClosestFacilityResult> FindClosestFacilityAsync(ClosestFacilityRequest request, CancellationToken ct = default)
+    public Task<ClosestFacilityResult> FindClosestFacilityAsync(ClosestFacilityRequest request, CancellationToken cancellationToken = default)
         => throw new NotSupportedException("The simulated routing client only supports directions.");
 }

@@ -15,8 +15,8 @@ using Honua.Sdk.OgcFeatures.Extensions;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Spec.Extensions;
-using Honua.Sdk.Wfs;
-using Honua.Sdk.Wfs.Extensions;
+using Honua.Sdk.OgcFeatures.Wfs;
+using Honua.Sdk.OgcFeatures.Wfs.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.ProtocolIntegration.Tests;
@@ -137,7 +137,7 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
         });
         services.AddHonuaGrpc(options =>
         {
-            options.Address = baseUri.ToString();
+            options.BaseAddress = baseUri;
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });

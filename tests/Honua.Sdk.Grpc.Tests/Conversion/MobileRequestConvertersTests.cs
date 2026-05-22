@@ -56,8 +56,8 @@ public class MobileRequestConvertersTests
         var grpc = MobileRequestConverters.ToGrpcQueryRequest(request);
 
         Assert.Equal(0, grpc.ResultOffset);
-        Assert.Equal(0, grpc.ResultRecordCount);
-        Assert.Equal(string.Empty, grpc.OrderBy);
+        Assert.Null(grpc.ResultRecordCount);
+        Assert.Null(grpc.OrderBy);
         Assert.True(grpc.ReturnGeometry);
     }
 

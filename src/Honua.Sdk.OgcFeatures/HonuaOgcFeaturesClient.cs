@@ -66,54 +66,54 @@ public sealed class HonuaOgcFeaturesClient :
     public FeatureAttachmentCapabilities AttachmentCapabilities => OgcAttachmentCapabilities;
 
     /// <inheritdoc />
-    public async Task<OgcLandingPage> GetLandingPageAsync(CancellationToken ct = default)
+    public async Task<OgcLandingPage> GetLandingPageAsync(CancellationToken cancellationToken = default)
     {
-        var body = await GetStringAsync($"{BasePath}?f=json", ct).ConfigureAwait(false);
+        var body = await GetStringAsync($"{BasePath}?f=json", cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcLandingPage)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize landing page.", body);
     }
 
     /// <inheritdoc />
-    public async Task<OgcConformance> GetConformanceAsync(CancellationToken ct = default)
+    public async Task<OgcConformance> GetConformanceAsync(CancellationToken cancellationToken = default)
     {
-        var body = await GetStringAsync($"{BasePath}/conformance?f=json", ct).ConfigureAwait(false);
+        var body = await GetStringAsync($"{BasePath}/conformance?f=json", cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcConformance)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize conformance.", body);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<OgcCollection>> ListCollectionsAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<OgcCollection>> ListCollectionsAsync(CancellationToken cancellationToken = default)
     {
-        var body = await GetStringAsync($"{BasePath}/collections?f=json", ct).ConfigureAwait(false);
+        var body = await GetStringAsync($"{BasePath}/collections?f=json", cancellationToken).ConfigureAwait(false);
         var response = JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcCollectionsResponse)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize collections.", body);
         return response.Collections?.AsReadOnly() ?? (IReadOnlyList<OgcCollection>)[];
     }
 
     /// <inheritdoc />
-    public async Task<OgcCollection> GetCollectionAsync(string collectionId, CancellationToken ct = default)
+    public async Task<OgcCollection> GetCollectionAsync(string collectionId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}?f=json";
 
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcCollection)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize collection.", body);
     }
 
     /// <inheritdoc />
-    public async Task<OgcQueryables> GetQueryablesAsync(string collectionId, CancellationToken ct = default)
+    public async Task<OgcQueryables> GetQueryablesAsync(string collectionId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/queryables?f=json";
 
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcQueryables)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize queryables.", body);
     }
 
     /// <inheritdoc />
-    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
@@ -124,8 +124,8 @@ public sealed class HonuaOgcFeaturesClient :
                 nameof(descriptor));
         }
 
-        var collection = await GetCollectionAsync(descriptor.Locator.CollectionId, ct).ConfigureAwait(false);
-        var queryables = await TryGetQueryablesAsync(descriptor.Locator.CollectionId, ct).ConfigureAwait(false);
+        var collection = await GetCollectionAsync(descriptor.Locator.CollectionId, cancellationToken).ConfigureAwait(false);
+        var queryables = await TryGetQueryablesAsync(descriptor.Locator.CollectionId, cancellationToken).ConfigureAwait(false);
         return descriptor with
         {
             Capabilities = BuildDiscoveredCapabilities(),
@@ -135,39 +135,39 @@ public sealed class HonuaOgcFeaturesClient :
 
     /// <inheritdoc />
     public async Task<OgcFeatureCollection> GetItemsAsync(
-        string collectionId, OgcItemsParams? query = null, CancellationToken ct = default)
+        string collectionId, OgcItemsParams? query = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
 
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeatureCollection)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize items.", body);
     }
 
     /// <inheritdoc />
     public async Task<FeatureQueryResult> QueryAsync(
-        FeatureQueryRequest request, CancellationToken ct = default)
+        FeatureQueryRequest request, CancellationToken cancellationToken = default)
     {
         var (collectionId, query) = BuildOgcQuery(request);
-        var response = await GetItemsAsync(collectionId, query, ct).ConfigureAwait(false);
+        var response = await GetItemsAsync(collectionId, query, cancellationToken).ConfigureAwait(false);
         return ToFeatureQueryResult(response);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
         FeatureQueryRequest request,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var (collectionId, query) = BuildOgcQuery(request);
-        await foreach (var page in GetItemsPagesAsync(collectionId, query, ct).ConfigureAwait(false))
+        await foreach (var page in GetItemsPagesAsync(collectionId, query, cancellationToken).ConfigureAwait(false))
         {
             yield return ToFeatureQueryResult(page);
         }
     }
 
     /// <inheritdoc />
-    public async Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default)
+    public async Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var collectionId = GetEditCollectionId(request);
@@ -176,25 +176,25 @@ public sealed class HonuaOgcFeaturesClient :
         var addResults = new List<FeatureEditResult>();
         foreach (var feature in request.Adds)
         {
-            addResults.Add(await ApplyAddAsync(collectionId, feature, ct).ConfigureAwait(false));
+            addResults.Add(await ApplyAddAsync(collectionId, feature, cancellationToken).ConfigureAwait(false));
         }
 
         var updateResults = new List<FeatureEditResult>();
         foreach (var feature in request.Updates)
         {
-            updateResults.Add(await ApplyUpdateAsync(collectionId, feature, ct).ConfigureAwait(false));
+            updateResults.Add(await ApplyUpdateAsync(collectionId, feature, cancellationToken).ConfigureAwait(false));
         }
 
         var patchResults = new List<FeatureEditResult>();
         foreach (var patch in request.Patches)
         {
-            patchResults.Add(await ApplyPatchAsync(collectionId, patch, ct).ConfigureAwait(false));
+            patchResults.Add(await ApplyPatchAsync(collectionId, patch, cancellationToken).ConfigureAwait(false));
         }
 
         var deleteResults = new List<FeatureEditResult>();
         foreach (var featureId in ResolveDeleteIds(request))
         {
-            deleteResults.Add(await ApplyDeleteAsync(collectionId, featureId, ct).ConfigureAwait(false));
+            deleteResults.Add(await ApplyDeleteAsync(collectionId, featureId, cancellationToken).ConfigureAwait(false));
         }
 
         return new FeatureEditResponse
@@ -210,93 +210,93 @@ public sealed class HonuaOgcFeaturesClient :
     /// <inheritdoc />
     public Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
         FeatureAttachmentListRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentContent> DownloadAttachmentAsync(
         FeatureAttachmentDownloadRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentResult> AddAttachmentAsync(
         FeatureAttachmentAddRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentResult> UpdateAttachmentAsync(
         FeatureAttachmentUpdateRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentResult> DeleteAttachmentAsync(
         FeatureAttachmentDeleteRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<OgcFeature> GetItemAsync(string collectionId, string featureId, CancellationToken ct = default)
+    public async Task<OgcFeature> GetItemAsync(string collectionId, string featureId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
 
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeature)
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize feature.", body);
     }
 
     /// <inheritdoc />
-    public Task<OgcFeature> CreateItemAsync(string collectionId, OgcFeature feature, CancellationToken ct = default)
+    public Task<OgcFeature> CreateItemAsync(string collectionId, OgcFeature feature, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(feature);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items?f=json";
-        return SendFeatureAsync(HttpMethod.Post, url, feature, ct);
+        return SendFeatureAsync(HttpMethod.Post, url, feature, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<OgcFeature> UpdateItemAsync(string collectionId, string featureId, OgcFeature feature, CancellationToken ct = default)
+    public Task<OgcFeature> UpdateItemAsync(string collectionId, string featureId, OgcFeature feature, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
         ArgumentNullException.ThrowIfNull(feature);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
-        return SendFeatureAsync(HttpMethod.Put, url, feature, ct);
+        return SendFeatureAsync(HttpMethod.Put, url, feature, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<OgcFeature> PatchItemAsync(string collectionId, string featureId, JsonElement patch, CancellationToken ct = default)
+    public Task<OgcFeature> PatchItemAsync(string collectionId, string featureId, JsonElement patch, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
-        return SendMergePatchAsync(url, featureId, patch, ct);
+        return SendMergePatchAsync(url, featureId, patch, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task DeleteItemAsync(string collectionId, string featureId, CancellationToken ct = default)
+    public async Task DeleteItemAsync(string collectionId, string featureId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
 
-        using var response = await _http.DeleteAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.DeleteAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<OgcFeatureCollection> GetItemsPagesAsync(
         string collectionId, OgcItemsParams? query = null,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
 
-        var page = await GetItemsAsync(collectionId, query, ct).ConfigureAwait(false);
+        var page = await GetItemsAsync(collectionId, query, cancellationToken).ConfigureAwait(false);
         yield return page;
 
         while (true)
@@ -311,7 +311,7 @@ public sealed class HonuaOgcFeaturesClient :
 
             ValidateNextLinkOrigin(nextLink.Href);
 
-            var body = await GetStringAsync(nextLink.Href, ct).ConfigureAwait(false);
+            var body = await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
             page = JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeatureCollection)
                 ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize paged items.", body);
 
@@ -326,11 +326,11 @@ public sealed class HonuaOgcFeaturesClient :
 
     /// <inheritdoc />
     public async Task<HttpResponseMessage> GetItemsRawAsync(
-        string collectionId, OgcItemsParams? query = null, CancellationToken ct = default)
+        string collectionId, OgcItemsParams? query = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
-        return await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
+        return await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -338,7 +338,7 @@ public sealed class HonuaOgcFeaturesClient :
         string collectionId,
         OgcItemsParams? query = null,
         VectorPayloadFormat? format = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
 
@@ -346,30 +346,30 @@ public sealed class HonuaOgcFeaturesClient :
         var protocolFormat = OgcFeaturesVectorFormats.ToOgcFeaturesFormat(vectorFormat);
         var vectorQuery = (query ?? new OgcItemsParams()) with { Format = protocolFormat };
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(vectorQuery)}";
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(body));
-        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, ct: ct).ConfigureAwait(false);
+        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
-    private async Task<string> GetStringAsync(string url, CancellationToken ct)
+    private async Task<string> GetStringAsync(string url, CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
     }
 
-    private async Task<OgcFeature> SendFeatureAsync(HttpMethod method, string url, OgcFeature feature, CancellationToken ct)
+    private async Task<OgcFeature> SendFeatureAsync(HttpMethod method, string url, OgcFeature feature, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, url)
         {
             Content = CreateGeoJsonContent(feature)
         };
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
 
         if (string.IsNullOrWhiteSpace(body))
@@ -381,14 +381,14 @@ public sealed class HonuaOgcFeaturesClient :
             ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize edited feature.", body);
     }
 
-    private async Task<OgcFeature> SendMergePatchAsync(string url, string featureId, JsonElement patch, CancellationToken ct)
+    private async Task<OgcFeature> SendMergePatchAsync(string url, string featureId, JsonElement patch, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(HttpMethod.Patch, url)
         {
             Content = CreateMergePatchContent(patch)
         };
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
 
         if (string.IsNullOrWhiteSpace(body))
@@ -556,11 +556,11 @@ public sealed class HonuaOgcFeaturesClient :
         _ => "json",
     };
 
-    private async Task<OgcQueryables?> TryGetQueryablesAsync(string collectionId, CancellationToken ct)
+    private async Task<OgcQueryables?> TryGetQueryablesAsync(string collectionId, CancellationToken cancellationToken)
     {
         try
         {
-            return await GetQueryablesAsync(collectionId, ct).ConfigureAwait(false);
+            return await GetQueryablesAsync(collectionId, cancellationToken).ConfigureAwait(false);
         }
         catch (HonuaOgcFeaturesException ex) when (
             ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.NotImplemented)
@@ -605,10 +605,10 @@ public sealed class HonuaOgcFeaturesClient :
         };
     }
 
-    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken ct)
+    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ct.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         throw new NotSupportedException(UnsupportedAttachmentReason);
     }
 
@@ -863,11 +863,11 @@ public sealed class HonuaOgcFeaturesClient :
         }
     }
 
-    private async Task<FeatureEditResult> ApplyAddAsync(string collectionId, FeatureEditFeature feature, CancellationToken ct)
+    private async Task<FeatureEditResult> ApplyAddAsync(string collectionId, FeatureEditFeature feature, CancellationToken cancellationToken)
     {
         try
         {
-            var response = await CreateItemAsync(collectionId, ToOgcFeature(feature), ct).ConfigureAwait(false);
+            var response = await CreateItemAsync(collectionId, ToOgcFeature(feature), cancellationToken).ConfigureAwait(false);
             return ToFeatureEditResult(response, feature);
         }
         catch (HonuaOgcFeaturesException ex)
@@ -876,13 +876,13 @@ public sealed class HonuaOgcFeaturesClient :
         }
     }
 
-    private async Task<FeatureEditResult> ApplyUpdateAsync(string collectionId, FeatureEditFeature feature, CancellationToken ct)
+    private async Task<FeatureEditResult> ApplyUpdateAsync(string collectionId, FeatureEditFeature feature, CancellationToken cancellationToken)
     {
         var featureId = ResolveFeatureId(feature);
 
         try
         {
-            var response = await UpdateItemAsync(collectionId, featureId, ToOgcFeature(feature, featureId), ct).ConfigureAwait(false);
+            var response = await UpdateItemAsync(collectionId, featureId, ToOgcFeature(feature, featureId), cancellationToken).ConfigureAwait(false);
             return ToFeatureEditResult(response, feature);
         }
         catch (HonuaOgcFeaturesException ex)
@@ -891,13 +891,13 @@ public sealed class HonuaOgcFeaturesClient :
         }
     }
 
-    private async Task<FeatureEditResult> ApplyPatchAsync(string collectionId, FeatureEditPatch patch, CancellationToken ct)
+    private async Task<FeatureEditResult> ApplyPatchAsync(string collectionId, FeatureEditPatch patch, CancellationToken cancellationToken)
     {
         var featureId = ResolveFeatureId(patch);
 
         try
         {
-            var response = await PatchItemAsync(collectionId, featureId, patch.Patch, ct).ConfigureAwait(false);
+            var response = await PatchItemAsync(collectionId, featureId, patch.Patch, cancellationToken).ConfigureAwait(false);
             return ToFeatureEditResult(response, patch);
         }
         catch (HonuaOgcFeaturesException ex)
@@ -906,11 +906,11 @@ public sealed class HonuaOgcFeaturesClient :
         }
     }
 
-    private async Task<FeatureEditResult> ApplyDeleteAsync(string collectionId, string featureId, CancellationToken ct)
+    private async Task<FeatureEditResult> ApplyDeleteAsync(string collectionId, string featureId, CancellationToken cancellationToken)
     {
         try
         {
-            await DeleteItemAsync(collectionId, featureId, ct).ConfigureAwait(false);
+            await DeleteItemAsync(collectionId, featureId, cancellationToken).ConfigureAwait(false);
             return new FeatureEditResult
             {
                 Id = featureId,

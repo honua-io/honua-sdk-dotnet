@@ -303,9 +303,9 @@ public sealed class RasterElevationEnrichmentContractTests
             NativeSurface = "honua-server-enrichment",
         };
 
-        public Task<RasterDatasetMetadata> GetRasterMetadataAsync(RasterMetadataRequest request, CancellationToken ct = default)
+        public Task<RasterDatasetMetadata> GetRasterMetadataAsync(RasterMetadataRequest request, CancellationToken cancellationToken = default)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new RasterDatasetMetadata
             {
                 Source = request.Source,
@@ -325,9 +325,9 @@ public sealed class RasterElevationEnrichmentContractTests
 
         public Task<RasterCoverageStatisticsResponse> GetCoverageStatisticsAsync(
             RasterCoverageStatisticsRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new RasterCoverageStatisticsResponse
             {
                 Source = request.Source,
@@ -345,9 +345,9 @@ public sealed class RasterElevationEnrichmentContractTests
             });
         }
 
-        public Task<ElevationSamplingResponse> SampleElevationAsync(ElevationSamplingRequest request, CancellationToken ct = default)
+        public Task<ElevationSamplingResponse> SampleElevationAsync(ElevationSamplingRequest request, CancellationToken cancellationToken = default)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new ElevationSamplingResponse
             {
                 Source = request.Source,
@@ -361,9 +361,9 @@ public sealed class RasterElevationEnrichmentContractTests
             });
         }
 
-        public Task<EnrichmentMetadata> GetEnrichmentMetadataAsync(EnrichmentMetadataRequest request, CancellationToken ct = default)
+        public Task<EnrichmentMetadata> GetEnrichmentMetadataAsync(EnrichmentMetadataRequest request, CancellationToken cancellationToken = default)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new EnrichmentMetadata
             {
                 Source = request.Source,
@@ -381,9 +381,9 @@ public sealed class RasterElevationEnrichmentContractTests
             });
         }
 
-        public Task<EnrichmentResponse> EnrichAsync(EnrichmentRequest request, CancellationToken ct = default)
+        public Task<EnrichmentResponse> EnrichAsync(EnrichmentRequest request, CancellationToken cancellationToken = default)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new EnrichmentResponse
             {
                 Source = request.Source,

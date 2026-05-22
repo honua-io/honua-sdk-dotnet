@@ -18,6 +18,7 @@ public sealed class HonuaOgcFeaturesAuthHandlerTests
 
         var options = Options.Create(new HonuaOgcFeaturesClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKeyProvider = _ => Task.FromResult<string?>($"ogc-key-{++apiKeyCalls}"),
             BearerTokenProvider = _ => Task.FromResult<string?>($"ogc-token-{++bearerTokenCalls}")
         });

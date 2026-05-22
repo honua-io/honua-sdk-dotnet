@@ -17,7 +17,7 @@ public interface IHonuaOgcFeaturesPatchClient
     /// <param name="collectionId">The collection identifier.</param>
     /// <param name="featureId">The feature identifier.</param>
     /// <param name="patch">JSON Merge Patch payload.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The patched feature representation returned by the server.</returns>
-    Task<OgcFeature> PatchItemAsync(string collectionId, string featureId, JsonElement patch, CancellationToken ct = default);
+    Task<OgcFeature> PatchItemAsync(string collectionId, string featureId, JsonElement patch, CancellationToken cancellationToken = default);
 }

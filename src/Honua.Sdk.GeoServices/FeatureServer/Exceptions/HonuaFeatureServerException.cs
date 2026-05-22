@@ -8,7 +8,7 @@ namespace Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 /// <summary>
 /// Exception thrown when a FeatureServer request fails, including GeoServices 200-with-error responses.
 /// </summary>
-public sealed class HonuaFeatureServerException : Exception
+public sealed class HonuaFeatureServerException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class.

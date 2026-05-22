@@ -21,6 +21,7 @@ public sealed class HonuaSpecClientTests
 
         var options = Options.Create(new HonuaSpecClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKeyProvider = _ => Task.FromResult<string?>($"spec-key-{++apiKeyCalls}"),
             BearerTokenProvider = _ => Task.FromResult<string?>($"spec-token-{++bearerTokenCalls}")
         });

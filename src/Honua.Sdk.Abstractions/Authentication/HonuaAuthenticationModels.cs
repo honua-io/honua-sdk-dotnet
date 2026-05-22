@@ -22,17 +22,17 @@ public enum HonuaAuthenticationTransport
 /// <summary>
 /// Request context passed to production token providers.
 /// </summary>
-public sealed class HonuaAuthenticationRequest
+public sealed record HonuaAuthenticationRequest
 {
     /// <summary>
     /// SDK transport sending the credential.
     /// </summary>
-    public HonuaAuthenticationTransport Transport { get; init; }
+    public required HonuaAuthenticationTransport Transport { get; init; }
 
     /// <summary>
     /// Logical Honua service name, such as admin, wfs, geoservices, ogc-features, scenes, spec, or grpc.
     /// </summary>
-    public string ServiceName { get; init; } = string.Empty;
+    public required string ServiceName { get; init; }
 
     /// <summary>
     /// Optional operation name for request-aware token decisions.

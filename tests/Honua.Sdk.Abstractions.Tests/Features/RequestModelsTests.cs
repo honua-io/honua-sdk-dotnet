@@ -19,7 +19,7 @@ public sealed class RequestModelsTests
 
         Assert.Equal("svc", request.ServiceId);
         Assert.Equal(0, request.LayerId);
-        Assert.Equal("1=1", request.Where);
+        Assert.Null(request.Where);
         Assert.Null(request.ObjectIds);
         Assert.Null(request.OutFields);
         Assert.True(request.ReturnGeometry);

@@ -70,29 +70,29 @@ public sealed class HonuaFeatureServerClient :
         $"/rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer";
 
     /// <inheritdoc />
-    public async Task<FeatureServerServiceInfo> GetServiceInfoAsync(string serviceId, CancellationToken ct = default)
+    public async Task<FeatureServerServiceInfo> GetServiceInfoAsync(string serviceId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         var url = $"{ServicePath(serviceId)}?f=json";
 
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerServiceInfo)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize service info.", body);
     }
 
     /// <inheritdoc />
-    public async Task<FeatureServerLayerInfo> GetLayerInfoAsync(string serviceId, int layerId, CancellationToken ct = default)
+    public async Task<FeatureServerLayerInfo> GetLayerInfoAsync(string serviceId, int layerId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         var url = $"{ServicePath(serviceId)}/{layerId}?f=json";
 
-        var body = await GetStringAsync(url, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerLayerInfo)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize layer info.", body);
     }
 
     /// <inheritdoc />
-    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
@@ -104,7 +104,7 @@ public sealed class HonuaFeatureServerClient :
                 nameof(descriptor));
         }
 
-        var layer = await GetLayerInfoAsync(locator.ServiceId, locator.LayerId.Value, ct).ConfigureAwait(false);
+        var layer = await GetLayerInfoAsync(locator.ServiceId, locator.LayerId.Value, cancellationToken).ConfigureAwait(false);
         return descriptor with
         {
             Capabilities = BuildDiscoveredCapabilities(layer),
@@ -114,20 +114,20 @@ public sealed class HonuaFeatureServerClient :
 
     /// <inheritdoc />
     public async Task<FeatureEditCapabilities> GetEditCapabilitiesAsync(
-        string serviceId, int layerId, CancellationToken ct = default)
+        string serviceId, int layerId, CancellationToken cancellationToken = default)
     {
-        var layer = await GetLayerInfoAsync(serviceId, layerId, ct).ConfigureAwait(false);
+        var layer = await GetLayerInfoAsync(serviceId, layerId, cancellationToken).ConfigureAwait(false);
         return BuildEditCapabilities(layer.Capabilities);
     }
 
     /// <inheritdoc />
     public async Task<FeatureServerQueryResponse> QueryAsync(
-        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default)
+        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
 
-        var body = await ExecuteQueryAsync(serviceId, layerId, BuildQueryParams(query), ct).ConfigureAwait(false);
+        var body = await ExecuteQueryAsync(serviceId, layerId, BuildQueryParams(query), cancellationToken).ConfigureAwait(false);
         return DeserializeQueryResponse(body);
     }
 
@@ -137,7 +137,7 @@ public sealed class HonuaFeatureServerClient :
         int layerId,
         long objectId,
         FeatureServerQueryParams? query = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         var response = await QueryAsync(
             serviceId,
@@ -147,27 +147,27 @@ public sealed class HonuaFeatureServerClient :
                 ObjectIds = [objectId],
                 ResultRecordCount = 1
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return response.Features is { Count: > 0 } features ? features[0] : null;
     }
 
     /// <inheritdoc />
     public async Task<FeatureQueryResult> QueryAsync(
-        FeatureQueryRequest request, CancellationToken ct = default)
+        FeatureQueryRequest request, CancellationToken cancellationToken = default)
     {
         var (serviceId, layerId, query) = BuildFeatureServerQuery(request);
-        var response = await QueryAsync(serviceId, layerId, query, ct).ConfigureAwait(false);
+        var response = await QueryAsync(serviceId, layerId, query, cancellationToken).ConfigureAwait(false);
         return ToFeatureQueryResult(response);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
         FeatureQueryRequest request,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var (serviceId, layerId, query) = BuildFeatureServerQuery(request);
-        await foreach (var page in QueryPagesAsync(serviceId, layerId, query, ct).ConfigureAwait(false))
+        await foreach (var page in QueryPagesAsync(serviceId, layerId, query, cancellationToken).ConfigureAwait(false))
         {
             yield return ToFeatureQueryResult(page);
         }
@@ -178,7 +178,7 @@ public sealed class HonuaFeatureServerClient :
         string serviceId,
         int layerId,
         FeatureServerEditRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(request);
@@ -186,7 +186,7 @@ public sealed class HonuaFeatureServerClient :
 
         var parameters = BuildEditParams(request);
         var basePath = $"{ServicePath(serviceId)}/{layerId}/applyEdits";
-        var body = await PostFormAsync(basePath, parameters, ct).ConfigureAwait(false);
+        var body = await PostFormAsync(basePath, parameters, cancellationToken).ConfigureAwait(false);
         return DeserializeEditResponse(body);
     }
 
@@ -196,7 +196,7 @@ public sealed class HonuaFeatureServerClient :
         int layerId,
         IReadOnlyList<FeatureServerFeature> features,
         bool rollbackOnFailure = true,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(features);
         return ApplyEditsAsync(
@@ -207,7 +207,7 @@ public sealed class HonuaFeatureServerClient :
                 Adds = features,
                 RollbackOnFailure = rollbackOnFailure
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
@@ -216,7 +216,7 @@ public sealed class HonuaFeatureServerClient :
         int layerId,
         IReadOnlyList<FeatureServerFeature> features,
         bool rollbackOnFailure = true,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(features);
         return ApplyEditsAsync(
@@ -227,7 +227,7 @@ public sealed class HonuaFeatureServerClient :
                 Updates = features,
                 RollbackOnFailure = rollbackOnFailure
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
@@ -236,7 +236,7 @@ public sealed class HonuaFeatureServerClient :
         int layerId,
         IReadOnlyList<long> objectIds,
         bool rollbackOnFailure = true,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(objectIds);
         return ApplyEditsAsync(
@@ -247,22 +247,22 @@ public sealed class HonuaFeatureServerClient :
                 Deletes = objectIds,
                 RollbackOnFailure = rollbackOnFailure
             },
-            ct);
+            cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<FeatureEditResponse> ApplyEditsAsync(
-        FeatureEditRequest request, CancellationToken ct = default)
+        FeatureEditRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         EnsureNoPatchEdits(request);
         var (serviceId, layerId) = GetEditSource(request);
-        var objectIdField = await ResolveObjectIdFieldAsync(serviceId, layerId, request, ct).ConfigureAwait(false);
+        var objectIdField = await ResolveObjectIdFieldAsync(serviceId, layerId, request, cancellationToken).ConfigureAwait(false);
         var response = await ApplyEditsAsync(
             serviceId,
             layerId,
             BuildFeatureServerEditRequest(request, objectIdField),
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return ToFeatureEditResponse(response);
     }
@@ -270,12 +270,12 @@ public sealed class HonuaFeatureServerClient :
     /// <inheritdoc />
     public async Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
         FeatureAttachmentListRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var (serviceId, layerId) = GetAttachmentSource(request.Source);
         var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/attachments?f=json";
-        var body = await GetStringAsync(path, ct).ConfigureAwait(false);
+        var body = await GetStringAsync(path, cancellationToken).ConfigureAwait(false);
         var response = JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentQueryResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize attachment response.", body);
 
@@ -291,20 +291,20 @@ public sealed class HonuaFeatureServerClient :
         Justification = "Response ownership is transferred to FeatureAttachmentContent.Content.")]
     public async Task<FeatureAttachmentContent> DownloadAttachmentAsync(
         FeatureAttachmentDownloadRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var (serviceId, layerId) = GetAttachmentSource(request.Source);
         var path = $"{ServicePath(serviceId)}/{layerId}/{request.ObjectId}/attachments/{request.AttachmentId}";
-        var response = await _http.GetAsync(CreateRequestUri(path), HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+        var response = await _http.GetAsync(CreateRequestUri(path), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             response.Dispose();
             EnsureSuccess(response, body);
         }
 
-        var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         var contentType = response.Content.Headers.ContentType?.MediaType;
         var contentLength = response.Content.Headers.ContentLength;
         var contentDispositionName = response.Content.Headers.ContentDisposition?.FileNameStar ??
@@ -328,7 +328,7 @@ public sealed class HonuaFeatureServerClient :
     /// <inheritdoc />
     public async Task<FeatureAttachmentResult> AddAttachmentAsync(
         FeatureAttachmentAddRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var (serviceId, layerId) = GetAttachmentSource(request.Source);
@@ -339,7 +339,7 @@ public sealed class HonuaFeatureServerClient :
             request.Name,
             request.ContentType,
             request.Keywords,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return ToFeatureAttachmentResult(response.AddAttachmentResult)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "FeatureServer did not return addAttachmentResult.");
@@ -348,7 +348,7 @@ public sealed class HonuaFeatureServerClient :
     /// <inheritdoc />
     public async Task<FeatureAttachmentResult> UpdateAttachmentAsync(
         FeatureAttachmentUpdateRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var (serviceId, layerId) = GetAttachmentSource(request.Source);
@@ -359,7 +359,7 @@ public sealed class HonuaFeatureServerClient :
             request.Name,
             request.ContentType,
             request.Keywords,
-            ct,
+            cancellationToken,
             ("attachmentId", request.AttachmentId.ToString(CultureInfo.InvariantCulture))).ConfigureAwait(false);
 
         return ToFeatureAttachmentResult(response.UpdateAttachmentResult)
@@ -369,7 +369,7 @@ public sealed class HonuaFeatureServerClient :
     /// <inheritdoc />
     public async Task<FeatureAttachmentResult> DeleteAttachmentAsync(
         FeatureAttachmentDeleteRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var (serviceId, layerId) = GetAttachmentSource(request.Source);
@@ -380,7 +380,7 @@ public sealed class HonuaFeatureServerClient :
                 ("f", "json"),
                 ("attachmentIds", request.AttachmentId.ToString(CultureInfo.InvariantCulture))
             ],
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         var response = JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentEditResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize delete attachment response.", body);
 
@@ -394,7 +394,7 @@ public sealed class HonuaFeatureServerClient :
 
     /// <inheritdoc />
     public async Task<long> QueryCountAsync(
-        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default)
+        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
@@ -402,14 +402,14 @@ public sealed class HonuaFeatureServerClient :
         var parameters = BuildQueryParams(query);
         parameters.Add(("returnCountOnly", "true"));
 
-        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, ct).ConfigureAwait(false);
+        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, cancellationToken).ConfigureAwait(false);
         var response = DeserializeQueryResponse(body);
         return response.Count ?? 0;
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<long>> QueryIdsAsync(
-        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default)
+        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
@@ -417,14 +417,14 @@ public sealed class HonuaFeatureServerClient :
         var parameters = BuildQueryParams(query);
         parameters.Add(("returnIdsOnly", "true"));
 
-        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, ct).ConfigureAwait(false);
+        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, cancellationToken).ConfigureAwait(false);
         var response = DeserializeQueryResponse(body);
         return response.ObjectIds ?? [];
     }
 
     /// <inheritdoc />
     public async Task<FeatureServerExtent> QueryExtentAsync(
-        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default)
+        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
@@ -432,7 +432,7 @@ public sealed class HonuaFeatureServerClient :
         var parameters = BuildQueryParams(query);
         parameters.Add(("returnExtentOnly", "true"));
 
-        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, ct).ConfigureAwait(false);
+        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, cancellationToken).ConfigureAwait(false);
         var response = DeserializeQueryResponse(body);
         return response.Extent
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Server did not return extent.", body);
@@ -441,7 +441,7 @@ public sealed class HonuaFeatureServerClient :
     /// <inheritdoc />
     public async IAsyncEnumerable<FeatureServerQueryResponse> QueryPagesAsync(
         string serviceId, int layerId, FeatureServerQueryParams query,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
@@ -449,7 +449,7 @@ public sealed class HonuaFeatureServerClient :
         var currentQuery = query;
         while (true)
         {
-            var page = await QueryAsync(serviceId, layerId, currentQuery, ct).ConfigureAwait(false);
+            var page = await QueryAsync(serviceId, layerId, currentQuery, cancellationToken).ConfigureAwait(false);
             yield return page;
 
             var count = currentQuery.ReturnIdsOnly is true
@@ -467,19 +467,19 @@ public sealed class HonuaFeatureServerClient :
 
     /// <inheritdoc />
     public async Task<FeatureServerQueryResponse> QueryStatisticsAsync(
-        string serviceId, int layerId, FeatureServerStatisticsParams query, CancellationToken ct = default)
+        string serviceId, int layerId, FeatureServerStatisticsParams query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
 
         var parameters = BuildStatisticsParams(query);
-        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, ct).ConfigureAwait(false);
+        var body = await ExecuteQueryAsync(serviceId, layerId, parameters, cancellationToken).ConfigureAwait(false);
         return DeserializeQueryResponse(body);
     }
 
     /// <inheritdoc />
     public async Task<FeatureServerValidateSqlResponse> ValidateSqlAsync(
-        string serviceId, int layerId, string where, CancellationToken ct = default)
+        string serviceId, int layerId, string where, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(where);
@@ -491,7 +491,7 @@ public sealed class HonuaFeatureServerClient :
         };
 
         var basePath = $"{ServicePath(serviceId)}/{layerId}/validateSQL";
-        var body = await PostFormAsync(basePath, parameters, ct).ConfigureAwait(false);
+        var body = await PostFormAsync(basePath, parameters, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerValidateSqlResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize validateSQL response.", body);
     }
@@ -502,7 +502,7 @@ public sealed class HonuaFeatureServerClient :
         int layerId,
         FeatureServerQueryParams query,
         VectorPayloadFormat? format = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
@@ -513,15 +513,15 @@ public sealed class HonuaFeatureServerClient :
             serviceId,
             layerId,
             BuildQueryParams(query with { Format = protocolFormat }),
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(body));
-        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, ct: ct).ConfigureAwait(false);
+        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<HttpResponseMessage> QueryRawAsync(
-        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken ct = default)
+        string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
@@ -535,24 +535,24 @@ public sealed class HonuaFeatureServerClient :
         {
             using var content = new FormUrlEncodedContent(
                 parameters.Where(p => p.Value is not null).Select(p => new KeyValuePair<string, string>(p.Key, p.Value!)));
-            return await _http.PostAsync(CreateRequestUri(basePath), content, ct).ConfigureAwait(false);
+            return await _http.PostAsync(CreateRequestUri(basePath), content, cancellationToken).ConfigureAwait(false);
         }
 
-        return await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
+        return await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
-    private async Task<string> GetStringAsync(string url, CancellationToken ct)
+    private async Task<string> GetStringAsync(string url, CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
     }
 
     private async Task<string> ExecuteQueryAsync(
-        string serviceId, int layerId, List<(string Key, string? Value)> parameters, CancellationToken ct)
+        string serviceId, int layerId, List<(string Key, string? Value)> parameters, CancellationToken cancellationToken)
     {
         var basePath = $"{ServicePath(serviceId)}/{layerId}/query";
         var queryString = BuildQueryString(parameters);
@@ -560,20 +560,20 @@ public sealed class HonuaFeatureServerClient :
 
         if (url.Length > PostFallbackThreshold)
         {
-            return await PostFormAsync(basePath, parameters, ct).ConfigureAwait(false);
+            return await PostFormAsync(basePath, parameters, cancellationToken).ConfigureAwait(false);
         }
 
-        return await GetStringAsync(url, ct).ConfigureAwait(false);
+        return await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<string> PostFormAsync(
-        string path, List<(string Key, string? Value)> parameters, CancellationToken ct)
+        string path, List<(string Key, string? Value)> parameters, CancellationToken cancellationToken)
     {
         using var content = new FormUrlEncodedContent(
             parameters.Where(p => p.Value is not null).Select(p => new KeyValuePair<string, string>(p.Key, p.Value!)));
 
-        using var response = await _http.PostAsync(CreateRequestUri(path), content, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(path), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return body;
     }
@@ -588,7 +588,7 @@ public sealed class HonuaFeatureServerClient :
         string name,
         string contentType,
         string? keywords,
-        CancellationToken ct,
+        CancellationToken cancellationToken,
         params (string Key, string Value)[] extraParameters)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -613,8 +613,8 @@ public sealed class HonuaFeatureServerClient :
         attachment.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
         form.Add(attachment, "attachment", name);
 
-        using var response = await _http.PostAsync(CreateRequestUri(path), form, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.PostAsync(CreateRequestUri(path), form, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, body);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentEditResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize attachment edit response.", body);
@@ -1147,14 +1147,14 @@ public sealed class HonuaFeatureServerClient :
         string serviceId,
         int layerId,
         FeatureEditRequest request,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         if (!request.Updates.Any(HasFeatureObjectId))
         {
             return null;
         }
 
-        var layer = await GetLayerInfoAsync(serviceId, layerId, ct).ConfigureAwait(false);
+        var layer = await GetLayerInfoAsync(serviceId, layerId, cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(layer.ObjectIdField))
         {
             throw new InvalidOperationException(

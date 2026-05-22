@@ -9,7 +9,7 @@ namespace Honua.Sdk.Admin.Models;
 /// <summary>
 /// Request payload for scanning a migration source inventory.
 /// </summary>
-public sealed class MigrationInventoryScanRequest
+public sealed record MigrationInventoryScanRequest
 {
     /// <summary>
     /// Source family or alias, such as <c>geoserver</c> or <c>geoservices</c>.

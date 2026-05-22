@@ -2,6 +2,62 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.0.0] - 2026-05-21
+
+First stable release of the Honua .NET SDK. Subsequent releases follow standard
+SemVer; breaking changes will be gated behind a major bump.
+
+### Public surface
+
+* Twelve packages under one umbrella: install `Honua.Sdk` and call
+  `AddHonua(o => o.BaseAddress = ...)` to register every enabled sub-package,
+  or depend on the narrower `Honua.Sdk.*` packages directly for tighter
+  transitive graphs.
+* Every exception type derives from `Honua.Sdk.Abstractions.HonuaException`;
+  misconfiguration is surfaced at registration time via
+  `HonuaConfigurationException` rather than silently dialing
+  `http://localhost`.
+* `IHonuaAdminClient` is split into twelve role-segregated sub-interfaces
+  (Services, Layers, Connections, Styles, Metadata, Compatibility, Manifest,
+  Config, Identity, License, Observability, Deploy) for ISP-clean consumer
+  surfaces. The aggregate interface remains as a convenience.
+* `IHonuaStacClient` exposes a typed surface plus `IHonuaStacRawClient` with
+  raw `JsonDocument` / `HttpResponseMessage` escape hatches for catalog
+  extensions the typed surface does not yet model.
+
+### Breaking changes
+
+* REST and gRPC clients require an explicit `BaseAddress`; there is no
+  baked-in `localhost` default.
+* `HonuaClientOptions.MaxRetryAttempts` throws `ArgumentOutOfRangeException`
+  when the value falls outside `[2, 5]`.
+* Request DTOs (`QueryFeaturesRequest`, `ApplyEditsRequest`,
+  `GetFeaturesRequest`, and roughly twenty Admin request types) are
+  `sealed record` with `init`-only properties and `required` modifiers on
+  identifying fields. Footgun defaults (`Where = "1=1"`, `OrderBy = ""`,
+  `ResultRecordCount = 0`) are gone.
+* `IHonuaGrpcClient` no longer extends `IDisposable` (the concrete
+  `HonuaGrpcClient` still is). gRPC options expose only `BaseAddress` (`Uri`);
+  the legacy `Address` string property has been removed.
+* Cancellation parameters are uniformly named `cancellationToken` across
+  every public API, matching the .NET Framework Design Guidelines.
+
+### Packaging and build
+
+* Central Package Management via `Directory.Packages.props`; the .NET SDK is
+  pinned via `global.json` to `10.0.100` with `allowPrerelease: false`.
+* Coverage gate at 30% line / 20% branch (measured coverage is 84% line /
+  69% branch).
+* NuGet signing required on release tags.
+* CycloneDX SBOM emitted per package on release.
+* CodeQL and dependency vulnerability audit run on every PR.
+
+### Documentation
+
+* Hosted DocFX API reference at
+  <https://honua-io.github.io/honua-sdk-dotnet/>, deployed by
+  `.github/workflows/docs.yml`.
+
 ## [0.1.17-alpha.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v0.1.16-alpha.1...dotnet-sdk-v0.1.17-alpha.1) (2026-05-20)
 
 

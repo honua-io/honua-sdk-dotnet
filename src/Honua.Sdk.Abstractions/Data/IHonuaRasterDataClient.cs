@@ -18,17 +18,17 @@ public interface IHonuaRasterDataClient
     /// Gets raster dataset metadata.
     /// </summary>
     /// <param name="request">Metadata discovery request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Raster dataset metadata.</returns>
-    Task<RasterDatasetMetadata> GetRasterMetadataAsync(RasterMetadataRequest request, CancellationToken ct = default);
+    Task<RasterDatasetMetadata> GetRasterMetadataAsync(RasterMetadataRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Computes raster coverage statistics for an extent or area of interest.
     /// </summary>
     /// <param name="request">Coverage statistics request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Raster coverage statistics response.</returns>
     Task<RasterCoverageStatisticsResponse> GetCoverageStatisticsAsync(
         RasterCoverageStatisticsRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 }

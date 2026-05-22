@@ -94,7 +94,7 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
         }
     }
 
-    private async Task TryDeleteAsync(long objectId, CancellationToken ct)
+    private async Task TryDeleteAsync(long objectId, CancellationToken cancellationToken)
     {
         try
         {
@@ -103,7 +103,7 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
                 _fixture.Options.LayerId,
                 [objectId],
                 rollbackOnFailure: true,
-                ct).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
         }
         catch
         {
