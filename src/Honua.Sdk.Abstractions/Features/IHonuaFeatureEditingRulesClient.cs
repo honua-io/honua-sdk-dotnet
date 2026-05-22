@@ -22,49 +22,49 @@ public interface IHonuaFeatureEditingRulesClient
     /// Gets structured editing-rule metadata for a source.
     /// </summary>
     /// <param name="request">Editing-rule metadata request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Editing-rule metadata advertised by the provider.</returns>
     Task<FeatureEditingRulesMetadata> GetEditingRulesAsync(
         FeatureEditingRulesRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Validates edits without necessarily committing them.
     /// </summary>
     /// <param name="request">Validation request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Validation findings from client-safe rules or the provider.</returns>
     Task<FeatureEditValidationResponse> ValidateEditsAsync(
         FeatureEditValidationRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Starts a branch or version-aware edit session.
     /// </summary>
     /// <param name="request">Edit session start request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Edit session context for subsequent validation or apply requests.</returns>
     Task<FeatureEditSession> StartEditSessionAsync(
         FeatureEditSessionStartRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Commits a branch or version-aware edit session.
     /// </summary>
     /// <param name="request">Edit session completion request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the provider commits the session.</returns>
     Task CommitEditSessionAsync(
         FeatureEditSessionCompleteRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Rolls back a branch or version-aware edit session.
     /// </summary>
     /// <param name="request">Edit session completion request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task that completes when the provider rolls back the session.</returns>
     Task RollbackEditSessionAsync(
         FeatureEditSessionCompleteRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 }

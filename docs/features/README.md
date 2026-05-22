@@ -19,8 +19,7 @@ This repository owns official .NET client libraries and shared host-neutral cont
 - Admin and catalog clients: `src/Honua.Sdk.Admin/`
 - Spec client: `src/Honua.Sdk.Spec/`
 - Scene client: `src/Honua.Sdk.Scenes/`
-- OGC Records client: `src/Honua.Sdk.OgcRecords/`
-- STAC client: `src/Honua.Sdk.Stac/`
+- OGC Records + STAC catalog client: `src/Honua.Sdk.Catalogs/`
 - Offline and field packages: `src/Honua.Sdk.Offline*`, `src/Honua.Sdk.Field/`
 - Examples: `examples/`
 - Compatibility and release docs: `docs/compatibility.md`, `docs/release.md`

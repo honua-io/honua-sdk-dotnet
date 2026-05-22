@@ -141,11 +141,11 @@ public sealed class FeatureStreamEventBuffer : IDisposable
     /// Writes an event, waiting for capacity when the mode is <see cref="FeatureStreamBackpressureMode.Wait"/>.
     /// </summary>
     /// <param name="featureEvent">Event to write.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Write result.</returns>
     public async ValueTask<FeatureStreamBufferWriteResult> WriteAsync(
         FeatureStreamEvent featureEvent,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(featureEvent);
 
@@ -160,7 +160,7 @@ public sealed class FeatureStreamEventBuffer : IDisposable
             return SequenceRejected(sequenceResult);
         }
 
-        await _space.WaitAsync(ct).ConfigureAwait(false);
+        await _space.WaitAsync(cancellationToken).ConfigureAwait(false);
         lock (_gate)
         {
             if (_completed)
@@ -186,14 +186,14 @@ public sealed class FeatureStreamEventBuffer : IDisposable
     /// <summary>
     /// Reads buffered events until the buffer is completed or cancellation is requested.
     /// </summary>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Buffered events.</returns>
     public async IAsyncEnumerable<FeatureStreamEvent> ReadAllAsync(
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         while (true)
         {
-            await _items.WaitAsync(ct).ConfigureAwait(false);
+            await _items.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             FeatureStreamEvent? featureEvent = null;
             var completeAfterYield = false;

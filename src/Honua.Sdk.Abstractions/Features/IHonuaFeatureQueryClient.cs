@@ -17,15 +17,15 @@ public interface IHonuaFeatureQueryClient
     /// Executes a feature query and returns a single result page.
     /// </summary>
     /// <param name="request">Provider-neutral query request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A provider-neutral result page.</returns>
-    Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken ct = default);
+    Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a feature query and returns provider-neutral result pages.
     /// </summary>
     /// <param name="request">Provider-neutral query request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral result pages.</returns>
-    IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(FeatureQueryRequest request, CancellationToken ct = default);
+    IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(FeatureQueryRequest request, CancellationToken cancellationToken = default);
 }

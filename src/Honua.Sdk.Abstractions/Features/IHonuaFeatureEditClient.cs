@@ -22,7 +22,7 @@ public interface IHonuaFeatureEditClient
     /// Applies add, update, and delete feature edits.
     /// </summary>
     /// <param name="request">Provider-neutral edit request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral edit response.</returns>
-    Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default);
+    Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default);
 }

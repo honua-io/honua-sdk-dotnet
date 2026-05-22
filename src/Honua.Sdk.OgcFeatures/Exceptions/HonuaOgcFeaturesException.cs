@@ -8,7 +8,7 @@ namespace Honua.Sdk.OgcFeatures.Exceptions;
 /// <summary>
 /// Exception thrown when an OGC API Features request fails, including RFC 7807 Problem Details responses.
 /// </summary>
-public sealed class HonuaOgcFeaturesException : Exception
+public sealed class HonuaOgcFeaturesException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaOgcFeaturesException"/> class.

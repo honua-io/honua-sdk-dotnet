@@ -8,7 +8,7 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// Exception thrown when a gRPC call to the Honua server fails.
 /// </summary>
-public sealed class HonuaGrpcException : Exception
+public sealed class HonuaGrpcException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Creates a new gRPC exception.

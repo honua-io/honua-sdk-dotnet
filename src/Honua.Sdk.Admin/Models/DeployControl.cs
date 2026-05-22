@@ -200,19 +200,19 @@ public sealed class DeployPreflightDatabaseCompatibility
 /// <summary>
 /// Request model for creating a deploy plan.
 /// </summary>
-public sealed class CreateDeployPlanRequest
+public sealed record CreateDeployPlanRequest
 {
     /// <summary>
     /// Deploy target identifier.
     /// </summary>
     [JsonPropertyName("targetId")]
-    public string TargetId { get; init; } = string.Empty;
+    public required string TargetId { get; init; }
 
     /// <summary>
     /// Desired target revision.
     /// </summary>
     [JsonPropertyName("desiredRevision")]
-    public string DesiredRevision { get; init; } = string.Empty;
+    public required string DesiredRevision { get; init; }
 
     /// <summary>
     /// Optional current revision.
@@ -398,19 +398,19 @@ public sealed class DeployBackendCapabilities
 /// <summary>
 /// Request model for creating a deploy operation.
 /// </summary>
-public sealed class CreateDeployOperationRequest
+public sealed record CreateDeployOperationRequest
 {
     /// <summary>
     /// Deploy target identifier.
     /// </summary>
     [JsonPropertyName("targetId")]
-    public string TargetId { get; init; } = string.Empty;
+    public required string TargetId { get; init; }
 
     /// <summary>
     /// Desired target revision.
     /// </summary>
     [JsonPropertyName("desiredRevision")]
-    public string DesiredRevision { get; init; } = string.Empty;
+    public required string DesiredRevision { get; init; }
 
     /// <summary>
     /// Optional current revision.
@@ -458,7 +458,7 @@ public sealed class CreateDeployOperationRequest
 /// <summary>
 /// Request model for submitting or approving a deploy operation.
 /// </summary>
-public sealed class SubmitDeployOperationRequest
+public sealed record SubmitDeployOperationRequest
 {
     /// <summary>
     /// Optional operator reason for submitting the operation.
@@ -470,7 +470,7 @@ public sealed class SubmitDeployOperationRequest
 /// <summary>
 /// Request model for rolling back a deploy operation.
 /// </summary>
-public sealed class RollbackDeployOperationRequest
+public sealed record RollbackDeployOperationRequest
 {
     /// <summary>
     /// Optional operator reason for requesting rollback.

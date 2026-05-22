@@ -9,15 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Honua.Sdk.Abstractions\Honua.Sdk.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Honua.Sdk.Field\Honua.Sdk.Field.csproj" />
-    <ProjectReference Include="..\..\src\Honua.Sdk.Offline.Abstractions\Honua.Sdk.Offline.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

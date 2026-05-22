@@ -61,7 +61,7 @@ public sealed class HonuaGrpcClient :
         ArgumentNullException.ThrowIfNull(options);
 
         var opts = options.Value;
-        var address = HonuaGrpcClientOptions.ParseAndValidateAddress(opts.Address);
+        var address = HonuaGrpcClientOptions.ParseAndValidateAddress(opts);
         HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
         ValidateAuthenticationTransport(opts, address);
 
@@ -127,7 +127,7 @@ public sealed class HonuaGrpcClient :
     public FeatureAttachmentCapabilities AttachmentCapabilities => GrpcAttachmentCapabilities;
 
     /// <inheritdoc />
-    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken ct = default)
+    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(descriptor);
 
@@ -148,7 +148,7 @@ public sealed class HonuaGrpcClient :
                 ReturnGeometry = false,
                 ResultRecordCount = 0,
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
         var extentResponse = await QueryFeaturesAsync(
             new Models.QueryFeaturesRequest
             {
@@ -158,7 +158,7 @@ public sealed class HonuaGrpcClient :
                 ReturnGeometry = false,
                 ReturnExtentOnly = true,
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return descriptor with
         {
@@ -169,19 +169,19 @@ public sealed class HonuaGrpcClient :
 
     /// <inheritdoc />
     public async Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
-        Models.QueryFeaturesRequest request, CancellationToken ct = default)
+        Models.QueryFeaturesRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
         try
         {
-            var metadata = await BuildMetadataAsync("QueryFeatures", ct).ConfigureAwait(false);
+            var metadata = await BuildMetadataAsync("QueryFeatures", cancellationToken).ConfigureAwait(false);
             var protoResponse = await _client.QueryFeaturesAsync(
                 protoRequest,
                 metadata,
                 deadline: CreateDeadline(),
-                cancellationToken: ct);
+                cancellationToken: cancellationToken);
             return ProtoAdapter.FromProtoResponse(protoResponse);
         }
         catch (RpcException ex)
@@ -192,19 +192,19 @@ public sealed class HonuaGrpcClient :
 
     /// <inheritdoc />
     public async Task<FeatureQueryResult> QueryAsync(
-        FeatureQueryRequest request, CancellationToken ct = default)
+        FeatureQueryRequest request, CancellationToken cancellationToken = default)
     {
         var grpcRequest = BuildGrpcQuery(request);
-        var response = await QueryFeaturesAsync(grpcRequest, ct).ConfigureAwait(false);
+        var response = await QueryFeaturesAsync(grpcRequest, cancellationToken).ConfigureAwait(false);
         return ToFeatureQueryResult(response, grpcRequest.ReturnCountOnly);
     }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(
         FeatureQueryRequest request,
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var page in QueryFeaturesStreamAsync(BuildGrpcQuery(request), ct).ConfigureAwait(false))
+        await foreach (var page in QueryFeaturesStreamAsync(BuildGrpcQuery(request), cancellationToken).ConfigureAwait(false))
         {
             yield return ToFeatureQueryResult(page);
         }
@@ -212,19 +212,19 @@ public sealed class HonuaGrpcClient :
 
     /// <inheritdoc />
     public async Task<Models.ApplyEditsResponse> ApplyEditsAsync(
-        Models.ApplyEditsRequest request, CancellationToken ct = default)
+        Models.ApplyEditsRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
         try
         {
-            var metadata = await BuildMetadataAsync("ApplyEdits", ct).ConfigureAwait(false);
+            var metadata = await BuildMetadataAsync("ApplyEdits", cancellationToken).ConfigureAwait(false);
             var protoResponse = await _client.ApplyEditsAsync(
                 protoRequest,
                 metadata,
                 deadline: CreateDeadline(),
-                cancellationToken: ct);
+                cancellationToken: cancellationToken);
             return ProtoAdapter.FromProtoApplyEditsResponse(protoResponse);
         }
         catch (RpcException ex)
@@ -235,55 +235,55 @@ public sealed class HonuaGrpcClient :
 
     /// <inheritdoc />
     public async Task<FeatureEditResponse> ApplyEditsAsync(
-        FeatureEditRequest request, CancellationToken ct = default)
+        FeatureEditRequest request, CancellationToken cancellationToken = default)
     {
-        var response = await ApplyEditsAsync(BuildGrpcEditRequest(request), ct).ConfigureAwait(false);
+        var response = await ApplyEditsAsync(BuildGrpcEditRequest(request), cancellationToken).ConfigureAwait(false);
         return ToFeatureEditResponse(response);
     }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
         FeatureAttachmentListRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentContent> DownloadAttachmentAsync(
         FeatureAttachmentDownloadRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentResult> AddAttachmentAsync(
         FeatureAttachmentAddRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentResult> UpdateAttachmentAsync(
         FeatureAttachmentUpdateRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
     public Task<FeatureAttachmentResult> DeleteAttachmentAsync(
         FeatureAttachmentDeleteRequest request,
-        CancellationToken ct = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, ct);
+        CancellationToken cancellationToken = default)
+        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<Models.FeaturePage> QueryFeaturesStreamAsync(
-        Models.QueryFeaturesRequest request, [EnumeratorCancellation] CancellationToken ct = default)
+        Models.QueryFeaturesRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
-        var metadata = await BuildMetadataAsync("QueryFeaturesStream", ct).ConfigureAwait(false);
+        var metadata = await BuildMetadataAsync("QueryFeaturesStream", cancellationToken).ConfigureAwait(false);
         var call = _client.QueryFeaturesStream(
             protoRequest,
             metadata,
             deadline: CreateDeadline(),
-            cancellationToken: ct);
+            cancellationToken: cancellationToken);
         try
         {
             while (true)
@@ -291,7 +291,7 @@ public sealed class HonuaGrpcClient :
                 Proto.FeaturePage protoPage;
                 try
                 {
-                    if (!await call.ResponseStream.MoveNext(ct).ConfigureAwait(false))
+                    if (!await call.ResponseStream.MoveNext(cancellationToken).ConfigureAwait(false))
                     {
                         yield break;
                     }
@@ -329,7 +329,7 @@ public sealed class HonuaGrpcClient :
 
         if (opts.EnableRetry)
         {
-            var maxAttempts = Math.Clamp(opts.MaxRetryAttempts, 2, 5);
+            var maxAttempts = opts.MaxRetryAttempts;
 
             serviceConfig.MethodConfigs.Add(new MethodConfig
             {
@@ -409,7 +409,7 @@ public sealed class HonuaGrpcClient :
 
         if (HonuaGrpcClientOptions.RequiresHttpsForAuthentication(address))
         {
-            throw new InvalidOperationException(
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException(
                 "Refusing to send gRPC credentials over an insecure connection. Use HTTPS, " +
                 "or use loopback HTTP only for local development.");
         }
@@ -436,7 +436,7 @@ public sealed class HonuaGrpcClient :
             return originalAddress;
         }
 
-        throw new InvalidOperationException(
+        throw new Honua.Sdk.Abstractions.HonuaConfigurationException(
             "Honua gRPC preconfigured channel target must expose an HTTP or HTTPS address when credentials are configured.");
     }
 
@@ -465,10 +465,10 @@ public sealed class HonuaGrpcClient :
         };
     }
 
-    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken ct)
+    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ct.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         throw new NotSupportedException(UnsupportedAttachmentReason);
     }
 
@@ -519,14 +519,14 @@ public sealed class HonuaGrpcClient :
         {
             ServiceId = request.Source.ServiceId,
             LayerId = request.Source.LayerId.Value,
-            Where = request.Filter ?? "1=1",
+            Where = request.Filter,
             ObjectIds = ResolveObjectIds(request),
             OutFields = request.OutFields,
             ReturnGeometry = request.ReturnGeometry ?? true,
             OutSr = ParseSpatialReference(request.OutputCrs),
             ResultOffset = request.Offset ?? 0,
-            ResultRecordCount = request.Limit ?? 0,
-            OrderBy = request.OrderBy ?? string.Empty,
+            ResultRecordCount = request.Limit,
+            OrderBy = request.OrderBy,
             ReturnDistinct = request.ReturnDistinct ?? false,
             ReturnCountOnly = request.ReturnCountOnly ?? false,
             ReturnIdsOnly = request.ReturnIdsOnly ?? false,

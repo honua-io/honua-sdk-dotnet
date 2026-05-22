@@ -14,7 +14,7 @@ seconds, matching the .NET `HttpClient` default. The value must be greater than
 ```csharp
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.Address = "https://localhost:5001";
+    options.BaseAddress = new Uri("https://localhost:5001");
     options.Timeout = TimeSpan.FromSeconds(30);
 });
 
@@ -60,12 +60,12 @@ right failure surface without parsing strings.
 | `Honua.Sdk.Admin` | `HonuaAdminApiException` | Non-success HTTP status codes. Includes status code and response body. |
 | `Honua.Sdk.Admin` | `HonuaAdminOperationException` | Successful HTTP responses that fail the expected Admin contract, such as null envelopes or compatibility failures. |
 | `Honua.Sdk.Spec` | `HonuaSpecException` | Non-success spec REST responses, including structured problem-details payloads. |
-| `Honua.Sdk.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
+| `Honua.Sdk.OgcFeatures.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
 | `Honua.Sdk.Scenes` | `HonuaSceneException` | HTTP failures, invalid scene JSON, malformed scene contracts, and missing required scene capabilities. |
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
-| `Honua.Sdk.OgcRecords` | `HonuaOgcRecordsException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
-| `Honua.Sdk.Stac` | `HonuaStacException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
+| `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`) | `HonuaOgcRecordsException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
+| `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Stac`) | `HonuaStacException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code. |
 
 `ArgumentNullException`, `ArgumentException`, `InvalidOperationException`, and
@@ -114,14 +114,14 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
-| `Honua.Sdk.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
+| `Honua.Sdk.OgcFeatures.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
 | `Honua.Sdk.Scenes` | Scene list, scene metadata detail, render endpoint resolution, access envelopes, attribution metadata, and offline scene package manifest parsing/validation. |
 | `Honua.Sdk.Field` | Provider-neutral form definitions, source-schema-to-form mapping, field validation, visibility rules, calculated fields, duplicate detection contracts, and record workflow transitions. No transport or display behavior. |
 | `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, CRS parsing/projection, planar geometry analysis helpers, and host-neutral geofence evaluation. |
 | `Honua.Sdk.OgcFeatures` | Landing page, conformance, collections, collection details, queryables, items, item by ID, raw item responses, next-link pagination, and create/update/patch/delete edits. |
-| `Honua.Sdk.OgcRecords` | Records landing page, conformance, record collections, collection details, record search, record detail, raw JSON access, query filters, and same-origin next-link pagination. |
-| `Honua.Sdk.Stac` | STAC catalog, collections, collection details, collection item pages, item detail, GET search, POST search, raw JSON/HTTP access, bbox/time/fields/filter parameters, and same-origin next-link pagination. |
+| `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`) | Records landing page, conformance, record collections, collection details, record search, record detail, raw JSON access, query filters, and same-origin next-link pagination. |
+| `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Stac`) | STAC catalog, collections, collection details, collection item pages, item detail, GET search, POST search, raw JSON/HTTP access, bbox/time/fields/filter parameters, and same-origin next-link pagination. |
 
 Shared read queries are available through `IHonuaFeatureQueryClient` for gRPC,
 WFS, GeoServices FeatureServer, and OGC API Features. Shared feature edit
@@ -172,10 +172,11 @@ first-class typed catalog endpoints tracked by
 `honua-server#869`; display documents remain out of SDK scope.
 
 Public standards catalog discovery is available through
-`IHonuaOgcRecordsClient` in `Honua.Sdk.OgcRecords`. Use it for OGC API Records
-landing/conformance, record collection discovery, record search/detail, and raw
-JSON access. STAC asset catalog discovery is available through
-`IHonuaStacClient` in `Honua.Sdk.Stac` for catalog, collection, item, and
+`IHonuaOgcRecordsClient` in `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`).
+Use it for OGC API Records landing/conformance, record collection discovery,
+record search/detail, and raw JSON access. STAC asset catalog discovery is
+available through `IHonuaStacClient` in `Honua.Sdk.Catalogs`
+(`Honua.Sdk.Catalogs.Stac`) for catalog, collection, item, and
 search semantics. Keep admin catalog, migration inventory, and protocol-native
 metadata separate; see [Metadata And Catalog Reads](metadata-catalog-parity.md).
 

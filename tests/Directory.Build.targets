@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+       Wire coverlet.collector into every test project automatically so the
+       `dotnet test ..collect XPlat Code Coverage` invocation in CI produces
+       a real coverage report and the enforced coverage floor in ci.yml runs
+       against measurements (not no-ops).
+  -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' or $(MSBuildProjectName.EndsWith('.Tests'))">
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

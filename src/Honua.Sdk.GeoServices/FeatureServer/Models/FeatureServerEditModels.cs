@@ -8,7 +8,7 @@ namespace Honua.Sdk.GeoServices.FeatureServer.Models;
 /// <summary>
 /// Request payload for FeatureServer add, update, and delete edit operations.
 /// </summary>
-public sealed class FeatureServerEditRequest
+public sealed record FeatureServerEditRequest
 {
     /// <summary>Features to add.</summary>
     public IReadOnlyList<FeatureServerFeature>? Adds { get; init; }

@@ -10,8 +10,8 @@ using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.OgcFeatures.Exceptions;
 using Honua.Sdk.OgcFeatures.Extensions;
-using Honua.Sdk.Wfs.Exceptions;
-using Honua.Sdk.Wfs.Extensions;
+using Honua.Sdk.OgcFeatures.Wfs.Exceptions;
+using Honua.Sdk.OgcFeatures.Wfs.Extensions;
 
 namespace Honua.Sdk.IntegrationTests;
 
@@ -64,7 +64,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         });
         services.AddHonuaGrpc(options =>
         {
-            options.Address = Options.BaseUri.ToString();
+            options.BaseAddress = Options.BaseUri;
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });
@@ -121,15 +121,15 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         string sdkMethod,
         string requestPath,
         Func<CancellationToken, Task<string>> action,
-        CancellationToken ct)
-        => await RecordCheckAsync(name, () => sdkMethod, () => requestPath, action, ct).ConfigureAwait(false);
+        CancellationToken cancellationToken)
+        => await RecordCheckAsync(name, () => sdkMethod, () => requestPath, action, cancellationToken).ConfigureAwait(false);
 
     public async Task RecordCheckAsync(
         string name,
         Func<string> sdkMethod,
         Func<string> requestPath,
         Func<CancellationToken, Task<string>> action,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(sdkMethod);
         ArgumentNullException.ThrowIfNull(requestPath);
@@ -139,7 +139,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
 
         try
         {
-            var detail = await action(ct).ConfigureAwait(false);
+            var detail = await action(cancellationToken).ConfigureAwait(false);
             _results[name] = new StagingCheckResult(
                 name,
                 "pass",
@@ -234,7 +234,6 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
             CreateSdkPackageVersion("Honua.Sdk.Abstractions", typeof(Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient).Assembly),
             CreateSdkPackageVersion("Honua.Sdk.Admin", typeof(HonuaAdminClient).Assembly),
             CreateSdkPackageVersion("Honua.Sdk.Grpc", typeof(HonuaGrpcClient).Assembly),
-            CreateSdkPackageVersion("Honua.Sdk.Wfs", typeof(HonuaWfsClient).Assembly),
             CreateSdkPackageVersion("Honua.Sdk.GeoServices", typeof(HonuaFeatureServerClient).Assembly),
             CreateSdkPackageVersion("Honua.Sdk.OgcFeatures", typeof(HonuaOgcFeaturesClient).Assembly)
         ];

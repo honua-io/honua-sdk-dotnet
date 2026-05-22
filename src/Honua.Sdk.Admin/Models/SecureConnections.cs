@@ -128,13 +128,13 @@ public sealed class SecureConnectionDetail : SecureConnectionSummary
 /// <summary>
 /// Request model for creating a new secure database connection.
 /// </summary>
-public sealed class CreateSecureConnectionRequest
+public sealed record CreateSecureConnectionRequest
 {
     /// <summary>
     /// Human-readable name for the connection (must be unique).
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; init; } = string.Empty;
+    public required string Name { get; init; }
 
     /// <summary>
     /// Optional description of the connection.
@@ -146,7 +146,7 @@ public sealed class CreateSecureConnectionRequest
     /// Database server hostname or IP address.
     /// </summary>
     [JsonPropertyName("host")]
-    public string Host { get; init; } = string.Empty;
+    public required string Host { get; init; }
 
     /// <summary>
     /// Database server port number.
@@ -158,13 +158,13 @@ public sealed class CreateSecureConnectionRequest
     /// Database name to connect to.
     /// </summary>
     [JsonPropertyName("databaseName")]
-    public string DatabaseName { get; init; } = string.Empty;
+    public required string DatabaseName { get; init; }
 
     /// <summary>
     /// Database username.
     /// </summary>
     [JsonPropertyName("username")]
-    public string Username { get; init; } = string.Empty;
+    public required string Username { get; init; }
 
     /// <summary>
     /// Database password (used only for encrypted storage, not persisted in logs).
@@ -200,7 +200,7 @@ public sealed class CreateSecureConnectionRequest
 /// <summary>
 /// Request model for updating an existing secure database connection.
 /// </summary>
-public sealed class UpdateSecureConnectionRequest
+public sealed record UpdateSecureConnectionRequest
 {
     /// <summary>
     /// Optional description of the connection.

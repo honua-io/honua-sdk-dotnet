@@ -5,7 +5,7 @@ using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Models;
-using Honua.Sdk.Wfs;
+using Honua.Sdk.OgcFeatures.Wfs;
 
 namespace Honua.Sdk.BrowserSmoke;
 
@@ -15,7 +15,7 @@ public sealed class BrowserRuntimeValidationService
 
     public async Task<BrowserRuntimeValidationReport> RunAsync(
         BrowserRuntimeValidationOptions options,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -66,7 +66,7 @@ public sealed class BrowserRuntimeValidationService
                 var count = response.Features?.Count ?? response.NumberReturned ?? 0;
                 return FormattableString.Invariant($"{count} feature(s) returned from {options.CollectionId}.");
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         await RunCheckAsync(
             checks,
@@ -83,7 +83,7 @@ public sealed class BrowserRuntimeValidationService
                     token).ConfigureAwait(false);
                 return FormattableString.Invariant($"{results.Count} candidate(s) returned for {options.Address}.");
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         await RunCheckAsync(
             checks,
@@ -96,7 +96,7 @@ public sealed class BrowserRuntimeValidationService
                     token).ConfigureAwait(false);
                 return FormattableString.Invariant($"Layer {layer.Id} metadata returned for {options.ServiceName}.");
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         await RunCheckAsync(
             checks,
@@ -115,7 +115,7 @@ public sealed class BrowserRuntimeValidationService
                 return FormattableString.Invariant(
                     $"WFS {capabilities.Version} returned {capabilities.FeatureTypes.Count} feature type(s).");
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return checks.Any(check => check.Status == BrowserRuntimeValidationCheckStatus.Failed)
             ? BrowserRuntimeValidationReport.Failed(checks)
@@ -144,18 +144,18 @@ public sealed class BrowserRuntimeValidationService
         ICollection<BrowserRuntimeValidationCheck> checks,
         string name,
         Func<CancellationToken, Task<string>> operation,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         try
         {
-            var detail = await operation(ct).ConfigureAwait(false);
+            var detail = await operation(cancellationToken).ConfigureAwait(false);
             checks.Add(BrowserRuntimeValidationCheck.Passed(name, detail));
         }
         catch (HttpRequestException ex)
         {
             checks.Add(BrowserRuntimeValidationCheck.Failed(name, ex.Message));
         }
-        catch (TaskCanceledException ex) when (!ct.IsCancellationRequested)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             checks.Add(BrowserRuntimeValidationCheck.Failed(name, ex.Message));
         }

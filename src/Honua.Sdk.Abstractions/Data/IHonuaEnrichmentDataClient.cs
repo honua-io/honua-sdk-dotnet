@@ -18,15 +18,15 @@ public interface IHonuaEnrichmentDataClient
     /// Gets available enrichment attributes or variable metadata.
     /// </summary>
     /// <param name="request">Metadata discovery request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Enrichment metadata.</returns>
-    Task<EnrichmentMetadata> GetEnrichmentMetadataAsync(EnrichmentMetadataRequest request, CancellationToken ct = default);
+    Task<EnrichmentMetadata> GetEnrichmentMetadataAsync(EnrichmentMetadataRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Enriches feature identifiers, geometry, or an area of interest with requested attributes.
     /// </summary>
     /// <param name="request">Enrichment request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Enrichment response.</returns>
-    Task<EnrichmentResponse> EnrichAsync(EnrichmentRequest request, CancellationToken ct = default);
+    Task<EnrichmentResponse> EnrichAsync(EnrichmentRequest request, CancellationToken cancellationToken = default);
 }

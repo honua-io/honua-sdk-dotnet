@@ -41,12 +41,12 @@ public interface IHonuaSceneClient
     /// </summary>
     Task<IReadOnlyList<HonuaSceneSummary>> ListScenesAsync(
         HonuaSceneListRequest? request = null,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets metadata for a single scene.
     /// </summary>
-    Task<HonuaSceneMetadata> GetSceneAsync(string sceneId, CancellationToken ct = default);
+    Task<HonuaSceneMetadata> GetSceneAsync(string sceneId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Resolves a scene into client-ready URLs for renderers such as CesiumJS or <c>&lt;honua-scene&gt;</c>.
@@ -54,13 +54,13 @@ public interface IHonuaSceneClient
     Task<HonuaSceneResolution> ResolveSceneAsync(
         string sceneId,
         HonuaSceneResolveRequest? request = null,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>
 /// Filters used when listing scenes from the server.
 /// </summary>
-public sealed class HonuaSceneListRequest
+public sealed record HonuaSceneListRequest
 {
     /// <summary>
     /// Optional capabilities required by the caller, for example <see cref="HonuaSceneCapabilities.ThreeDimensionalTiles"/>.
@@ -86,7 +86,7 @@ public sealed class HonuaSceneListRequest
 /// <summary>
 /// Options used when resolving render-ready scene endpoints.
 /// </summary>
-public sealed class HonuaSceneResolveRequest
+public sealed record HonuaSceneResolveRequest
 {
     /// <summary>
     /// Capabilities the resolved scene must expose before it is returned to the caller.

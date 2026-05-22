@@ -1,0 +1,61 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "src/Honua.Sdk/Honua.Sdk.csproj",
+            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj",
+            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj",
+            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj",
+            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj",
+            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj",
+            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj",
+            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj",
+            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj",
+            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj",
+            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj",
+            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "outputFormat": "mref",
+      "includePrivateMembers": false,
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false,
+      "noRestore": false,
+      "namespaceLayout": "flattened",
+      "memberLayout": "samePage",
+      "allowCompilationErrors": false
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": ["api/**.yml", "api/index.md"] },
+      {
+        "files": [
+          "*.md",
+          "internal/*.md"
+        ],
+        "src": ".",
+        "exclude": ["api/**", "obj/**", "_site/**"]
+      },
+      { "files": ["toc.yml"] }
+    ],
+    "resource": [
+      { "files": ["images/**"] }
+    ],
+    "output": "_site",
+    "globalMetadata": {
+      "_appName": "Honua .NET SDK",
+      "_appTitle": "Honua .NET SDK API reference",
+      "_enableSearch": true,
+      "pdf": false
+    },
+    "template": ["default", "modern"],
+    "xref": ["https://learn.microsoft.com/en-us/dotnet/.xrefmap.json"]
+  }
+}

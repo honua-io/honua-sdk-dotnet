@@ -15,9 +15,9 @@ public interface IHonuaOgcFeaturesEditClient
     /// </summary>
     /// <param name="collectionId">The collection identifier.</param>
     /// <param name="feature">GeoJSON feature to create.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The created feature representation returned by the server.</returns>
-    Task<OgcFeature> CreateItemAsync(string collectionId, OgcFeature feature, CancellationToken ct = default);
+    Task<OgcFeature> CreateItemAsync(string collectionId, OgcFeature feature, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates or replaces a feature in a collection with the OGC API Features item endpoint.
@@ -25,15 +25,15 @@ public interface IHonuaOgcFeaturesEditClient
     /// <param name="collectionId">The collection identifier.</param>
     /// <param name="featureId">The feature identifier.</param>
     /// <param name="feature">GeoJSON feature payload.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The updated feature representation returned by the server.</returns>
-    Task<OgcFeature> UpdateItemAsync(string collectionId, string featureId, OgcFeature feature, CancellationToken ct = default);
+    Task<OgcFeature> UpdateItemAsync(string collectionId, string featureId, OgcFeature feature, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a feature from a collection with the OGC API Features item endpoint.
     /// </summary>
     /// <param name="collectionId">The collection identifier.</param>
     /// <param name="featureId">The feature identifier.</param>
-    /// <param name="ct">Cancellation token.</param>
-    Task DeleteItemAsync(string collectionId, string featureId, CancellationToken ct = default);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task DeleteItemAsync(string collectionId, string featureId, CancellationToken cancellationToken = default);
 }

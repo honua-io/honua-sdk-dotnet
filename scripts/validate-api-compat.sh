@@ -46,15 +46,13 @@ projects=(
   "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj|Honua.Sdk.Geometry"
   "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj|Honua.Sdk.Spec"
   "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj|Honua.Sdk.Grpc"
-  "src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj|Honua.Sdk.Wfs"
   "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj|Honua.Sdk.GeoServices"
   "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj|Honua.Sdk.Scenes"
   "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj|Honua.Sdk.Field"
   "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures"
-  "src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj|Honua.Sdk.OgcRecords"
-  "src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj|Honua.Sdk.Stac"
-  "src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj|Honua.Sdk.Offline.Abstractions"
+  "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj|Honua.Sdk.Catalogs"
   "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj|Honua.Sdk.Offline"
+  "src/Honua.Sdk/Honua.Sdk.csproj|Honua.Sdk"
 )
 
 for entry in "${projects[@]}"; do
@@ -109,8 +107,22 @@ for entry in "${projects[@]}"; do
     api_compat_args+=("--suppression-file" "${suppression_file}")
   fi
 
-  (
-    cd "${ROOT}"
-    dotnet tool run apicompat -- "${api_compat_args[@]}"
-  )
+  # When HONUA_API_COMPAT_ALLOW_BREAKING=true (used for explicit major-version
+  # bumps such as the 0.1.x-alpha → 1.0.0 cut), still RUN the check so the
+  # diagnostics show up in the workflow log, but downgrade a non-zero exit to
+  # a warning instead of failing the gate. This is the SemVer-correct
+  # behaviour for an intentional breaking-major release.
+  if [[ "${HONUA_API_COMPAT_ALLOW_BREAKING:-false}" == "true" ]]; then
+    (
+      cd "${ROOT}"
+      if ! dotnet tool run apicompat -- "${api_compat_args[@]}"; then
+        echo "::warning::API breaking changes detected in ${package_id} but HONUA_API_COMPAT_ALLOW_BREAKING=true; downgrading to warning."
+      fi
+    )
+  else
+    (
+      cd "${ROOT}"
+      dotnet tool run apicompat -- "${api_compat_args[@]}"
+    )
+  fi
 done

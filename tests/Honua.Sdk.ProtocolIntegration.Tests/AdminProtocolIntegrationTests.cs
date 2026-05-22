@@ -30,7 +30,7 @@ public sealed class AdminProtocolIntegrationTests(ProtocolIntegrationFixture fix
     {
         using var timeout = _fixture.CreateTimeoutScope();
 
-        var services = await _fixture.CatalogClient.ListServicesAsync(ct: timeout.Token).ConfigureAwait(false);
+        var services = await _fixture.CatalogClient.ListServicesAsync(cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.Contains(services, service => string.Equals(service.Name, _fixture.Options.ServiceName, StringComparison.OrdinalIgnoreCase));
 
         var service = await _fixture.CatalogClient.GetServiceAsync(_fixture.Options.ServiceName, timeout.Token).ConfigureAwait(false);
@@ -45,23 +45,23 @@ public sealed class AdminProtocolIntegrationTests(ProtocolIntegrationFixture fix
 
         var forward = await _fixture.GeocodingClient.ForwardGeocodeAsync(
             _fixture.Options.GeocodeText!,
-            ct: timeout.Token).ConfigureAwait(false);
+            cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotEmpty(forward);
 
         var reverse = await _fixture.GeocodingClient.ReverseGeocodeAsync(
             _fixture.Options.ReverseGeocodeLatitude!.Value,
             _fixture.Options.ReverseGeocodeLongitude!.Value,
-            ct: timeout.Token).ConfigureAwait(false);
+            cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotNull(reverse);
 
         var suggestions = await _fixture.GeocodingClient.SuggestAsync(
             _fixture.Options.GeocodeText!,
-            ct: timeout.Token).ConfigureAwait(false);
+            cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotEmpty(suggestions);
 
         var batch = await _fixture.GeocodingClient.BatchGeocodeAsync(
             [_fixture.Options.GeocodeText!],
-            ct: timeout.Token).ConfigureAwait(false);
+            cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotEmpty(batch);
     }
 }

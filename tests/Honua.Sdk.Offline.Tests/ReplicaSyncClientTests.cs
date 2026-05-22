@@ -45,9 +45,9 @@ public sealed class ReplicaSyncClientTests
     public async Task CreateReplicaAsync_WithLayerIds_SendsLayersParameter()
     {
         string? capturedBody = null;
-        var handler = new StubHttpMessageHandler(async (request, ct) =>
+        var handler = new StubHttpMessageHandler(async (request, cancellationToken) =>
         {
-            capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("""{"replicaID":"r1","serverGen":1}""", Encoding.UTF8, "application/json"),

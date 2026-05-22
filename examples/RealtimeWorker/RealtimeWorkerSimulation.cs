@@ -8,7 +8,7 @@ public static class RealtimeWorkerSimulation
 {
     public static async Task<RealtimeWorkerRunSummary> RunAsync(
         TextWriter output,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(output);
 
@@ -32,7 +32,7 @@ public static class RealtimeWorkerSimulation
 
         foreach (var featureEvent in CreateEvents())
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             var result = buffer.TryWrite(featureEvent);
             var record = new RealtimeWorkerWriteRecord(featureEvent, result);
@@ -44,7 +44,7 @@ public static class RealtimeWorkerSimulation
 
         var projection = new Dictionary<string, IncidentProjection>(StringComparer.Ordinal);
         var closedCount = 0;
-        await foreach (var featureEvent in buffer.ReadAllAsync(ct))
+        await foreach (var featureEvent in buffer.ReadAllAsync(cancellationToken))
         {
             if (featureEvent.FeatureId is null)
             {

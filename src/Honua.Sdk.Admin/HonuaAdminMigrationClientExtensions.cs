@@ -16,19 +16,19 @@ public static class HonuaAdminMigrationClientExtensions
     /// <param name="client">The admin client.</param>
     /// <param name="request">The migration inventory scan request.</param>
     /// <param name="exportJson">When true, requests the server's JSON attachment form with <c>export=json</c>.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The migration source inventory artifact returned by the server.</returns>
     public static Task<MigrationSourceInventoryArtifact> ScanMigrationSourceAsync(
         this IHonuaAdminClient client,
         MigrationInventoryScanRequest request,
         bool exportJson = false,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
         if (client is HonuaAdminClient honuaClient)
         {
-            return honuaClient.ScanMigrationSourceAsync(request, exportJson, ct);
+            return honuaClient.ScanMigrationSourceAsync(request, exportJson, cancellationToken);
         }
 
         throw new NotSupportedException("This IHonuaAdminClient implementation does not support migration source scanning.");

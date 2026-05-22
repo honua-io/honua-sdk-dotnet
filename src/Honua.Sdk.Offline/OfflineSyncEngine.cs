@@ -55,18 +55,18 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     }
 
     /// <inheritdoc />
-    public async Task<OfflineSyncRunResult> SyncAsync(OfflinePackageManifest manifest, CancellationToken ct = default)
+    public async Task<OfflineSyncRunResult> SyncAsync(OfflinePackageManifest manifest, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifest.PackageId);
 
         try
         {
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Pushing, null, ct).ConfigureAwait(false);
-            var push = await PushAsync(manifest.PackageId, ct).ConfigureAwait(false);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Pushing, null, cancellationToken).ConfigureAwait(false);
+            var push = await PushAsync(manifest.PackageId, cancellationToken).ConfigureAwait(false);
 
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Pulling, null, ct).ConfigureAwait(false);
-            var pull = await PullAsync(manifest, ct).ConfigureAwait(false);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Pulling, null, cancellationToken).ConfigureAwait(false);
+            var pull = await PullAsync(manifest, cancellationToken).ConfigureAwait(false);
 
             var result = new OfflineSyncRunResult
             {
@@ -80,22 +80,22 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                 null,
                 result.Succeeded ? OfflineSyncPhase.Completed : OfflineSyncPhase.Failed,
                 result.Succeeded ? null : "sync completed with failures",
-                ct).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
         catch (HttpRequestException ex)
         {
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, ct).ConfigureAwait(false);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
             throw;
         }
         catch (TimeoutException ex)
         {
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, ct).ConfigureAwait(false);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
             throw;
         }
     }
@@ -104,9 +104,9 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     /// Pulls remote feature pages into the local feature store.
     /// </summary>
     /// <param name="manifest">Offline package manifest.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Pull result.</returns>
-    public async Task<OfflinePullResult> PullAsync(OfflinePackageManifest manifest, CancellationToken ct = default)
+    public async Task<OfflinePullResult> PullAsync(OfflinePackageManifest manifest, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifest.PackageId);
@@ -118,19 +118,19 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         foreach (var source in manifest.Sources)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(source.SourceId);
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Pulling, null, ct).ConfigureAwait(false);
-                var checkpoint = await _checkpointStore.GetCheckpointAsync(manifest.PackageId, source.SourceId, ct).ConfigureAwait(false);
+                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Pulling, null, cancellationToken).ConfigureAwait(false);
+                var checkpoint = await _checkpointStore.GetCheckpointAsync(manifest.PackageId, source.SourceId, cancellationToken).ConfigureAwait(false);
                 var request = OfflineDownloadPlanner.CreateRequest(manifest, source, checkpoint);
                 var remaining = request.MaxFeatureCount;
                 var sourceFeatureCount = 0;
 
-                await foreach (var page in _queryClient.QueryPagesAsync(request.Query, ct).WithCancellation(ct).ConfigureAwait(false))
+                await foreach (var page in _queryClient.QueryPagesAsync(request.Query, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
                 {
-                    ct.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     var pageToStore = LimitPage(page, remaining);
                     await _featureStore.SaveFeaturesAsync(new OfflineFeaturePage
@@ -140,7 +140,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                         Source = source.Source,
                         Result = pageToStore,
                         SyncToken = request.LastSyncToken,
-                    }, ct).ConfigureAwait(false);
+                    }, cancellationToken).ConfigureAwait(false);
 
                     storedPageCount++;
                     storedFeatureCount += pageToStore.NumberReturned;
@@ -164,7 +164,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                     SourceId = source.SourceId,
                     SyncToken = request.LastSyncToken,
                     PulledFeatureCount = sourceFeatureCount,
-                }, ct).ConfigureAwait(false);
+                }, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpRequestException ex)
             {
@@ -202,13 +202,13 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     /// Pushes pending local edits to the provider.
     /// </summary>
     /// <param name="packageId">Offline package identifier.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Push result.</returns>
-    public async Task<OfflinePushResult> PushAsync(string packageId, CancellationToken ct = default)
+    public async Task<OfflinePushResult> PushAsync(string packageId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
 
-        var pending = await _changeJournal.GetPendingAsync(packageId, _options.BatchSize, ct).ConfigureAwait(false);
+        var pending = await _changeJournal.GetPendingAsync(packageId, _options.BatchSize, cancellationToken).ConfigureAwait(false);
         var failures = new List<OfflineSyncFailure>();
         var succeeded = 0;
         var conflicts = 0;
@@ -218,11 +218,11 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         for (var index = 0; index < pending.Count; index++)
         {
             var operation = pending[index];
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (operation.AttemptCount >= _options.MaxAttempts)
             {
-                await _changeJournal.MarkFailedAsync(operation.OperationId, MaxAttemptsReason, ct).ConfigureAwait(false);
+                await _changeJournal.MarkFailedAsync(operation.OperationId, MaxAttemptsReason, cancellationToken).ConfigureAwait(false);
                 failures.Add(ToFailure(operation, MaxAttemptsReason, retryable: false));
                 fatalFailures++;
                 continue;
@@ -230,28 +230,28 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
 
             try
             {
-                var upload = await UploadOperationAsync(operation, forceWrite: false, ct).ConfigureAwait(false);
-                var outcome = await ApplyUploadOutcomeAsync(operation, upload, ct).ConfigureAwait(false);
+                var upload = await UploadOperationAsync(operation, forceWrite: false, cancellationToken).ConfigureAwait(false);
+                var outcome = await ApplyUploadOutcomeAsync(operation, upload, cancellationToken).ConfigureAwait(false);
                 succeeded += outcome.Succeeded;
                 conflicts += outcome.Conflicts;
                 retryableFailures += outcome.RetryableFailures;
                 fatalFailures += outcome.FatalFailures;
                 failures.AddRange(outcome.Failures);
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 await ReleasePendingOperationsAsync(pending, index).ConfigureAwait(false);
                 throw;
             }
             catch (HttpRequestException ex)
             {
-                await MarkRetryAsync(operation, ex.Message, ct).ConfigureAwait(false);
+                await MarkRetryAsync(operation, ex.Message, cancellationToken).ConfigureAwait(false);
                 failures.Add(ToFailure(operation, ex.Message, retryable: true));
                 retryableFailures++;
             }
             catch (TimeoutException ex)
             {
-                await MarkRetryAsync(operation, ex.Message, ct).ConfigureAwait(false);
+                await MarkRetryAsync(operation, ex.Message, cancellationToken).ConfigureAwait(false);
                 failures.Add(ToFailure(operation, ex.Message, retryable: true));
                 retryableFailures++;
             }
@@ -272,48 +272,48 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     private async Task<UploadApplicationResult> ApplyUploadOutcomeAsync(
         OfflineChangeJournalEntry operation,
         UploadEvaluation upload,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         if (upload.Outcome == UploadEvaluationOutcome.Success)
         {
-            await _changeJournal.MarkSucceededAsync(operation.OperationId, ct).ConfigureAwait(false);
+            await _changeJournal.MarkSucceededAsync(operation.OperationId, cancellationToken).ConfigureAwait(false);
             return UploadApplicationResult.Success;
         }
 
         if (upload.Outcome == UploadEvaluationOutcome.Conflict)
         {
-            return await HandleConflictAsync(operation, upload, ct).ConfigureAwait(false);
+            return await HandleConflictAsync(operation, upload, cancellationToken).ConfigureAwait(false);
         }
 
         if (upload.Outcome == UploadEvaluationOutcome.RetryableFailure)
         {
             var reason = upload.Reason ?? "retryable upload failure";
-            await MarkRetryAsync(operation, reason, ct).ConfigureAwait(false);
+            await MarkRetryAsync(operation, reason, cancellationToken).ConfigureAwait(false);
             return UploadApplicationResult.RetryableFailure(ToFailure(operation, reason, retryable: true));
         }
 
         var fatalReason = upload.Reason ?? "fatal upload failure";
-        await _changeJournal.MarkFailedAsync(operation.OperationId, fatalReason, ct).ConfigureAwait(false);
+        await _changeJournal.MarkFailedAsync(operation.OperationId, fatalReason, cancellationToken).ConfigureAwait(false);
         return UploadApplicationResult.FatalFailure(ToFailure(operation, fatalReason, retryable: false));
     }
 
     private async Task<UploadApplicationResult> HandleConflictAsync(
         OfflineChangeJournalEntry operation,
         UploadEvaluation upload,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         if (_options.ConflictStrategy == OfflineConflictStrategy.ServerWins)
         {
-            await _changeJournal.MarkSucceededAsync(operation.OperationId, ct).ConfigureAwait(false);
+            await _changeJournal.MarkSucceededAsync(operation.OperationId, cancellationToken).ConfigureAwait(false);
             return UploadApplicationResult.Success;
         }
 
         if (_options.ConflictStrategy == OfflineConflictStrategy.ClientWins)
         {
-            var forced = await UploadOperationAsync(operation, forceWrite: true, ct).ConfigureAwait(false);
+            var forced = await UploadOperationAsync(operation, forceWrite: true, cancellationToken).ConfigureAwait(false);
             if (forced.Outcome != UploadEvaluationOutcome.Conflict)
             {
-                return await ApplyUploadOutcomeAsync(operation, forced, ct).ConfigureAwait(false);
+                return await ApplyUploadOutcomeAsync(operation, forced, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -328,10 +328,10 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             Reason = reason,
         };
 
-        await _changeJournal.MarkConflictAsync(conflict, ct).ConfigureAwait(false);
+        await _changeJournal.MarkConflictAsync(conflict, cancellationToken).ConfigureAwait(false);
         if (_conflictStore is not null)
         {
-            await _conflictStore.SaveConflictAsync(conflict, ct).ConfigureAwait(false);
+            await _conflictStore.SaveConflictAsync(conflict, cancellationToken).ConfigureAwait(false);
         }
 
         return UploadApplicationResult.Conflict(ToFailure(operation, reason, retryable: false));
@@ -340,7 +340,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     private async Task<UploadEvaluation> UploadOperationAsync(
         OfflineChangeJournalEntry operation,
         bool forceWrite,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         var requestResult = TryCreateEditRequest(operation, forceWrite);
         if (requestResult.FailureReason is not null)
@@ -348,7 +348,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             return UploadEvaluation.Fatal(requestResult.FailureReason);
         }
 
-        var response = await _editClient.ApplyEditsAsync(requestResult.Request, ct).ConfigureAwait(false);
+        var response = await _editClient.ApplyEditsAsync(requestResult.Request, cancellationToken).ConfigureAwait(false);
         if (response.Succeeded)
         {
             return UploadEvaluation.Success;
@@ -403,7 +403,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         };
     }
 
-    private async Task MarkRetryAsync(OfflineChangeJournalEntry operation, string reason, CancellationToken ct)
+    private async Task MarkRetryAsync(OfflineChangeJournalEntry operation, string reason, CancellationToken cancellationToken)
     {
         await _changeJournal.MarkRetryAsync(new OfflineRetryCheckpoint
         {
@@ -413,7 +413,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             AttemptCount = operation.AttemptCount + 1,
             RetryAfterUtc = DateTimeOffset.UtcNow + _options.RetryDelay,
             Reason = reason,
-        }, ct).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task SaveStateAsync(
@@ -421,7 +421,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         string? sourceId,
         OfflineSyncPhase phase,
         string? error,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         if (_stateStore is null)
         {
@@ -436,7 +436,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             LastStartedAtUtc = DateTimeOffset.UtcNow,
             LastSucceededAtUtc = phase == OfflineSyncPhase.Completed ? DateTimeOffset.UtcNow : null,
             LastError = error,
-        }, ct).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ReleasePendingOperationsAsync(IReadOnlyList<OfflineChangeJournalEntry> pending, int startIndex)

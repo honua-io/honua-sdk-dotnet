@@ -8,7 +8,7 @@ namespace Honua.Sdk.Scenes.Exceptions;
 /// <summary>
 /// Exception thrown when a scene metadata or package contract operation fails.
 /// </summary>
-public sealed class HonuaSceneException : Exception
+public sealed class HonuaSceneException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaSceneException"/> class.

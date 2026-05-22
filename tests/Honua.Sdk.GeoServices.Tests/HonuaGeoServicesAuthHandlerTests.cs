@@ -18,6 +18,7 @@ public sealed class HonuaGeoServicesAuthHandlerTests
 
         var options = Options.Create(new HonuaGeoServicesClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKeyProvider = _ => Task.FromResult<string?>($"geoservices-key-{++apiKeyCalls}"),
             BearerTokenProvider = _ => Task.FromResult<string?>($"geoservices-token-{++bearerTokenCalls}")
         });

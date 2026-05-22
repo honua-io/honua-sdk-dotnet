@@ -204,7 +204,7 @@ public sealed class FeatureStreamContractTests
 
         public Task<FeatureStreamConnection> ConnectAsync(
             FeatureStreamConnectRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new FeatureStreamConnection
             {
                 ConnectionId = request.ClientId ?? "connection-1",
@@ -216,7 +216,7 @@ public sealed class FeatureStreamContractTests
 
         public Task<FeatureStreamConnection> ReconnectAsync(
             FeatureStreamReconnectRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new FeatureStreamConnection
             {
                 ConnectionId = request.ConnectionId,
@@ -228,7 +228,7 @@ public sealed class FeatureStreamContractTests
 
         public async IAsyncEnumerable<FeatureStreamEvent> SubscribeAsync(
             FeatureStreamSubscribeRequest request,
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             yield return Event(sequenceNumber: request.StartAfterSequenceNumber, subscriptionId: request.SubscriptionId) with
             {
@@ -236,7 +236,7 @@ public sealed class FeatureStreamContractTests
                 FeatureId = null
             };
             await Task.Yield();
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             yield return Event("feature-1", sequenceNumber: 2, subscriptionId: request.SubscriptionId) with
             {
                 Kind = FeatureStreamEventKind.Insert,
@@ -246,12 +246,12 @@ public sealed class FeatureStreamContractTests
 
         public Task UnsubscribeAsync(
             FeatureStreamUnsubscribeRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
         public Task<FeatureStreamHeartbeat> HeartbeatAsync(
             FeatureStreamHeartbeatRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new FeatureStreamHeartbeat
             {
                 ConnectionId = request.ConnectionId,

@@ -47,7 +47,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
     public async Task<IReadOnlyList<GeocodeResult>> ForwardGeocodeAsync(
         string address,
         ForwardGeocodeOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(address);
 
@@ -81,8 +81,8 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 
         var url = $"{ServicePath}/findAddressCandidates{BuildQuery(queryParams)}";
 
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesFindAddressCandidatesResponse);
@@ -105,7 +105,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
         double latitude,
         double longitude,
         ReverseGeocodeOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         var wkid = options?.SpatialReferenceWkid ?? DefaultSpatialReferenceWkid;
 
@@ -121,8 +121,8 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
             ("outSR", wkid.ToString(CultureInfo.InvariantCulture)),
             ("f", "json"))}";
 
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesReverseGeocodeResponse);
@@ -163,7 +163,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
     public async Task<IReadOnlyList<GeocodeSuggestion>> SuggestAsync(
         string text,
         SuggestOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(text);
 
@@ -190,8 +190,8 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 
         var url = $"{ServicePath}/suggest{BuildQuery(queryParams)}";
 
-        using var response = await _http.GetAsync(CreateRequestUri(url), ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesSuggestResponse);
@@ -211,9 +211,9 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
     public async Task<IReadOnlyList<GeocodeResult>> BatchGeocodeAsync(
         IReadOnlyList<string> addresses,
         BatchGeocodeOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
-        var detailedResults = await BatchGeocodeDetailedAsync(addresses, options, ct).ConfigureAwait(false);
+        var detailedResults = await BatchGeocodeDetailedAsync(addresses, options, cancellationToken).ConfigureAwait(false);
         return detailedResults
             .Where(result => result.Result is not null)
             .Select(result => result.Result!)
@@ -225,7 +225,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
     public async Task<IReadOnlyList<BatchGeocodeResult>> BatchGeocodeDetailedAsync(
         IReadOnlyList<string> addresses,
         BatchGeocodeOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(addresses);
         if (addresses.Count == 0)
@@ -272,8 +272,8 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
             Content = new FormUrlEncodedContent(queryParams)
         };
 
-        using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await EnsureSuccessAsync(response, body).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesBatchGeocodeResponse);

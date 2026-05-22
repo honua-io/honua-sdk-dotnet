@@ -35,7 +35,7 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
     public async Task<VectorPayloadFeatureSet> ReadAsync(
         Stream stream,
         VectorPayloadReadOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
@@ -47,7 +47,7 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
         };
 
         using var reader = XmlReader.Create(stream, settings);
-        var document = await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
+        var document = await XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken).ConfigureAwait(false);
         return Read(document, options);
     }
 

@@ -18,7 +18,7 @@ public interface IHonuaElevationDataClient
     /// Samples elevation at points or along a provider-supported profile geometry.
     /// </summary>
     /// <param name="request">Elevation sampling request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Elevation sampling response.</returns>
-    Task<ElevationSamplingResponse> SampleElevationAsync(ElevationSamplingRequest request, CancellationToken ct = default);
+    Task<ElevationSamplingResponse> SampleElevationAsync(ElevationSamplingRequest request, CancellationToken cancellationToken = default);
 }

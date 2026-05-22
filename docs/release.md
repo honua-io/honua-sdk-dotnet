@@ -12,14 +12,11 @@ The publish workflow builds and packs:
 - `Honua.Sdk.Admin`
 - `Honua.Sdk.Spec`
 - `Honua.Sdk.Grpc`
-- `Honua.Sdk.Wfs`
 - `Honua.Sdk.GeoServices`
 - `Honua.Sdk.Scenes`
 - `Honua.Sdk.Field`
 - `Honua.Sdk.OgcFeatures`
-- `Honua.Sdk.OgcRecords`
-- `Honua.Sdk.Stac`
-- `Honua.Sdk.Offline.Abstractions`
+- `Honua.Sdk.Catalogs`
 - `Honua.Sdk.Offline`
 
 ## Release Flow
@@ -33,10 +30,26 @@ The publish workflow builds and packs:
    and runs package install smoke without publishing.
 5. Merge the release PR so Release Please creates the tag named
    `dotnet-sdk-v<PackageVersion>`.
-   Example: `dotnet-sdk-v0.1.0-alpha.1`.
+   Example: `dotnet-sdk-v1.0.0`.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects. The workflow fails before publishing if they differ.
+
+## Version bumps
+
+The SDK follows standard [SemVer](https://semver.org/):
+
+- **Patch** (`1.0.x`) -- bug fixes and internal changes with no public-API
+  movement. Driven by `fix:` commits.
+- **Minor** (`1.x.0`) -- additive public surface (new types, new methods,
+  new options). Driven by `feat:` commits. Must remain source- and
+  binary-compatible with the previous minor.
+- **Major** (`x.0.0`) -- intentional breaking change. Must include a
+  `BREAKING CHANGE:` footer or `!` suffix on the conventional-commit type, and
+  is coordinated across the wider Honua SDK fleet.
+
+Pre-release suffixes (`*-rc.N`, `*-beta.N`) are reserved for deliberate
+previews of a future major.
 
 ## Publishing Targets
 
@@ -65,14 +78,11 @@ for project in \
   src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj \
   src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj \
   src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj \
-  src/Honua.Sdk.Wfs/Honua.Sdk.Wfs.csproj \
   src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj \
   src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj \
   src/Honua.Sdk.Field/Honua.Sdk.Field.csproj \
   src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj \
-  src/Honua.Sdk.OgcRecords/Honua.Sdk.OgcRecords.csproj \
-  src/Honua.Sdk.Stac/Honua.Sdk.Stac.csproj \
-  src/Honua.Sdk.Offline.Abstractions/Honua.Sdk.Offline.Abstractions.csproj \
+  src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj \
   src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj
 do
   dotnet pack "$project" --configuration Release -o ./nupkgs

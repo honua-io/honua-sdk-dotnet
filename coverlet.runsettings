@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Only measure the Honua SDK assemblies; skip generated proto, third-party deps, and test infrastructure. -->
+          <Include>[Honua.Sdk*]*</Include>
+          <Exclude>[Honua.Sdk*.Tests]*,[Honua.Sdk.BrowserSmoke]*,[Geospatial.*]*,[Microsoft.*]*,[System.*]*,[NetTopologySuite*]*,[ProjNet*]*,[Moq*]*,[xunit*]*</Exclude>
+          <ExcludeByFile>**/obj/**,**/bin/**,**/third_party/**,**/*.Designer.cs,**/*.g.cs,**/*.g.i.cs</ExcludeByFile>
+          <!-- Exclude attribute-marked generated/internals -->
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <SkipAutoProps>true</SkipAutoProps>
+          <DeterministicReport>true</DeterministicReport>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

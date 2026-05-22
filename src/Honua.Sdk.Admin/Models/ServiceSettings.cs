@@ -218,19 +218,19 @@ public sealed class MapServerSettingsResponse
 /// <summary>
 /// Request to update enabled protocols for a service.
 /// </summary>
-public sealed class UpdateProtocolsRequest
+public sealed record UpdateProtocolsRequest
 {
     /// <summary>
     /// Protocols to enable. Valid values: "FeatureServer", "MapServer", "OgcFeatures", "OData", "Grpc".
     /// </summary>
     [JsonPropertyName("enabledProtocols")]
-    public string[] EnabledProtocols { get; init; } = [];
+    public required string[] EnabledProtocols { get; init; }
 }
 
 /// <summary>
 /// Request to update MapServer rendering settings. Null fields are not updated.
 /// </summary>
-public sealed class UpdateMapServerSettingsRequest
+public sealed record UpdateMapServerSettingsRequest
 {
     /// <summary>
     /// Maximum allowed image width in pixels.
@@ -284,7 +284,7 @@ public sealed class UpdateMapServerSettingsRequest
 /// <summary>
 /// Request to update the access policy for a service.
 /// </summary>
-public sealed class UpdateAccessPolicyRequest
+public sealed record UpdateAccessPolicyRequest
 {
     /// <summary>
     /// Whether anonymous access is allowed.
@@ -314,7 +314,7 @@ public sealed class UpdateAccessPolicyRequest
 /// <summary>
 /// Request to update the time info for a service.
 /// </summary>
-public sealed class UpdateTimeInfoRequest
+public sealed record UpdateTimeInfoRequest
 {
     /// <summary>
     /// Field name containing the start time. Empty string clears the value.
@@ -338,7 +338,7 @@ public sealed class UpdateTimeInfoRequest
 /// <summary>
 /// Request to update layer metadata.
 /// </summary>
-public sealed class UpdateLayerMetadataRequest
+public sealed record UpdateLayerMetadataRequest
 {
     /// <summary>
     /// Access policy updates.

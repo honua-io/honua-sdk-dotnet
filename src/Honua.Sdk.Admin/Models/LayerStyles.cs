@@ -27,7 +27,7 @@ public sealed class LayerStyleResponse
 /// <summary>
 /// Request payload for updating a layer style.
 /// </summary>
-public sealed class LayerStyleUpdateRequest
+public sealed record LayerStyleUpdateRequest
 {
     /// <summary>
     /// MapLibre style JSON (canonical format).

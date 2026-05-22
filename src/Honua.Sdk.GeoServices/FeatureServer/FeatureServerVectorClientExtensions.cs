@@ -20,7 +20,7 @@ public static class FeatureServerVectorClientExtensions
     /// <param name="layerId">The layer ID within the service.</param>
     /// <param name="query">Query parameters including filters, paging, and projection.</param>
     /// <param name="format">Optional shared vector format. Defaults to the format specified by <paramref name="query"/>, or Esri JSON.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The parsed typed vector payload.</returns>
     public static async Task<VectorPayloadFeatureSet> QueryVectorAsync(
         this IHonuaFeatureServerClient client,
@@ -28,14 +28,14 @@ public static class FeatureServerVectorClientExtensions
         int layerId,
         FeatureServerQueryParams query,
         VectorPayloadFormat? format = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(query);
 
         if (client is HonuaFeatureServerClient honuaClient)
         {
-            return await honuaClient.QueryVectorAsync(serviceId, layerId, query, format, ct).ConfigureAwait(false);
+            return await honuaClient.QueryVectorAsync(serviceId, layerId, query, format, cancellationToken).ConfigureAwait(false);
         }
 
         var vectorFormat = format ?? FeatureServerVectorFormats.FromFeatureServerFormat(query.Format);
@@ -44,10 +44,10 @@ public static class FeatureServerVectorClientExtensions
             serviceId,
             layerId,
             query with { Format = protocolFormat },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
-        using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, ct: ct).ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }

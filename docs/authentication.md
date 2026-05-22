@@ -35,7 +35,7 @@ builder.Services.AddHonuaAdmin(o =>
 
 builder.Services.AddHonuaGrpc(o =>
 {
-    o.Address = "https://honua.example.com";
+    o.BaseAddress = new Uri("https://honua.example.com");
     o.ApiKeyProvider = ct => apiKeyStore.GetCurrentApiKeyAsync(ct);
 });
 ```

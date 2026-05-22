@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <HonuaSdkVersion>0.1.17-alpha.1</HonuaSdkVersion> <!-- x-release-please-version -->
+    <HonuaSdkVersion>1.0.0</HonuaSdkVersion> <!-- x-release-please-version -->
     <GeospatialGrpcVersion>0.1.0-alpha.1</GeospatialGrpcVersion>
     <Version>$(HonuaSdkVersion)</Version>
     <PackageVersion>$(HonuaSdkVersion)</PackageVersion>
@@ -12,12 +12,33 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      NU5104: a stable package should not depend on a prerelease package.
+      We ship stable 1.0 SDK packages that consume `Geospatial.Grpc` from
+      the geospatial-grpc repo, which is still on its own prerelease
+      (`0.1.0-alpha.1`). Suppress until that dep stabilizes — tracked in
+      honua-server#tbd. The dependency version range is unchanged; this only
+      silences the pack-time guardrail so the SDK can ship 1.0 without
+      blocking on an upstream cut.
+    -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
     <DebugType>portable</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <!--
+    SourceLink embeds repository/commit metadata into PDBs so consumers can step
+    from published symbols (.snupkg) into the exact GitHub source. PublishRepositoryUrl
+    and EmbedUntrackedSources above are already set; the package reference below is
+    what actually emits the SourceLink data.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+  </ItemGroup>
 
 </Project>

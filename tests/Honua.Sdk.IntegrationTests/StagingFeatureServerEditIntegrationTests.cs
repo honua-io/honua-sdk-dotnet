@@ -25,7 +25,7 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
             "features-edit-roundtrip",
             () => sdkMethod,
             () => requestPath,
-            async ct =>
+            async cancellationToken =>
             {
                 var addAttributes = ParseAttributes(
                     _fixture.Options.FeatureServerEditAddAttributesJson,
@@ -51,7 +51,7 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
                             }
                         ],
                         rollbackOnFailure: true,
-                        ct).ConfigureAwait(false);
+                        cancellationToken).ConfigureAwait(false);
 
                     var addResult = Assert.Single(addResponse.AddResults);
                     Assert.True(addResult.Success, FormatError(addResult.Error));
@@ -82,7 +82,7 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
                             ],
                             RollbackOnFailure = true
                         },
-                        ct).ConfigureAwait(false);
+                        cancellationToken).ConfigureAwait(false);
 
                     var updateResult = Assert.Single(updateResponse.UpdateResults);
                     Assert.True(updateResult.Succeeded, FormatError(updateResult.Error));
@@ -94,7 +94,7 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
                         _fixture.Options.LayerId,
                         [objectIdForCleanup.Value],
                         rollbackOnFailure: true,
-                        ct).ConfigureAwait(false);
+                        cancellationToken).ConfigureAwait(false);
 
                     var deleteResult = Assert.Single(deleteResponse.DeleteResults);
                     Assert.True(deleteResult.Success, FormatError(deleteResult.Error));
@@ -117,7 +117,7 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
             timeout.Token).ConfigureAwait(false);
     }
 
-    private async Task TryDeleteAsync(long objectId, CancellationToken ct)
+    private async Task TryDeleteAsync(long objectId, CancellationToken cancellationToken)
     {
         try
         {
@@ -126,7 +126,7 @@ public sealed class StagingFeatureServerEditIntegrationTests(StagingIntegrationF
                 _fixture.Options.LayerId,
                 [objectId],
                 rollbackOnFailure: true,
-                ct).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
         }
         catch
         {

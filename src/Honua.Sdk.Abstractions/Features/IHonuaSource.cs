@@ -17,40 +17,40 @@ public interface IHonuaSource
     /// <summary>
     /// Retrieves this source descriptor enriched with provider-neutral schema and discovered capabilities when available.
     /// </summary>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The current descriptor, or a provider-enriched descriptor when the backing client supports discovery.</returns>
-    Task<SourceDescriptor> GetDescriptorAsync(CancellationToken ct = default)
+    Task<SourceDescriptor> GetDescriptorAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(Descriptor);
 
     /// <summary>Executes a feature query and returns one page.</summary>
     /// <param name="query">Source-oriented query request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A provider-neutral result page.</returns>
-    Task<FeatureQueryResult> QueryAsync(SourceQuery? query = null, CancellationToken ct = default);
+    Task<FeatureQueryResult> QueryAsync(SourceQuery? query = null, CancellationToken cancellationToken = default);
 
     /// <summary>Executes a feature query and returns provider-neutral result pages.</summary>
     /// <param name="query">Source-oriented query request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral result pages.</returns>
-    IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(SourceQuery? query = null, CancellationToken ct = default);
+    IAsyncEnumerable<FeatureQueryResult> QueryPagesAsync(SourceQuery? query = null, CancellationToken cancellationToken = default);
 
     /// <summary>Drains feature query pages into one result envelope.</summary>
     /// <param name="query">Source-oriented query request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A provider-neutral result with all returned records.</returns>
-    Task<FeatureQueryResult> QueryAllAsync(SourceQuery? query = null, CancellationToken ct = default);
+    Task<FeatureQueryResult> QueryAllAsync(SourceQuery? query = null, CancellationToken cancellationToken = default);
 
     /// <summary>Queries feature/object identifiers for records matching a request.</summary>
     /// <param name="query">Source-oriented query request.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Feature or object identifiers represented as strings.</returns>
-    Task<IReadOnlyList<string>> QueryObjectIdsAsync(SourceQuery? query = null, CancellationToken ct = default);
+    Task<IReadOnlyList<string>> QueryObjectIdsAsync(SourceQuery? query = null, CancellationToken cancellationToken = default);
 
     /// <summary>Applies add, update, and delete feature edits against this source.</summary>
     /// <param name="request">Edit request. The source descriptor supplies provider-specific source identifiers.</param>
-    /// <param name="ct">Cancellation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Provider-neutral edit response.</returns>
-    Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken ct = default);
+    Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns the native protocol client when the requested protocol matches this source.

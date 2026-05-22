@@ -6,7 +6,7 @@ namespace Honua.Sdk.Admin.Exceptions;
 /// <summary>
 /// Exception thrown when a Honua Admin operation fails at the application level.
 /// </summary>
-public sealed class HonuaAdminOperationException : Exception
+public sealed class HonuaAdminOperationException : Honua.Sdk.Abstractions.HonuaException
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaAdminOperationException"/> class.

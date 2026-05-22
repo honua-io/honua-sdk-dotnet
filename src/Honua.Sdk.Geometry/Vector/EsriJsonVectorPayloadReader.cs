@@ -26,11 +26,11 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
     public async Task<VectorPayloadFeatureSet> ReadAsync(
         Stream stream,
         VectorPayloadReadOptions? options = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return Read(document.RootElement, options);
     }
 

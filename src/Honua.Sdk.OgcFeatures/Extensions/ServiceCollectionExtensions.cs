@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers the Honua OGC API Features client and related services with the DI container.
+    /// The supplied <paramref name="configure"/> delegate is invoked exactly once to capture
+    /// options; primary HTTP handler and resilience pipeline configuration are derived from
+    /// that snapshot, so side-effecting <paramref name="configure"/> delegates are safe.
     /// </summary>
     /// <param name="services">The service collection to register with.</param>
     /// <param name="configure">Configuration delegate for client options.</param>
@@ -26,13 +29,16 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        services.Configure(configure);
+        var snapshot = new HonuaOgcFeaturesClientOptions();
+        configure(snapshot);
+        HonuaOgcFeaturesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaOgcFeaturesClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaOgcFeaturesClientOptions>>(Options.Create(snapshot));
         services.AddTransient<HonuaOgcFeaturesAuthHandler>();
         var httpBuilder = services.AddHttpClient<HonuaOgcFeaturesClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaOgcFeaturesClientOptions>>().Value;
-            HonuaOgcFeaturesClientOptions.ValidateBaseAddress(options.BaseAddress);
-            HonuaOgcFeaturesClientOptions.ValidateTimeout(options.Timeout);
             client.BaseAddress = options.BaseAddress;
             client.Timeout = options.Timeout;
         })
@@ -43,44 +49,25 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaOgcFeaturesClient>());
-        ConfigurePrimaryHandler(httpBuilder, configure);
-        ConfigureResilience(httpBuilder, configure);
-        return services;
-    }
 
-    private static void ConfigurePrimaryHandler(
-        IHttpClientBuilder httpBuilder,
-        Action<HonuaOgcFeaturesClientOptions> configure)
-    {
-        var opts = new HonuaOgcFeaturesClientOptions();
-        configure(opts);
-        if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        if (snapshot.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
         {
             httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
         }
-    }
 
-    private static void ConfigureResilience(
-        IHttpClientBuilder httpBuilder,
-        Action<HonuaOgcFeaturesClientOptions> configure)
-    {
-        var opts = new HonuaOgcFeaturesClientOptions();
-        configure(opts);
-        HonuaOgcFeaturesClientOptions.ValidateTimeout(opts.Timeout);
-
-        if (!opts.EnableRetry)
+        if (snapshot.EnableRetry)
         {
-            return;
+            httpBuilder.AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = snapshot.Timeout;
+                options.AttemptTimeout.Timeout = snapshot.Timeout;
+                options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
+                options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+                options.Retry.DisableForUnsafeHttpMethods();
+                options.Retry.UseJitter = true;
+            });
         }
 
-        httpBuilder.AddStandardResilienceHandler(options =>
-        {
-            options.TotalRequestTimeout.Timeout = opts.Timeout;
-            options.AttemptTimeout.Timeout = opts.Timeout;
-            options.Retry.MaxRetryAttempts = opts.MaxRetryAttempts;
-            options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
-            options.Retry.DisableForUnsafeHttpMethods();
-            options.Retry.UseJitter = true;
-        });
+        return services;
     }
 }

@@ -8,7 +8,7 @@ namespace Honua.Sdk.Abstractions.Features;
 /// <summary>
 /// Public request DTO for FeatureServer query operations.
 /// </summary>
-public sealed class QueryFeaturesRequest
+public sealed record QueryFeaturesRequest
 {
     /// <summary>FeatureServer service identifier (e.g. catalog or service name).</summary>
     public required string ServiceId { get; init; }
@@ -16,8 +16,8 @@ public sealed class QueryFeaturesRequest
     /// <summary>Zero-based layer index within the service.</summary>
     public required int LayerId { get; init; }
 
-    /// <summary>SQL-like WHERE clause filter. Defaults to <c>1=1</c> (match all).</summary>
-    public string Where { get; init; } = "1=1";
+    /// <summary>Optional SQL-like WHERE clause filter. <see langword="null"/> defers to the server default (typically <c>1=1</c>).</summary>
+    public string? Where { get; init; }
 
     /// <summary>Optional explicit object-id filter; mutually exclusive with <see cref="Where"/> semantics depending on server.</summary>
     public IReadOnlyList<long>? ObjectIds { get; init; }
@@ -31,7 +31,7 @@ public sealed class QueryFeaturesRequest
     /// <summary>Optional zero-based offset for pagination.</summary>
     public int? ResultOffset { get; init; }
 
-    /// <summary>Optional maximum number of records per page.</summary>
+    /// <summary>Optional maximum number of records per page. <see langword="null"/> means the server default (typically unlimited within server policy).</summary>
     public int? ResultRecordCount { get; init; }
 
     /// <summary>Optional ORDER BY clause.</summary>
@@ -56,7 +56,7 @@ public sealed class QueryFeaturesRequest
 /// <summary>
 /// Public request DTO for FeatureServer applyEdits operations.
 /// </summary>
-public sealed class ApplyEditsRequest
+public sealed record ApplyEditsRequest
 {
     /// <summary>FeatureServer service identifier.</summary>
     public required string ServiceId { get; init; }
@@ -95,7 +95,7 @@ public sealed class ApplyEditsRequest
 /// <summary>
 /// Public request DTO for the OGC API Features <c>GET /collections/{id}/items</c> endpoint.
 /// </summary>
-public sealed class OgcItemsRequest
+public sealed record OgcItemsRequest
 {
     /// <summary>OGC collection identifier.</summary>
     public required string CollectionId { get; init; }
@@ -119,7 +119,7 @@ public sealed class OgcItemsRequest
 /// <summary>
 /// Public request DTO for creating an OGC API Features item (HTTP POST).
 /// </summary>
-public sealed class OgcCreateItemRequest
+public sealed record OgcCreateItemRequest
 {
     /// <summary>OGC collection identifier.</summary>
     public required string CollectionId { get; init; }
@@ -131,7 +131,7 @@ public sealed class OgcCreateItemRequest
 /// <summary>
 /// Public request DTO for replacing an OGC API Features item (HTTP PUT).
 /// </summary>
-public sealed class OgcReplaceItemRequest
+public sealed record OgcReplaceItemRequest
 {
     /// <summary>OGC collection identifier.</summary>
     public required string CollectionId { get; init; }
@@ -146,7 +146,7 @@ public sealed class OgcReplaceItemRequest
 /// <summary>
 /// Public request DTO for partially updating an OGC API Features item via JSON Merge Patch (RFC 7396).
 /// </summary>
-public sealed class OgcPatchItemRequest
+public sealed record OgcPatchItemRequest
 {
     /// <summary>OGC collection identifier.</summary>
     public required string CollectionId { get; init; }
@@ -161,7 +161,7 @@ public sealed class OgcPatchItemRequest
 /// <summary>
 /// Public request DTO for deleting an OGC API Features item.
 /// </summary>
-public sealed class OgcDeleteItemRequest
+public sealed record OgcDeleteItemRequest
 {
     /// <summary>OGC collection identifier.</summary>
     public required string CollectionId { get; init; }

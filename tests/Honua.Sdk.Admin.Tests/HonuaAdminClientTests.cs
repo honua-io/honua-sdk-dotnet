@@ -15,11 +15,13 @@ public sealed class HonuaAdminClientTests
     private const string ConnectionId = "11111111-1111-1111-1111-111111111111";
 
     [Fact]
-    public void Options_DefaultBaseAddress_UsesHttps()
+    public void Options_DefaultBaseAddress_IsNull()
     {
         var options = new HonuaAdminClientOptions();
 
-        Assert.Equal(Uri.UriSchemeHttps, options.BaseAddress.Scheme);
+        // The SDK does not bake in a localhost default so that missing
+        // configuration surfaces loudly via ValidateBaseAddress.
+        Assert.Null(options.BaseAddress);
     }
 
     [Fact]
@@ -29,6 +31,7 @@ public sealed class HonuaAdminClientTests
 
         var options = Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKey = "test-key-123"
         });
 
@@ -65,6 +68,7 @@ public sealed class HonuaAdminClientTests
 
         var options = Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             BearerToken = "my-jwt-token"
         });
 
@@ -98,6 +102,7 @@ public sealed class HonuaAdminClientTests
 
         var options = Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKey = "admin-key",
             BearerToken = "jwt-token"
         });
@@ -139,6 +144,7 @@ public sealed class HonuaAdminClientTests
 
         var options = Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKeyProvider = _ => Task.FromResult<string?>($"admin-key-{++apiKeyCalls}"),
             BearerTokenProvider = _ => Task.FromResult<string?>($"admin-token-{++bearerTokenCalls}")
         });
@@ -186,6 +192,7 @@ public sealed class HonuaAdminClientTests
 
         var options = Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             ApiKey = "fallback-key",
             BearerToken = "fallback-token",
             ApiKeyProvider = _ => Task.FromResult<string?>(null),
@@ -224,6 +231,7 @@ public sealed class HonuaAdminClientTests
         string? capturedAuth = null;
         var options = Options.Create(new HonuaAdminClientOptions
         {
+            BaseAddress = new Uri("https://localhost:5001"),
             AccessTokenProvider = new DelegateAccessTokenProvider(request =>
             {
                 providerRequest = request;

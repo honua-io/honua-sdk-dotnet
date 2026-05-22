@@ -15,7 +15,7 @@ internal sealed class BrowserFeatureMapSample(
     private readonly IBrowserGeoJsonDisplayAdapter _display = display;
     private readonly BrowserFeatureMapSampleOptions _options = options;
 
-    public async Task<BrowserGeoJsonDisplayPayload> RunAsync(CancellationToken ct = default)
+    public async Task<BrowserGeoJsonDisplayPayload> RunAsync(CancellationToken cancellationToken = default)
     {
         var featureCollection = await _features.GetItemsAsync(
             _options.CollectionId,
@@ -26,7 +26,7 @@ internal sealed class BrowserFeatureMapSample(
                 FilterLang = string.IsNullOrWhiteSpace(_options.Filter) ? null : "cql2-text",
                 Format = OgcFeaturesFormat.GeoJson,
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         var geocodes = await _geocoding.ForwardGeocodeAsync(
             _options.Address,
@@ -35,14 +35,14 @@ internal sealed class BrowserFeatureMapSample(
                 MaxResults = _options.GeocodeLimit,
                 SpatialReferenceWkid = 4326,
             },
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         var payload = new BrowserGeoJsonDisplayPayload(
             _options.DisplayLayerId,
             featureCollection,
             geocodes.Select(ToMarker).ToArray());
 
-        await _display.SetGeoJsonAsync(payload, ct).ConfigureAwait(false);
+        await _display.SetGeoJsonAsync(payload, cancellationToken).ConfigureAwait(false);
         return payload;
     }
 
@@ -78,16 +78,16 @@ internal sealed record BrowserGeocodeMarker(
 
 internal interface IBrowserGeoJsonDisplayAdapter
 {
-    ValueTask SetGeoJsonAsync(BrowserGeoJsonDisplayPayload payload, CancellationToken ct = default);
+    ValueTask SetGeoJsonAsync(BrowserGeoJsonDisplayPayload payload, CancellationToken cancellationToken = default);
 }
 
 internal sealed class NoopBrowserGeoJsonDisplayAdapter : IBrowserGeoJsonDisplayAdapter
 {
     public BrowserGeoJsonDisplayPayload? LastPayload { get; private set; }
 
-    public ValueTask SetGeoJsonAsync(BrowserGeoJsonDisplayPayload payload, CancellationToken ct = default)
+    public ValueTask SetGeoJsonAsync(BrowserGeoJsonDisplayPayload payload, CancellationToken cancellationToken = default)
     {
-        ct.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
         LastPayload = payload;
         return ValueTask.CompletedTask;
     }

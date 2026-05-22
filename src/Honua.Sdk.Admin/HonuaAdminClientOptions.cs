@@ -8,12 +8,14 @@ namespace Honua.Sdk.Admin;
 /// <summary>
 /// Configuration options for the Honua Admin client.
 /// </summary>
-public sealed class HonuaAdminClientOptions : IHonuaAuthenticationOptions
+public sealed class HonuaAdminClientOptions : IHonuaAuthenticationOptions, Honua.Sdk.Abstractions.IHonuaClientOptions
 {
     /// <summary>
-    /// Base address of the Honua server.
+    /// Base address of the Honua server. Required; the SDK does not assume a
+    /// localhost default so that missing configuration surfaces loudly at
+    /// registration time via <see cref="HonuaAdminClientOptions.ValidateBaseAddress"/>.
     /// </summary>
-    public Uri BaseAddress { get; set; } = new("https://localhost:5001");
+    public Uri? BaseAddress { get; set; }
 
     /// <summary>
     /// API key for admin authentication.
@@ -80,13 +82,24 @@ public sealed class HonuaAdminClientOptions : IHonuaAuthenticationOptions
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
 
     /// <summary>
-    /// Maximum number of retry attempts (default: 3, range 2-5).
-    /// Only applies when <see cref="EnableRetry"/> is true.
+    /// Maximum number of retry attempts (default: 3). Must be in the inclusive
+    /// range [2, 5]; the setter throws <see cref="ArgumentOutOfRangeException"/>
+    /// for values outside that range. Only applies when <see cref="EnableRetry"/>
+    /// is <c>true</c>.
     /// </summary>
     public int MaxRetryAttempts
     {
         get => _maxRetryAttempts;
-        set => _maxRetryAttempts = Math.Clamp(value, 2, 5);
+        set
+        {
+            if (value is < 2 or > 5)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value), value,
+                    "MaxRetryAttempts must be in the inclusive range [2, 5].");
+            }
+            _maxRetryAttempts = value;
+        }
     }
 
     private int _maxRetryAttempts = 3;
@@ -95,18 +108,18 @@ public sealed class HonuaAdminClientOptions : IHonuaAuthenticationOptions
     {
         if (baseAddress is null)
         {
-            throw new InvalidOperationException("Honua admin base address must be configured.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua admin base address must be configured.");
         }
 
         if (!baseAddress.IsAbsoluteUri)
         {
-            throw new InvalidOperationException("Honua admin base address must be an absolute URI.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua admin base address must be an absolute URI.");
         }
 
         if (!string.Equals(baseAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(baseAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Honua admin base address must use HTTP or HTTPS.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua admin base address must use HTTP or HTTPS.");
         }
     }
 
@@ -114,8 +127,7 @@ public sealed class HonuaAdminClientOptions : IHonuaAuthenticationOptions
     {
         if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
         {
-            throw new InvalidOperationException(
-                "Honua admin timeout must be greater than 10 milliseconds and less than 24 hours.");
+            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua admin timeout must be greater than 10 milliseconds and less than 24 hours.");
         }
     }
 

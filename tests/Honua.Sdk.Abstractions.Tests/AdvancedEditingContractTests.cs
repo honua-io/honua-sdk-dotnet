@@ -242,7 +242,7 @@ public sealed class AdvancedEditingContractTests
 
         public Task<FeatureEditingRulesMetadata> GetEditingRulesAsync(
             FeatureEditingRulesRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new FeatureEditingRulesMetadata
             {
                 Source = request.Source,
@@ -259,7 +259,7 @@ public sealed class AdvancedEditingContractTests
 
         public Task<FeatureEditValidationResponse> ValidateEditsAsync(
             FeatureEditValidationRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new FeatureEditValidationResponse
             {
                 ProviderName = ProviderName,
@@ -280,7 +280,7 @@ public sealed class AdvancedEditingContractTests
 
         public Task<FeatureEditSession> StartEditSessionAsync(
             FeatureEditSessionStartRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.FromResult(new FeatureEditSession
             {
                 SessionId = "session-1",
@@ -292,12 +292,12 @@ public sealed class AdvancedEditingContractTests
 
         public Task CommitEditSessionAsync(
             FeatureEditSessionCompleteRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
         public Task RollbackEditSessionAsync(
             FeatureEditSessionCompleteRequest request,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
 }
