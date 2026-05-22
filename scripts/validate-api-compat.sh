@@ -107,8 +107,22 @@ for entry in "${projects[@]}"; do
     api_compat_args+=("--suppression-file" "${suppression_file}")
   fi
 
-  (
-    cd "${ROOT}"
-    dotnet tool run apicompat -- "${api_compat_args[@]}"
-  )
+  # When HONUA_API_COMPAT_ALLOW_BREAKING=true (used for explicit major-version
+  # bumps such as the 0.1.x-alpha → 1.0.0 cut), still RUN the check so the
+  # diagnostics show up in the workflow log, but downgrade a non-zero exit to
+  # a warning instead of failing the gate. This is the SemVer-correct
+  # behaviour for an intentional breaking-major release.
+  if [[ "${HONUA_API_COMPAT_ALLOW_BREAKING:-false}" == "true" ]]; then
+    (
+      cd "${ROOT}"
+      if ! dotnet tool run apicompat -- "${api_compat_args[@]}"; then
+        echo "::warning::API breaking changes detected in ${package_id} but HONUA_API_COMPAT_ALLOW_BREAKING=true; downgrading to warning."
+      fi
+    )
+  else
+    (
+      cd "${ROOT}"
+      dotnet tool run apicompat -- "${api_compat_args[@]}"
+    )
+  fi
 done
