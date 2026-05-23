@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Honua.Sdk.Field.Forms;
 using Honua.Sdk.Field.Projects;
 using Honua.Sdk.Field.Records;
 
@@ -88,6 +89,32 @@ public sealed class FieldProjectPackageTests
     }
 
     [Fact]
+    public void Validate_ReturnsRequiredValueDiagnosticForBlankFormId()
+    {
+        var package = new FieldProjectPackage
+        {
+            SchemaVersion = FieldProjectPackage.CurrentSchemaVersion,
+            ProjectId = "blank-form-demo",
+            Name = "Blank form demo",
+            Forms =
+            [
+                new FormDefinition
+                {
+                    FormId = " ",
+                    Name = "Inspection",
+                },
+            ],
+        };
+
+        var result = package.Validate();
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Issues, issue =>
+            issue.Code == FieldProjectPackageValidationCodes.MissingRequiredValue &&
+            issue.Path == "$.forms[0].formId");
+    }
+
+    [Fact]
     public void RecordWorkflow_AllowsNoCloudLifecycleTransitions()
     {
         var createdAt = DateTimeOffset.Parse("2026-05-23T08:00:00Z", CultureInfo.InvariantCulture);
@@ -110,5 +137,5 @@ public sealed class FieldProjectPackageTests
     }
 
     private static string ReadFixture(string name)
-        => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Json", name));
+        => File.ReadAllText(Path.Join(AppContext.BaseDirectory, "Fixtures", "Json", name));
 }

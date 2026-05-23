@@ -20,6 +20,7 @@ public static class RecordWorkflow
         {
             (RecordStatus.Draft, RecordStatus.ReadyToSubmit) => true,
             (RecordStatus.Draft, RecordStatus.Submitted) => true,
+            (RecordStatus.Draft, RecordStatus.Deleted) => true,
             (RecordStatus.ReadyToSubmit, RecordStatus.Submitted) => true,
             (RecordStatus.Submitted, RecordStatus.Approved) => true,
             (RecordStatus.Submitted, RecordStatus.Rejected) => true,

@@ -452,6 +452,24 @@ public static class FieldProjectPackageValidator
 
         var issues = new List<FieldProjectPackageValidationIssue>();
 
+        ValidatePackageIdentity(issues, package);
+        ValidatePackageIdentifiers(issues, package);
+
+        var identifiers = FieldProjectPackageIdentifierSets.Create(package);
+
+        ValidateBindings(issues, package.Bindings, identifiers);
+        ValidateOfflinePackages(issues, package.OfflinePackages, identifiers.SourceIds);
+        ValidateMediaPolicy(issues, package.MediaPolicy, identifiers.FormIds);
+        ValidateTaskPackets(issues, package.TaskPackets, identifiers.BindingIds);
+        ValidateLifecyclePolicy(issues, package.LifecyclePolicy);
+
+        return new FieldProjectPackageValidationResult { Issues = issues };
+    }
+
+    private static void ValidatePackageIdentity(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        FieldProjectPackage package)
+    {
         Require(issues, package.SchemaVersion, "$.schemaVersion", "Package schemaVersion is required.");
         if (!string.IsNullOrWhiteSpace(package.SchemaVersion) &&
             !string.Equals(package.SchemaVersion, FieldProjectPackage.CurrentSchemaVersion, StringComparison.Ordinal))
@@ -465,6 +483,20 @@ public static class FieldProjectPackageValidator
 
         Require(issues, package.ProjectId, "$.projectId", "Package projectId is required.");
         Require(issues, package.Name, "$.name", "Package name is required.");
+    }
+
+    private static void ValidatePackageIdentifiers(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        FieldProjectPackage package)
+    {
+        RequireAll(
+            issues,
+            package.Forms.Select((form, index) => (Value: form.FormId, Path: $"$.forms[{index}].formId")),
+            "Form id is required.");
+        RequireAll(
+            issues,
+            package.Sources.Select((source, index) => (Value: source.Id, Path: $"$.sources[{index}].id")),
+            "Source id is required.");
 
         ValidateUnique(
             issues,
@@ -486,21 +518,22 @@ public static class FieldProjectPackageValidator
             package.OfflinePackages.Select(offlinePackage => offlinePackage.PackageId),
             "$.offlinePackages",
             "Offline package identifiers must be unique.");
+    }
 
-        var formIds = package.Forms.Select(form => form.FormId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var sourceIds = package.Sources.Select(source => source.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var bindingIds = package.Bindings.Select(binding => binding.BindingId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var offlinePackageIds = package.OfflinePackages.Select(offlinePackage => offlinePackage.PackageId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        for (var i = 0; i < package.Bindings.Count; i++)
+    private static void ValidateBindings(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        IReadOnlyList<FieldProjectBinding> bindings,
+        FieldProjectPackageIdentifierSets identifiers)
+    {
+        for (var i = 0; i < bindings.Count; i++)
         {
-            var binding = package.Bindings[i];
+            var binding = bindings[i];
             var path = $"$.bindings[{i}]";
             Require(issues, binding.BindingId, $"{path}.bindingId", "Binding id is required.");
             Require(issues, binding.FormId, $"{path}.formId", "Binding formId is required.");
             Require(issues, binding.SourceId, $"{path}.sourceId", "Binding sourceId is required.");
 
-            if (!string.IsNullOrWhiteSpace(binding.FormId) && !formIds.Contains(binding.FormId))
+            if (!string.IsNullOrWhiteSpace(binding.FormId) && !identifiers.FormIds.Contains(binding.FormId))
             {
                 AddError(
                     issues,
@@ -509,7 +542,7 @@ public static class FieldProjectPackageValidator
                     $"Binding references missing form '{binding.FormId}'.");
             }
 
-            if (!string.IsNullOrWhiteSpace(binding.SourceId) && !sourceIds.Contains(binding.SourceId))
+            if (!string.IsNullOrWhiteSpace(binding.SourceId) && !identifiers.SourceIds.Contains(binding.SourceId))
             {
                 AddError(
                     issues,
@@ -518,7 +551,8 @@ public static class FieldProjectPackageValidator
                     $"Binding references missing source '{binding.SourceId}'.");
             }
 
-            if (!string.IsNullOrWhiteSpace(binding.OfflinePackageId) && !offlinePackageIds.Contains(binding.OfflinePackageId))
+            if (!string.IsNullOrWhiteSpace(binding.OfflinePackageId) &&
+                !identifiers.OfflinePackageIds.Contains(binding.OfflinePackageId))
             {
                 AddError(
                     issues,
@@ -527,22 +561,25 @@ public static class FieldProjectPackageValidator
                     $"Binding references missing offline package '{binding.OfflinePackageId}'.");
             }
         }
+    }
 
-        for (var i = 0; i < package.OfflinePackages.Count; i++)
+    private static void ValidateOfflinePackages(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        IReadOnlyList<FieldOfflinePackageReference> offlinePackages,
+        IReadOnlySet<string> sourceIds)
+    {
+        for (var i = 0; i < offlinePackages.Count; i++)
         {
-            var offlinePackage = package.OfflinePackages[i];
+            var offlinePackage = offlinePackages[i];
             var path = $"$.offlinePackages[{i}]";
             Require(issues, offlinePackage.PackageId, $"{path}.packageId", "Offline package id is required.");
-            foreach (var sourceId in offlinePackage.SourceIds)
+            foreach (var sourceId in offlinePackage.SourceIds.Where(sourceId => !sourceIds.Contains(sourceId)))
             {
-                if (!sourceIds.Contains(sourceId))
-                {
-                    AddError(
-                        issues,
-                        FieldProjectPackageValidationCodes.MissingReference,
-                        $"{path}.sourceIds",
-                        $"Offline package references missing source '{sourceId}'.");
-                }
+                AddError(
+                    issues,
+                    FieldProjectPackageValidationCodes.MissingReference,
+                    $"{path}.sourceIds",
+                    $"Offline package references missing source '{sourceId}'.");
             }
 
             if (offlinePackage.SizeBytes is < 0)
@@ -554,10 +591,16 @@ public static class FieldProjectPackageValidator
                     "Offline package sizeBytes must be zero or greater.");
             }
         }
+    }
 
-        for (var i = 0; i < package.MediaPolicy.Requirements.Count; i++)
+    private static void ValidateMediaPolicy(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        FieldProjectMediaPolicy mediaPolicy,
+        IReadOnlySet<string> formIds)
+    {
+        for (var i = 0; i < mediaPolicy.Requirements.Count; i++)
         {
-            var requirement = package.MediaPolicy.Requirements[i];
+            var requirement = mediaPolicy.Requirements[i];
             var path = $"$.mediaPolicy.requirements[{i}]";
             Require(issues, requirement.FormId, $"{path}.formId", "Media requirement formId is required.");
             Require(issues, requirement.FieldId, $"{path}.fieldId", "Media requirement fieldId is required.");
@@ -589,10 +632,16 @@ public static class FieldProjectPackageValidator
                     "Media requirement minCount cannot exceed maxCount.");
             }
         }
+    }
 
-        for (var i = 0; i < package.TaskPackets.Count; i++)
+    private static void ValidateTaskPackets(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        IReadOnlyList<FieldTaskPacket> taskPackets,
+        IReadOnlySet<string> bindingIds)
+    {
+        for (var i = 0; i < taskPackets.Count; i++)
         {
-            var packet = package.TaskPackets[i];
+            var packet = taskPackets[i];
             var path = $"$.taskPackets[{i}]";
             Require(issues, packet.TaskPacketId, $"{path}.taskPacketId", "Task packet id is required.");
 
@@ -613,10 +662,6 @@ public static class FieldProjectPackageValidator
                 }
             }
         }
-
-        ValidateLifecyclePolicy(issues, package.LifecyclePolicy);
-
-        return new FieldProjectPackageValidationResult { Issues = issues };
     }
 
     private static void ValidateLifecyclePolicy(
@@ -657,14 +702,26 @@ public static class FieldProjectPackageValidator
         string path,
         string message)
     {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var value in values.Where(value => !string.IsNullOrWhiteSpace(value)))
+        var hasDuplicate = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value!)
+            .GroupBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .Any(group => group.Skip(1).Any());
+
+        if (hasDuplicate)
         {
-            if (!seen.Add(value!))
-            {
-                AddError(issues, FieldProjectPackageValidationCodes.DuplicateIdentifier, path, message);
-                return;
-            }
+            AddError(issues, FieldProjectPackageValidationCodes.DuplicateIdentifier, path, message);
+        }
+    }
+
+    private static void RequireAll(
+        ICollection<FieldProjectPackageValidationIssue> issues,
+        IEnumerable<(string Value, string Path)> values,
+        string message)
+    {
+        foreach (var value in values.Where(value => string.IsNullOrWhiteSpace(value.Value)))
+        {
+            AddError(issues, FieldProjectPackageValidationCodes.MissingRequiredValue, value.Path, message);
         }
     }
 
@@ -692,6 +749,26 @@ public static class FieldProjectPackageValidator
             Message = message,
             Severity = FieldProjectPackageValidationSeverity.Error
         });
+
+    private sealed record FieldProjectPackageIdentifierSets(
+        IReadOnlySet<string> FormIds,
+        IReadOnlySet<string> SourceIds,
+        IReadOnlySet<string> BindingIds,
+        IReadOnlySet<string> OfflinePackageIds)
+    {
+        public static FieldProjectPackageIdentifierSets Create(FieldProjectPackage package)
+            => new(
+                CreateSet(package.Forms.Select(form => form.FormId)),
+                CreateSet(package.Sources.Select(source => source.Id)),
+                CreateSet(package.Bindings.Select(binding => binding.BindingId)),
+                CreateSet(package.OfflinePackages.Select(offlinePackage => offlinePackage.PackageId)));
+
+        private static HashSet<string> CreateSet(IEnumerable<string?> values)
+            => values
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Select(value => value!)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
 }
 
 internal static class FieldProjectPackageJson
