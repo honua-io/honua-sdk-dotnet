@@ -18,10 +18,20 @@ public static class RecordWorkflow
     {
         return (from, to) switch
         {
+            (RecordStatus.Draft, RecordStatus.ReadyToSubmit) => true,
             (RecordStatus.Draft, RecordStatus.Submitted) => true,
+            (RecordStatus.Draft, RecordStatus.Deleted) => true,
+            (RecordStatus.ReadyToSubmit, RecordStatus.Submitted) => true,
             (RecordStatus.Submitted, RecordStatus.Approved) => true,
             (RecordStatus.Submitted, RecordStatus.Rejected) => true,
+            (RecordStatus.Submitted, RecordStatus.Deleted) => true,
+            (RecordStatus.Approved, RecordStatus.Reopened) => true,
             (RecordStatus.Rejected, RecordStatus.Submitted) => true,
+            (RecordStatus.Rejected, RecordStatus.Reopened) => true,
+            (RecordStatus.Rejected, RecordStatus.Deleted) => true,
+            (RecordStatus.Reopened, RecordStatus.ReadyToSubmit) => true,
+            (RecordStatus.Reopened, RecordStatus.Submitted) => true,
+            (RecordStatus.Reopened, RecordStatus.Deleted) => true,
             _ when from == to => true,
             _ => false,
         };
@@ -51,9 +61,14 @@ public static class RecordWorkflow
             record.CompletedAtUtc = null;
         }
 
-        if (targetStatus is RecordStatus.Approved or RecordStatus.Rejected)
+        if (targetStatus is RecordStatus.Approved or RecordStatus.Rejected or RecordStatus.Deleted)
         {
             record.CompletedAtUtc = now;
+        }
+
+        if (targetStatus is RecordStatus.Reopened or RecordStatus.ReadyToSubmit)
+        {
+            record.CompletedAtUtc = null;
         }
     }
 }

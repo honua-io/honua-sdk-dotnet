@@ -67,6 +67,29 @@ if (result.IsValid)
 }
 ```
 
+## Local project packages
+
+`Honua.Sdk.Field.Projects.FieldProjectPackage` is the portable no-cloud
+handoff model for field project packages. It groups SDK source descriptors,
+forms, source/form bindings, offline artifact references, media policy, record
+lifecycle policy, and local task packets so mobile or desktop runtimes can
+import a project from local files without cloud discovery or a hosted designer.
+
+```csharp
+using Honua.Sdk.Field.Projects;
+
+var package = FieldProjectPackage.ParseJson(File.ReadAllText("field-project.json"));
+var validation = package.Validate();
+
+if (!validation.IsValid)
+{
+    foreach (var issue in validation.Issues)
+    {
+        Console.WriteLine($"{issue.Path}: {issue.Message}");
+    }
+}
+```
+
 ## Documentation
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)

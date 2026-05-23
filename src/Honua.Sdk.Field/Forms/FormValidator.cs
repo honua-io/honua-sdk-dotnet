@@ -157,6 +157,11 @@ public static class FormValidator
         {
             errors.Add(new FormValidationError(field.FieldId, $"{field.Label} requires at least {minMedia} media item(s)."));
         }
+
+        if (field.Validation.MaxMediaCount is { } maxMedia && mediaCount > maxMedia)
+        {
+            errors.Add(new FormValidationError(field.FieldId, $"{field.Label} allows at most {maxMedia} media item(s)."));
+        }
     }
 
     private static int CountMedia(FieldRecord record, FormField field)

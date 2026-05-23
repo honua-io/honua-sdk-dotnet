@@ -90,4 +90,23 @@ public sealed class RecordWorkflowTests
         Assert.Null(record.CompletedAtUtc);
         Assert.Null(record.Duration);
     }
+
+    [Fact]
+    public void Transition_AllowsDraftRecordDelete()
+    {
+        var createdAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+        var deletedAt = createdAt.AddMinutes(5);
+        var record = new FieldRecord
+        {
+            RecordId = "record-draft-delete",
+            FormId = "inspection",
+            CreatedAtUtc = createdAt,
+        };
+
+        RecordWorkflow.Transition(record, RecordStatus.Deleted, deletedAt);
+
+        Assert.Equal(RecordStatus.Deleted, record.Status);
+        Assert.Equal(deletedAt, record.CompletedAtUtc);
+        Assert.True(RecordWorkflow.CanTransition(RecordStatus.Draft, RecordStatus.Deleted));
+    }
 }

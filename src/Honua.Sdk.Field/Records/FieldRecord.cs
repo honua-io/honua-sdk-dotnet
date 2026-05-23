@@ -73,8 +73,101 @@ public sealed record FieldMediaAttachment
     /// <summary>UTC time the media was captured.</summary>
     public DateTimeOffset CapturedAtUtc { get; init; } = DateTimeOffset.UtcNow;
 
+    /// <summary>Media duration for audio/video attachments.</summary>
+    public TimeSpan? Duration { get; init; }
+
+    /// <summary>Optional GPS track reference for timed media.</summary>
+    public FieldGpsTrackReference? GpsTrack { get; init; }
+
+    /// <summary>Lowercase hexadecimal SHA-256 digest, when known.</summary>
+    public string? Sha256 { get; init; }
+
     /// <summary>Whether the host should blur faces before upload or export.</summary>
     public bool RequiresFaceBlur { get; init; }
+}
+
+/// <summary>
+/// Portable structured address value.
+/// </summary>
+public sealed record FieldAddressValue
+{
+    /// <summary>Single-line formatted address.</summary>
+    public string? Formatted { get; init; }
+
+    /// <summary>Street address lines.</summary>
+    public IReadOnlyList<string> Lines { get; init; } = [];
+
+    /// <summary>City or locality.</summary>
+    public string? Locality { get; init; }
+
+    /// <summary>State, province, or region.</summary>
+    public string? Region { get; init; }
+
+    /// <summary>Postal or ZIP code.</summary>
+    public string? PostalCode { get; init; }
+
+    /// <summary>Country code or country name.</summary>
+    public string? Country { get; init; }
+
+    /// <summary>Geocoded location for the address, when available.</summary>
+    public FieldGeoPoint? Location { get; init; }
+}
+
+/// <summary>
+/// Portable record-link value.
+/// </summary>
+public sealed record FieldRecordLinkValue
+{
+    /// <summary>Referenced form identifier.</summary>
+    public string? FormId { get; init; }
+
+    /// <summary>Referenced source identifier.</summary>
+    public string? SourceId { get; init; }
+
+    /// <summary>Referenced record identifier.</summary>
+    public required string RecordId { get; init; }
+
+    /// <summary>Display label captured at link time.</summary>
+    public string? Label { get; init; }
+}
+
+/// <summary>
+/// Portable barcode or QR scan value.
+/// </summary>
+public sealed record FieldBarcodeValue
+{
+    /// <summary>Decoded barcode or QR value.</summary>
+    public required string Value { get; init; }
+
+    /// <summary>Barcode format, such as QR_CODE or CODE_128, when known.</summary>
+    public string? Format { get; init; }
+
+    /// <summary>UTC scan time.</summary>
+    public DateTimeOffset ScannedAtUtc { get; init; } = DateTimeOffset.UtcNow;
+}
+
+/// <summary>
+/// Portable GPS track reference associated with audio or video capture.
+/// </summary>
+public sealed record FieldGpsTrackReference
+{
+    /// <summary>Stable track identifier.</summary>
+    public required string TrackId { get; init; }
+
+    /// <summary>Track file name without host-specific local path.</summary>
+    public string? FileName { get; init; }
+
+    /// <summary>Track content type, for example application/geo+json or application/gpx+xml.</summary>
+    public string? ContentType { get; init; }
+
+    /// <summary>Number of positions in the track, when known.</summary>
+    public int? PointCount { get; init; }
+
+    /// <summary>UTC track start time.</summary>
+    public DateTimeOffset? StartedAtUtc { get; init; }
+
+    /// <summary>UTC track end time.</summary>
+    public DateTimeOffset? EndedAtUtc { get; init; }
 }
 
 /// <summary>
@@ -117,6 +210,9 @@ public enum RecordStatus
     /// <summary>Record is being edited.</summary>
     Draft,
 
+    /// <summary>Record is valid locally and ready to submit or sync.</summary>
+    ReadyToSubmit,
+
     /// <summary>Record has been submitted for review or sync.</summary>
     Submitted,
 
@@ -124,5 +220,11 @@ public enum RecordStatus
     Approved,
 
     /// <summary>Record has been rejected and may be resubmitted.</summary>
-    Rejected
+    Rejected,
+
+    /// <summary>Record has been reopened after review.</summary>
+    Reopened,
+
+    /// <summary>Record has been locally deleted or marked for delete sync.</summary>
+    Deleted
 }
