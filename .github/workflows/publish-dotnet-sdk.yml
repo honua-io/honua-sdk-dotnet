@@ -251,6 +251,21 @@ jobs:
           dotnet tool update --global CycloneDX --version 4.* >/dev/null
           export PATH="$PATH:$HOME/.dotnet/tools"
 
+          projects=(
+            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
+            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
+            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
+            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
+            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
+            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
+            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
+            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
+            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
+            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
+            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk/Honua.Sdk.csproj"
+          )
+
           for project in "${projects[@]}"; do
             pkg_id="$(basename "$(dirname "${project}")")"
             dotnet CycloneDX "${project}" \
