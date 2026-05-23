@@ -101,8 +101,17 @@ public sealed record FormField
     /// <summary>Choice values for single- or multi-choice fields.</summary>
     public IReadOnlyList<FieldChoice> Choices { get; init; } = [];
 
+    /// <summary>Shared choice-set identifier when choices are resolved from a catalog.</summary>
+    public string? ChoiceSetId { get; init; }
+
     /// <summary>Validation constraints for this field.</summary>
     public FieldValidationRule Validation { get; init; } = new();
+
+    /// <summary>Media capture policy for photo, video, audio, signature, sketch, or file fields.</summary>
+    public FieldMediaCapturePolicy? MediaPolicy { get; init; }
+
+    /// <summary>Referenced form identifier for record-link fields.</summary>
+    public string? ReferencedFormId { get; init; }
 
     /// <summary>Optional visibility rule evaluated against the current record.</summary>
     public FieldVisibilityRule? VisibilityRule { get; init; }
@@ -193,6 +202,12 @@ public sealed record FieldChoice
 
     /// <summary>Display label for host UI.</summary>
     public string? Label { get; init; }
+
+    /// <summary>Parent choice value for hierarchical classifications.</summary>
+    public string? ParentValue { get; init; }
+
+    /// <summary>Nested child choices for classification or cascading choice fields.</summary>
+    public IReadOnlyList<FieldChoice> Children { get; init; } = [];
 }
 
 /// <summary>
@@ -217,6 +232,30 @@ public sealed record FieldValidationRule
 
     /// <summary>Minimum media attachment count required for media fields.</summary>
     public int? MinMediaCount { get; init; }
+
+    /// <summary>Maximum media attachment count allowed for media fields.</summary>
+    public int? MaxMediaCount { get; init; }
+}
+
+/// <summary>
+/// Capture and export policy for media-like form fields.
+/// </summary>
+public sealed record FieldMediaCapturePolicy
+{
+    /// <summary>Allowed content types. Empty means runtime default.</summary>
+    public IReadOnlyList<string> AllowedContentTypes { get; init; } = [];
+
+    /// <summary>Maximum attachment size in bytes.</summary>
+    public long? MaxAttachmentBytes { get; init; }
+
+    /// <summary>Whether captured media should include location metadata when available.</summary>
+    public bool CaptureLocation { get; init; } = true;
+
+    /// <summary>Whether timed media should include a GPS track reference when available.</summary>
+    public bool CaptureGpsTrack { get; init; }
+
+    /// <summary>Whether captured photos should request face blurring before export/upload.</summary>
+    public bool RequiresFaceBlur { get; init; }
 }
 
 /// <summary>

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Honua.Sdk.Field.Forms;
 using Honua.Sdk.Field.Records;
 
@@ -332,5 +333,115 @@ public sealed class FormValidatorTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.FieldId == "photos");
+    }
+
+    [Fact]
+    public void Validate_MediaFieldRejectsTooManyAttachments()
+    {
+        var form = new FormDefinition
+        {
+            FormId = "inspection",
+            Name = "Inspection",
+            Sections =
+            [
+                new FormSection
+                {
+                    SectionId = "main",
+                    Label = "Main",
+                    Fields =
+                    [
+                        new FormField
+                        {
+                            FieldId = "photos",
+                            Label = "Photos",
+                            Type = FormFieldType.Photo,
+                            Validation = new FieldValidationRule { MinMediaCount = 1, MaxMediaCount = 2 },
+                            MediaPolicy = new FieldMediaCapturePolicy
+                            {
+                                AllowedContentTypes = ["image/jpeg"],
+                                MaxAttachmentBytes = 5_000_000,
+                                RequiresFaceBlur = true,
+                                CaptureLocation = true,
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+
+        var record = new FieldRecord
+        {
+            RecordId = "r-media",
+            FormId = "inspection",
+            Media =
+            [
+                new FieldMediaAttachment { AttachmentId = "p1", FieldId = "photos", MediaType = FieldMediaType.Photo },
+                new FieldMediaAttachment { AttachmentId = "p2", FieldId = "photos", MediaType = FieldMediaType.Photo },
+                new FieldMediaAttachment { AttachmentId = "p3", FieldId = "photos", MediaType = FieldMediaType.Photo },
+            ],
+        };
+
+        var result = FormValidator.Validate(form, record);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.FieldId == "photos" && error.Message.Contains("at most 2", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void FieldRecord_PortableAdvancedValues_CanBeStoredInRecord()
+    {
+        var scannedAt = DateTimeOffset.Parse("2026-05-23T08:00:00Z", CultureInfo.InvariantCulture);
+        var record = new FieldRecord
+        {
+            RecordId = "r-advanced",
+            FormId = "incident",
+            Values =
+            {
+                ["address"] = new FieldAddressValue
+                {
+                    Formatted = "100 Main St, Honolulu, HI 96813",
+                    Locality = "Honolulu",
+                    Region = "HI",
+                    PostalCode = "96813",
+                    Location = new FieldGeoPoint(21.3069, -157.8583, 3),
+                },
+                ["asset_link"] = new FieldRecordLinkValue
+                {
+                    FormId = "asset-inspection",
+                    SourceId = "assets",
+                    RecordId = "asset-100",
+                    Label = "Asset 100",
+                },
+                ["barcode"] = new FieldBarcodeValue
+                {
+                    Value = "ASSET-100",
+                    Format = "QR_CODE",
+                    ScannedAtUtc = scannedAt,
+                },
+            },
+            Media =
+            [
+                new FieldMediaAttachment
+                {
+                    AttachmentId = "video-1",
+                    FieldId = "walkthrough",
+                    MediaType = FieldMediaType.Video,
+                    Duration = TimeSpan.FromSeconds(15),
+                    GpsTrack = new FieldGpsTrackReference
+                    {
+                        TrackId = "track-1",
+                        FileName = "track.geojson",
+                        ContentType = "application/geo+json",
+                        PointCount = 12,
+                    },
+                    Sha256 = "0123456789abcdef",
+                },
+            ],
+        };
+
+        Assert.IsType<FieldAddressValue>(record.Values["address"]);
+        Assert.IsType<FieldRecordLinkValue>(record.Values["asset_link"]);
+        Assert.Equal(scannedAt, Assert.IsType<FieldBarcodeValue>(record.Values["barcode"]).ScannedAtUtc);
+        Assert.Equal("track-1", record.Media[0].GpsTrack?.TrackId);
     }
 }
