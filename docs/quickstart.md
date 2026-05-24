@@ -94,9 +94,10 @@ dotnet add package Microsoft.Extensions.Hosting
 ## Step 2: Configure the client with DI (60 seconds)
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
-up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, scene metadata,
-OGC API Features, OGC API Records, and STAC clients so they can be injected
-anywhere.
+up the default gRPC, Admin, Geocoding, WFS, OGC API Features, and OGC API
+Processes clients so they can be injected anywhere. GeoServices FeatureServer,
+scene metadata, OGC API Records, and STAC remain opt-in through the `Use*`
+flags or their package-specific `AddHonua*` extensions.
 
 The recommended path is the **umbrella** `AddHonua` registration from the
 `Honua.Sdk` meta package: one call configures every enabled sub-package with a

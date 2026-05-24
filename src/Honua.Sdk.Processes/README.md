@@ -51,15 +51,15 @@ The examples below use the current Honua Server canonical process id,
 server's process list.
 
 ```csharp
+using System.Text.Json;
 using Honua.Sdk.Processes.Models;
 
 var job = await processes.SubmitJobAsync(
     "honua-geoprocessing",
     new HonuaProcessExecuteRequest
     {
-        Inputs = new HonuaProcessExecuteInputs
-        {
-            Plan = new HonuaAnalysisPlan
+        Inputs = HonuaProcessExecuteInputs.FromPlan(
+            new HonuaAnalysisPlan
             {
                 PlanId = "plan-1",
                 WorkflowFamily = "analyze",
@@ -79,13 +79,27 @@ var job = await processes.SubmitJobAsync(
                         }
                     }
                 ]
-            }
-        }
+            })
     },
     cancellationToken);
 
 var status = await processes.GetJobAsync(job.JobId, cancellationToken);
 var results = await processes.GetJobResultsAsync(job.JobId, cancellationToken);
+```
+
+Concrete processes can also accept their advertised inputs directly, without a
+`plan` wrapper:
+
+```csharp
+var bufferJob = await processes.SubmitJobAsync(
+    "geometry.buffer",
+    new Dictionary<string, JsonElement>
+    {
+        ["wkb"] = JsonSerializer.SerializeToElement("AAAA"),
+        ["srid"] = JsonSerializer.SerializeToElement(4326),
+        ["distance"] = JsonSerializer.SerializeToElement(25.5)
+    },
+    cancellationToken);
 ```
 
 Non-success responses throw `HonuaProcessesException`. When the server returns

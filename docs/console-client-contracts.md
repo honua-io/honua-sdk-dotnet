@@ -155,9 +155,8 @@ var job = await processes.SubmitJobAsync(
     "honua-geoprocessing",
     new HonuaProcessExecuteRequest
     {
-        Inputs = new HonuaProcessExecuteInputs
-        {
-            Plan = new HonuaAnalysisPlan
+        Inputs = HonuaProcessExecuteInputs.FromPlan(
+            new HonuaAnalysisPlan
             {
                 PlanId = "plan-1",
                 WorkflowFamily = "analyze",
@@ -177,8 +176,24 @@ var job = await processes.SubmitJobAsync(
                         }
                     }
                 ]
-            }
-        }
+            })
+    },
+    cancellationToken);
+```
+
+For concrete processes that advertise direct inputs, submit the input values
+without the `plan` wrapper:
+
+```csharp
+using System.Text.Json;
+
+var bufferJob = await processes.SubmitJobAsync(
+    "geometry.buffer",
+    new Dictionary<string, JsonElement>
+    {
+        ["wkb"] = JsonSerializer.SerializeToElement("AAAA"),
+        ["srid"] = JsonSerializer.SerializeToElement(4326),
+        ["distance"] = JsonSerializer.SerializeToElement(25.5)
     },
     cancellationToken);
 ```

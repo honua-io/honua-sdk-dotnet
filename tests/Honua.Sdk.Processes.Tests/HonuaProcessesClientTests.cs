@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Honua.Sdk.Processes.Exceptions;
 using Honua.Sdk.Processes.Extensions;
 using Honua.Sdk.Processes.Models;
@@ -122,6 +123,42 @@ public sealed class HonuaProcessesClientTests
     }
 
     [Fact]
+    public async Task SubmitJobAsync_PostsDirectProcessInputsWithoutPlanWrapper()
+    {
+        HttpRequestMessage? captured = null;
+        string? body = null;
+        using var http = CreateHttpClient(async request =>
+        {
+            captured = request;
+            body = await request.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            return await JsonResponse(JobStatusJson).ConfigureAwait(false);
+        });
+        var client = new HonuaProcessesClient(http);
+
+        var result = await client.SubmitJobAsync(
+            "geometry.buffer",
+            new Dictionary<string, JsonElement>(StringComparer.Ordinal)
+            {
+                ["wkb"] = JsonSerializer.SerializeToElement("AAAA"),
+                ["srid"] = JsonSerializer.SerializeToElement(4326),
+                ["distance"] = JsonSerializer.SerializeToElement(25.5)
+            });
+
+        Assert.Equal("job-1", result.JobId);
+        Assert.Equal(HttpMethod.Post, captured?.Method);
+        Assert.Equal("/ogc/processes/processes/geometry.buffer/execution", captured?.RequestUri?.PathAndQuery);
+        Assert.Equal("respond-async", captured?.Headers.GetValues("Prefer").Single());
+        using var document = JsonDocument.Parse(body ?? throw new InvalidOperationException("Request body was not captured."));
+        var root = document.RootElement;
+        var inputs = root.GetProperty("inputs");
+        Assert.False(inputs.TryGetProperty("plan", out _));
+        Assert.Equal("AAAA", inputs.GetProperty("wkb").GetString());
+        Assert.Equal(4326, inputs.GetProperty("srid").GetInt32());
+        Assert.Equal(25.5, inputs.GetProperty("distance").GetDouble());
+        Assert.Equal("document", root.GetProperty("response").GetString());
+    }
+
+    [Fact]
     public async Task JobLifecycleMethods_UseCanonicalOgcProcessesRoutes()
     {
         var paths = new List<(HttpMethod Method, string Path)>();
@@ -225,9 +262,8 @@ public sealed class HonuaProcessesClientTests
     private static HonuaProcessExecuteRequest CreateExecuteRequest()
         => new()
         {
-            Inputs = new HonuaProcessExecuteInputs
-            {
-                Plan = new HonuaAnalysisPlan
+            Inputs = HonuaProcessExecuteInputs.FromPlan(
+                new HonuaAnalysisPlan
                 {
                     PlanId = "plan-1",
                     SpecVersion = "spec/v1",
@@ -248,8 +284,7 @@ public sealed class HonuaProcessesClientTests
                             }
                         }
                     ]
-                }
-            }
+                })
         };
 
     private static Task<HttpResponseMessage> JsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)

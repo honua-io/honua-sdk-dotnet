@@ -50,6 +50,23 @@ public sealed class HonuaProcessesClient : IHonuaProcessesClient
     }
 
     /// <inheritdoc />
+    public Task<HonuaProcessJobStatus> SubmitJobAsync(
+        string processId,
+        IReadOnlyDictionary<string, JsonElement> inputs,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(inputs);
+
+        return SubmitJobAsync(
+            processId,
+            new HonuaProcessExecuteRequest
+            {
+                Inputs = HonuaProcessExecuteInputs.FromDirectInputs(inputs)
+            },
+            cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<HonuaProcessJobStatus> SubmitJobAsync(
         string processId,
         HonuaProcessExecuteRequest request,

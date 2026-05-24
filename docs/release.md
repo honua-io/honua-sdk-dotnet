@@ -11,6 +11,7 @@ The publish workflow builds and packs:
 - `Honua.Sdk.Abstractions`
 - `Honua.Sdk.Admin`
 - `Honua.Sdk.Processes`
+- `Honua.Sdk.Geometry`
 - `Honua.Sdk.Spec`
 - `Honua.Sdk.Grpc`
 - `Honua.Sdk.GeoServices`
@@ -19,6 +20,7 @@ The publish workflow builds and packs:
 - `Honua.Sdk.OgcFeatures`
 - `Honua.Sdk.Catalogs`
 - `Honua.Sdk.Offline`
+- `Honua.Sdk`
 
 ## Release Flow
 
@@ -78,6 +80,7 @@ for project in \
   src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj \
   src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj \
   src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj \
+  src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj \
   src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj \
   src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj \
   src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj \
@@ -85,7 +88,8 @@ for project in \
   src/Honua.Sdk.Field/Honua.Sdk.Field.csproj \
   src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj \
   src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj \
-  src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj
+  src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj \
+  src/Honua.Sdk/Honua.Sdk.csproj
 do
   dotnet pack "$project" --configuration Release -o ./nupkgs
 done

@@ -34,8 +34,8 @@ also accept a `CancellationToken`; use it for caller-driven cancellation.
 ## Retries
 
 Retries are enabled by default and can be disabled per client with
-`EnableRetry = false`. `MaxRetryAttempts` is clamped to the supported range of
-2 to 5.
+`EnableRetry = false`. `MaxRetryAttempts` must be in the supported range of
+2 to 5; setting a value outside that range throws `ArgumentOutOfRangeException`.
 
 | Client family | Retried failures |
 |---------------|------------------|

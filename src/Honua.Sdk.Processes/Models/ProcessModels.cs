@@ -256,17 +256,47 @@ public sealed record HonuaProcessExecuteRequest
 public sealed record HonuaProcessExecuteInputs
 {
     /// <summary>
-    /// Analysis plan input.
+    /// Analysis plan input for the canonical Honua geoprocessing process.
     /// </summary>
     [JsonPropertyName("plan")]
-    public required HonuaAnalysisPlan Plan { get; init; }
+    public HonuaAnalysisPlan? Plan { get; init; }
 
     /// <summary>
-    /// Additional inputs accepted by future server contracts.
+    /// Direct process inputs keyed by input identifier for concrete OGC processes.
     /// </summary>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "System.Text.Json extension data requires a settable dictionary property.")]
     [JsonExtensionData]
-    public Dictionary<string, JsonElement> AdditionalInputs { get; set; } = [];
+    public Dictionary<string, JsonElement> DirectInputs { get; set; } = [];
+
+    /// <summary>
+    /// Creates inputs for the canonical Honua geoprocessing plan contract.
+    /// </summary>
+    /// <param name="plan">Analysis plan to submit.</param>
+    /// <returns>Execution inputs containing the supplied plan.</returns>
+    public static HonuaProcessExecuteInputs FromPlan(HonuaAnalysisPlan plan)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+
+        return new HonuaProcessExecuteInputs
+        {
+            Plan = plan
+        };
+    }
+
+    /// <summary>
+    /// Creates inputs for a concrete process that accepts direct OGC input values.
+    /// </summary>
+    /// <param name="inputs">Direct process inputs keyed by input identifier.</param>
+    /// <returns>Execution inputs containing the supplied direct input values.</returns>
+    public static HonuaProcessExecuteInputs FromDirectInputs(IReadOnlyDictionary<string, JsonElement> inputs)
+    {
+        ArgumentNullException.ThrowIfNull(inputs);
+
+        return new HonuaProcessExecuteInputs
+        {
+            DirectInputs = inputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone(), StringComparer.Ordinal)
+        };
+    }
 }
 
 /// <summary>

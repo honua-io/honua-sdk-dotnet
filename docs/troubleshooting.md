@@ -86,11 +86,12 @@ Your `Options.Timeout` is shorter than the request actually needs. The same valu
 per-attempt and the total-pipeline budget. Raise `Timeout`, or disable retries with
 `EnableRetry = false` while you isolate the slow call.
 
-### `MaxRetryAttempts` setting seems to be ignored
+### Setting `MaxRetryAttempts` throws `ArgumentOutOfRangeException`
 
-The SDK clamps `MaxRetryAttempts` to the inclusive range `[2, 5]` (Polly's standard resilience
-pipeline minimum is 2 attempts including the original call). Setting `1` becomes `2`, setting
-`100` becomes `5`. This applies uniformly to every package, including `Honua.Sdk.Grpc`.
+`MaxRetryAttempts` must be in the inclusive range `[2, 5]` (Polly's standard
+resilience pipeline minimum is 2 attempts including the original call). Values
+outside that range fail at options assignment time for every package, including
+`Honua.Sdk`, `Honua.Sdk.Processes`, and `Honua.Sdk.Grpc`.
 
 ### Unsafe HTTP methods aren't retried
 

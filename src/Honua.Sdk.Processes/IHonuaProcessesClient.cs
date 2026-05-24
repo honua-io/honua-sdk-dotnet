@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using Honua.Sdk.Processes.Models;
 
 namespace Honua.Sdk.Processes;
@@ -34,6 +35,11 @@ public interface IHonuaProcessesClient
     /// Submits an async process execution job.
     /// </summary>
     Task<HonuaProcessJobStatus> SubmitJobAsync(string processId, HonuaProcessExecuteRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Submits an async process execution job with direct OGC process inputs.
+    /// </summary>
+    Task<HonuaProcessJobStatus> SubmitJobAsync(string processId, IReadOnlyDictionary<string, JsonElement> inputs, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Lists process jobs.
