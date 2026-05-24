@@ -6,6 +6,7 @@ using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Models;
 using Honua.Sdk.OgcFeatures.Wfs;
+using Honua.Sdk.Processes;
 
 namespace Honua.Sdk.BrowserSmoke;
 
@@ -49,6 +50,7 @@ public sealed class BrowserRuntimeValidationService
         var geocoding = new HonuaGeocodingClient(http);
         var featureServer = new HonuaFeatureServerClient(http);
         var wfs = new HonuaWfsClient(http);
+        var processes = new HonuaProcessesClient(http);
 
         await RunCheckAsync(
             checks,
@@ -114,6 +116,16 @@ public sealed class BrowserRuntimeValidationService
 
                 return FormattableString.Invariant(
                     $"WFS {capabilities.Version} returned {capabilities.FeatureTypes.Count} feature type(s).");
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        await RunCheckAsync(
+            checks,
+            "ogc-processes",
+            async token =>
+            {
+                var response = await processes.ListProcessesAsync(token).ConfigureAwait(false);
+                return FormattableString.Invariant($"{response.Processes.Count} process(es) returned.");
             },
             cancellationToken).ConfigureAwait(false);
 

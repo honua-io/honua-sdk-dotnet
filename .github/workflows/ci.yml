@@ -221,6 +221,10 @@ jobs:
             src: src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj
             tests:
               - tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj
+          - label: Processes
+            src: src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj
+            tests:
+              - tests/Honua.Sdk.Processes.Tests/Honua.Sdk.Processes.Tests.csproj
           - label: Geometry
             src: src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj
             tests:

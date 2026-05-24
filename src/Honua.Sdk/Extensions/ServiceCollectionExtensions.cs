@@ -20,6 +20,8 @@ using Honua.Sdk.Catalogs.Stac;
 using Honua.Sdk.Catalogs.Stac.Extensions;
 using Honua.Sdk.OgcFeatures.Wfs;
 using Honua.Sdk.OgcFeatures.Wfs.Extensions;
+using Honua.Sdk.Processes;
+using Honua.Sdk.Processes.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk;
@@ -68,7 +70,7 @@ public static class ServiceCollectionExtensions
             throw new HonuaConfigurationException(
                 "Configure at least one Honua module via AddHonua(...) before resolving clients. " +
                 "Every Use* flag (UseGrpc, UseAdmin, UseGeocoding, UseOgcFeatures, UseWfs, UseGeoServices, " +
-                "UseRouting, UseScenes, UseSpec, UseStac, UseOgcRecords) is currently false.");
+                "UseProcesses, UseRouting, UseScenes, UseSpec, UseStac, UseOgcRecords) is currently false.");
         }
 
         if (snapshot.UseGrpc)
@@ -89,6 +91,11 @@ public static class ServiceCollectionExtensions
         if (snapshot.UseOgcFeatures)
         {
             services.AddHonuaOgcFeatures(options => ApplyOgcFeatures(options, snapshot));
+        }
+
+        if (snapshot.UseProcesses)
+        {
+            services.AddHonuaProcesses(options => ApplyProcesses(options, snapshot));
         }
 
         if (snapshot.UseWfs)
@@ -181,6 +188,23 @@ public static class ServiceCollectionExtensions
     }
 
     private static void ApplyWfs(HonuaWfsClientOptions target, HonuaSdkOptions source)
+    {
+        target.BaseAddress = source.BaseAddress;
+        target.ApiKey = source.ApiKey;
+        target.ApiKeyProvider = source.ApiKeyProvider;
+        target.BearerToken = source.BearerToken;
+        target.BearerTokenProvider = source.BearerTokenProvider;
+        target.AccessTokenProvider = source.AccessTokenProvider;
+        target.AuthenticationScopes = source.AuthenticationScopes;
+        target.AuthenticationAudience = source.AuthenticationAudience;
+        target.AuthenticationDiagnostics = source.AuthenticationDiagnostics;
+        target.PrimaryHttpMessageHandlerFactory = source.PrimaryHttpMessageHandlerFactory;
+        target.EnableRetry = source.EnableRetry;
+        target.MaxRetryAttempts = source.MaxRetryAttempts;
+        target.Timeout = source.Timeout;
+    }
+
+    private static void ApplyProcesses(HonuaProcessesClientOptions target, HonuaSdkOptions source)
     {
         target.BaseAddress = source.BaseAddress;
         target.ApiKey = source.ApiKey;

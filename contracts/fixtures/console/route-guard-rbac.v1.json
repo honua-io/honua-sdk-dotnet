@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "honua.console-route-guard-rbac.v1",
+  "shell": {
+    "environments": {
+      "schemaVersion": "honua.environment-profiles.v1",
+      "defaultEnvironmentId": "prod-web",
+      "environments": [
+        {
+          "environmentId": "prod-web",
+          "displayName": "Production Web",
+          "baseAddress": "https://prod.honua.example/",
+          "defaultAuthMode": "BrowserSession",
+          "transportCapabilities": {
+            "supportsRestOpenApi": true,
+            "supportsBrowserRealtime": true
+          },
+          "trustState": {
+            "status": "NotConfigured",
+            "reasonCode": "browser-auth"
+          }
+        }
+      ]
+    },
+    "principal": {
+      "userId": "user-operator",
+      "displayName": "Console Operator",
+      "email": "operator@example.test",
+      "roles": ["operator", "publisher"],
+      "effectivePermissions": [
+        {
+          "service": "parcels",
+          "layer": "*",
+          "operation": "read"
+        },
+        {
+          "service": "parcels",
+          "layer": "0",
+          "operation": "publish"
+        }
+      ]
+    },
+    "navigation": [
+      {
+        "id": "dashboard",
+        "label": "Dashboard",
+        "route": "/",
+        "requiredPermissions": []
+      },
+      {
+        "id": "publishing",
+        "label": "Publishing",
+        "route": "/publishing",
+        "requiredPermissions": [
+          {
+            "service": "parcels",
+            "layer": "0",
+            "operation": "publish"
+          }
+        ],
+        "requiredRoles": ["publisher"]
+      }
+    ],
+    "routeGuards": [
+      {
+        "routePattern": "/publishing",
+        "requiresAuthenticatedUser": true,
+        "requiredPermissions": [
+          {
+            "service": "parcels",
+            "layer": "0",
+            "operation": "publish"
+          }
+        ],
+        "requiredRoles": ["publisher"],
+        "challengeRoute": "/login",
+        "deniedRoute": "/denied"
+      },
+      {
+        "routePattern": "/admin/users",
+        "requiresAuthenticatedUser": true,
+        "requiredPermissions": [
+          {
+            "service": "*",
+            "layer": "*",
+            "operation": "admin.users"
+          }
+        ],
+        "requiredRoles": ["administrator"],
+        "challengeRoute": "/login",
+        "deniedRoute": "/denied"
+      }
+    ]
+  },
+  "routeDecisions": [
+    {
+      "route": "/publishing",
+      "access": "Allowed",
+      "reasonCodes": ["permission-granted"],
+      "requiredPermissions": [
+        {
+          "service": "parcels",
+          "layer": "0",
+          "operation": "publish"
+        }
+      ]
+    },
+    {
+      "route": "/admin/users",
+      "access": "Denied",
+      "reasonCodes": ["missing-role", "missing-permission"],
+      "requiredPermissions": [
+        {
+          "service": "*",
+          "layer": "*",
+          "operation": "admin.users"
+        }
+      ]
+    },
+    {
+      "route": "/jobs",
+      "access": "Challenge",
+      "reasonCodes": ["not-authenticated"],
+      "requiredPermissions": []
+    }
+  ]
+}

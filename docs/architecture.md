@@ -36,13 +36,15 @@ per-package `AddHonua*` extensions remain available unchanged.
 │             │ │ (incl. WFS 2.0)    │ │           │ │ (STAC + Records)│
 │ Native gRPC │ │ OGC API Features + │ │FeatureSrvr│ │ Catalog        │
 │ FeatureSvc  │ │ WFS read/query     │ │ +Routing  │ │ search         │
+│ +ProcessSvc │ │                    │ │           │ │                │
 └─────────────┘ └────────────────────┘ └───────────┘ └────────────────┘
         ▲                                                       ▲
         │           (other clients use these for queries)       │
 ┌───────┴─────────────────────────────────────────────────────┴────┐
-│  Honua.Sdk.Admin  (REST control-plane + Catalog + Geocoding)      │
-│  Honua.Sdk.Spec   (validate / plan / apply stream)                │
-│  Honua.Sdk.Scenes (scene metadata, render endpoints)              │
+│  Honua.Sdk.Admin     (REST control-plane + Catalog + Geocoding)   │
+│  Honua.Sdk.Processes (OGC API Processes REST + job models)        │
+│  Honua.Sdk.Spec      (validate / plan / apply stream)             │
+│  Honua.Sdk.Scenes    (scene metadata, render endpoints)           │
 └───────────────────────────────────────────────────────────────────┘
 
            ┌──────────────────────────────┬──────────────────────────┐
@@ -64,6 +66,8 @@ per-package `AddHonua*` extensions remain available unchanged.
 | Run typed gRPC queries / edits against a Honua server | `Honua.Sdk.Grpc` |
 | Read OGC API Features / WFS / FeatureServer / STAC / OGC API Records | `Honua.Sdk.OgcFeatures` (includes WFS 2.0) / `Honua.Sdk.GeoServices` / `Honua.Sdk.Catalogs` (STAC + OGC API Records) |
 | Manage services, layers, connections, styles, metadata | `Honua.Sdk.Admin` |
+| Work with OGC API Processes jobs over browser-safe REST | `Honua.Sdk.Processes` |
+| Stream native ProcessService job lifecycle events | `Honua.Sdk.Grpc` (`IHonuaProcessGrpcClient`) |
 | Forward / reverse / autocomplete geocode | `Honua.Sdk.Admin` (`IHonuaGeocodingClient`) |
 | Validate / plan / apply spec workspaces | `Honua.Sdk.Spec` |
 | Discover or resolve scenes / offline scene packages | `Honua.Sdk.Scenes` |
@@ -71,6 +75,7 @@ per-package `AddHonua*` extensions remain available unchanged.
 | Build offline sync (push/pull, conflicts, manifests) | `Honua.Sdk.Offline` (offline contracts ship in `Honua.Sdk.Abstractions`) |
 | Define / validate field forms, run record workflows | `Honua.Sdk.Field` |
 | Write a library that's agnostic to transport | `Honua.Sdk.Abstractions` only |
+| Model Console shells, route guards, environment profiles, and mTLS state | `Honua.Sdk.Abstractions` |
 
 ## How clients compose
 

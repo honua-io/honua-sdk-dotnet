@@ -10,6 +10,7 @@ The publish workflow builds and packs:
 
 - `Honua.Sdk.Abstractions`
 - `Honua.Sdk.Admin`
+- `Honua.Sdk.Processes`
 - `Honua.Sdk.Spec`
 - `Honua.Sdk.Grpc`
 - `Honua.Sdk.GeoServices`
@@ -76,6 +77,7 @@ mkdir -p ./nupkgs
 for project in \
   src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj \
   src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj \
+  src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj \
   src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj \
   src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj \
   src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj \

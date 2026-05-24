@@ -11,6 +11,7 @@ using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.Grpc;
 using Honua.Sdk.OgcFeatures;
+using Honua.Sdk.Processes;
 using Honua.Sdk.Catalogs.Records;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Catalogs.Stac;
@@ -50,6 +51,7 @@ public sealed class AddHonuaTests
         Assert.NotNull(provider.GetRequiredService<IHonuaCatalogClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaGeocodingClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaOgcFeaturesClient>());
+        Assert.NotNull(provider.GetRequiredService<IHonuaProcessesClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaWfsClient>());
     }
 
@@ -66,6 +68,7 @@ public sealed class AddHonuaTests
             o.UseAdmin = true;
             o.UseGeocoding = true;
             o.UseOgcFeatures = true;
+            o.UseProcesses = true;
             o.UseWfs = true;
             o.UseGeoServices = true;
             o.UseRouting = true;
@@ -82,6 +85,7 @@ public sealed class AddHonuaTests
         Assert.NotNull(provider.GetRequiredService<IHonuaCatalogClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaGeocodingClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaOgcFeaturesClient>());
+        Assert.NotNull(provider.GetRequiredService<IHonuaProcessesClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaWfsClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaFeatureServerClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaRoutingClient>());
@@ -104,6 +108,7 @@ public sealed class AddHonuaTests
                 o.UseAdmin = false;
                 o.UseGeocoding = false;
                 o.UseOgcFeatures = false;
+                o.UseProcesses = false;
                 o.UseWfs = false;
                 o.UseGeoServices = false;
                 o.UseRouting = false;

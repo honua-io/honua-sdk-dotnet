@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "honua.environment-profiles.v1",
+  "defaultEnvironmentId": "prod-web",
+  "environments": [
+    {
+      "environmentId": "prod-web",
+      "displayName": "Production Web",
+      "baseAddress": "https://prod.honua.example/",
+      "tenantScope": {
+        "tenantId": "tenant-prod",
+        "tenantName": "Production",
+        "workspaceId": "ops",
+        "audience": "api://honua-prod"
+      },
+      "defaultAuthMode": "BrowserSession",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsServerSentEvents": true,
+        "supportsWebSockets": true,
+        "supportsSignalR": true,
+        "supportsBrowserRealtime": true,
+        "supportsNativeGrpc": false,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": false,
+        "supportsMutualTls": false
+      },
+      "trustState": {
+        "status": "NotConfigured",
+        "checkedAt": "2026-05-23T22:00:00Z",
+        "policyId": "browser-session",
+        "reasonCode": "browser-auth"
+      },
+      "metadata": {
+        "host": "blazor-web",
+        "region": "us-west"
+      }
+    },
+    {
+      "environmentId": "field-native-ready",
+      "displayName": "Field Native Ready",
+      "baseAddress": "https://field-ready.honua.example/",
+      "tenantScope": {
+        "tenantId": "tenant-field",
+        "tenantName": "Field",
+        "workspaceId": "inspection",
+        "audience": "api://honua-field"
+      },
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsServerSentEvents": false,
+        "supportsWebSockets": false,
+        "supportsSignalR": false,
+        "supportsBrowserRealtime": false,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-ready",
+        "expectedServerIdentity": "field-ready.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "KeychainReference",
+          "reference": "honua-field-operator",
+          "thumbprint": "AA:BB:CC:DD",
+          "displayName": "Field operator certificate",
+          "providerName": "maui-keychain"
+        },
+        "lastValidationStatus": "Ready"
+      },
+      "trustState": {
+        "status": "Ready",
+        "checkedAt": "2026-05-23T22:01:00Z",
+        "expiresAt": "2026-08-01T00:00:00Z",
+        "serverFingerprint": "sha256:prod-field",
+        "issuerSummary": "Honua Field CA",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "ready",
+        "sanitizedMessage": "Certificate and server trust policy are ready."
+      },
+      "metadata": {
+        "host": "maui-hybrid",
+        "region": "us-west"
+      }
+    },
+    {
+      "environmentId": "field-native-missing-cert",
+      "displayName": "Field Native Missing Certificate",
+      "baseAddress": "https://field-missing.honua.example/",
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-missing-cert",
+        "expectedServerIdentity": "field-missing.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "KeychainReference",
+          "reference": "honua-field-operator"
+        },
+        "lastValidationStatus": "Missing"
+      },
+      "trustState": {
+        "status": "Missing",
+        "checkedAt": "2026-05-23T22:02:00Z",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "certificate-not-found",
+        "sanitizedMessage": "The configured certificate selector did not resolve to a certificate."
+      }
+    },
+    {
+      "environmentId": "field-native-expired-cert",
+      "displayName": "Field Native Expired Certificate",
+      "baseAddress": "https://field-expired.honua.example/",
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-expired-cert",
+        "expectedServerIdentity": "field-expired.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "Thumbprint",
+          "thumbprint": "11:22:33:44",
+          "displayName": "Expired field certificate"
+        },
+        "lastValidationStatus": "Expired"
+      },
+      "trustState": {
+        "status": "Expired",
+        "checkedAt": "2026-05-23T22:03:00Z",
+        "expiresAt": "2026-05-01T00:00:00Z",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "certificate-expired",
+        "sanitizedMessage": "The configured client certificate is expired."
+      }
+    },
+    {
+      "environmentId": "field-native-expiring-soon",
+      "displayName": "Field Native Expiring Soon",
+      "baseAddress": "https://field-expiring.honua.example/",
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-expiring-soon",
+        "expectedServerIdentity": "field-expiring.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "FileReference",
+          "reference": "cert-alias:field-expiring",
+          "displayName": "Expiring field certificate"
+        },
+        "lastValidationStatus": "ExpiringSoon"
+      },
+      "trustState": {
+        "status": "ExpiringSoon",
+        "checkedAt": "2026-05-23T22:04:00Z",
+        "expiresAt": "2026-06-01T00:00:00Z",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "certificate-expiring-soon",
+        "sanitizedMessage": "The configured client certificate expires soon."
+      }
+    },
+    {
+      "environmentId": "field-native-untrusted",
+      "displayName": "Field Native Untrusted Server",
+      "baseAddress": "https://field-untrusted.honua.example/",
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-untrusted",
+        "expectedServerIdentity": "field-untrusted.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "ExternalSelector",
+          "reference": "device-agent:field",
+          "providerName": "enterprise-agent"
+        },
+        "lastValidationStatus": "Untrusted"
+      },
+      "trustState": {
+        "status": "Untrusted",
+        "checkedAt": "2026-05-23T22:05:00Z",
+        "serverFingerprint": "sha256:unknown",
+        "issuerSummary": "Unknown issuer",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "server-chain-untrusted",
+        "sanitizedMessage": "The server certificate chain is not trusted by this profile."
+      }
+    },
+    {
+      "environmentId": "field-native-rejected",
+      "displayName": "Field Native Rejected Certificate",
+      "baseAddress": "https://field-rejected.honua.example/",
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-rejected",
+        "expectedServerIdentity": "field-rejected.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "KeystoreReference",
+          "reference": "honua-field-rejected",
+          "displayName": "Rejected field certificate"
+        },
+        "lastValidationStatus": "Rejected"
+      },
+      "trustState": {
+        "status": "Rejected",
+        "checkedAt": "2026-05-23T22:06:00Z",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "server-rejected-client-certificate",
+        "sanitizedMessage": "The server rejected the configured client certificate."
+      }
+    },
+    {
+      "environmentId": "field-native-wrong-environment",
+      "displayName": "Field Native Wrong Environment",
+      "baseAddress": "https://field-wrong-environment.honua.example/",
+      "defaultAuthMode": "NativeMutualTls",
+      "transportCapabilities": {
+        "supportsRestOpenApi": true,
+        "supportsNativeGrpc": true,
+        "supportsTelemetryStream": true,
+        "supportsJobStream": true,
+        "supportsMutualTls": true
+      },
+      "trustProfile": {
+        "expectedEnvironmentId": "field-native-wrong-environment",
+        "expectedServerIdentity": "field-wrong-environment.honua.example",
+        "trustBundleReference": "bundle:honua-field-prod",
+        "requiresClientCertificate": true,
+        "clientCertificate": {
+          "kind": "Thumbprint",
+          "thumbprint": "55:66:77:88",
+          "displayName": "Staging certificate"
+        },
+        "lastValidationStatus": "WrongEnvironment"
+      },
+      "trustState": {
+        "status": "WrongEnvironment",
+        "checkedAt": "2026-05-23T22:07:00Z",
+        "policyId": "native-mtls-prod",
+        "reasonCode": "certificate-bound-to-staging",
+        "sanitizedMessage": "The selected certificate is valid but bound to a different environment."
+      }
+    }
+  ]
+}

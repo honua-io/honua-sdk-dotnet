@@ -59,6 +59,7 @@ right failure surface without parsing strings.
 |---------|-----------|-------|
 | `Honua.Sdk.Admin` | `HonuaAdminApiException` | Non-success HTTP status codes. Includes status code and response body. |
 | `Honua.Sdk.Admin` | `HonuaAdminOperationException` | Successful HTTP responses that fail the expected Admin contract, such as null envelopes or compatibility failures. |
+| `Honua.Sdk.Processes` | `HonuaProcessesException` | Non-success OGC API Processes REST responses, problem-details payloads, and JSON contract failures. |
 | `Honua.Sdk.Spec` | `HonuaSpecException` | Non-success spec REST responses, including structured problem-details payloads. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
@@ -66,7 +67,7 @@ right failure surface without parsing strings.
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`) | `HonuaOgcRecordsException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Stac`) | `HonuaStacException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
-| `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code. |
+| `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code for FeatureService and native ProcessService calls. |
 
 `ArgumentNullException`, `ArgumentException`, `InvalidOperationException`, and
 `NotSupportedException` are used for local input/configuration problems before
@@ -113,7 +114,8 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, and host-neutral plugin manifests. |
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
-| `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
+| `Honua.Sdk.Grpc` | Feature query, streaming feature query, feature edits, and native ProcessService validate/dry-run/execute-stream/job lifecycle calls. |
+| `Honua.Sdk.Processes` | OGC API Processes landing page, conformance, process list/detail, async execution submission, job list/status, dismissal, and document-mode results. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
 | `Honua.Sdk.Scenes` | Scene list, scene metadata detail, render endpoint resolution, access envelopes, attribution metadata, and offline scene package manifest parsing/validation. |

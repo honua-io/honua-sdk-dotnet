@@ -20,6 +20,7 @@ These option types support `ApiKey`, `BearerToken`, `ApiKeyProvider`, and
 - `HonuaStacClientOptions` for STAC
 - `HonuaSceneClientOptions` for scene metadata and offline scene packages
 - `HonuaSpecClientOptions` for spec workspace plan/apply APIs
+- `HonuaProcessesClientOptions` for OGC API Processes REST and job polling
 
 Provider delegates are invoked before each SDK request or RPC. When a provider
 is configured, its value takes precedence over the static property. Returning
@@ -117,6 +118,19 @@ builder.Services.AddHonuaFeatureServer(o =>
     };
 });
 ```
+
+Console hosts that need environment selection or native mTLS state should use
+the DTOs in `Honua.Sdk.Abstractions.Environments`. Those models store only
+safe selectors and sanitized validation state: certificate reference kind,
+display label, optional thumbprint, expected server identity, policy id,
+expiration time, and status such as `Missing`, `Expired`, `Untrusted`,
+`Rejected`, `WrongEnvironment`, or `Ready`.
+
+The SDK does not resolve OS certificate stores, persist private keys, or put
+certificate bytes into environment profiles. Blazor Web hosts should model
+browser session or BFF auth. MAUI hosts own secure storage, certificate
+selection, platform trust validation, and handler creation before supplying a
+configured `PrimaryHttpMessageHandlerFactory`.
 
 ## Storage Guidance
 

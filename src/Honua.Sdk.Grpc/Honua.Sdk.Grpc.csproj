@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Honua.Sdk.Abstractions\Honua.Sdk.Abstractions.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Geometry\Honua.Sdk.Geometry.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Processes\Honua.Sdk.Processes.csproj" />
   </ItemGroup>
 
   <ItemGroup>

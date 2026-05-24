@@ -16,6 +16,8 @@ using Honua.Sdk.Offline;
 using Honua.Sdk.Offline.Abstractions;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.Processes;
+using Honua.Sdk.Processes.Extensions;
 using Honua.Sdk.Catalogs.Records;
 using Honua.Sdk.Catalogs.Records.Extensions;
 using Honua.Sdk.Scenes;
@@ -78,6 +80,10 @@ static void ConfigureRestClients(IServiceCollection services, Uri server)
     {
         ConfigureOgcFeaturesBrowserCandidate(options, server);
     });
+    services.AddHonuaProcesses(options =>
+    {
+        ConfigureProcessesBrowserCandidate(options, server);
+    });
     services.AddHonuaOgcRecords(options =>
     {
         ConfigureOgcRecordsBrowserCandidate(options, server);
@@ -121,6 +127,13 @@ static void ConfigureGeoServicesBrowserCandidate(HonuaGeoServicesClientOptions o
 }
 
 static void ConfigureOgcFeaturesBrowserCandidate(HonuaOgcFeaturesClientOptions options, Uri server)
+{
+    options.BaseAddress = server;
+    options.BearerTokenProvider = NoBrowserTokenAsync;
+    options.EnableRetry = false;
+}
+
+static void ConfigureProcessesBrowserCandidate(HonuaProcessesClientOptions options, Uri server)
 {
     options.BaseAddress = server;
     options.BearerTokenProvider = NoBrowserTokenAsync;

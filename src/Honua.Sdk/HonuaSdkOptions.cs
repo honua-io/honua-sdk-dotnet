@@ -163,6 +163,12 @@ public sealed class HonuaSdkOptions
     public bool UseOgcFeatures { get; set; } = true;
 
     /// <summary>
+    /// When <c>true</c>, registers the OGC API Processes REST client
+    /// (<c>IHonuaProcessesClient</c>). Defaults to <c>true</c>.
+    /// </summary>
+    public bool UseProcesses { get; set; } = true;
+
+    /// <summary>
     /// When <c>true</c>, registers the WFS 2.0 client (<c>IHonuaWfsClient</c>).
     /// The WFS surface ships inside the <c>Honua.Sdk.OgcFeatures</c> package
     /// after the recent consolidation. Defaults to <c>true</c>.
@@ -211,6 +217,7 @@ public sealed class HonuaSdkOptions
         UseAdmin ||
         UseGeocoding ||
         UseOgcFeatures ||
+        UseProcesses ||
         UseWfs ||
         UseGeoServices ||
         UseRouting ||

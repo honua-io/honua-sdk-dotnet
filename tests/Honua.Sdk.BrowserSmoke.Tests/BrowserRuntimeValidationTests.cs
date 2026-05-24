@@ -81,6 +81,8 @@ public sealed class BrowserRuntimeValidationTests
             string.Equals(request.Path, "/rest/services/sdk-demo/FeatureServer/0", StringComparison.Ordinal));
         Assert.Contains(observed, request =>
             string.Equals(request.Path, "/wfs", StringComparison.Ordinal));
+        Assert.Contains(observed, request =>
+            string.Equals(request.Path, "/ogc/processes/processes", StringComparison.Ordinal));
 
         GC.KeepAlive(appHost);
         GC.KeepAlive(apiHost);
@@ -293,6 +295,22 @@ public sealed class BrowserRuntimeValidationTests
         }));
 
         app.MapGet("/wfs", () => Results.Text(WfsCapabilities, "application/xml"));
+        app.MapGet("/ogc/processes/processes", () => Results.Json(new
+        {
+            processes = new[]
+            {
+                new
+                {
+                    id = "honua.analysis",
+                    title = "Analysis Plan",
+                    version = "1.0.0",
+                    jobControlOptions = new[] { "async-execute" },
+                    outputTransmission = new[] { "value" },
+                    links = Array.Empty<object>(),
+                },
+            },
+            links = Array.Empty<object>(),
+        }));
 
         await app.StartAsync().ConfigureAwait(false);
         return app;

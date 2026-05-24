@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "honua.console-admin-publishing-workflow.v1",
+  "tableDiscovery": {
+    "tables": [
+      {
+        "schema": "public",
+        "table": "parcels",
+        "geometryColumn": "geom",
+        "geometryType": "MULTIPOLYGON",
+        "srid": 4326,
+        "estimatedRows": 1200,
+        "columns": [
+          {
+            "name": "objectid",
+            "dataType": "integer",
+            "isNullable": false,
+            "isPrimaryKey": true
+          },
+          {
+            "name": "owner_name",
+            "dataType": "text",
+            "isNullable": true,
+            "isPrimaryKey": false,
+            "maxLength": 255
+          }
+        ]
+      }
+    ]
+  },
+  "publishLayerRequest": {
+    "schema": "public",
+    "table": "parcels",
+    "layerName": "Parcels",
+    "description": "Parcel polygons for Console publishing workflow.",
+    "geometryColumn": "geom",
+    "geometryType": "Polygon",
+    "srid": 4326,
+    "primaryKey": "objectid",
+    "fields": ["objectid", "owner_name"],
+    "serviceName": "parcels",
+    "enabled": true
+  },
+  "publishedLayer": {
+    "success": true,
+    "data": {
+      "layerId": 0,
+      "layerName": "Parcels",
+      "schema": "public",
+      "table": "parcels",
+      "description": "Parcel polygons for Console publishing workflow.",
+      "geometryType": "Polygon",
+      "srid": 4326,
+      "primaryKey": "objectid",
+      "fieldCount": 2,
+      "enabled": true,
+      "serviceName": "parcels"
+    },
+    "message": null,
+    "timestamp": "2026-05-23T22:20:00Z"
+  },
+  "manifest": {
+    "success": true,
+    "data": {
+      "apiVersion": "honua.io/v1alpha1",
+      "generatedAt": "2026-05-23T22:20:00Z",
+      "resources": [
+        {
+          "apiVersion": "honua.io/v1alpha1",
+          "kind": "Layer",
+          "metadata": {
+            "name": "parcels",
+            "namespace": "default",
+            "resourceVersion": "11"
+          },
+          "spec": {
+            "serviceId": "parcels",
+            "layerId": 0,
+            "protocols": ["ogc-features", "geoservices-feature-service"]
+          },
+          "status": {
+            "ready": true
+          }
+        }
+      ],
+      "driftedResources": [],
+      "manifestHash": "sha256:console-publish-fixture"
+    },
+    "message": null,
+    "timestamp": "2026-05-23T22:20:00Z"
+  },
+  "manifestApplyRequest": {
+    "resources": [
+      {
+        "apiVersion": "honua.io/v1alpha1",
+        "kind": "Layer",
+        "metadata": {
+          "name": "parcels",
+          "namespace": "default"
+        },
+        "spec": {
+          "serviceId": "parcels",
+          "layerId": 0
+        }
+      }
+    ],
+    "dryRun": true,
+    "prune": false
+  }
+}

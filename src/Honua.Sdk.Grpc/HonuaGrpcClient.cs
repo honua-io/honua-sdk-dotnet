@@ -6,8 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Grpc.Net.Client.Configuration;
-using Honua.Sdk.Abstractions.Authentication;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Grpc.Conversion;
 using Microsoft.Extensions.Options;
@@ -63,13 +61,16 @@ public sealed class HonuaGrpcClient :
         var opts = options.Value;
         var address = HonuaGrpcClientOptions.ParseAndValidateAddress(opts);
         HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
-        ValidateAuthenticationTransport(opts, address);
+        HonuaGrpcClientSupport.ValidateAuthenticationTransport(opts, address);
 
         var channelOptions = new GrpcChannelOptions
         {
             UnsafeUseInsecureChannelCallCredentials =
-                HasCredentials(opts) && HonuaGrpcClientOptions.IsLocalDevelopmentHttp(address),
-            ServiceConfig = BuildServiceConfig(opts)
+                HonuaGrpcClientSupport.HasCredentials(opts) && HonuaGrpcClientOptions.IsLocalDevelopmentHttp(address),
+            ServiceConfig = HonuaGrpcClientSupport.BuildServiceConfig(
+                opts,
+                FeatureServiceName,
+                ["QueryFeatures", "QueryFeaturesStream"])
         };
         if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
         {
@@ -92,9 +93,9 @@ public sealed class HonuaGrpcClient :
 
         var opts = options ?? new HonuaGrpcClientOptions();
         HonuaGrpcClientOptions.ValidateTimeout(opts.Timeout);
-        if (HasCredentials(opts))
+        if (HonuaGrpcClientSupport.HasCredentials(opts))
         {
-            ValidateAuthenticationTransport(opts, ResolveChannelAddress(channel));
+            HonuaGrpcClientSupport.ValidateAuthenticationTransport(opts, HonuaGrpcClientSupport.ResolveChannelAddress(channel));
         }
 
         _client = new Proto.FeatureService.FeatureServiceClient(channel);
@@ -323,126 +324,16 @@ public sealed class HonuaGrpcClient :
         _ownedChannel?.Dispose();
     }
 
-    private static ServiceConfig BuildServiceConfig(HonuaGrpcClientOptions opts)
-    {
-        var serviceConfig = new ServiceConfig();
-
-        if (opts.EnableRetry)
-        {
-            var maxAttempts = opts.MaxRetryAttempts;
-
-            serviceConfig.MethodConfigs.Add(new MethodConfig
-            {
-                Names =
-                {
-                    new MethodName { Service = FeatureServiceName, Method = "QueryFeatures" },
-                    new MethodName { Service = FeatureServiceName, Method = "QueryFeaturesStream" }
-                },
-                RetryPolicy = new RetryPolicy
-                {
-                    MaxAttempts = maxAttempts,
-                    InitialBackoff = TimeSpan.FromMilliseconds(500),
-                    MaxBackoff = TimeSpan.FromSeconds(5),
-                    BackoffMultiplier = 2,
-                    RetryableStatusCodes =
-                    {
-                        StatusCode.Unavailable,
-                        StatusCode.Internal
-                    }
-                }
-            });
-        }
-
-        return serviceConfig;
-    }
-
     private async Task<Metadata> BuildMetadataAsync(string methodName, CancellationToken cancellationToken)
-    {
-        if (_metadataOverride is not null)
-        {
-            return _metadataOverride;
-        }
-
-        var metadata = new Metadata();
-        var context = HonuaAuthenticationSupport.CreateGrpcRequest(_options, "grpc", methodName);
-        var apiKey = await HonuaAuthenticationSupport.ResolveApiKeyAsync(_options, cancellationToken).ConfigureAwait(false);
-        if (!string.IsNullOrEmpty(apiKey))
-        {
-            metadata.Add("x-api-key", apiKey);
-        }
-
-        var accessToken = await HonuaAuthenticationSupport.ResolveAccessTokenAsync(
+        => await HonuaGrpcClientSupport.BuildMetadataAsync(
             _options,
-            context,
+            "grpc",
+            methodName,
+            _metadataOverride,
             cancellationToken).ConfigureAwait(false);
-        if (accessToken is not null && !string.IsNullOrWhiteSpace(accessToken.Token))
-        {
-            var tokenType = string.IsNullOrWhiteSpace(accessToken.TokenType) ? "Bearer" : accessToken.TokenType;
-            metadata.Add("authorization", $"{tokenType} {accessToken.Token}");
-        }
-
-        if (_options.EnableCompressionNegotiation && !string.IsNullOrWhiteSpace(_options.AcceptedCompressionEncodings))
-        {
-            metadata.Add("grpc-accept-encoding", _options.AcceptedCompressionEncodings);
-        }
-
-        await HonuaAuthenticationSupport.EmitCredentialAppliedDiagnosticAsync(
-            _options,
-            context,
-            hasApiKey: !string.IsNullOrWhiteSpace(apiKey),
-            authorizationScheme: accessToken?.TokenType,
-            hasAuthorization: accessToken is not null && !string.IsNullOrWhiteSpace(accessToken.Token),
-            cancellationToken).ConfigureAwait(false);
-
-        return metadata;
-    }
 
     private DateTime CreateDeadline()
-        => DateTime.UtcNow.Add(_options.Timeout);
-
-    private static void ValidateAuthenticationTransport(HonuaGrpcClientOptions opts, Uri address)
-    {
-        if (!HasCredentials(opts))
-        {
-            return;
-        }
-
-        if (HonuaGrpcClientOptions.RequiresHttpsForAuthentication(address))
-        {
-            throw new Honua.Sdk.Abstractions.HonuaConfigurationException(
-                "Refusing to send gRPC credentials over an insecure connection. Use HTTPS, " +
-                "or use loopback HTTP only for local development.");
-        }
-    }
-
-    private static bool HasCredentials(HonuaGrpcClientOptions opts)
-        => HonuaAuthenticationSupport.HasCredentialSource(opts);
-
-    private static Uri ResolveChannelAddress(GrpcChannel channel)
-    {
-        if (Uri.TryCreate(channel.Target, UriKind.Absolute, out var targetAddress) &&
-            IsHttpOrHttps(targetAddress))
-        {
-            return targetAddress;
-        }
-
-        // GrpcChannel.Target omits the scheme; Address preserves the original URI.
-        var originalAddress = typeof(GrpcChannel)
-            .GetProperty("Address", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)?
-            .GetValue(channel) as Uri;
-
-        if (originalAddress is not null && IsHttpOrHttps(originalAddress))
-        {
-            return originalAddress;
-        }
-
-        throw new Honua.Sdk.Abstractions.HonuaConfigurationException(
-            "Honua gRPC preconfigured channel target must expose an HTTP or HTTPS address when credentials are configured.");
-    }
-
-    private static bool IsHttpOrHttps(Uri uri)
-        => string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+        => HonuaGrpcClientSupport.CreateDeadline(_options);
 
     private static List<string> BuildDiscoveredCapabilities()
         => FeatureCapabilities.All

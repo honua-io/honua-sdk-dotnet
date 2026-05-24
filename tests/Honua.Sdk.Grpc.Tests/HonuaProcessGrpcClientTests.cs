@@ -1,0 +1,233 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using Grpc.Core;
+using Honua.Sdk.Processes.Models;
+using Moq;
+using Proto = Geospatial.V1;
+
+namespace Honua.Sdk.Grpc.Tests;
+
+public sealed class HonuaProcessGrpcClientTests
+{
+    [Fact]
+    public async Task SubmitJobAsync_MapsSharedPlanAndNativeContext()
+    {
+        Proto.SubmitJobRequest? capturedRequest = null;
+        Metadata? capturedMetadata = null;
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        mockClient
+            .Setup(c => c.SubmitJobAsync(
+                It.IsAny<Proto.SubmitJobRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<Proto.SubmitJobRequest, Metadata, DateTime?, CancellationToken>((request, metadata, _, _) =>
+            {
+                capturedRequest = request;
+                capturedMetadata = metadata;
+            })
+            .Returns(CreateAsyncUnaryCall(new Proto.SubmitJobResponse
+            {
+                JobId = "job-1",
+                State = Proto.JobState.Running
+            }));
+        var metadataOverride = new Metadata { { "x-api-key", "test-key" } };
+        var client = new HonuaProcessGrpcClient(mockClient.Object, metadataOverride);
+
+        var status = await client.SubmitJobAsync(CreatePlan(), new HonuaProcessExecutionContext
+        {
+            WorkspaceId = "workspace-1",
+            Timeout = TimeSpan.FromSeconds(45),
+            Metadata = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["operator"] = "console"
+            }
+        });
+
+        Assert.Equal("job-1", status.JobId);
+        Assert.Equal("Running", status.Status);
+        Assert.Equal("plan-1", capturedRequest?.Plan.PlanId);
+        Assert.Equal(Proto.WorkflowFamily.Analyze, capturedRequest?.Plan.WorkflowFamily);
+        Assert.Equal("summary", capturedRequest?.Plan.ExpectedOutputs.Single());
+        Assert.Equal("geometry.buffer", capturedRequest?.Plan.Steps.Single().Kind);
+        Assert.Equal("25", capturedRequest?.Plan.Steps.Single().Inputs["distance"].StringValue);
+        Assert.Equal("workspace-1", capturedRequest?.Context.Workspace.WorkspaceId);
+        Assert.Equal(45, capturedRequest?.Context.TimeoutSeconds);
+        Assert.Equal("console", capturedRequest?.Context.Metadata["operator"]);
+        Assert.Equal("test-key", capturedMetadata?.GetValue("x-api-key"));
+    }
+
+    [Fact]
+    public async Task ExecutePlanStreamAsync_MapsProgressAndResultEvents()
+    {
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        mockClient
+            .Setup(c => c.ExecutePlanStream(
+                It.IsAny<Proto.ExecutePlanRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncServerStreamingCall(
+            [
+                new Proto.ExecutionEvent
+                {
+                    Progress = new Proto.JobProgress
+                    {
+                        JobId = "job-1",
+                        State = Proto.JobState.Running,
+                        ProgressPercent = 50,
+                        CurrentNodeId = "buffer",
+                        Message = "Buffering features"
+                    }
+                },
+                new Proto.ExecutionEvent
+                {
+                    Result = new Proto.ExecutionResult
+                    {
+                        ResultId = "result-1",
+                        Status = Proto.JobState.Completed,
+                        Summary = "Analysis complete."
+                    }
+                }
+            ]));
+        var client = new HonuaProcessGrpcClient(mockClient.Object, new Metadata());
+
+        var events = new List<HonuaProcessExecutionEvent>();
+        await foreach (var evt in client.ExecutePlanStreamAsync(CreatePlan()))
+        {
+            events.Add(evt);
+        }
+
+        Assert.Collection(
+            events,
+            first =>
+            {
+                Assert.Equal("progress", first.EventType);
+                Assert.Equal("job-1", first.Progress?.JobId);
+                Assert.Equal(50, first.Progress?.ProgressPercent);
+                Assert.Equal("buffer", first.Progress?.CurrentNodeId);
+            },
+            second =>
+            {
+                Assert.Equal("result", second.EventType);
+                Assert.Equal("result-1", second.Result?.ResultId);
+                Assert.Equal("Analysis complete.", second.Result?.Summary);
+            });
+    }
+
+    [Fact]
+    public async Task GetJobResultAsync_MapsTerminalErrorOutcome()
+    {
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        mockClient
+            .Setup(c => c.GetJobResultAsync(
+                It.IsAny<Proto.GetJobResultRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncUnaryCall(new Proto.GetJobResultResponse
+            {
+                JobId = "job-1",
+                Error = new Proto.ErrorDetail
+                {
+                    ErrorCode = "certificate-rejected",
+                    Message = "Client certificate was rejected.",
+                    Phase = "admission",
+                    SuggestedAction = "Select a certificate for this environment."
+                }
+            }));
+        var client = new HonuaProcessGrpcClient(mockClient.Object, new Metadata());
+
+        var outcome = await client.GetJobResultAsync("job-1");
+
+        Assert.Equal("job-1", outcome.JobId);
+        Assert.Null(outcome.Result);
+        Assert.Equal("certificate-rejected", outcome.Error?.ErrorCode);
+        Assert.Equal("Client certificate was rejected.", outcome.Error?.Message);
+        Assert.Equal("admission", outcome.Error?.Phase);
+    }
+
+    [Fact]
+    public async Task ValidatePlanAsync_MapsValidationIssues()
+    {
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        var response = new Proto.ValidatePlanResponse { Valid = false };
+        response.Issues.Add(new Proto.PlanValidationIssue
+        {
+            NodeId = "buffer",
+            Field = "inputs.distance",
+            Message = "Distance is required.",
+            Severity = Proto.IssueSeverity.Error
+        });
+        mockClient
+            .Setup(c => c.ValidatePlanAsync(
+                It.IsAny<Proto.ValidatePlanRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncUnaryCall(response));
+        var client = new HonuaProcessGrpcClient(mockClient.Object, new Metadata());
+
+        var result = await client.ValidatePlanAsync(CreatePlan());
+
+        Assert.False(result.Valid);
+        var issue = Assert.Single(result.Issues);
+        Assert.Equal("buffer", issue.NodeId);
+        Assert.Equal("inputs.distance", issue.Field);
+        Assert.Equal("Distance is required.", issue.Message);
+        Assert.Equal("Error", issue.Severity);
+    }
+
+    private static HonuaAnalysisPlan CreatePlan()
+        => new()
+        {
+            PlanId = "plan-1",
+            SpecVersion = "spec/v1",
+            WorkflowFamily = "analyze",
+            Outputs = ["summary"],
+            Steps =
+            [
+                new HonuaPlanStep
+                {
+                    StepId = "buffer",
+                    Kind = "geometry.buffer",
+                    Inputs = new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["distance"] = "25"
+                    }
+                }
+            ]
+        };
+
+    private static AsyncUnaryCall<T> CreateAsyncUnaryCall<T>(T response)
+        => new(
+            Task.FromResult(response),
+            Task.FromResult(new Metadata()),
+            () => Status.DefaultSuccess,
+            () => new Metadata(),
+            () => { });
+
+    private static AsyncServerStreamingCall<T> CreateAsyncServerStreamingCall<T>(IEnumerable<T> responses)
+        => new(
+            new TestAsyncStreamReader<T>(responses),
+            Task.FromResult(new Metadata()),
+            () => Status.DefaultSuccess,
+            () => new Metadata(),
+            () => { });
+
+    private sealed class TestAsyncStreamReader<T> : IAsyncStreamReader<T>
+    {
+        private readonly IEnumerator<T> _enumerator;
+
+        public TestAsyncStreamReader(IEnumerable<T> items)
+        {
+            _enumerator = items.GetEnumerator();
+        }
+
+        public T Current => _enumerator.Current;
+
+        public Task<bool> MoveNext(CancellationToken cancellationToken)
+            => Task.FromResult(_enumerator.MoveNext());
+    }
+}

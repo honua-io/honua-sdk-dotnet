@@ -23,9 +23,10 @@ builder.Services.AddHonua(o =>
 ```
 
 After that, every enabled client (`IHonuaGrpcClient`, `IHonuaAdminClient`,
-`IHonuaOgcFeaturesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus
-the shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
-`IHonuaFeatureAttachmentClient` abstractions) is available for injection.
+`IHonuaOgcFeaturesClient`, `IHonuaProcessesClient`, `IHonuaWfsClient`,
+`IHonuaGeocodingClient`, plus the shared `IHonuaFeatureQueryClient` /
+`IHonuaFeatureEditClient` / `IHonuaFeatureAttachmentClient` abstractions) is
+available for injection.
 
 ## Module opt-in flags
 
@@ -39,6 +40,7 @@ default module:
 | `UseAdmin` | `true` | `IHonuaAdminClient` + `IHonuaCatalogClient` (REST control plane) |
 | `UseGeocoding` | `true` | `IHonuaGeocodingClient` + `IHonuaBatchGeocodingClient` |
 | `UseOgcFeatures` | `true` | `IHonuaOgcFeaturesClient` |
+| `UseProcesses` | `true` | `IHonuaProcessesClient` (OGC API Processes REST) |
 | `UseWfs` | `true` | `IHonuaWfsClient` (ships inside Honua.Sdk.OgcFeatures) |
 | `UseGeoServices` | `false` | `IHonuaFeatureServerClient` |
 | `UseRouting` | `false` | `IHonuaRoutingClient` (NAServer) |

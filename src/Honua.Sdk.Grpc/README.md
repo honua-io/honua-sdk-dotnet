@@ -1,7 +1,8 @@
 # Honua.Sdk.Grpc
 
-gRPC client for the Honua FeatureService. Provides typed point queries, server-side
-streaming for large result sets, and apply-edits with spatial filters and statistics.
+gRPC client for Honua native services. Provides typed FeatureService queries,
+server-side streaming for large result sets, apply-edits with spatial filters
+and statistics, and ProcessService job lifecycle access for native hosts.
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
@@ -45,6 +46,10 @@ await foreach (var page in client.QueryFeaturesStreamAsync(
     Console.WriteLine($"Page with {page.Features.Count} features");
 }
 ```
+
+Native Console and MAUI hosts can also resolve `IHonuaProcessGrpcClient` to
+validate, dry-run, submit, stream, cancel, and inspect ProcessService jobs while
+reusing the shared job models from `Honua.Sdk.Processes`.
 
 ## Documentation
 
