@@ -238,7 +238,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
             return new HonuaProcessJobStatus
             {
                 JobId = response.JobId,
-                Status = response.State.ToString(),
+                Status = MapJobStateToOgcStatus(response.State),
                 Type = "process"
             };
         }
@@ -306,7 +306,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
             return new HonuaProcessJobStatus
             {
                 JobId = response.JobId,
-                Status = response.State.ToString(),
+                Status = MapJobStateToOgcStatus(response.State),
                 Type = "process"
             };
         }
@@ -456,13 +456,28 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         => new()
         {
             JobId = jobId,
-            Status = state.ToString(),
+            Status = MapJobStateToOgcStatus(state),
             Type = "process",
             Progress = progress?.ProgressPercent,
             Message = progress?.Message,
             Created = progress is null ? null : FromUnixMilliseconds(progress.StartedAt),
             Updated = progress is null ? null : FromUnixMilliseconds(progress.UpdatedAt)
         };
+
+    // Normalizes the proto JobState enum to the OGC API Processes job status values
+    // ("accepted", "running", "successful", "failed", "dismissed") so the shared
+    // HonuaProcessJobStatus / HonuaProcessJobProgress / HonuaProcessExecutionResult
+    // surface stays consistent across the REST and gRPC adapters. Mirrors the
+    // honua-server ExecutionJobStatus → OGC mapping in
+    // Honua.Server.Features.Protocols.Ogc.Api.Processes.OgcProcessesConversionHelpers.
+    private static string MapJobStateToOgcStatus(Proto.JobState state) => state switch
+    {
+        Proto.JobState.Running => "running",
+        Proto.JobState.Completed => "successful",
+        Proto.JobState.Failed => "failed",
+        Proto.JobState.Cancelled => "dismissed",
+        _ => "accepted"
+    };
 
     private static HonuaProcessExecutionOutcome ToExecutionOutcome(
         string jobId,
@@ -534,7 +549,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         => new()
         {
             JobId = progress.JobId,
-            State = progress.State.ToString(),
+            State = MapJobStateToOgcStatus(progress.State),
             ProgressPercent = progress.ProgressPercent,
             CurrentNodeId = progress.CurrentNodeId,
             StartedAt = FromUnixMilliseconds(progress.StartedAt),
@@ -546,7 +561,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         => new()
         {
             ResultId = result.ResultId,
-            Status = result.Status.ToString(),
+            Status = MapJobStateToOgcStatus(result.Status),
             Summary = result.Summary,
             Assumptions = result.Assumptions.Select(assumption => new HonuaProcessAssumption
             {

@@ -46,7 +46,7 @@ public sealed class HonuaProcessGrpcClientTests
         });
 
         Assert.Equal("job-1", status.JobId);
-        Assert.Equal("Running", status.Status);
+        Assert.Equal("running", status.Status);
         Assert.Equal("plan-1", capturedRequest?.Plan.PlanId);
         Assert.Equal(Proto.WorkflowFamily.Analyze, capturedRequest?.Plan.WorkflowFamily);
         Assert.Equal("featureLayer", capturedRequest?.Plan.ExpectedOutputs.Single());
@@ -108,6 +108,7 @@ public sealed class HonuaProcessGrpcClientTests
             {
                 Assert.Equal("progress", first.EventType);
                 Assert.Equal("job-1", first.Progress?.JobId);
+                Assert.Equal("running", first.Progress?.State);
                 Assert.Equal(50, first.Progress?.ProgressPercent);
                 Assert.Equal("buffer", first.Progress?.CurrentNodeId);
             },
@@ -115,6 +116,7 @@ public sealed class HonuaProcessGrpcClientTests
             {
                 Assert.Equal("result", second.EventType);
                 Assert.Equal("result-1", second.Result?.ResultId);
+                Assert.Equal("successful", second.Result?.Status);
                 Assert.Equal("Analysis complete.", second.Result?.Summary);
             });
     }
@@ -180,6 +182,61 @@ public sealed class HonuaProcessGrpcClientTests
         Assert.Equal("inputs.distance", issue.Field);
         Assert.Equal("Distance is required.", issue.Message);
         Assert.Equal("Error", issue.Severity);
+    }
+
+    [Theory]
+    [InlineData(Proto.JobState.Unspecified, "accepted")]
+    [InlineData(Proto.JobState.Draft, "accepted")]
+    [InlineData(Proto.JobState.AwaitingClarification, "accepted")]
+    [InlineData(Proto.JobState.Validated, "accepted")]
+    [InlineData(Proto.JobState.AwaitingApproval, "accepted")]
+    [InlineData(Proto.JobState.Running, "running")]
+    [InlineData(Proto.JobState.Completed, "successful")]
+    [InlineData(Proto.JobState.Failed, "failed")]
+    [InlineData(Proto.JobState.Cancelled, "dismissed")]
+    public async Task GetJobAsync_NormalizesJobStateToOgcStatus(Proto.JobState protoState, string expectedOgcStatus)
+    {
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        mockClient
+            .Setup(c => c.GetJobAsync(
+                It.IsAny<Proto.GetJobRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncUnaryCall(new Proto.GetJobResponse
+            {
+                JobId = "job-1",
+                State = protoState,
+                Progress = new Proto.JobProgress { ProgressPercent = 25 }
+            }));
+        var client = new HonuaProcessGrpcClient(mockClient.Object, new Metadata());
+
+        var status = await client.GetJobAsync("job-1");
+
+        Assert.Equal(expectedOgcStatus, status.Status);
+    }
+
+    [Fact]
+    public async Task CancelJobAsync_EmitsDismissedOgcStatus()
+    {
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        mockClient
+            .Setup(c => c.CancelJobAsync(
+                It.IsAny<Proto.CancelJobRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncUnaryCall(new Proto.CancelJobResponse
+            {
+                JobId = "job-1",
+                State = Proto.JobState.Cancelled
+            }));
+        var client = new HonuaProcessGrpcClient(mockClient.Object, new Metadata());
+
+        var status = await client.CancelJobAsync("job-1");
+
+        Assert.Equal("dismissed", status.Status);
+        Assert.Equal("process", status.Type);
     }
 
     private static HonuaAnalysisPlan CreatePlan()

@@ -209,7 +209,10 @@ validate, dry-run, submit, get, result, and cancel; they map onto the same share
 process model package where practical. `ExecutePlanAsync` and
 `ExecutePlanStreamAsync` remain proto wrapper methods and may return
 `Unimplemented` until server support lands. gRPC failures throw
-`HonuaGrpcException` and preserve the gRPC status code.
+`HonuaGrpcException` and preserve the gRPC status code. `HonuaProcessJobStatus`,
+`HonuaProcessJobProgress`, and `HonuaProcessExecutionResult` use the OGC API
+Processes job status values (`accepted`, `running`, `successful`, `failed`,
+`dismissed`) for both the REST and gRPC clients.
 
 ## Fixtures And Drift Checks
 

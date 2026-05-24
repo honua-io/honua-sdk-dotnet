@@ -35,11 +35,15 @@ public interface IHonuaProcessGrpcClient
     /// <summary>
     /// Submits a plan as an async job.
     /// </summary>
+    /// <remarks><see cref="HonuaProcessJobStatus.Status"/> is normalized to the OGC API Processes values
+    /// (<c>accepted</c>, <c>running</c>, <c>successful</c>, <c>failed</c>, <c>dismissed</c>) so the REST and gRPC clients share one contract.</remarks>
     Task<HonuaProcessJobStatus> SubmitJobAsync(HonuaAnalysisPlan plan, HonuaProcessExecutionContext? context = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current job state and progress.
     /// </summary>
+    /// <remarks><see cref="HonuaProcessJobStatus.Status"/> is normalized to the OGC API Processes values
+    /// (<c>accepted</c>, <c>running</c>, <c>successful</c>, <c>failed</c>, <c>dismissed</c>).</remarks>
     Task<HonuaProcessJobStatus> GetJobAsync(string jobId, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -50,5 +54,7 @@ public interface IHonuaProcessGrpcClient
     /// <summary>
     /// Requests cancellation for a pending or running job.
     /// </summary>
+    /// <remarks><see cref="HonuaProcessJobStatus.Status"/> is normalized to the OGC API Processes values
+    /// (typically <c>dismissed</c> when cancellation succeeds).</remarks>
     Task<HonuaProcessJobStatus> CancelJobAsync(string jobId, CancellationToken cancellationToken = default);
 }

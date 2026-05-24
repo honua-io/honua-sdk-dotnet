@@ -92,6 +92,12 @@ deadline, retry, and `PrimaryHttpMessageHandlerFactory` behavior as the
 FeatureService client. Browser hosts should use `Honua.Sdk.Processes` REST
 instead of native gRPC.
 
+`HonuaProcessJobStatus.Status`, `HonuaProcessJobProgress.State`, and
+`HonuaProcessExecutionResult.Status` are normalized to the OGC API Processes
+status values (`accepted`, `running`, `successful`, `failed`, `dismissed`)
+across both the REST and gRPC adapters so consumers get one contract
+regardless of transport.
+
 `ExecutePlanAsync` and `ExecutePlanStreamAsync` are thin wrappers for the
 ProcessService proto methods. Current Honua Server deployments may return
 `Unimplemented` for those calls until synchronous execute and execute-stream
