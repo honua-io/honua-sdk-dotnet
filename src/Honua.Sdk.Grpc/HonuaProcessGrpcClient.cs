@@ -357,6 +357,10 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         {
             proto.Inputs[key] = new Proto.ParameterValue { StringValue = value };
         }
+        if (!string.IsNullOrWhiteSpace(step.ProcessId))
+        {
+            proto.Inputs["processId"] = new Proto.ParameterValue { StringValue = step.ProcessId };
+        }
 
         proto.Dependencies.AddRange(step.DependsOn);
         return proto;

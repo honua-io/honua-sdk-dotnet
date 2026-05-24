@@ -5,7 +5,7 @@
 | Package | Description |
 |---------|-------------|
 | `Honua.Sdk` | **Umbrella / meta** -- one install + one `AddHonua(o => o.BaseAddress = ...)` registers every enabled sub-package. Recommended starting point. The narrower per-package facades below remain available unchanged. |
-| `Honua.Sdk.Abstractions` | Shared feature query/edit/stream abstractions implemented by provider-specific clients, plus browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
+| `Honua.Sdk.Abstractions` | Shared feature query/edit/stream abstractions implemented by provider-specific clients, Console shell/route/environment contracts, and browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
 | `Honua.Sdk.Offline` | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | `Honua.Sdk.Admin` | Admin client for managing services, layers, connections, styles, metadata, roles, users, alerts, observability, feature-event replay, and streaming subscriber operations. Also exposes Catalog discovery (`IHonuaCatalogClient`, `AddHonuaCatalog`) and Geocoding (`IHonuaGeocodingClient`, `AddHonuaGeocoding`) using the same options/auth handler. |
 | `Honua.Sdk.Processes` | OGC API Processes REST client for process discovery, async job submission, polling, dismissal, results, and shared job models |

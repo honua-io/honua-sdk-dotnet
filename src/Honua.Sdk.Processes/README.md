@@ -11,6 +11,8 @@ dotnet add package Honua.Sdk.Processes
 ```
 
 ```csharp
+using Honua.Sdk.Processes.Extensions;
+
 builder.Services.AddHonuaProcesses(o =>
 {
     o.BaseAddress = new Uri("https://your-honua-server");
@@ -44,6 +46,10 @@ The client targets the OGC API Processes surface under `/ogc/processes`.
 returned as `HonuaProcessResults.Outputs`, a JSON extension-data dictionary
 keyed by output identifier.
 
+The examples below use the current Honua Server canonical process id,
+`honua-geoprocessing`. The client accepts any process id advertised by the
+server's process list.
+
 ```csharp
 using Honua.Sdk.Processes.Models;
 
@@ -57,15 +63,18 @@ var job = await processes.SubmitJobAsync(
             {
                 PlanId = "plan-1",
                 WorkflowFamily = "analyze",
-                Outputs = ["summary"],
+                Outputs = ["featureLayer"],
                 Steps =
                 [
                     new HonuaPlanStep
                     {
                         StepId = "buffer",
-                        Kind = "geometry.buffer",
+                        Kind = "geoprocess",
+                        ProcessId = "geometry.buffer",
                         Inputs = new Dictionary<string, string>
                         {
+                            ["wkb"] = "AAAA",
+                            ["srid"] = "4326",
                             ["distance"] = "25"
                         }
                     }

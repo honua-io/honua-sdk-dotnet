@@ -61,15 +61,18 @@ var plan = new HonuaAnalysisPlan
 {
     PlanId = "plan-1",
     WorkflowFamily = "analyze",
-    Outputs = ["summary"],
+    Outputs = ["featureLayer"],
     Steps =
     [
         new HonuaPlanStep
         {
             StepId = "buffer",
-            Kind = "geometry.buffer",
+            Kind = "geoprocess",
+            ProcessId = "geometry.buffer",
             Inputs = new Dictionary<string, string>
             {
+                ["wkb"] = "AAAA",
+                ["srid"] = "4326",
                 ["distance"] = "25"
             }
         }

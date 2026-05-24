@@ -49,8 +49,11 @@ public sealed class HonuaProcessGrpcClientTests
         Assert.Equal("Running", status.Status);
         Assert.Equal("plan-1", capturedRequest?.Plan.PlanId);
         Assert.Equal(Proto.WorkflowFamily.Analyze, capturedRequest?.Plan.WorkflowFamily);
-        Assert.Equal("summary", capturedRequest?.Plan.ExpectedOutputs.Single());
-        Assert.Equal("geometry.buffer", capturedRequest?.Plan.Steps.Single().Kind);
+        Assert.Equal("featureLayer", capturedRequest?.Plan.ExpectedOutputs.Single());
+        Assert.Equal("geoprocess", capturedRequest?.Plan.Steps.Single().Kind);
+        Assert.Equal("geometry.buffer", capturedRequest?.Plan.Steps.Single().Inputs["processId"].StringValue);
+        Assert.Equal("AAAA", capturedRequest?.Plan.Steps.Single().Inputs["wkb"].StringValue);
+        Assert.Equal("4326", capturedRequest?.Plan.Steps.Single().Inputs["srid"].StringValue);
         Assert.Equal("25", capturedRequest?.Plan.Steps.Single().Inputs["distance"].StringValue);
         Assert.Equal("workspace-1", capturedRequest?.Context.Workspace.WorkspaceId);
         Assert.Equal(45, capturedRequest?.Context.TimeoutSeconds);
@@ -185,15 +188,18 @@ public sealed class HonuaProcessGrpcClientTests
             PlanId = "plan-1",
             SpecVersion = "spec/v1",
             WorkflowFamily = "analyze",
-            Outputs = ["summary"],
+            Outputs = ["featureLayer"],
             Steps =
             [
                 new HonuaPlanStep
                 {
                     StepId = "buffer",
-                    Kind = "geometry.buffer",
+                    Kind = "geoprocess",
+                    ProcessId = "geometry.buffer",
                     Inputs = new Dictionary<string, string>(StringComparer.Ordinal)
                     {
+                        ["wkb"] = "AAAA",
+                        ["srid"] = "4326",
                         ["distance"] = "25"
                     }
                 }

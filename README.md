@@ -126,12 +126,14 @@ using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.OgcFeatures.Wfs.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.Processes.Extensions;
 
 builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri); // + IHonuaCatalogClient
 builder.Services.AddHonuaGeocoding  (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaWfs        (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
 ```
 
 </details>

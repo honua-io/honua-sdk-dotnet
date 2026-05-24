@@ -13,7 +13,7 @@ integration.
 | P0 shell, route guards, environment selection | `Honua.Sdk.Abstractions` (`HonuaConsoleShellDescriptor`, route guards, environment profiles) | Same contracts |
 | Metadata, RBAC, users, alerts, streaming operations, observability | `Honua.Sdk.Admin` REST over browser `HttpClient` or a BFF | Same Admin REST client |
 | Process/job discovery and polling | `Honua.Sdk.Processes` OGC API Processes REST | Same REST models, plus native gRPC when needed |
-| Native job lifecycle streaming | Not a browser runtime surface | `Honua.Sdk.Grpc` (`IHonuaProcessGrpcClient`) |
+| Native ProcessService job lifecycle | Not a browser runtime surface | `Honua.Sdk.Grpc` (`IHonuaProcessGrpcClient`) |
 | Spec validate/plan/apply workflows | `Honua.Sdk.Spec` REST/SSE candidate | Same REST/SSE client |
 
 `Honua.Sdk.Grpc` is intentionally native-only. Browser hosts should use REST
@@ -161,15 +161,18 @@ var job = await processes.SubmitJobAsync(
             {
                 PlanId = "plan-1",
                 WorkflowFamily = "analyze",
-                Outputs = ["summary"],
+                Outputs = ["featureLayer"],
                 Steps =
                 [
                     new HonuaPlanStep
                     {
                         StepId = "buffer",
-                        Kind = "geometry.buffer",
+                        Kind = "geoprocess",
+                        ProcessId = "geometry.buffer",
                         Inputs = new Dictionary<string, string>
                         {
+                            ["wkb"] = "AAAA",
+                            ["srid"] = "4326",
                             ["distance"] = "25"
                         }
                     }

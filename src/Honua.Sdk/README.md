@@ -77,12 +77,14 @@ without pulling in the rest:
 dotnet add package Honua.Sdk.Grpc       
 dotnet add package Honua.Sdk.Admin      
 dotnet add package Honua.Sdk.OgcFeatures
+dotnet add package Honua.Sdk.Processes
 ```
 
 ```csharp
 builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
 ```
 
 The umbrella is purely a build-time aggregator. It does not duplicate any of

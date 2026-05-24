@@ -114,6 +114,11 @@ public sealed class HonuaProcessesClientTests
         Assert.Equal("respond-async", captured?.Headers.GetValues("Prefer").Single());
         Assert.Contains("\"planId\":\"plan-1\"", body, StringComparison.Ordinal);
         Assert.Contains("\"workflowFamily\":\"analyze\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"outputs\":[\"featureLayer\"]", body, StringComparison.Ordinal);
+        Assert.Contains("\"kind\":\"geoprocess\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"processId\":\"geometry.buffer\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"wkb\":\"AAAA\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"srid\":\"4326\"", body, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -227,15 +232,18 @@ public sealed class HonuaProcessesClientTests
                     PlanId = "plan-1",
                     SpecVersion = "spec/v1",
                     WorkflowFamily = "analyze",
-                    Outputs = ["summary"],
+                    Outputs = ["featureLayer"],
                     Steps =
                     [
                         new HonuaPlanStep
                         {
                             StepId = "buffer",
-                            Kind = "geometry.buffer",
+                            Kind = "geoprocess",
+                            ProcessId = "geometry.buffer",
                             Inputs = new Dictionary<string, string>(StringComparer.Ordinal)
                             {
+                                ["wkb"] = "AAAA",
+                                ["srid"] = "4326",
                                 ["distance"] = "25"
                             }
                         }
