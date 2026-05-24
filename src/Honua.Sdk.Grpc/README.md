@@ -51,10 +51,49 @@ Native Console and MAUI hosts can also resolve `IHonuaProcessGrpcClient` to
 validate, dry-run, submit, stream, cancel, and inspect ProcessService jobs while
 reusing the shared job models from `Honua.Sdk.Processes`.
 
+```csharp
+using Honua.Sdk.Processes.Models;
+
+var process = provider.GetRequiredService<IHonuaProcessGrpcClient>();
+
+var plan = new HonuaAnalysisPlan
+{
+    PlanId = "plan-1",
+    WorkflowFamily = "analyze",
+    Outputs = ["summary"],
+    Steps =
+    [
+        new HonuaPlanStep
+        {
+            StepId = "buffer",
+            Kind = "geometry.buffer",
+            Inputs = new Dictionary<string, string>
+            {
+                ["distance"] = "25"
+            }
+        }
+    ]
+};
+
+var validation = await process.ValidatePlanAsync(plan, cancellationToken);
+var job = await process.SubmitJobAsync(plan, cancellationToken: cancellationToken);
+
+await foreach (var evt in process.ExecutePlanStreamAsync(plan, cancellationToken: cancellationToken))
+{
+    Console.WriteLine($"{evt.EventType}: {evt.Progress?.ProgressPercent}");
+}
+```
+
+`HonuaProcessGrpcClient` uses the same `HonuaGrpcClientOptions` auth,
+deadline, retry, and `PrimaryHttpMessageHandlerFactory` behavior as the
+FeatureService client. Browser hosts should use `Honua.Sdk.Processes` REST
+instead of native gRPC.
+
 ## Documentation
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)
 - [Authentication](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/authentication.md)
+- [Console client contracts](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/console-client-contracts.md)
 - [Troubleshooting](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/troubleshooting.md)
 - [Feature edits](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/feature-edits.md)
 

@@ -30,28 +30,28 @@
     "generatedAt": "2026-05-23T22:30:00Z"
   },
   "featureEventReplay": {
-    "events": [
+    "Events": [
       {
-        "eventId": "event-1",
-        "cursor": 1001,
-        "timestamp": "2026-05-23T22:29:00Z",
-        "sourceId": "grpc",
-        "serviceId": "parcels",
-        "layerId": 0,
-        "objectId": 42,
-        "operation": "update",
-        "protocol": "geoservices-feature-service",
-        "requestId": "req-1",
-        "changedAttributes": {
+        "EventId": "event-1",
+        "Cursor": 1001,
+        "Timestamp": "2026-05-23T22:29:00Z",
+        "SourceId": "grpc",
+        "ServiceId": "parcels",
+        "LayerId": 0,
+        "ObjectId": 42,
+        "Operation": "update",
+        "Protocol": "geoservices-feature-service",
+        "RequestId": "req-1",
+        "ChangedAttributes": {
           "status": "reviewed"
         },
-        "geometryChanged": false,
-        "geometryEnvelope": [-158.1, 21.2, -157.8, 21.4],
-        "propertiesJson": "{\"status\":\"reviewed\"}",
-        "geometrySrid": 4326
+        "GeometryChanged": false,
+        "GeometryEnvelope": [-158.1, 21.2, -157.8, 21.4],
+        "PropertiesJson": "{\"status\":\"reviewed\"}",
+        "GeometrySrid": 4326
       }
     ],
-    "nextCursor": 1002,
-    "hasMore": false
+    "NextCursor": 1002,
+    "HasMore": false
   }
 }

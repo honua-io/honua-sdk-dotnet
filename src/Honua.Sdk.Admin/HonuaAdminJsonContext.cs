@@ -14,6 +14,7 @@ namespace Honua.Sdk.Admin;
 /// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(ApiResponse<ServiceSummary[]>))]
 [JsonSerializable(typeof(CatalogFeatureServerServiceInfo))]

@@ -22,3 +22,63 @@ Use `IHonuaProcessesClient` in Blazor Web hosts for process discovery, async job
 submission, polling, dismissal, and result retrieval. Native hosts that need
 full gRPC job lifecycle access can also use the same model package through
 `Honua.Sdk.Grpc`'s process client.
+
+## REST surface
+
+The client targets the OGC API Processes surface under `/ogc/processes`.
+
+| SDK method | HTTP contract |
+|---|---|
+| `GetLandingPageAsync` | `GET /ogc/processes?f=json` |
+| `GetConformanceAsync` | `GET /ogc/processes/conformance?f=json` |
+| `ListProcessesAsync` | `GET /ogc/processes/processes` |
+| `GetProcessAsync` | `GET /ogc/processes/processes/{processId}` |
+| `SubmitJobAsync` | `POST /ogc/processes/processes/{processId}/execution` with `Prefer: respond-async` |
+| `ListJobsAsync` | `GET /ogc/processes/jobs` with optional `limit` |
+| `GetJobAsync` | `GET /ogc/processes/jobs/{jobId}` |
+| `DismissJobAsync` | `DELETE /ogc/processes/jobs/{jobId}` |
+| `GetJobResultsAsync` | `GET /ogc/processes/jobs/{jobId}/results` |
+
+`HonuaProcessJobStatus` maps OGC wire fields such as `processID`, `jobID`,
+`status`, and `progress` to typed SDK properties. Document-mode results are
+returned as `HonuaProcessResults.Outputs`, a JSON extension-data dictionary
+keyed by output identifier.
+
+```csharp
+using Honua.Sdk.Processes.Models;
+
+var job = await processes.SubmitJobAsync(
+    "honua.analysis",
+    new HonuaProcessExecuteRequest
+    {
+        Inputs = new HonuaProcessExecuteInputs
+        {
+            Plan = new HonuaAnalysisPlan
+            {
+                PlanId = "plan-1",
+                WorkflowFamily = "analyze",
+                Outputs = ["summary"],
+                Steps =
+                [
+                    new HonuaPlanStep
+                    {
+                        StepId = "buffer",
+                        Kind = "geometry.buffer",
+                        Inputs = new Dictionary<string, string>
+                        {
+                            ["distance"] = "25"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    cancellationToken);
+
+var status = await processes.GetJobAsync(job.JobId, cancellationToken);
+var results = await processes.GetJobResultsAsync(job.JobId, cancellationToken);
+```
+
+Non-success responses throw `HonuaProcessesException`. When the server returns
+problem-details JSON, the exception preserves `StatusCode`, `ProblemType`,
+`ProblemTitle`, `ProblemDetail`, and the raw `ResponseBody`.

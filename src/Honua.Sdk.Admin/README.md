@@ -1,9 +1,10 @@
 # Honua.Sdk.Admin
 
 REST client for the Honua Admin API: service settings, metadata resources and
-manifests, secure database connections, published layers, styles, identity providers,
-license, observability, and deploy plans. Also ships the portal-style Catalog client
-and the GeoServices-compatible Geocoding client.
+manifests, secure database connections, published layers, styles, identity
+providers, RBAC, users, license, observability, deploy plans, alert rules,
+feature-event replay, and streaming subscriber operations. Also ships the
+portal-style Catalog client and the GeoServices-compatible Geocoding client.
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
@@ -37,6 +38,51 @@ foreach (var service in summaries)
 }
 ```
 
+For application code, prefer the narrow sub-interface that matches the
+workflow instead of depending on the aggregate `IHonuaAdminClient`.
+`AddHonuaAdmin` registers all sub-interfaces against the same underlying
+`HonuaAdminClient`.
+
+```csharp
+using Honua.Sdk.Admin.Models;
+
+var users = provider.GetRequiredService<IHonuaAdminUsersClient>();
+var permissions = await users.GetEffectivePermissionsAsync(
+    "user-operator",
+    cancellationToken);
+
+var alerts = provider.GetRequiredService<IHonuaAdminAlertsClient>();
+var rules = await alerts.ListAlertRulesAsync(
+    serviceId: "parcels",
+    layerId: 0,
+    cancellationToken);
+
+var events = provider.GetRequiredService<IHonuaAdminFeatureEventsClient>();
+var replay = await events.ReplayFeatureEventsAsync(
+    new FeatureEventReplayQuery { Cursor = 1001, Limit = 100 },
+    cancellationToken);
+```
+
+## Console control-plane contracts
+
+The Admin package includes the stable Console P0 control-plane surface used by
+Blazor Web and MAUI hosts:
+
+| Workflow | Interface |
+|---|---|
+| Service, layer, protocol, connection, style, manifest, deploy, and compatibility operations | `IHonuaAdminClient` or the existing narrow service-specific interfaces |
+| Route guard roles and permission grants | `IHonuaAdminRolesClient` |
+| User list, role assignment, deprovisioning, and effective permissions | `IHonuaAdminUsersClient` |
+| Alert zones and alert rules | `IHonuaAdminAlertsClient` |
+| Feature-change replay pages | `IHonuaAdminFeatureEventsClient` |
+| Streaming subscriber list and disconnect | `IHonuaAdminStreamingOperationsClient` |
+
+Most Admin endpoints use the server's `ApiResponse<T>` envelope and are
+unwrapped before returning typed SDK models. Feature-event replay returns the
+raw replay page shape. Non-success HTTP statuses throw
+`HonuaAdminApiException`; successful responses that fail the expected contract
+throw `HonuaAdminOperationException`.
+
 ### Catalog and Geocoding
 
 ```csharp
@@ -69,6 +115,7 @@ for the policy and supported version matrix.
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)
 - [Authentication](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/authentication.md)
+- [Console client contracts](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/console-client-contracts.md)
 - [Troubleshooting](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/troubleshooting.md)
 - [Metadata catalog parity](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/metadata-catalog-parity.md)
 

@@ -84,7 +84,7 @@ public sealed class ConsoleAdminContractTests
                 "/api/v1/admin/alerts/rules" when request.Method == HttpMethod.Post =>
                     TestHelpers.CreateJsonResponse(CreateAlertRule()),
                 "/api/v1/admin/feature-events/replay?cursor=1001&limit=10" =>
-                    TestHelpers.CreateRawJsonResponse(CreateFeatureEventReplay()),
+                    CreateServerFeatureEventReplayResponse(),
                 "/api/v1/admin/operations/streaming/subscribers" =>
                     TestHelpers.CreateJsonResponse(CreateSubscriberList()),
                 "/api/v1/admin/operations/streaming/subscribers/33333333-3333-3333-3333-333333333333" =>
@@ -298,27 +298,32 @@ public sealed class ConsoleAdminContractTests
             IsActive = true
         };
 
-    private static FeatureEventReplayResponse CreateFeatureEventReplay()
+    private static HttpResponseMessage CreateServerFeatureEventReplayResponse()
         => new()
         {
-            Events =
-            [
-                new FeatureChangeEvent
+            Content = new StringContent(
+                """
                 {
-                    EventId = "event-1",
-                    Cursor = 1001,
-                    Timestamp = DateTimeOffset.Parse("2026-05-23T22:29:00Z", System.Globalization.CultureInfo.InvariantCulture),
-                    ServiceId = "parcels",
-                    LayerId = 0,
-                    ObjectId = 42,
-                    Operation = "update",
-                    Protocol = "geoservices-feature-service",
-                    RequestId = "req-1",
-                    GeometryChanged = false
+                  "Events": [
+                    {
+                      "EventId": "event-1",
+                      "Cursor": 1001,
+                      "Timestamp": "2026-05-23T22:29:00Z",
+                      "ServiceId": "parcels",
+                      "LayerId": 0,
+                      "ObjectId": 42,
+                      "Operation": "update",
+                      "Protocol": "geoservices-feature-service",
+                      "RequestId": "req-1",
+                      "GeometryChanged": false
+                    }
+                  ],
+                  "NextCursor": 1002,
+                  "HasMore": false
                 }
-            ],
-            NextCursor = 1002,
-            HasMore = false
+                """,
+                System.Text.Encoding.UTF8,
+                "application/json")
         };
 
     private static SubscriberListResponse CreateSubscriberList()

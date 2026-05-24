@@ -40,7 +40,7 @@ Retries are enabled by default and can be disabled per client with
 | Client family | Retried failures |
 |---------------|------------------|
 | gRPC | `QueryFeatures` and `QueryFeaturesStream` retries on `Unavailable`, `Internal` |
-| Admin, Geocoding, Spec, WFS, GeoServices, OGC API Features | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
+| Admin, Geocoding, Spec, Processes, WFS, GeoServices, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
 
 Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
 API Features create/update/delete calls are not retried by the default policy.
@@ -104,6 +104,7 @@ also implement `IHonuaFeatureQueryClient.QueryPagesAsync` from
 | OGC API Features | `GetItemsPagesAsync` follows same-origin `rel=next` links. Cross-origin next links are rejected. |
 | STAC | `GetItemsPagesAsync` and `SearchPagesAsync` follow same-origin `rel=next` links. Cross-origin next links are rejected. GET search supports numeric `offset` and opaque `next` tokens. |
 | gRPC | `QueryFeaturesStreamAsync` returns server-streamed pages until `IsLastPage`; `QueryPagesAsync` maps those pages to the shared abstraction. |
+| OGC API Processes | `ListJobsAsync` accepts an optional server-side `limit`. The client does not auto-page jobs because the current OGC Processes job list contract does not expose a shared continuation token. |
 
 ## Endpoint coverage
 
@@ -111,8 +112,8 @@ Current typed endpoint coverage is:
 
 | Package | Covered surfaces |
 |---------|------------------|
-| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, and host-neutral plugin manifests. |
-| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, observability, migrations, deploy preflight/plans/operations, and geocoding. |
+| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, Console shell/route guard/environment profile contracts, native mTLS trust-state DTOs, and host-neutral plugin manifests. |
+| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, RBAC roles/permissions, users/effective permissions, alert zones/rules, feature-event replay, streaming subscriber operations, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, feature edits, and native ProcessService validate/dry-run/execute-stream/job lifecycle calls. |
 | `Honua.Sdk.Processes` | OGC API Processes landing page, conformance, process list/detail, async execution submission, job list/status, dismissal, and document-mode results. |

@@ -7,11 +7,11 @@
 | `Honua.Sdk` | **Umbrella / meta** -- one install + one `AddHonua(o => o.BaseAddress = ...)` registers every enabled sub-package. Recommended starting point. The narrower per-package facades below remain available unchanged. |
 | `Honua.Sdk.Abstractions` | Shared feature query/edit/stream abstractions implemented by provider-specific clients, plus browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
 | `Honua.Sdk.Offline` | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
-| `Honua.Sdk.Admin` | Admin client for managing services, layers, connections, styles, and metadata. Also exposes Catalog discovery (`IHonuaCatalogClient`, `AddHonuaCatalog`) and Geocoding (`IHonuaGeocodingClient`, `AddHonuaGeocoding`) using the same options/auth handler. |
+| `Honua.Sdk.Admin` | Admin client for managing services, layers, connections, styles, metadata, roles, users, alerts, observability, feature-event replay, and streaming subscriber operations. Also exposes Catalog discovery (`IHonuaCatalogClient`, `AddHonuaCatalog`) and Geocoding (`IHonuaGeocodingClient`, `AddHonuaGeocoding`) using the same options/auth handler. |
 | `Honua.Sdk.Processes` | OGC API Processes REST client for process discovery, async job submission, polling, dismissal, results, and shared job models |
 | `Honua.Sdk.Spec` | Spec workspace client for validate, plan, apply stream, and cancel |
 | `Honua.Sdk.Field` | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
-| `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries and edits |
+| `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries/edits and native `ProcessService` job lifecycle access |
 | `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
 | `Honua.Sdk.GeoServices` | GeoServices FeatureServer read/query/edit client. Also exposes NAServer Routing (`IHonuaRoutingClient`, `AddHonuaRouting`) using the same options/auth handler. |
 | `Honua.Sdk.Scenes` | Scene metadata, endpoint resolution, and offline scene package contracts |

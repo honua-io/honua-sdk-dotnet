@@ -6,7 +6,7 @@ This repository owns official .NET client libraries and shared host-neutral cont
 
 - Shared query, edit, stream, source facade, capability, plugin, offline, and field form abstractions.
 - gRPC FeatureService client for typed queries, streaming, edits, and spatial filters.
-- Admin REST client for services, layers, connections, styles, metadata, manifests, capabilities, identity, licensing, deployment, observability, secure connections, and publishing workflows.
+- Admin REST client for services, layers, connections, styles, metadata, manifests, capabilities, identity, RBAC/users, licensing, deployment, observability, alerts, feature-event replay, streaming subscriber operations, secure connections, and publishing workflows.
 - OGC API Processes REST client for process discovery, async jobs, polling, dismissal, results, and shared job models.
 - Native gRPC ProcessService job lifecycle client for MAUI and other native hosts.
 - Spec workspace client for validate, plan, apply stream, cancel, and problem contracts.
