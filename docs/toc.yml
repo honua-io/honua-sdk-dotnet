@@ -8,6 +8,8 @@
       href: ../INSTALL.md
     - name: Authentication
       href: authentication.md
+    - name: Console client contracts
+      href: console-client-contracts.md
     - name: Troubleshooting
       href: troubleshooting.md
     - name: Browser / WASM

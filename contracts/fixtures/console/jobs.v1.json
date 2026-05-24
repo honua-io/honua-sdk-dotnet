@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "honua.console-jobs.v1",
+  "processes": {
+    "processes": [
+      {
+        "id": "honua-geoprocessing",
+        "title": "Analysis Plan",
+        "description": "Executes Console analysis plans.",
+        "version": "1.0.0",
+        "jobControlOptions": ["async-execute", "dismiss"],
+        "outputTransmission": ["value"],
+        "links": [
+          {
+            "href": "/ogc/processes/processes/honua-geoprocessing",
+            "rel": "self",
+            "type": "application/json",
+            "title": "Analysis Plan"
+          }
+        ]
+      }
+    ],
+    "links": []
+  },
+  "submittedJob": {
+    "processID": "honua-geoprocessing",
+    "type": "process",
+    "jobID": "job-accepted",
+    "status": "accepted",
+    "created": "2026-05-23T22:40:00Z",
+    "updated": "2026-05-23T22:40:00Z",
+    "progress": 0,
+    "links": []
+  },
+  "jobs": {
+    "jobs": [
+      {
+        "processID": "honua-geoprocessing",
+        "type": "process",
+        "jobID": "job-running",
+        "status": "running",
+        "message": "Executing buffer step.",
+        "created": "2026-05-23T22:40:00Z",
+        "updated": "2026-05-23T22:41:00Z",
+        "progress": 50,
+        "links": []
+      },
+      {
+        "processID": "honua-geoprocessing",
+        "type": "process",
+        "jobID": "job-complete",
+        "status": "successful",
+        "message": "Analysis complete.",
+        "created": "2026-05-23T22:40:00Z",
+        "updated": "2026-05-23T22:42:00Z",
+        "progress": 100,
+        "links": []
+      },
+      {
+        "processID": "honua-geoprocessing",
+        "type": "process",
+        "jobID": "job-failed",
+        "status": "failed",
+        "message": "Input layer was not available.",
+        "created": "2026-05-23T22:40:00Z",
+        "updated": "2026-05-23T22:42:00Z",
+        "progress": 60,
+        "links": []
+      },
+      {
+        "processID": "honua-geoprocessing",
+        "type": "process",
+        "jobID": "job-dismissed",
+        "status": "dismissed",
+        "message": "Operator dismissed the job.",
+        "created": "2026-05-23T22:40:00Z",
+        "updated": "2026-05-23T22:42:00Z",
+        "progress": 60,
+        "links": []
+      }
+    ],
+    "links": []
+  },
+  "result": {
+    "summary": {
+      "value": "Analysis complete."
+    },
+    "artifact": {
+      "href": "/api/v1/admin/metadata/resources/Layer/default/parcels-buffered",
+      "type": "application/json"
+    }
+  }
+}

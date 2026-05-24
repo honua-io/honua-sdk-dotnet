@@ -20,6 +20,7 @@ These option types support `ApiKey`, `BearerToken`, `ApiKeyProvider`, and
 - `HonuaStacClientOptions` for STAC
 - `HonuaSceneClientOptions` for scene metadata and offline scene packages
 - `HonuaSpecClientOptions` for spec workspace plan/apply APIs
+- `HonuaProcessesClientOptions` for OGC API Processes REST and job polling
 
 Provider delegates are invoked before each SDK request or RPC. When a provider
 is configured, its value takes precedence over the static property. Returning
@@ -118,6 +119,19 @@ builder.Services.AddHonuaFeatureServer(o =>
 });
 ```
 
+Console hosts that need environment selection or native mTLS state should use
+the DTOs in `Honua.Sdk.Abstractions.Environments`. Those models store only
+safe selectors and sanitized validation state: certificate reference kind,
+display label, optional thumbprint, expected server identity, policy id,
+expiration time, and status such as `Missing`, `Expired`, `Untrusted`,
+`Rejected`, `WrongEnvironment`, or `Ready`.
+
+The SDK does not resolve OS certificate stores, persist private keys, or put
+certificate bytes into environment profiles. Blazor Web hosts should model
+browser session or BFF auth. MAUI hosts own secure storage, certificate
+selection, platform trust validation, and handler creation before supplying a
+configured `PrimaryHttpMessageHandlerFactory`.
+
 ## Storage Guidance
 
 Do not hard-code long-lived API keys, bearer tokens, or refresh tokens in
@@ -162,6 +176,8 @@ If a provider throws or its cancellation token is canceled, the current SDK call
 fails before the transport request is sent. Authentication failures from the
 server, such as `401` or `403`, are not retried by the SDK retry policy. HTTP
 clients retry safe methods only on `429`, `502`, and `503`; the gRPC client
-retries read queries only on `Unavailable` and `Internal` according to its
-configured retry policy. Treat the provider as the place to refresh before a
-request, not as a response-time recovery hook for expired credentials.
+retries configured safe/read-style RPCs on `Unavailable` and `Internal`
+according to its retry policy. That includes FeatureService query calls and the
+ProcessService `ValidatePlan`, `DryRunPlan`, `GetJob`, and `GetJobResult`
+methods. Treat the provider as the place to refresh before a request, not as a
+response-time recovery hook for expired credentials.

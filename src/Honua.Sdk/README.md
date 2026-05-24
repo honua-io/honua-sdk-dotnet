@@ -22,23 +22,25 @@ builder.Services.AddHonua(o =>
 });
 ```
 
-After that, every enabled client (`IHonuaGrpcClient`, `IHonuaAdminClient`,
-`IHonuaOgcFeaturesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus
-the shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
+After that, every enabled client (`IHonuaGrpcClient`,
+`IHonuaProcessGrpcClient`, `IHonuaAdminClient`, `IHonuaOgcFeaturesClient`,
+`IHonuaProcessesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus the
+shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
 `IHonuaFeatureAttachmentClient` abstractions) is available for injection.
 
 ## Module opt-in flags
 
-The umbrella registers the core query / edit / admin trio by default. Flip the
-`Use*` flags to enable the more situational sub-packages or to opt out of any
-default module:
+The umbrella registers the common default query, edit, admin, geocoding,
+process, and WFS clients by default. Flip the `Use*` flags to enable the more
+situational sub-packages or to opt out of any default module:
 
 | Flag | Default | Registers |
 |---|---|---|
-| `UseGrpc` | `true` | `IHonuaGrpcClient` (gRPC FeatureService) |
+| `UseGrpc` | `true` | `IHonuaGrpcClient` (gRPC FeatureService) + `IHonuaProcessGrpcClient` (native ProcessService) |
 | `UseAdmin` | `true` | `IHonuaAdminClient` + `IHonuaCatalogClient` (REST control plane) |
 | `UseGeocoding` | `true` | `IHonuaGeocodingClient` + `IHonuaBatchGeocodingClient` |
 | `UseOgcFeatures` | `true` | `IHonuaOgcFeaturesClient` |
+| `UseProcesses` | `true` | `IHonuaProcessesClient` (OGC API Processes REST) |
 | `UseWfs` | `true` | `IHonuaWfsClient` (ships inside Honua.Sdk.OgcFeatures) |
 | `UseGeoServices` | `false` | `IHonuaFeatureServerClient` |
 | `UseRouting` | `false` | `IHonuaRoutingClient` (NAServer) |
@@ -75,12 +77,14 @@ without pulling in the rest:
 dotnet add package Honua.Sdk.Grpc       
 dotnet add package Honua.Sdk.Admin      
 dotnet add package Honua.Sdk.OgcFeatures
+dotnet add package Honua.Sdk.Processes
 ```
 
 ```csharp
 builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
 ```
 
 The umbrella is purely a build-time aggregator. It does not duplicate any of

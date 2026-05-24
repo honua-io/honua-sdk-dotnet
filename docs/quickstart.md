@@ -7,7 +7,8 @@ This page has two paths:
   your server.
 - [Full quickstart (5 steps, ~10 minutes)](#full-quickstart-five-steps) —
   gRPC + Admin + Geocoding + WFS + OGC API Features through the shared
-  abstraction. Use this if you want a guided tour of the SDK.
+  abstraction, with the umbrella also registering OGC API Processes by
+  default. Use this if you want a guided tour of the SDK.
 
 ## Prerequisites
 
@@ -75,7 +76,7 @@ dotnet new console -n HonuaDemo
 cd HonuaDemo
 
 # Core packages this quickstart uses:
-dotnet add package Honua.Sdk.Grpc            # gRPC FeatureService
+dotnet add package Honua.Sdk.Grpc            # gRPC FeatureService + native ProcessService jobs
 dotnet add package Honua.Sdk.Abstractions    # shared query abstraction
 dotnet add package Honua.Sdk.Admin           # Admin + Geocoding REST
 dotnet add package Honua.Sdk.OgcFeatures     # OGC API Features + WFS 2.0
@@ -93,9 +94,10 @@ dotnet add package Microsoft.Extensions.Hosting
 ## Step 2: Configure the client with DI (60 seconds)
 
 Replace the contents of `Program.cs` with the following. The Generic Host wires
-up the gRPC, Admin, Geocoding, WFS, GeoServices FeatureServer, scene metadata,
-OGC API Features, OGC API Records, and STAC clients so they can be injected
-anywhere.
+up the default gRPC, Admin, Geocoding, WFS, OGC API Features, and OGC API
+Processes clients so they can be injected anywhere. GeoServices FeatureServer,
+scene metadata, OGC API Records, and STAC remain opt-in through the `Use*`
+flags or their package-specific `AddHonua*` extensions.
 
 The recommended path is the **umbrella** `AddHonua` registration from the
 `Honua.Sdk` meta package: one call configures every enabled sub-package with a
@@ -113,8 +115,8 @@ var builder = Host.CreateApplicationBuilder(args);
 var serverUri = new Uri("https://localhost:5001");
 
 // One call registers every enabled Honua SDK client. Defaults register the
-// core query/edit/admin trio (gRPC, Admin + Catalog, Geocoding, OGC API
-// Features, WFS 2.0). Flip Use* flags to opt in to the more situational
+// common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
+// Processes, and WFS 2.0 clients. Flip Use* flags to opt in to the more situational
 // sub-packages (Scenes, Spec, Stac, OgcRecords, GeoServices, Routing).
 builder.Services.AddHonua(o =>
 {
@@ -145,7 +147,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 var serverUri = new Uri("https://localhost:5001");
 
-// gRPC client -- used for feature queries.
+// gRPC client -- used for feature queries and native ProcessService jobs.
 // BaseAddress is preferred for parity with the REST clients; Address (string)
 // is still supported.
 builder.Services.AddHonuaGrpc(options => options.BaseAddress = serverUri);

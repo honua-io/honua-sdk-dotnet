@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "honua.console-observability-dashboard.v1",
+  "recentErrors": {
+    "capacity": 100,
+    "instanceId": "server-1",
+    "errors": [
+      {
+        "timestamp": "2026-05-23T22:30:00Z",
+        "correlationId": "corr-1",
+        "path": "/api/v1/admin/layers/publish",
+        "statusCode": 400,
+        "message": "Invalid publish request."
+      }
+    ]
+  },
+  "telemetry": {
+    "tracingEnabled": true,
+    "otlpConfigured": true,
+    "otlpEndpoint": "https://otel.example.test/v1/traces"
+  },
+  "migrations": {
+    "status": "ready",
+    "isReady": true,
+    "isFailed": false,
+    "message": "Database schema is current.",
+    "planAvailable": true,
+    "upgradeRequired": false,
+    "pendingScripts": [],
+    "executedButNotDiscoveredScripts": [],
+    "generatedAt": "2026-05-23T22:30:00Z"
+  },
+  "featureEventReplay": {
+    "Events": [
+      {
+        "EventId": "event-1",
+        "Cursor": 1001,
+        "Timestamp": "2026-05-23T22:29:00Z",
+        "SourceId": "grpc",
+        "ServiceId": "parcels",
+        "LayerId": 0,
+        "ObjectId": 42,
+        "Operation": "update",
+        "Protocol": "geoservices-feature-service",
+        "RequestId": "req-1",
+        "ChangedAttributes": {
+          "status": "reviewed"
+        },
+        "GeometryChanged": false,
+        "GeometryEnvelope": [-158.1, 21.2, -157.8, 21.4],
+        "PropertiesJson": "{\"status\":\"reviewed\"}",
+        "GeometrySrid": 4326
+      }
+    ],
+    "NextCursor": 1002,
+    "HasMore": false
+  }
+}

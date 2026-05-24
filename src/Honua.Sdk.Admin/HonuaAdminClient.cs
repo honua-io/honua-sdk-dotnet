@@ -610,6 +610,170 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestIdentityProvider");
     }
 
+    // ── RBAC ────────────────────────────────────────────────────────────
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<RoleResponse>> ListRolesAsync(CancellationToken cancellationToken = default)
+    {
+        var data = await GetAsync<RoleResponse[]>(
+            $"{ApiPrefix}/roles/",
+            HonuaAdminJsonContext.Default.ApiResponseRoleResponseArray,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<RoleResponse?> GetRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        using var response = await _http.GetAsync(
+            CreateRequestUri($"{ApiPrefix}/roles/{roleId:D}"), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
+
+        var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseRoleResponse);
+        return envelope?.Data;
+    }
+
+    /// <inheritdoc />
+    public async Task<RoleResponse> CreateRoleAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PostAsync<RoleResponse>(
+            $"{ApiPrefix}/roles/",
+            request,
+            HonuaAdminJsonContext.Default.CreateRoleRequest,
+            HonuaAdminJsonContext.Default.ApiResponseRoleResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null role.", "CreateRole");
+    }
+
+    /// <inheritdoc />
+    public async Task<RoleResponse> UpdateRoleAsync(Guid roleId, UpdateRoleRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PutAsync<RoleResponse>(
+            $"{ApiPrefix}/roles/{roleId:D}",
+            request,
+            HonuaAdminJsonContext.Default.UpdateRoleRequest,
+            HonuaAdminJsonContext.Default.ApiResponseRoleResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null role.", "UpdateRole");
+    }
+
+    /// <inheritdoc />
+    public Task DeleteRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
+        => DeleteEnvelopeAsync($"{ApiPrefix}/roles/{roleId:D}", cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<PermissionGrantResponse>> GetRolePermissionsAsync(Guid roleId, CancellationToken cancellationToken = default)
+    {
+        var data = await GetAsync<PermissionGrantResponse[]>(
+            $"{ApiPrefix}/roles/{roleId:D}/permissions",
+            HonuaAdminJsonContext.Default.ApiResponsePermissionGrantResponseArray,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<PermissionGrantResponse>> SetRolePermissionsAsync(Guid roleId, SetPermissionsRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PutAsync<PermissionGrantResponse[]>(
+            $"{ApiPrefix}/roles/{roleId:D}/permissions",
+            request,
+            HonuaAdminJsonContext.Default.SetPermissionsRequest,
+            HonuaAdminJsonContext.Default.ApiResponsePermissionGrantResponseArray,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<UserListResponse> ListUsersAsync(UserListQuery? query = null, CancellationToken cancellationToken = default)
+    {
+        var queryString = query is null
+            ? string.Empty
+            : BuildQuery(
+                ("source", query.Source),
+                ("role", query.Role),
+                ("active", query.Active.HasValue ? (query.Active.Value ? "true" : "false") : null),
+                ("limit", query.Limit?.ToString(CultureInfo.InvariantCulture)),
+                ("offset", query.Offset?.ToString(CultureInfo.InvariantCulture)));
+        var data = await GetAsync<UserListResponse>(
+            $"{ApiPrefix}/users/{queryString}",
+            HonuaAdminJsonContext.Default.ApiResponseUserListResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? new UserListResponse();
+    }
+
+    /// <inheritdoc />
+    public async Task<UserResponse?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new ArgumentException("User ID must be supplied.", nameof(userId));
+        }
+
+        using var response = await _http.GetAsync(
+            CreateRequestUri($"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}"), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
+
+        var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseUserResponse);
+        return envelope?.Data;
+    }
+
+    /// <inheritdoc />
+    public async Task<UserResponse> UpdateUserRolesAsync(string userId, UpdateUserRolesRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new ArgumentException("User ID must be supplied.", nameof(userId));
+        }
+
+        var data = await PutAsync<UserResponse>(
+            $"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}/roles",
+            request,
+            HonuaAdminJsonContext.Default.UpdateUserRolesRequest,
+            HonuaAdminJsonContext.Default.ApiResponseUserResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null user.", "UpdateUserRoles");
+    }
+
+    /// <inheritdoc />
+    public Task DeprovisionUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new ArgumentException("User ID must be supplied.", nameof(userId));
+        }
+
+        return DeleteEnvelopeAsync($"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}", cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<EffectivePermissionsResponse> GetEffectivePermissionsAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new ArgumentException("User ID must be supplied.", nameof(userId));
+        }
+
+        var data = await GetAsync<EffectivePermissionsResponse>(
+            $"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}/effective-permissions",
+            HonuaAdminJsonContext.Default.ApiResponseEffectivePermissionsResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null effective permissions.", "GetEffectivePermissions");
+    }
+
     // ── License ─────────────────────────────────────────────────────────
 
     /// <inheritdoc />
@@ -689,6 +853,119 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null migration status.", "GetMigrationStatus");
     }
+
+    // ── Alerts and Streams ──────────────────────────────────────────────
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AlertZoneResponse>> ListAlertZonesAsync(string? serviceId = null, CancellationToken cancellationToken = default)
+    {
+        var query = BuildQuery(("serviceId", serviceId));
+        var data = await GetAsync<AlertZoneResponse[]>(
+            $"{ApiPrefix}/alerts/zones{query}",
+            HonuaAdminJsonContext.Default.ApiResponseAlertZoneResponseArray,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<AlertZoneResponse> CreateAlertZoneAsync(AlertZoneRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PostAsync<AlertZoneResponse>(
+            $"{ApiPrefix}/alerts/zones",
+            request,
+            HonuaAdminJsonContext.Default.AlertZoneRequest,
+            HonuaAdminJsonContext.Default.ApiResponseAlertZoneResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null alert zone.", "CreateAlertZone");
+    }
+
+    /// <inheritdoc />
+    public async Task<AlertZoneResponse> UpdateAlertZoneAsync(long zoneId, AlertZoneRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PutAsync<AlertZoneResponse>(
+            $"{ApiPrefix}/alerts/zones/{zoneId}",
+            request,
+            HonuaAdminJsonContext.Default.AlertZoneRequest,
+            HonuaAdminJsonContext.Default.ApiResponseAlertZoneResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null alert zone.", "UpdateAlertZone");
+    }
+
+    /// <inheritdoc />
+    public Task DeleteAlertZoneAsync(long zoneId, CancellationToken cancellationToken = default)
+        => DeleteEnvelopeAsync($"{ApiPrefix}/alerts/zones/{zoneId}", cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<AlertRuleResponse>> ListAlertRulesAsync(string? serviceId = null, int? layerId = null, CancellationToken cancellationToken = default)
+    {
+        var query = BuildQuery(
+            ("serviceId", serviceId),
+            ("layerId", layerId?.ToString(CultureInfo.InvariantCulture)));
+        var data = await GetAsync<AlertRuleResponse[]>(
+            $"{ApiPrefix}/alerts/rules{query}",
+            HonuaAdminJsonContext.Default.ApiResponseAlertRuleResponseArray,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? [];
+    }
+
+    /// <inheritdoc />
+    public async Task<AlertRuleResponse> CreateAlertRuleAsync(AlertRuleRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PostAsync<AlertRuleResponse>(
+            $"{ApiPrefix}/alerts/rules",
+            request,
+            HonuaAdminJsonContext.Default.AlertRuleRequest,
+            HonuaAdminJsonContext.Default.ApiResponseAlertRuleResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null alert rule.", "CreateAlertRule");
+    }
+
+    /// <inheritdoc />
+    public async Task<AlertRuleResponse> UpdateAlertRuleAsync(long ruleId, AlertRuleRequest request, CancellationToken cancellationToken = default)
+    {
+        var data = await PutAsync<AlertRuleResponse>(
+            $"{ApiPrefix}/alerts/rules/{ruleId}",
+            request,
+            HonuaAdminJsonContext.Default.AlertRuleRequest,
+            HonuaAdminJsonContext.Default.ApiResponseAlertRuleResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null alert rule.", "UpdateAlertRule");
+    }
+
+    /// <inheritdoc />
+    public Task DeleteAlertRuleAsync(long ruleId, CancellationToken cancellationToken = default)
+        => DeleteEnvelopeAsync($"{ApiPrefix}/alerts/rules/{ruleId}", cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<FeatureEventReplayResponse> ReplayFeatureEventsAsync(FeatureEventReplayQuery? query = null, CancellationToken cancellationToken = default)
+    {
+        var queryString = query is null
+            ? string.Empty
+            : BuildQuery(
+                ("cursor", query.Cursor?.ToString(CultureInfo.InvariantCulture)),
+                ("from", query.From?.ToString("O", CultureInfo.InvariantCulture)),
+                ("to", query.To?.ToString("O", CultureInfo.InvariantCulture)),
+                ("limit", query.Limit?.ToString(CultureInfo.InvariantCulture)));
+        var data = await GetRawAsync<FeatureEventReplayResponse>(
+            $"{ApiPrefix}/feature-events/replay{queryString}",
+            HonuaAdminJsonContext.Default.FeatureEventReplayResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null feature-event replay response.", "ReplayFeatureEvents");
+    }
+
+    /// <inheritdoc />
+    public async Task<SubscriberListResponse> ListStreamingSubscribersAsync(CancellationToken cancellationToken = default)
+    {
+        var data = await GetAsync<SubscriberListResponse>(
+            $"{ApiPrefix}/operations/streaming/subscribers",
+            HonuaAdminJsonContext.Default.ApiResponseSubscriberListResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null subscriber list.", "ListStreamingSubscribers");
+    }
+
+    /// <inheritdoc />
+    public Task DisconnectStreamingSubscriberAsync(Guid subscriberId, CancellationToken cancellationToken = default)
+        => DeleteEnvelopeAsync($"{ApiPrefix}/operations/streaming/subscribers/{subscriberId:D}", cancellationToken);
 
     // ── Deploy Control ──────────────────────────────────────────────────
 
@@ -908,6 +1185,15 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
         return envelope is not null ? envelope.Data : default;
+    }
+
+    private async Task DeleteEnvelopeAsync(string url, CancellationToken cancellationToken)
+    {
+        using var response = await _http.DeleteAsync(
+            CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        EnsureEnvelopeSucceeded(response, body);
     }
 
     private static async Task EnsureSuccessAsync(HttpResponseMessage response, string body)

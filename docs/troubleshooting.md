@@ -63,11 +63,13 @@ surface (REST clients only) plus the recommended escape hatch for native gRPC.
 
 ### Channel disposed / `ObjectDisposedException` on reuse
 
-`HonuaGrpcClient` owns a `GrpcChannel`. The DI extension `AddHonuaGrpc` registers the client as
-a singleton precisely so the channel survives across requests. If you construct
-`HonuaGrpcClient` manually and dispose it, you cannot reuse it -- the underlying channel is
-gone. Either (1) let DI own the lifetime, or (2) pass a long-lived `GrpcChannel` to the
-`HonuaGrpcClient(GrpcChannel, ...)` overload.
+`HonuaGrpcClient` and `HonuaProcessGrpcClient` each own a `GrpcChannel` when
+constructed from options. The DI extension `AddHonuaGrpc` registers
+`IHonuaGrpcClient` and `IHonuaProcessGrpcClient` as singletons so those channels
+survive across requests. If you construct either concrete client manually and
+dispose it, you cannot reuse it -- the underlying channel is gone. Either let
+DI own the lifetime, or pass a long-lived `GrpcChannel` to the matching
+channel-based constructor.
 
 ### `BaseAddress` vs `Address` on gRPC
 
@@ -84,11 +86,12 @@ Your `Options.Timeout` is shorter than the request actually needs. The same valu
 per-attempt and the total-pipeline budget. Raise `Timeout`, or disable retries with
 `EnableRetry = false` while you isolate the slow call.
 
-### `MaxRetryAttempts` setting seems to be ignored
+### Setting `MaxRetryAttempts` throws `ArgumentOutOfRangeException`
 
-The SDK clamps `MaxRetryAttempts` to the inclusive range `[2, 5]` (Polly's standard resilience
-pipeline minimum is 2 attempts including the original call). Setting `1` becomes `2`, setting
-`100` becomes `5`. This applies uniformly to every package, including `Honua.Sdk.Grpc`.
+`MaxRetryAttempts` must be in the inclusive range `[2, 5]` (Polly's standard
+resilience pipeline minimum is 2 attempts including the original call). Values
+outside that range fail at options assignment time for every package, including
+`Honua.Sdk`, `Honua.Sdk.Processes`, and `Honua.Sdk.Grpc`.
 
 ### Unsafe HTTP methods aren't retried
 

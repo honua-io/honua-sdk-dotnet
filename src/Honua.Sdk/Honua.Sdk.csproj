@@ -33,6 +33,7 @@
     <ProjectReference Include="..\Honua.Sdk.GeoServices\Honua.Sdk.GeoServices.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Geometry\Honua.Sdk.Geometry.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Grpc\Honua.Sdk.Grpc.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Processes\Honua.Sdk.Processes.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Offline\Honua.Sdk.Offline.csproj" />
     <ProjectReference Include="..\Honua.Sdk.OgcFeatures\Honua.Sdk.OgcFeatures.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Catalogs\Honua.Sdk.Catalogs.csproj" />

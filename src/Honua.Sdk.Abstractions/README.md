@@ -9,6 +9,13 @@ models, feature stream-event processors, the provider-neutral routing client
 contracts, utility-network trace contracts, plugin contracts, and
 `HonuaException`.
 
+Also ships browser-safe Honua Console contracts under
+`Honua.Sdk.Abstractions.Console` and `Honua.Sdk.Abstractions.Environments`:
+shell descriptors, route guards, permission grants, environment profiles,
+transport capabilities, and native mTLS trust-state DTOs. These models are
+selectors and status envelopes only; host apps own persistence, secure storage,
+certificate lookup, and platform trust validation.
+
 Also ships the **offline sync contracts** under the
 `Honua.Sdk.Offline.Abstractions.*` namespaces: `OfflineReplicaManifest`,
 `OfflinePackageManifest`, `OfflineSyncState`, `OfflineSyncCheckpoint`,
@@ -76,6 +83,7 @@ your library code stays provider-neutral.
 - [Authentication](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/authentication.md)
 - [Troubleshooting](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/troubleshooting.md)
 - [Source facade](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/source-facade.md)
+- [Console client contracts](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/console-client-contracts.md)
 - [Plugin contracts](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/plugin-contracts.md)
 
 ## License

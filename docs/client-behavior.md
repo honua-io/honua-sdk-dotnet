@@ -34,13 +34,13 @@ also accept a `CancellationToken`; use it for caller-driven cancellation.
 ## Retries
 
 Retries are enabled by default and can be disabled per client with
-`EnableRetry = false`. `MaxRetryAttempts` is clamped to the supported range of
-2 to 5.
+`EnableRetry = false`. `MaxRetryAttempts` must be in the supported range of
+2 to 5; setting a value outside that range throws `ArgumentOutOfRangeException`.
 
 | Client family | Retried failures |
 |---------------|------------------|
-| gRPC | `QueryFeatures` and `QueryFeaturesStream` retries on `Unavailable`, `Internal` |
-| Admin, Geocoding, Spec, WFS, GeoServices, OGC API Features | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
+| gRPC | FeatureService `QueryFeatures` / `QueryFeaturesStream` and ProcessService `ValidatePlan`, `DryRunPlan`, `GetJob`, and `GetJobResult` retry on `Unavailable`, `Internal` |
+| Admin, Geocoding, Spec, Processes, WFS, GeoServices, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
 
 Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
 API Features create/update/delete calls are not retried by the default policy.
@@ -59,6 +59,7 @@ right failure surface without parsing strings.
 |---------|-----------|-------|
 | `Honua.Sdk.Admin` | `HonuaAdminApiException` | Non-success HTTP status codes. Includes status code and response body. |
 | `Honua.Sdk.Admin` | `HonuaAdminOperationException` | Successful HTTP responses that fail the expected Admin contract, such as null envelopes or compatibility failures. |
+| `Honua.Sdk.Processes` | `HonuaProcessesException` | Non-success OGC API Processes REST responses, problem-details payloads, and JSON contract failures. |
 | `Honua.Sdk.Spec` | `HonuaSpecException` | Non-success spec REST responses, including structured problem-details payloads. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
@@ -66,7 +67,7 @@ right failure surface without parsing strings.
 | `Honua.Sdk.OgcFeatures` | `HonuaOgcFeaturesException` | HTTP failures, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`) | `HonuaOgcRecordsException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
 | `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Stac`) | `HonuaStacException` | HTTP failures, RFC 7807 problem-details payloads, JSON contract failures, and rejected cross-origin next-page links. |
-| `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code. |
+| `Honua.Sdk.Grpc` | `HonuaGrpcException` | Wraps `RpcException` and preserves the gRPC status code for FeatureService and native ProcessService calls. |
 
 `ArgumentNullException`, `ArgumentException`, `InvalidOperationException`, and
 `NotSupportedException` are used for local input/configuration problems before
@@ -103,6 +104,7 @@ also implement `IHonuaFeatureQueryClient.QueryPagesAsync` from
 | OGC API Features | `GetItemsPagesAsync` follows same-origin `rel=next` links. Cross-origin next links are rejected. |
 | STAC | `GetItemsPagesAsync` and `SearchPagesAsync` follow same-origin `rel=next` links. Cross-origin next links are rejected. GET search supports numeric `offset` and opaque `next` tokens. |
 | gRPC | `QueryFeaturesStreamAsync` returns server-streamed pages until `IsLastPage`; `QueryPagesAsync` maps those pages to the shared abstraction. |
+| OGC API Processes | `ListJobsAsync` accepts an optional server-side `limit`. The client does not auto-page jobs because the current OGC Processes job list contract does not expose a shared continuation token. |
 
 ## Endpoint coverage
 
@@ -110,10 +112,11 @@ Current typed endpoint coverage is:
 
 | Package | Covered surfaces |
 |---------|------------------|
-| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, and host-neutral plugin manifests. |
-| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, observability, migrations, deploy preflight/plans/operations, and geocoding. |
+| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, Console shell/route guard/environment profile contracts, native mTLS trust-state DTOs, and host-neutral plugin manifests. |
+| `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, RBAC roles/permissions, users/effective permissions, alert zones/rules, feature-event replay, streaming subscriber operations, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
-| `Honua.Sdk.Grpc` | Feature query, streaming feature query, and feature edits. |
+| `Honua.Sdk.Grpc` | Feature query, streaming feature query, feature edits, and native ProcessService validate/dry-run/submit/get/result/cancel job lifecycle calls. `ExecutePlanAsync` and `ExecutePlanStreamAsync` are proto wrappers that may return `Unimplemented` on current server deployments. |
+| `Honua.Sdk.Processes` | OGC API Processes landing page, conformance, process list/detail, async execution submission, job list/status, dismissal, and document-mode results. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |
 | `Honua.Sdk.Scenes` | Scene list, scene metadata detail, render endpoint resolution, access envelopes, attribution metadata, and offline scene package manifest parsing/validation. |

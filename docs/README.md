@@ -7,11 +7,12 @@ An index of the public documentation that ships alongside the
 
 ## Get started
 
-- [Architecture overview](architecture.md) — a one-page map of the 12 packages, how they compose, and which one to depend on.
+- [Architecture overview](architecture.md) — a one-page map of the 13 packages, how they compose, and which one to depend on.
 - [Quickstart](quickstart.md) — build a console app that talks gRPC + REST in 5 minutes.
 - [API reference](api-reference.md) — how to browse the full XML-doc API surface (IDE hover, local DocFX site, or GitHub source).
 - [INSTALL.md](../INSTALL.md) — NuGet, GitHub Packages, version policy, server compatibility baseline.
 - [Authentication](authentication.md) — credential providers, refresh, HTTPS-only transport, diagnostics.
+- [Console client contracts](console-client-contracts.md) — Blazor Web and MAUI host contract map, route guards, environment profiles, native mTLS state, and fixtures.
 - [Browser / WASM support](browser-wasm-support.md) — supported surface, gRPC-Web, host-side constraints.
 - [Troubleshooting](troubleshooting.md) — concrete failure modes and fixes for configuration, auth, retry, CORS, compatibility, Catalog/Records/STAC/Scenes, and offline sync.
 

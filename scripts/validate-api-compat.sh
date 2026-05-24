@@ -43,6 +43,7 @@ dotnet tool restore --tool-manifest "${ROOT}/.config/dotnet-tools.json" >/dev/nu
 projects=(
   "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj|Honua.Sdk.Abstractions"
   "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj|Honua.Sdk.Admin"
+  "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj|Honua.Sdk.Processes"
   "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj|Honua.Sdk.Geometry"
   "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj|Honua.Sdk.Spec"
   "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj|Honua.Sdk.Grpc"

@@ -62,8 +62,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaAdminStylesClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminConfigClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminIdentityClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
+        services.AddTransient<IHonuaAdminRolesClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
+        services.AddTransient<IHonuaAdminUsersClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminLicenseClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminObservabilityClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
+        services.AddTransient<IHonuaAdminAlertsClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
+        services.AddTransient<IHonuaAdminFeatureEventsClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
+        services.AddTransient<IHonuaAdminStreamingOperationsClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminDeployClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
 
         ApplyHandlerAndResilience(httpBuilder, snapshot);

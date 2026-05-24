@@ -4,13 +4,13 @@ Official .NET client libraries for [Honua](https://github.com/honua-io/honua-ser
 an open-source geospatial feature server. The SDK provides typed clients for
 querying and editing features over gRPC, querying via OGC WFS 2.0, managing
 services through the Admin REST API, geocoding addresses, and reading features
-through GeoServices FeatureServer, OGC API Features, scene metadata endpoints,
-OGC API Records and STAC catalog endpoints, and shared real-time feature stream
-contracts.
+through GeoServices FeatureServer, OGC API Features, OGC API Processes, scene
+metadata endpoints, OGC API Records and STAC catalog endpoints, and shared
+real-time feature stream contracts.
 
 > **New here? Pick your path:**
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
-> - Want a map of the 12 packages before you choose → [docs/architecture.md](docs/architecture.md)
+> - Want a map of the 13 packages before you choose → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
 > - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
@@ -22,10 +22,11 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | Package | Description |
 |---------|-------------|
 | **Honua.Sdk** | **Umbrella / meta package -- recommended starting point.** One install + one `AddHonua(o => o.BaseAddress = ...)` registers every enabled sub-package. Pick the narrower packages directly if you want fewer transitive dependencies. |
-| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions, source facades, host-neutral plugin manifests, and browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
+| **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions, source facades, Console shell/route/environment contracts, host-neutral plugin manifests, and browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
 | **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
-| **Honua.Sdk.Grpc** | gRPC client for `FeatureService` -- typed queries, streaming, edits, spatial filters |
-| **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata |
+| **Honua.Sdk.Grpc** | gRPC client for `FeatureService` and native `ProcessService` jobs -- typed queries, feature streaming, edits, spatial filters, job lifecycle |
+| **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata, RBAC/users, alerts, observability, feature-event replay, streaming operations |
+| **Honua.Sdk.Processes** | Browser-safe OGC API Processes REST client -- process discovery, async jobs, polling, dismissal, results, shared job models |
 | **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
@@ -56,6 +57,7 @@ dotnet add package Honua.Sdk.Abstractions
 dotnet add package Honua.Sdk.Offline
 dotnet add package Honua.Sdk.Grpc
 dotnet add package Honua.Sdk.Admin
+dotnet add package Honua.Sdk.Processes
 dotnet add package Honua.Sdk.Spec
 dotnet add package Honua.Sdk.Field
 dotnet add package Honua.Sdk.Geometry
@@ -87,8 +89,8 @@ var builder = Host.CreateApplicationBuilder(args);
 var serverUri = new Uri("https://localhost:5001");
 
 // One call registers every enabled Honua SDK client. Defaults register the
-// core query/edit/admin trio (gRPC, Admin + Catalog, Geocoding, OGC API
-// Features, WFS 2.0). Flip the situational Use* flags to opt in to Scenes,
+// common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
+// Processes, and WFS 2.0 clients. Flip the situational Use* flags to opt in to Scenes,
 // Spec, Stac, OgcRecords, GeoServices, or Routing.
 builder.Services.AddHonua(o =>
 {
@@ -124,12 +126,14 @@ using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.OgcFeatures.Wfs.Extensions;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.Processes.Extensions;
 
 builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri); // + IHonuaCatalogClient
 builder.Services.AddHonuaGeocoding  (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaWfs        (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
 ```
 
 </details>
@@ -146,6 +150,7 @@ The deeper capabilities each have their own guide:
 | Shared `IHonuaFeatureQueryClient` abstraction | [docs/source-facade.md](docs/source-facade.md) |
 | Catalog / OGC Records / STAC discovery | [docs/metadata-catalog-parity.md](docs/metadata-catalog-parity.md) |
 | Plugin contracts (manifests, permissions) | [docs/plugin-contracts.md](docs/plugin-contracts.md) |
+| Console shell / route guards / environment profiles | [docs/console-client-contracts.md](docs/console-client-contracts.md) |
 | Offline sync (planner, conflicts, manifests) | [docs/offline-sync-core.md](docs/offline-sync-core.md) |
 | Field form / validation / record workflow | [Honua.Sdk.Field README](src/Honua.Sdk.Field/README.md) |
 | Retry / timeout / resilience defaults | [docs/client-behavior.md](docs/client-behavior.md) |
@@ -167,7 +172,8 @@ For an overview diagram of the package layering, see
 src/
   Honua.Sdk.Abstractions/        Shared feature query/edit/stream contracts + offline sync contracts (manifests, sync state, checkpoints, conflicts)
   Honua.Sdk.Offline/             Offline push/pull planner and sync engine
-  Honua.Sdk.Grpc/                gRPC client package (query, stream, edit)
+  Honua.Sdk.Grpc/                gRPC FeatureService + native ProcessService clients
+  Honua.Sdk.Processes/           OGC API Processes REST client + shared job models
   Honua.Sdk.Geometry/            NTS/ProjNet geometry, CRS, planar analysis, geofence
   Honua.Sdk.Admin/               Admin + Catalog + Geocoding client package
   Honua.Sdk.Spec/                Spec workspace validate/plan/apply client package
@@ -205,6 +211,9 @@ third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc s
   policy and server compatibility baseline
 - **[Authentication](docs/authentication.md)** -- credential providers,
   refresh, HTTPS-only transport, and diagnostics
+- **[Console client contracts](docs/console-client-contracts.md)** -- Blazor
+  Web and MAUI contract map, route guards, environment profiles, native mTLS
+  state, and fixtures
 - **[Troubleshooting](docs/troubleshooting.md)** -- common errors and fixes
   for configuration, auth, retry, browser, and compatibility issues
 - **[Browser / WASM support](docs/browser-wasm-support.md)** -- supported

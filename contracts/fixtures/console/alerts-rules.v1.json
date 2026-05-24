@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "honua.console-alerts-rules.v1",
+  "zoneRequest": {
+    "serviceId": "parcels",
+    "zoneName": "Downtown",
+    "wkt": "POLYGON((-158 21,-157 21,-157 22,-158 22,-158 21))",
+    "srid": 4326,
+    "metadata": {
+      "owner": "operations"
+    },
+    "isActive": true
+  },
+  "zones": {
+    "success": true,
+    "data": [
+      {
+        "zoneId": 10,
+        "serviceId": "parcels",
+        "zoneName": "Downtown",
+        "wkt": "POLYGON((-158 21,-157 21,-157 22,-158 22,-158 21))",
+        "srid": 4326,
+        "metadata": {
+          "owner": "operations"
+        },
+        "isActive": true
+      }
+    ],
+    "message": null,
+    "timestamp": "2026-05-23T22:50:00Z"
+  },
+  "ruleRequest": {
+    "serviceId": "parcels",
+    "layerId": 1,
+    "zoneId": 10,
+    "ruleName": "Inspection Dwell",
+    "triggerType": "dwell",
+    "conditionsJson": "{\"minutes\":15}",
+    "cooldownSeconds": 300,
+    "severity": "warning",
+    "editionRequired": "pro",
+    "channels": ["websocket", "email"],
+    "isActive": true
+  },
+  "rules": {
+    "success": true,
+    "data": [
+      {
+        "ruleId": 20,
+        "serviceId": "parcels",
+        "layerId": 1,
+        "zoneId": 10,
+        "ruleName": "Inspection Dwell",
+        "triggerType": "dwell",
+        "conditionsJson": "{\"minutes\":15}",
+        "cooldownSeconds": 300,
+        "severity": "warning",
+        "editionRequired": "pro",
+        "channels": ["websocket", "email"],
+        "isActive": true
+      }
+    ],
+    "message": null,
+    "timestamp": "2026-05-23T22:50:00Z"
+  },
+  "invalidRuleError": {
+    "success": false,
+    "message": "Rule triggerType must be enter, exit, dwell, or threshold.",
+    "timestamp": "2026-05-23T22:50:00Z"
+  }
+}

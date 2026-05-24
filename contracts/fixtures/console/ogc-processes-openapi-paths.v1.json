@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "honua.console-ogc-processes-openapi-paths.v1",
+  "source": "honua-server/src/Honua.Server/ogc-processes-openapi.json",
+  "paths": [
+    "/ogc/processes",
+    "/ogc/processes/conformance",
+    "/ogc/processes/jobs",
+    "/ogc/processes/jobs/{jobId}",
+    "/ogc/processes/jobs/{jobId}/results",
+    "/ogc/processes/openapi.json",
+    "/ogc/processes/processes",
+    "/ogc/processes/processes/{processId}",
+    "/ogc/processes/processes/{processId}/execution"
+  ]
+}

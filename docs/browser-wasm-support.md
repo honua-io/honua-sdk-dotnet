@@ -11,12 +11,14 @@ rendering stay in host applications or downstream adapter packages.
 | Package or capability | Browser/WASM status | Notes |
 | --- | --- | --- |
 | `Honua.Sdk.Abstractions` | Supported | Pure contracts and source/query/edit abstractions. No transport, storage, or native runtime dependency. |
+| Console shell / route guard / environment profile contracts | Supported | `Honua.Sdk.Abstractions.Console` and `Honua.Sdk.Abstractions.Environments` are DTO-only. Browser hosts can use browser session/BFF auth modes and REST/realtime capability flags. Native mTLS certificate resolution remains outside the browser. |
 | `Honua.Sdk.Geometry` | Candidate | NetTopologySuite and ProjNET-backed geometry, CRS, transform helpers, and generated Geospatial gRPC geometry conversion. Pure managed compile smoke is covered, but host apps should still validate their projection set and payload sizes under their browser runtime. No display, map-rendering, or gRPC transport responsibility. |
 | `Honua.Sdk.Offline.Abstractions` | Supported | Offline manifests, checkpoints, sync state, change journals, storage interfaces, and conflict contracts only. |
 | `Honua.Sdk.Offline` | Conditional | Planner and sync engine are portable, but the host must provide browser-safe storage, scheduling, conflict-review, and auth adapters. This package is not a GeoPackage, SQLite, service-worker, or background-sync implementation. |
 | `Honua.Sdk.Admin` | Candidate | REST client over injected `HttpClient`. Browser hosts must use same-origin/BFF credentials or delegated bearer tokens, and the server must allow the required CORS policy when cross-origin. Static privileged admin API keys must not be shipped in browser config. |
 | Geocoding client in `Honua.Sdk.Admin` | Candidate | Same REST, CORS, and browser credential requirements as `Honua.Sdk.Admin`. |
 | `Honua.Sdk.Spec` | Candidate | REST validation/plan/cancel paths are browser candidates. Apply streaming uses SSE-style responses and still needs runtime validation under Blazor WebAssembly before being called supported. |
+| `Honua.Sdk.Processes` | Candidate | OGC API Processes REST client over browser `HttpClient`; covered by the browser smoke runtime fake-server path. Native ProcessService gRPC remains in `Honua.Sdk.Grpc`, not this browser package. |
 | `Honua.Sdk.OgcFeatures.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. Ships inside `Honua.Sdk.OgcFeatures`. |
 | `Honua.Sdk.GeoServices` | Candidate | REST/JSON FeatureServer client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | Routing client in `Honua.Sdk.GeoServices` | Candidate | REST/JSON NAServer client over browser `HttpClient`; requires server CORS and browser-owned auth. Host apps own current-location acquisition, route display, and map interaction. |
@@ -56,8 +58,8 @@ proves the packages can be consumed by a browser app without native compile-time
 dependencies. It also compile-checks pure contracts for field records, offline
 manifests, advanced editing rules, plugin manifests, realtime stream envelopes,
 utility-network trace requests, and raster/elevation/enrichment data requests.
-The registered browser REST clients include Admin, Geocoding, Spec, WFS,
-GeoServices, OGC API Features, OGC API Records, STAC, and Scenes.
+The registered browser REST clients include Admin, Geocoding, Spec, Processes,
+WFS, GeoServices, OGC API Features, OGC API Records, STAC, and Scenes.
 
 The smoke app also contains a compile-checked browser feature-map sample. It
 uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses
@@ -73,8 +75,8 @@ transport adapter.
 
 The same smoke app has a runtime validation mode for browser `HttpClient`
 behavior. Launch it with `live=1` and a browser-safe `baseUrl` query parameter
-to call OGC API Features, Geocoding, GeoServices FeatureServer metadata, and WFS
-from inside WebAssembly. The optional `corsProbe=1` query parameter adds a
+to call OGC API Features, Geocoding, GeoServices FeatureServer metadata, WFS,
+and OGC API Processes from inside WebAssembly. The optional `corsProbe=1` query parameter adds a
 non-secret probe header so cross-origin hosts must satisfy a real browser CORS
 preflight. The CI `Browser WASM Smoke` job runs this mode with a cross-origin
 fake Honua API so package changes cannot regress browser fetch/preflight
@@ -103,6 +105,7 @@ SDK sample wired to a test Honua deployment:
 - cross-origin CORS behavior where the deployment is not same-origin;
 - delegated bearer-token or BFF authentication;
 - `Honua.Sdk.Spec` apply-stream behavior;
+- `Honua.Sdk.Processes` job polling against a deployment's real OGC Processes endpoint;
 - offline storage adapters such as IndexedDB.
 
 This repo's CI proves browser compilation, browser fetch/preflight behavior,

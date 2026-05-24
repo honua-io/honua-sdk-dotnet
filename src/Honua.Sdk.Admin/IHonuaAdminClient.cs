@@ -30,8 +30,13 @@ public interface IHonuaAdminClient :
     IHonuaAdminStylesClient,
     IHonuaAdminConfigClient,
     IHonuaAdminIdentityClient,
+    IHonuaAdminRolesClient,
+    IHonuaAdminUsersClient,
     IHonuaAdminLicenseClient,
     IHonuaAdminObservabilityClient,
+    IHonuaAdminAlertsClient,
+    IHonuaAdminFeatureEventsClient,
+    IHonuaAdminStreamingOperationsClient,
     IHonuaAdminDeployClient
 {
 }
