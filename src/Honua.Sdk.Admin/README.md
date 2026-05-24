@@ -79,7 +79,10 @@ Blazor Web and MAUI hosts:
 
 Most Admin endpoints use the server's `ApiResponse<T>` envelope and are
 unwrapped before returning typed SDK models. Feature-event replay returns the
-raw replay page shape. Non-success HTTP statuses throw
+raw replay page shape. Admin requests are emitted as camelCase JSON, while
+response binding is case-insensitive so the server's current PascalCase replay
+payload (`Events`, `NextCursor`, `HasMore`, and event fields) binds to
+`FeatureEventReplayResponse`. Non-success HTTP statuses throw
 `HonuaAdminApiException`; successful responses that fail the expected contract
 throw `HonuaAdminOperationException`.
 

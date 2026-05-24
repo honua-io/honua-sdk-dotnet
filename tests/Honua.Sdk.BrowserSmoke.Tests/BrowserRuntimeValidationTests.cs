@@ -301,7 +301,7 @@ public sealed class BrowserRuntimeValidationTests
             {
                 new
                 {
-                    id = "honua.analysis",
+                    id = "honua-geoprocessing",
                     title = "Analysis Plan",
                     version = "1.0.0",
                     jobControlOptions = new[] { "async-execute" },

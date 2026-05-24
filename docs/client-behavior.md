@@ -39,7 +39,7 @@ Retries are enabled by default and can be disabled per client with
 
 | Client family | Retried failures |
 |---------------|------------------|
-| gRPC | `QueryFeatures` and `QueryFeaturesStream` retries on `Unavailable`, `Internal` |
+| gRPC | FeatureService `QueryFeatures` / `QueryFeaturesStream` and ProcessService `ValidatePlan`, `DryRunPlan`, `GetJob`, and `GetJobResult` retry on `Unavailable`, `Internal` |
 | Admin, Geocoding, Spec, Processes, WFS, GeoServices, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
 
 Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
@@ -115,7 +115,7 @@ Current typed endpoint coverage is:
 | `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, Console shell/route guard/environment profile contracts, native mTLS trust-state DTOs, and host-neutral plugin manifests. |
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, RBAC roles/permissions, users/effective permissions, alert zones/rules, feature-event replay, streaming subscriber operations, observability, migrations, deploy preflight/plans/operations, and geocoding. |
 | `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
-| `Honua.Sdk.Grpc` | Feature query, streaming feature query, feature edits, and native ProcessService validate/dry-run/execute-stream/job lifecycle calls. |
+| `Honua.Sdk.Grpc` | Feature query, streaming feature query, feature edits, and native ProcessService validate/dry-run/submit/get/result/cancel job lifecycle calls. `ExecutePlanAsync` and `ExecutePlanStreamAsync` are proto wrappers that may return `Unimplemented` on current server deployments. |
 | `Honua.Sdk.Processes` | OGC API Processes landing page, conformance, process list/detail, async execution submission, job list/status, dismissal, and document-mode results. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |
 | `Honua.Sdk.GeoServices` | FeatureServer service/layer metadata, query, feature by object ID, count, IDs, extent, statistics, SQL validation, raw query, auto-pagination, layer edit capabilities, and applyEdits/add/update/delete feature edits. |

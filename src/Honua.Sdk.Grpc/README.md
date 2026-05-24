@@ -24,9 +24,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
 services.AddHonuaGrpc(o => o.BaseAddress = new Uri("https://your-honua-server"));
-var provider = services.BuildServiceProvider();
+using var provider = services.BuildServiceProvider();
 
-using var client = provider.GetRequiredService<IHonuaGrpcClient>();
+var client = provider.GetRequiredService<IHonuaGrpcClient>();
 
 var response = await client.QueryFeaturesAsync(
     new QueryFeaturesRequest
@@ -47,9 +47,10 @@ await foreach (var page in client.QueryFeaturesStreamAsync(
 }
 ```
 
-Native Console and MAUI hosts can also resolve `IHonuaProcessGrpcClient` to
-validate, dry-run, submit, stream, cancel, and inspect ProcessService jobs while
-reusing the shared job models from `Honua.Sdk.Processes`.
+Native Console and MAUI hosts can also resolve `IHonuaProcessGrpcClient` for
+the server-backed ProcessService path: validate plans, run dry runs, submit
+jobs, inspect job state, retrieve results, and cancel jobs while reusing the
+shared job models from `Honua.Sdk.Processes`.
 
 ```csharp
 using Honua.Sdk.Processes.Models;
@@ -76,18 +77,28 @@ var plan = new HonuaAnalysisPlan
 };
 
 var validation = await process.ValidatePlanAsync(plan, cancellationToken);
+var dryRun = await process.DryRunPlanAsync(plan, cancellationToken);
 var job = await process.SubmitJobAsync(plan, cancellationToken: cancellationToken);
+var status = await process.GetJobAsync(job.JobId, cancellationToken);
 
-await foreach (var evt in process.ExecutePlanStreamAsync(plan, cancellationToken: cancellationToken))
-{
-    Console.WriteLine($"{evt.EventType}: {evt.Progress?.ProgressPercent}");
-}
+Console.WriteLine($"{validation.Valid}: {dryRun.Valid}: {status.Status}");
 ```
 
 `HonuaProcessGrpcClient` uses the same `HonuaGrpcClientOptions` auth,
 deadline, retry, and `PrimaryHttpMessageHandlerFactory` behavior as the
 FeatureService client. Browser hosts should use `Honua.Sdk.Processes` REST
 instead of native gRPC.
+
+`ExecutePlanAsync` and `ExecutePlanStreamAsync` are thin wrappers for the
+ProcessService proto methods. Current Honua Server deployments may return
+`Unimplemented` for those calls until synchronous execute and execute-stream
+support lands; use `SubmitJobAsync`, `GetJobAsync`, `GetJobResultAsync`, and
+`CancelJobAsync` for current server contract coverage.
+
+DI-resolved `IHonuaGrpcClient` and `IHonuaProcessGrpcClient` instances are
+container-owned. Let the service provider dispose the underlying channel at
+shutdown; manually constructed concrete clients remain responsible for their
+own disposal.
 
 ## Documentation
 

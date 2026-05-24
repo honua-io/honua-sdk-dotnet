@@ -70,8 +70,7 @@ Native MAUI hosts can use the same DTO packages and add native capabilities:
 
 - `PrimaryHttpMessageHandlerFactory` for REST/gRPC handlers that attach client
   certificates or enterprise trust configuration.
-- `IHonuaProcessGrpcClient` for ProcessService job lifecycle calls and progress
-  streams.
+- `IHonuaProcessGrpcClient` for server-backed ProcessService job lifecycle calls.
 - `HonuaEnvironmentAuthMode.NativeMutualTls` and trust-state DTOs for profile
   selection and diagnostics.
 
@@ -92,6 +91,10 @@ identity surfaces. Prefer injecting the narrow interface at call sites:
 Most Admin endpoints use the standard Admin `ApiResponse<T>` envelope and are
 unwrapped by `HonuaAdminClient`. Feature-event replay intentionally returns the
 raw replay page shape because the server endpoint is not envelope-wrapped.
+Admin requests are emitted as camelCase JSON, and Admin response binding is
+case-insensitive. The replay fixture intentionally covers the current
+server-shaped PascalCase raw payload (`Events`, `NextCursor`, `HasMore`, and
+event fields), which still maps to the typed SDK properties.
 Non-success HTTP statuses throw `HonuaAdminApiException`; successful responses
 that do not satisfy the expected contract throw `HonuaAdminOperationException`.
 
@@ -144,11 +147,12 @@ Job status uses the OGC field names on the wire (`processID`, `jobID`,
 `status`, `progress`) and typed SDK properties (`ProcessId`, `JobId`,
 `Status`, `Progress`). Document-mode results are represented by
 `HonuaProcessResults.Outputs`, a JSON extension-data dictionary keyed by output
-identifier.
+identifier. Current server contract fixtures use the canonical process id
+`honua-geoprocessing`.
 
 ```csharp
 var job = await processes.SubmitJobAsync(
-    "honua.analysis",
+    "honua-geoprocessing",
     new HonuaProcessExecuteRequest
     {
         Inputs = new HonuaProcessExecuteInputs
@@ -177,9 +181,11 @@ var job = await processes.SubmitJobAsync(
 ```
 
 Native hosts that need ProcessService access resolve
-`IHonuaProcessGrpcClient` from `Honua.Sdk.Grpc`. It maps ProcessService
-validate, dry-run, execute, stream, submit, get, result, and cancel calls onto
-the same shared process model package where practical. gRPC failures throw
+`IHonuaProcessGrpcClient` from `Honua.Sdk.Grpc`. Current server-backed calls are
+validate, dry-run, submit, get, result, and cancel; they map onto the same shared
+process model package where practical. `ExecutePlanAsync` and
+`ExecutePlanStreamAsync` remain proto wrapper methods and may return
+`Unimplemented` until server support lands. gRPC failures throw
 `HonuaGrpcException` and preserve the gRPC status code.
 
 ## Fixtures And Drift Checks

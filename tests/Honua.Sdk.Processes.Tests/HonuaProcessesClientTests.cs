@@ -14,6 +14,8 @@ namespace Honua.Sdk.Processes.Tests;
 
 public sealed class HonuaProcessesClientTests
 {
+    private const string CanonicalProcessId = "honua-geoprocessing";
+
     [Fact]
     public async Task AuthHandler_UsesCredentialProvidersPerRequest()
     {
@@ -103,12 +105,12 @@ public sealed class HonuaProcessesClientTests
         });
         var client = new HonuaProcessesClient(http);
 
-        var result = await client.SubmitJobAsync("honua.analysis", CreateExecuteRequest());
+        var result = await client.SubmitJobAsync(CanonicalProcessId, CreateExecuteRequest());
 
         Assert.Equal("job-1", result.JobId);
         Assert.Equal("accepted", result.Status);
         Assert.Equal(HttpMethod.Post, captured?.Method);
-        Assert.Equal("/ogc/processes/processes/honua.analysis/execution", captured?.RequestUri?.PathAndQuery);
+        Assert.Equal("/ogc/processes/processes/honua-geoprocessing/execution", captured?.RequestUri?.PathAndQuery);
         Assert.Equal("respond-async", captured?.Headers.GetValues("Prefer").Single());
         Assert.Contains("\"planId\":\"plan-1\"", body, StringComparison.Ordinal);
         Assert.Contains("\"workflowFamily\":\"analyze\"", body, StringComparison.Ordinal);
@@ -168,7 +170,7 @@ public sealed class HonuaProcessesClientTests
         var client = new HonuaProcessesClient(http);
 
         var ex = await Assert.ThrowsAsync<HonuaProcessesException>(() =>
-            client.SubmitJobAsync("honua.analysis", CreateExecuteRequest()));
+            client.SubmitJobAsync(CanonicalProcessId, CreateExecuteRequest()));
 
         Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
         Assert.Equal("Invalid process plan", ex.ProblemTitle);
@@ -264,7 +266,7 @@ public sealed class HonuaProcessesClientTests
         {
           "processes": [
             {
-              "id": "honua.analysis",
+              "id": "honua-geoprocessing",
               "title": "Analysis Plan",
               "version": "1.0.0",
               "jobControlOptions": ["async-execute"],
@@ -278,7 +280,7 @@ public sealed class HonuaProcessesClientTests
 
     private const string JobStatusJson = """
         {
-          "processID": "honua.analysis",
+          "processID": "honua-geoprocessing",
           "type": "process",
           "jobID": "job-1",
           "status": "accepted",
@@ -289,7 +291,7 @@ public sealed class HonuaProcessesClientTests
 
     private const string CancelledJobStatusJson = """
         {
-          "processID": "honua.analysis",
+          "processID": "honua-geoprocessing",
           "type": "process",
           "jobID": "job-1",
           "status": "dismissed",
@@ -302,7 +304,7 @@ public sealed class HonuaProcessesClientTests
         {
           "jobs": [
             {
-              "processID": "honua.analysis",
+              "processID": "honua-geoprocessing",
               "type": "process",
               "jobID": "job-1",
               "status": "running",

@@ -24,7 +24,7 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk** | **Umbrella / meta package -- recommended starting point.** One install + one `AddHonua(o => o.BaseAddress = ...)` registers every enabled sub-package. Pick the narrower packages directly if you want fewer transitive dependencies. |
 | **Honua.Sdk.Abstractions** | Shared feature query/edit/stream abstractions, source facades, Console shell/route/environment contracts, host-neutral plugin manifests, and browser-safe offline sync contracts (manifests, sync state, checkpoints, conflicts, storage) |
 | **Honua.Sdk.Offline** | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
-| **Honua.Sdk.Grpc** | gRPC client for `FeatureService` and native `ProcessService` jobs -- typed queries, streaming, edits, spatial filters, job lifecycle |
+| **Honua.Sdk.Grpc** | gRPC client for `FeatureService` and native `ProcessService` jobs -- typed queries, feature streaming, edits, spatial filters, job lifecycle |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata, RBAC/users, alerts, observability, feature-event replay, streaming operations |
 | **Honua.Sdk.Processes** | Browser-safe OGC API Processes REST client -- process discovery, async jobs, polling, dismissal, results, shared job models |
 | **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
@@ -89,8 +89,8 @@ var builder = Host.CreateApplicationBuilder(args);
 var serverUri = new Uri("https://localhost:5001");
 
 // One call registers every enabled Honua SDK client. Defaults register the
-// core query/edit/admin trio (gRPC, Admin + Catalog, Geocoding, OGC API
-// Features, OGC API Processes, WFS 2.0). Flip the situational Use* flags to opt in to Scenes,
+// common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
+// Processes, and WFS 2.0 clients. Flip the situational Use* flags to opt in to Scenes,
 // Spec, Stac, OgcRecords, GeoServices, or Routing.
 builder.Services.AddHonua(o =>
 {
@@ -170,7 +170,7 @@ For an overview diagram of the package layering, see
 src/
   Honua.Sdk.Abstractions/        Shared feature query/edit/stream contracts + offline sync contracts (manifests, sync state, checkpoints, conflicts)
   Honua.Sdk.Offline/             Offline push/pull planner and sync engine
-  Honua.Sdk.Grpc/                gRPC client package (query, stream, edit)
+  Honua.Sdk.Grpc/                gRPC FeatureService + native ProcessService clients
   Honua.Sdk.Processes/           OGC API Processes REST client + shared job models
   Honua.Sdk.Geometry/            NTS/ProjNet geometry, CRS, planar analysis, geofence
   Honua.Sdk.Admin/               Admin + Catalog + Geocoding client package

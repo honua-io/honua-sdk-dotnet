@@ -3,7 +3,7 @@
   "processes": {
     "processes": [
       {
-        "id": "honua.analysis",
+        "id": "honua-geoprocessing",
         "title": "Analysis Plan",
         "description": "Executes Console analysis plans.",
         "version": "1.0.0",
@@ -11,7 +11,7 @@
         "outputTransmission": ["value"],
         "links": [
           {
-            "href": "/ogc/processes/processes/honua.analysis",
+            "href": "/ogc/processes/processes/honua-geoprocessing",
             "rel": "self",
             "type": "application/json",
             "title": "Analysis Plan"
@@ -22,7 +22,7 @@
     "links": []
   },
   "submittedJob": {
-    "processID": "honua.analysis",
+    "processID": "honua-geoprocessing",
     "type": "process",
     "jobID": "job-accepted",
     "status": "accepted",
@@ -34,7 +34,7 @@
   "jobs": {
     "jobs": [
       {
-        "processID": "honua.analysis",
+        "processID": "honua-geoprocessing",
         "type": "process",
         "jobID": "job-running",
         "status": "running",
@@ -45,7 +45,7 @@
         "links": []
       },
       {
-        "processID": "honua.analysis",
+        "processID": "honua-geoprocessing",
         "type": "process",
         "jobID": "job-complete",
         "status": "successful",
@@ -56,7 +56,7 @@
         "links": []
       },
       {
-        "processID": "honua.analysis",
+        "processID": "honua-geoprocessing",
         "type": "process",
         "jobID": "job-failed",
         "status": "failed",
@@ -67,7 +67,7 @@
         "links": []
       },
       {
-        "processID": "honua.analysis",
+        "processID": "honua-geoprocessing",
         "type": "process",
         "jobID": "job-dismissed",
         "status": "dismissed",

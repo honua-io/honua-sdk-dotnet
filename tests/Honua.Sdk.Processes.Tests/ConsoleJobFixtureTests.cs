@@ -8,6 +8,8 @@ namespace Honua.Sdk.Processes.Tests;
 
 public sealed class ConsoleJobFixtureTests
 {
+    private const string CanonicalProcessId = "honua-geoprocessing";
+
     private static readonly string[] ExpectedOgcProcessesPaths =
     [
         "/ogc/processes",
@@ -46,7 +48,9 @@ public sealed class ConsoleJobFixtureTests
             ProcessesJsonContext.Default.HonuaProcessResults)
             ?? throw new InvalidOperationException("Job result fixture was empty.");
 
-        Assert.Equal("honua.analysis", processes.Processes.Single().Id);
+        Assert.Equal(CanonicalProcessId, processes.Processes.Single().Id);
+        Assert.Equal(CanonicalProcessId, submitted.ProcessId);
+        Assert.All(jobs.Jobs, job => Assert.Equal(CanonicalProcessId, job.ProcessId));
         Assert.Equal("job-accepted", submitted.JobId);
         Assert.Contains(jobs.Jobs, job => job.Status == "running");
         Assert.Contains(jobs.Jobs, job => job.Status == "successful");

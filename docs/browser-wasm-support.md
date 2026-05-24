@@ -18,7 +18,7 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Admin` | Candidate | REST client over injected `HttpClient`. Browser hosts must use same-origin/BFF credentials or delegated bearer tokens, and the server must allow the required CORS policy when cross-origin. Static privileged admin API keys must not be shipped in browser config. |
 | Geocoding client in `Honua.Sdk.Admin` | Candidate | Same REST, CORS, and browser credential requirements as `Honua.Sdk.Admin`. |
 | `Honua.Sdk.Spec` | Candidate | REST validation/plan/cancel paths are browser candidates. Apply streaming uses SSE-style responses and still needs runtime validation under Blazor WebAssembly before being called supported. |
-| `Honua.Sdk.Processes` | Candidate | OGC API Processes REST client over browser `HttpClient`; covered by the browser smoke runtime fake-server path. Native ProcessService gRPC streaming remains in `Honua.Sdk.Grpc`, not this browser package. |
+| `Honua.Sdk.Processes` | Candidate | OGC API Processes REST client over browser `HttpClient`; covered by the browser smoke runtime fake-server path. Native ProcessService gRPC remains in `Honua.Sdk.Grpc`, not this browser package. |
 | `Honua.Sdk.OgcFeatures.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. Ships inside `Honua.Sdk.OgcFeatures`. |
 | `Honua.Sdk.GeoServices` | Candidate | REST/JSON FeatureServer client over browser `HttpClient`; requires server CORS and browser-owned auth. |
 | Routing client in `Honua.Sdk.GeoServices` | Candidate | REST/JSON NAServer client over browser `HttpClient`; requires server CORS and browser-owned auth. Host apps own current-location acquisition, route display, and map interaction. |

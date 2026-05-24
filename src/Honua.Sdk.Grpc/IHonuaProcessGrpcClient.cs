@@ -21,13 +21,15 @@ public interface IHonuaProcessGrpcClient
     Task<HonuaProcessDryRunResult> DryRunPlanAsync(HonuaAnalysisPlan plan, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes a plan synchronously.
+    /// Executes a plan synchronously when the server supports the proto method.
     /// </summary>
+    /// <remarks>Current Honua Server deployments may return <c>Unimplemented</c>; prefer async job submission for current server coverage.</remarks>
     Task<HonuaProcessExecutionOutcome> ExecutePlanAsync(HonuaAnalysisPlan plan, HonuaProcessExecutionContext? context = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes a plan and streams progress, stage, result, or error events.
+    /// Executes a plan and streams progress, stage, result, or error events when the server supports the proto method.
     /// </summary>
+    /// <remarks>Current Honua Server deployments may return <c>Unimplemented</c>; prefer async job submission and polling for current server coverage.</remarks>
     IAsyncEnumerable<HonuaProcessExecutionEvent> ExecutePlanStreamAsync(HonuaAnalysisPlan plan, HonuaProcessExecutionContext? context = null, CancellationToken cancellationToken = default);
 
     /// <summary>

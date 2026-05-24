@@ -22,21 +22,21 @@ builder.Services.AddHonua(o =>
 });
 ```
 
-After that, every enabled client (`IHonuaGrpcClient`, `IHonuaAdminClient`,
-`IHonuaOgcFeaturesClient`, `IHonuaProcessesClient`, `IHonuaWfsClient`,
-`IHonuaGeocodingClient`, plus the shared `IHonuaFeatureQueryClient` /
-`IHonuaFeatureEditClient` / `IHonuaFeatureAttachmentClient` abstractions) is
-available for injection.
+After that, every enabled client (`IHonuaGrpcClient`,
+`IHonuaProcessGrpcClient`, `IHonuaAdminClient`, `IHonuaOgcFeaturesClient`,
+`IHonuaProcessesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus the
+shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
+`IHonuaFeatureAttachmentClient` abstractions) is available for injection.
 
 ## Module opt-in flags
 
-The umbrella registers the core query / edit / admin trio by default. Flip the
-`Use*` flags to enable the more situational sub-packages or to opt out of any
-default module:
+The umbrella registers the common default query, edit, admin, geocoding,
+process, and WFS clients by default. Flip the `Use*` flags to enable the more
+situational sub-packages or to opt out of any default module:
 
 | Flag | Default | Registers |
 |---|---|---|
-| `UseGrpc` | `true` | `IHonuaGrpcClient` (gRPC FeatureService) |
+| `UseGrpc` | `true` | `IHonuaGrpcClient` (gRPC FeatureService) + `IHonuaProcessGrpcClient` (native ProcessService) |
 | `UseAdmin` | `true` | `IHonuaAdminClient` + `IHonuaCatalogClient` (REST control plane) |
 | `UseGeocoding` | `true` | `IHonuaGeocodingClient` + `IHonuaBatchGeocodingClient` |
 | `UseOgcFeatures` | `true` | `IHonuaOgcFeaturesClient` |

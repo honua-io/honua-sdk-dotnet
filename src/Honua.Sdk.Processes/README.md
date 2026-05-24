@@ -20,7 +20,7 @@ builder.Services.AddHonuaProcesses(o =>
 
 Use `IHonuaProcessesClient` in Blazor Web hosts for process discovery, async job
 submission, polling, dismissal, and result retrieval. Native hosts that need
-full gRPC job lifecycle access can also use the same model package through
+gRPC job lifecycle access can also use the same model package through
 `Honua.Sdk.Grpc`'s process client.
 
 ## REST surface
@@ -48,7 +48,7 @@ keyed by output identifier.
 using Honua.Sdk.Processes.Models;
 
 var job = await processes.SubmitJobAsync(
-    "honua.analysis",
+    "honua-geoprocessing",
     new HonuaProcessExecuteRequest
     {
         Inputs = new HonuaProcessExecuteInputs

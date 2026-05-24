@@ -8,7 +8,7 @@ This repository owns official .NET client libraries and shared host-neutral cont
 - gRPC FeatureService client for typed queries, streaming, edits, and spatial filters.
 - Admin REST client for services, layers, connections, styles, metadata, manifests, capabilities, identity, RBAC/users, licensing, deployment, observability, alerts, feature-event replay, streaming subscriber operations, secure connections, and publishing workflows.
 - OGC API Processes REST client for process discovery, async jobs, polling, dismissal, results, and shared job models.
-- Native gRPC ProcessService job lifecycle client for MAUI and other native hosts.
+- Native gRPC ProcessService validate, dry-run, submit, inspect, result, and cancel client for MAUI and other native hosts.
 - Spec workspace client for validate, plan, apply stream, cancel, and problem contracts.
 - WFS 2.0, GeoServices FeatureServer, OGC API Features, OGC API Records, STAC, scene metadata, geocoding, routing, and geometry packages.
 - Offline sync planner and engine over shared query/edit abstractions.
