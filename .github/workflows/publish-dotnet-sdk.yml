@@ -434,7 +434,7 @@ jobs:
           builder.Services.AddHonuaAdmin(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaGeocoding(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaSpec(options => options.BaseAddress = baseUri);
-          builder.Services.AddHonuaGrpc(options => options.Address = baseUri.ToString());
+          builder.Services.AddHonuaGrpc(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaWfs(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaFeatureServer(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaScenes(options => options.BaseAddress = baseUri);
