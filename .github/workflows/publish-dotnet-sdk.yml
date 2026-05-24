@@ -346,6 +346,7 @@ jobs:
             </packageSourceCredentials>
             <packageSourceMapping>
               <packageSource key="local-sdk">
+                <package pattern="Honua.Sdk" />
                 <package pattern="Honua.Sdk.*" />
               </packageSource>
               <packageSource key="github-honua">
