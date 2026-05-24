@@ -405,9 +405,9 @@ jobs:
           using Honua.Sdk.Catalogs.Stac;
           using Honua.Sdk.Catalogs.Stac.Extensions;
           using Honua.Sdk.Catalogs.Stac.Models;
-          using Honua.Sdk.Wfs;
-          using Honua.Sdk.Wfs.Extensions;
-          using Honua.Sdk.Wfs.Models;
+          using Honua.Sdk.OgcFeatures.Wfs;
+          using Honua.Sdk.OgcFeatures.Wfs.Extensions;
+          using Honua.Sdk.OgcFeatures.Wfs.Models;
           using Microsoft.Extensions.DependencyInjection;
           using Microsoft.Extensions.Hosting;
 
