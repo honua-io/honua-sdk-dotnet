@@ -44,7 +44,11 @@ The client targets the OGC API Processes surface under `/ogc/processes`.
 `HonuaProcessJobStatus` maps OGC wire fields such as `processID`, `jobID`,
 `status`, and `progress` to typed SDK properties. Document-mode results are
 returned as `HonuaProcessResults.Outputs`, a JSON extension-data dictionary
-keyed by output identifier.
+keyed by output identifier. Use `HonuaProcessExecuteInputs.FromPlan(...)` for
+the canonical `honua-geoprocessing` `inputs.plan` contract. Use the dictionary
+`SubmitJobAsync` overload for advertised concrete processes such as
+`geometry.buffer`; those values serialize directly under `inputs` with no
+`plan` property.
 
 The examples below use the current Honua Server canonical process id,
 `honua-geoprocessing`. The client accepts any process id advertised by the

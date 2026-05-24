@@ -164,26 +164,34 @@ public sealed class HonuaProcessesClient : IHonuaProcessesClient
 
     private static HonuaProcessesException CreateException(HttpStatusCode statusCode, string body)
     {
-        try
+        if (TryParseProblem(body, out var problem) && problem is not null)
         {
-            var problem = JsonSerializer.Deserialize(body, ProcessesJsonContext.Default.HonuaProcessProblem);
-            if (problem is not null)
-            {
-                var message = problem.Detail ?? problem.Title ?? "OGC API Processes request failed.";
-                return new HonuaProcessesException(
-                    statusCode,
-                    message,
-                    body,
-                    problem.Type,
-                    problem.Title,
-                    problem.Detail);
-            }
-        }
-        catch (JsonException)
-        {
+            var message = problem.Detail ?? problem.Title ?? "OGC API Processes request failed.";
+            return new HonuaProcessesException(
+                statusCode,
+                message,
+                body,
+                problem.Type,
+                problem.Title,
+                problem.Detail);
         }
 
         return new HonuaProcessesException(statusCode, "OGC API Processes request failed.", body);
+    }
+
+    private static bool TryParseProblem(string body, out HonuaProcessProblem? problem)
+    {
+        try
+        {
+            problem = JsonSerializer.Deserialize(body, ProcessesJsonContext.Default.HonuaProcessProblem);
+            return problem is not null;
+        }
+        catch (JsonException)
+        {
+            // Body is not a parseable problem+json document; the caller falls back to a generic error message.
+            problem = null;
+            return false;
+        }
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);

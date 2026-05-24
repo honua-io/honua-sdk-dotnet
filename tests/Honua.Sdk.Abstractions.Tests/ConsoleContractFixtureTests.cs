@@ -91,14 +91,14 @@ public sealed class ConsoleContractFixtureTests
     }
 
     private static string ReadFixture(string name)
-        => File.ReadAllText(Path.Combine(FindRepoRoot(), "contracts", "fixtures", "console", name));
+        => File.ReadAllText(Path.Join(FindRepoRoot(), "contracts", "fixtures", "console", name));
 
     private static string FindRepoRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "Honua.Sdk.sln")))
+            if (File.Exists(Path.Join(directory.FullName, "Honua.Sdk.sln")))
             {
                 return directory.FullName;
             }

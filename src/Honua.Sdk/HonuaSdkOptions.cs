@@ -23,9 +23,11 @@ namespace Honua.Sdk;
 /// keep using the per-package <c>AddHonua*</c> extension directly.
 /// </para>
 /// <para>
-/// Module opt-in flags (<see cref="UseGrpc"/>, <see cref="UseAdmin"/>, …) default
-/// to <c>true</c> for the core query / edit / admin trio that the vast majority
-/// of consumers register. The more situational sub-packages
+/// Module opt-in flags (<see cref="UseGrpc"/>, <see cref="UseAdmin"/>,
+/// <see cref="UseGeocoding"/>, <see cref="UseOgcFeatures"/>,
+/// <see cref="UseProcesses"/>, and <see cref="UseWfs"/>) default to
+/// <c>true</c> for the common query, edit, admin, geocoding, OGC API Features,
+/// OGC API Processes, and WFS client set. The more situational sub-packages
 /// (<see cref="UseGeoServices"/>, <see cref="UseRouting"/>, <see cref="UseScenes"/>,
 /// <see cref="UseSpec"/>, <see cref="UseStac"/>, <see cref="UseOgcRecords"/>)
 /// default to <c>false</c> so callers who want the smallest registration footprint
@@ -136,8 +138,9 @@ public sealed class HonuaSdkOptions
 
     /// <summary>
     /// When <c>true</c>, registers the gRPC FeatureService client
-    /// (<c>IHonuaGrpcClient</c>) and its shared feature query / edit /
-    /// attachment interface aliases. Defaults to <c>true</c>.
+    /// (<c>IHonuaGrpcClient</c>), the native ProcessService job lifecycle
+    /// client (<c>IHonuaProcessGrpcClient</c>), and the shared feature query /
+    /// edit / attachment interface aliases. Defaults to <c>true</c>.
     /// </summary>
     public bool UseGrpc { get; set; } = true;
 

@@ -344,14 +344,14 @@ public sealed class ConsoleAdminContractTests
         };
 
     private static JsonDocument LoadFixture(string name)
-        => JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepoRoot(), "contracts", "fixtures", "console", name)));
+        => JsonDocument.Parse(File.ReadAllText(Path.Join(FindRepoRoot(), "contracts", "fixtures", "console", name)));
 
     private static string FindRepoRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "Honua.Sdk.sln")))
+            if (File.Exists(Path.Join(directory.FullName, "Honua.Sdk.sln")))
             {
                 return directory.FullName;
             }

@@ -78,10 +78,12 @@ Blazor Web and MAUI hosts:
 | Streaming subscriber list and disconnect | `IHonuaAdminStreamingOperationsClient` |
 
 Most Admin endpoints use the server's `ApiResponse<T>` envelope and are
-unwrapped before returning typed SDK models. Feature-event replay returns the
-raw replay page shape. Admin requests are emitted as camelCase JSON, while
-response binding is case-insensitive so the server's current PascalCase replay
-payload (`Events`, `NextCursor`, `HasMore`, and event fields) binds to
+unwrapped before returning typed SDK models. Table discovery returns raw
+`TableDiscoveryResponse`, and feature-event replay returns raw
+`FeatureEventReplayResponse`, because those current server endpoints are not
+envelope-wrapped. Admin requests are emitted as camelCase JSON, while response
+binding is case-insensitive so the server's current PascalCase replay payload
+(`Events`, `NextCursor`, `HasMore`, and event fields) binds to
 `FeatureEventReplayResponse`. Non-success HTTP statuses throw
 `HonuaAdminApiException`; successful responses that fail the expected contract
 throw `HonuaAdminOperationException`.

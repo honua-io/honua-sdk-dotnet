@@ -89,8 +89,10 @@ identity surfaces. Prefer injecting the narrow interface at call sites:
 | Streaming subscriber operations | `IHonuaAdminStreamingOperationsClient` | `SubscriberListResponse` |
 
 Most Admin endpoints use the standard Admin `ApiResponse<T>` envelope and are
-unwrapped by `HonuaAdminClient`. Feature-event replay intentionally returns the
-raw replay page shape because the server endpoint is not envelope-wrapped.
+unwrapped by `HonuaAdminClient`. The Console publishing/table-discovery path
+returns the raw `TableDiscoveryResponse`, and feature-event replay returns the
+raw `FeatureEventReplayResponse`, because those server endpoints are not
+envelope-wrapped.
 Admin requests are emitted as camelCase JSON, and Admin response binding is
 case-insensitive. The replay fixture intentionally covers the current
 server-shaped PascalCase raw payload (`Events`, `NextCursor`, `HasMore`, and
@@ -147,7 +149,10 @@ Job status uses the OGC field names on the wire (`processID`, `jobID`,
 `status`, `progress`) and typed SDK properties (`ProcessId`, `JobId`,
 `Status`, `Progress`). Document-mode results are represented by
 `HonuaProcessResults.Outputs`, a JSON extension-data dictionary keyed by output
-identifier. Current server contract fixtures use the canonical process id
+identifier. `HonuaProcessExecuteInputs.FromPlan(...)` emits the canonical
+`inputs.plan` shape for `honua-geoprocessing`; the direct-input overload emits
+advertised concrete process parameters directly under `inputs` with no `plan`
+property. Current server contract fixtures use the canonical process id
 `honua-geoprocessing`.
 
 ```csharp

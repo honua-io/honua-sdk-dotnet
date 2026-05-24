@@ -287,6 +287,10 @@ public sealed class HonuaProcessesClientTests
                 })
         };
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "Ownership transfers to the HttpClient pipeline, which disposes the response.")]
     private static Task<HttpResponseMessage> JsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         var response = new HttpResponseMessage(statusCode)
