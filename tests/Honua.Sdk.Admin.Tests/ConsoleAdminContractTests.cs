@@ -97,11 +97,11 @@ public sealed class ConsoleAdminContractTests
         var rule = await client.CreateAlertRuleAsync(new AlertRuleRequest
         {
             ServiceId = "parcels",
-            LayerId = 0,
+            LayerId = 1,
             ZoneId = 10,
             RuleName = "Inspection Dwell",
             TriggerType = "dwell",
-            Channels = ["console"]
+            Channels = ["websocket"]
         });
         var replay = await client.ReplayFeatureEventsAsync(new FeatureEventReplayQuery
         {
@@ -287,14 +287,14 @@ public sealed class ConsoleAdminContractTests
         {
             RuleId = 20,
             ServiceId = "parcels",
-            LayerId = 0,
+            LayerId = 1,
             ZoneId = 10,
             RuleName = "Inspection Dwell",
             TriggerType = "dwell",
             CooldownSeconds = 300,
             Severity = "warning",
             EditionRequired = "pro",
-            Channels = ["console"],
+            Channels = ["websocket"],
             IsActive = true
         };
 

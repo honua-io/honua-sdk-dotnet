@@ -30,7 +30,7 @@
   },
   "ruleRequest": {
     "serviceId": "parcels",
-    "layerId": 0,
+    "layerId": 1,
     "zoneId": 10,
     "ruleName": "Inspection Dwell",
     "triggerType": "dwell",
@@ -38,7 +38,7 @@
     "cooldownSeconds": 300,
     "severity": "warning",
     "editionRequired": "pro",
-    "channels": ["console", "email"],
+    "channels": ["websocket", "email"],
     "isActive": true
   },
   "rules": {
@@ -47,7 +47,7 @@
       {
         "ruleId": 20,
         "serviceId": "parcels",
-        "layerId": 0,
+        "layerId": 1,
         "zoneId": 10,
         "ruleName": "Inspection Dwell",
         "triggerType": "dwell",
@@ -55,7 +55,7 @@
         "cooldownSeconds": 300,
         "severity": "warning",
         "editionRequired": "pro",
-        "channels": ["console", "email"],
+        "channels": ["websocket", "email"],
         "isActive": true
       }
     ],

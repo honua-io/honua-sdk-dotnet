@@ -54,7 +54,7 @@ var permissions = await users.GetEffectivePermissionsAsync(
 var alerts = provider.GetRequiredService<IHonuaAdminAlertsClient>();
 var rules = await alerts.ListAlertRulesAsync(
     serviceId: "parcels",
-    layerId: 0,
+    layerId: 1,
     cancellationToken);
 
 var events = provider.GetRequiredService<IHonuaAdminFeatureEventsClient>();
