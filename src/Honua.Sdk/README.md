@@ -22,11 +22,12 @@ builder.Services.AddHonua(o =>
 });
 ```
 
-After that, every enabled client (`IHonuaGrpcClient`,
+After that, the common default clients (`IHonuaGrpcClient`,
 `IHonuaProcessGrpcClient`, `IHonuaAdminClient`, `IHonuaOgcFeaturesClient`,
 `IHonuaProcessesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus the
 shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
-`IHonuaFeatureAttachmentClient` abstractions) is available for injection.
+`IHonuaFeatureAttachmentClient` abstractions) are available for injection.
+Opt-in modules such as Studio are available after enabling their `Use*` flag.
 
 ## Module opt-in flags
 
@@ -45,9 +46,10 @@ situational sub-packages or to opt out of any default module:
 | `UseGeoServices` | `false` | `IHonuaFeatureServerClient` |
 | `UseRouting` | `false` | `IHonuaRoutingClient` (NAServer) |
 | `UseScenes` | `false` | `IHonuaSceneClient` |
-| `UseSpec` | `false` | `IHonuaSpecClient` (validate / plan / apply) |
+| `UseSpec` | `false` | `IHonuaSpecClient` (validate / plan / apply / artifacts) |
 | `UseStac` | `false` | `IHonuaStacClient` |
 | `UseOgcRecords` | `false` | `IHonuaOgcRecordsClient` |
+| `UseStudio` | `false` | `IHonuaStudioReportsClient` (analysis report retrieve / render) |
 
 ```csharp
 builder.Services.AddHonua(o =>
@@ -58,6 +60,7 @@ builder.Services.AddHonua(o =>
     o.UseStac       = true;
     o.UseOgcRecords = true;
     o.UseScenes     = true;
+    o.UseStudio     = true;
 
     // Or trim a default off if the app does not need it:
     o.UseGeocoding  = false;
@@ -78,6 +81,7 @@ dotnet add package Honua.Sdk.Grpc
 dotnet add package Honua.Sdk.Admin      
 dotnet add package Honua.Sdk.OgcFeatures
 dotnet add package Honua.Sdk.Processes
+dotnet add package Honua.Sdk.Studio
 ```
 
 ```csharp
@@ -85,6 +89,7 @@ builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaStudio     (o => o.BaseAddress = serverUri);
 ```
 
 The umbrella is purely a build-time aggregator. It does not duplicate any of

@@ -6,7 +6,7 @@ to reason about how data flows through the SDK.
 
 ## The layers
 
-`Honua.Sdk` is a meta / umbrella package that fans out across the 12
+`Honua.Sdk` is a meta / umbrella package that fans out across the 13
 sub-packages below. Installing it brings in every other `Honua.Sdk.*` package
 and exposes a single `AddHonua(o => o.BaseAddress = ...)` DI extension. The
 per-package `AddHonua*` extensions remain available unchanged.
@@ -16,7 +16,7 @@ per-package `AddHonua*` extensions remain available unchanged.
                                    │
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Honua.Sdk  (meta / umbrella; fans out across the 12 sub-packages)  │
+│  Honua.Sdk  (meta / umbrella; fans out across the 13 sub-packages)  │
 └─────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
@@ -25,7 +25,8 @@ per-package `AddHonua*` extensions remain available unchanged.
 │ Provider-neutral interfaces:                                        │
 │   IHonuaFeatureQueryClient  IHonuaFeatureEditClient                 │
 │   IHonuaFeatureAttachmentClient  IHonuaFeatureStreamClient          │
-│ Shared types: SourceDescriptor, FeatureQueryRequest, exceptions     │
+│ Shared types: SourceDescriptor, FeatureQueryRequest, Studio reports,│
+│   Console shells/environments, plugin manifests, exceptions         │
 │ Offline sync contracts: manifests, sync state, checkpoints,         │
 │   conflicts, storage (under `Honua.Sdk.Offline.Abstractions.*`)     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -43,7 +44,8 @@ per-package `AddHonua*` extensions remain available unchanged.
 ┌───────┴─────────────────────────────────────────────────────┴────┐
 │  Honua.Sdk.Admin     (REST control-plane + Catalog + Geocoding)   │
 │  Honua.Sdk.Processes (OGC API Processes REST + job models)        │
-│  Honua.Sdk.Spec      (validate / plan / apply stream)             │
+│  Honua.Sdk.Spec      (validate / plan / apply stream / artifacts) │
+│  Honua.Sdk.Studio    (analysis report retrieve / render)          │
 │  Honua.Sdk.Scenes    (scene metadata, render endpoints)           │
 └───────────────────────────────────────────────────────────────────┘
 
@@ -69,7 +71,8 @@ per-package `AddHonua*` extensions remain available unchanged.
 | Work with OGC API Processes jobs over browser-safe REST | `Honua.Sdk.Processes` |
 | Use native ProcessService job lifecycle calls | `Honua.Sdk.Grpc` (`IHonuaProcessGrpcClient`) |
 | Forward / reverse / autocomplete geocode | `Honua.Sdk.Admin` (`IHonuaGeocodingClient`) |
-| Validate / plan / apply spec workspaces | `Honua.Sdk.Spec` |
+| Validate / plan / apply spec workspaces or retrieve cached spec artifacts | `Honua.Sdk.Spec` |
+| Retrieve structured analysis reports or render them to Markdown/HTML | `Honua.Sdk.Studio` |
 | Discover or resolve scenes / offline scene packages | `Honua.Sdk.Scenes` |
 | Perform CRS transforms, planar predicates, geofence evaluation | `Honua.Sdk.Geometry` |
 | Build offline sync (push/pull, conflicts, manifests) | `Honua.Sdk.Offline` (offline contracts ship in `Honua.Sdk.Abstractions`) |

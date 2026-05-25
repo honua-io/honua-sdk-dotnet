@@ -40,7 +40,7 @@ Retries are enabled by default and can be disabled per client with
 | Client family | Retried failures |
 |---------------|------------------|
 | gRPC | FeatureService `QueryFeatures` / `QueryFeaturesStream` and ProcessService `ValidatePlan`, `DryRunPlan`, `GetJob`, and `GetJobResult` retry on `Unavailable`, `Internal` |
-| Admin, Geocoding, Spec, Processes, WFS, GeoServices, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
+| Admin, Geocoding, Spec, Studio, Processes, WFS, GeoServices, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
 
 Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
 API Features create/update/delete calls are not retried by the default policy.
@@ -61,6 +61,8 @@ right failure surface without parsing strings.
 | `Honua.Sdk.Admin` | `HonuaAdminOperationException` | Successful HTTP responses that fail the expected Admin contract, such as null envelopes or compatibility failures. |
 | `Honua.Sdk.Processes` | `HonuaProcessesException` | Non-success OGC API Processes REST responses, problem-details payloads, and JSON contract failures. |
 | `Honua.Sdk.Spec` | `HonuaSpecException` | Non-success spec REST responses, including structured problem-details payloads. |
+| `Honua.Sdk.Studio` | `HonuaStudioApiException` | Non-success analysis-report responses. Includes status code, problem title/detail when present, and raw response body. |
+| `Honua.Sdk.Studio` | `HonuaStudioContractException` | Successful analysis-report responses that are empty, malformed, or contain an unmodeled report section `kind`. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `HonuaWfsException` | HTTP failures, OGC `ExceptionReport` responses, and content-format mismatches. Includes the OGC exception code when available. |
 | `Honua.Sdk.GeoServices` | `HonuaFeatureServerException` | HTTP failures and GeoServices JSON error envelopes, including 200 responses that carry an error payload. |
 | `Honua.Sdk.Scenes` | `HonuaSceneException` | HTTP failures, invalid scene JSON, malformed scene contracts, and missing required scene capabilities. |
@@ -112,9 +114,10 @@ Current typed endpoint coverage is:
 
 | Package | Covered surfaces |
 |---------|------------------|
-| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, Console shell/route guard/environment profile contracts, native mTLS trust-state DTOs, and host-neutral plugin manifests. |
+| `Honua.Sdk.Abstractions` | Shared feature query/edit/attachment/stream/source contracts, routing contracts, scene contracts, Console shell/route guard/environment profile contracts, Studio analysis-report/result-package DTOs, native mTLS trust-state DTOs, and host-neutral plugin manifests. |
 | `Honua.Sdk.Admin` | Service listing/settings/protocols, catalog discovery, MapServer/access/time/layer metadata settings, metadata resources and manifests, version/capabilities/compatibility/config, secure connections/encryption, layer publishing/table discovery/styles, migration source scans and artifacts, RBAC roles/permissions, users/effective permissions, alert zones/rules, feature-event replay, streaming subscriber operations, observability, migrations, deploy preflight/plans/operations, and geocoding. |
-| `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, and apply cancellation over `/v1/spec/*`. |
+| `Honua.Sdk.Spec` | Spec validation, plan compilation, apply SSE event streaming, apply cancellation, and cached artifact retrieval over `/v1/spec/*`. |
+| `Honua.Sdk.Studio` | Analysis-report retrieval from `/api/v1/analysis/reports/{jobId}` and Markdown/HTML rendering from `/api/v1/analysis/reports/{jobId}/render`. |
 | `Honua.Sdk.Grpc` | Feature query, streaming feature query, feature edits, and native ProcessService validate/dry-run/submit/get/result/cancel job lifecycle calls. `ExecutePlanAsync` and `ExecutePlanStreamAsync` are proto wrappers that may return `Unimplemented` on current server deployments. |
 | `Honua.Sdk.Processes` | OGC API Processes landing page, conformance, process list/detail, async execution submission, job list/status, dismissal, and document-mode results. |
 | `Honua.Sdk.OgcFeatures.Wfs` | `GetCapabilities`, `DescribeFeatureType`, `GetFeature`, feature count via hits, custom output handlers, and auto-pagination. |

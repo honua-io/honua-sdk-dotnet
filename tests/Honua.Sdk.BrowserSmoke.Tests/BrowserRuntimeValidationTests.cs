@@ -83,6 +83,10 @@ public sealed class BrowserRuntimeValidationTests
             string.Equals(request.Path, "/wfs", StringComparison.Ordinal));
         Assert.Contains(observed, request =>
             string.Equals(request.Path, "/ogc/processes/processes", StringComparison.Ordinal));
+        Assert.Contains(observed, request =>
+            string.Equals(request.Path, "/api/v1/analysis/reports/job-7f3c", StringComparison.Ordinal));
+        Assert.Contains(observed, request =>
+            string.Equals(request.Path, "/api/v1/analysis/reports/job-7f3c/render", StringComparison.Ordinal));
 
         GC.KeepAlive(appHost);
         GC.KeepAlive(apiHost);
@@ -127,6 +131,7 @@ public sealed class BrowserRuntimeValidationTests
             ["layerId"] = "0",
             ["wfsTypeName"] = "parcels",
             ["address"] = "Honolulu, HI",
+            ["reportJobId"] = "job-7f3c",
         };
 
         return string.Join(
@@ -187,6 +192,10 @@ public sealed class BrowserRuntimeValidationTests
         string allowedOrigin,
         ConcurrentQueue<ObservedRequest> observed)
     {
+        var analysisReportJson = await File.ReadAllTextAsync(
+            Path.Combine(GetRepoRoot(), "contracts", "fixtures", "console", "analysis-report.v1.json"))
+            .ConfigureAwait(false);
+
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             Args = []
@@ -311,6 +320,16 @@ public sealed class BrowserRuntimeValidationTests
             },
             links = Array.Empty<object>(),
         }));
+
+        app.MapGet("/api/v1/analysis/reports/{jobId}", () =>
+            Results.Text(analysisReportJson, "application/json"));
+        app.MapGet("/api/v1/analysis/reports/{jobId}/render", (string jobId, string? format) =>
+        {
+            var renderFormat = string.IsNullOrWhiteSpace(format) ? "md" : format;
+            return Results.Text(
+                FormattableString.Invariant($"# Flood Buffer Impact\n\nReport for {jobId} rendered as {renderFormat}."),
+                "text/markdown");
+        });
 
         await app.StartAsync().ConfigureAwait(false);
         return app;

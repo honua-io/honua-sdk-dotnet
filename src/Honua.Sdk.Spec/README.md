@@ -2,7 +2,8 @@
 
 REST and SSE client for the Honua spec workspace API. Supports validating spec
 DSL text or canonical JSON documents, compiling them into plans with cost
-estimates, streaming apply events, and cancelling in-flight apply runs.
+estimates, streaming apply events, cancelling in-flight apply runs, and
+retrieving cached artifacts by content hash.
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
@@ -46,12 +47,30 @@ if (validation.IsValid)
     };
 
     await using var stream = await client.ApplyAsync(document, cancellationToken);
+    string? completedHash = null;
     await foreach (var ev in stream.Events.WithCancellation(cancellationToken))
     {
         Console.WriteLine($"{ev.Kind} {ev.NodeId}");
+        if (completedHash is null &&
+            ev.Kind == SpecApplyEventKind.Succeeded &&
+            ev.ContentHash is not null)
+        {
+            completedHash = ev.ContentHash;
+        }
+    }
+
+    if (completedHash is { } hash)
+    {
+        var artifact = await client.GetArtifactAsync(hash, cancellationToken);
+        Console.WriteLine($"{artifact.ContentHash}: {artifact.ContentType} ({artifact.Content.Length} bytes)");
     }
 }
 ```
+
+`GetArtifactAsync` calls `GET /v1/spec/artifact/{hash}` and returns
+`HonuaSpecArtifact` with the raw bytes, response content type, and
+`X-Spec-Content-Hash` echo. The success path reads artifact bytes directly;
+problem-details bodies are read only for non-success responses.
 
 ## Documentation
 

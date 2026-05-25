@@ -6,7 +6,8 @@ core feature interfaces (`IHonuaFeatureQueryClient`, `IHonuaFeatureEditClient`,
 `IHonuaSource`, `SourceDescriptor`), feature query/edit request and result
 models, feature stream-event processors, the provider-neutral routing client
 (`IHonuaRoutingClient`) and routing models, scene client and scene-package
-contracts, utility-network trace contracts, plugin contracts, and
+contracts, Studio analysis-report and analysis-result-package DTOs,
+utility-network trace contracts, plugin contracts, and
 `HonuaException`.
 
 Also ships browser-safe Honua Console contracts under
@@ -15,6 +16,12 @@ shell descriptors, route guards, permission grants, environment profiles,
 transport capabilities, and native mTLS trust-state DTOs. These models are
 selectors and status envelopes only; host apps own persistence, secure storage,
 certificate lookup, and platform trust validation.
+
+Also ships the **Studio report contracts** under
+`Honua.Sdk.Abstractions.Studio`: `HonuaAnalysisReport`, the
+`kind`-discriminated `HonuaAnalysisReportSection` hierarchy,
+`HonuaRenderedReport`, and `HonuaAnalysisResultPackage` projections. The
+transport client that reads and renders reports lives in `Honua.Sdk.Studio`.
 
 Also ships the **offline sync contracts** under the
 `Honua.Sdk.Offline.Abstractions.*` namespaces: `OfflineReplicaManifest`,

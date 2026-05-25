@@ -9,7 +9,8 @@ This repository owns official .NET client libraries and shared host-neutral cont
 - Admin REST client for services, layers, connections, styles, metadata, manifests, capabilities, identity, RBAC/users, licensing, deployment, observability, alerts, feature-event replay, streaming subscriber operations, secure connections, and publishing workflows.
 - OGC API Processes REST client for process discovery, async jobs, polling, dismissal, results, and shared job models.
 - Native gRPC ProcessService validate, dry-run, submit, inspect, result, and cancel client for MAUI and other native hosts.
-- Spec workspace client for validate, plan, apply stream, cancel, and problem contracts.
+- Spec workspace client for validate, plan, apply stream, cancel, cached artifact retrieval, and problem contracts.
+- Console Studio analysis-report client for structured report retrieval and Markdown/HTML rendering.
 - WFS 2.0, GeoServices FeatureServer, OGC API Features, OGC API Records, STAC, scene metadata, geocoding, routing, and geometry packages.
 - Offline sync planner and engine over shared query/edit abstractions.
 - Field form contracts for validation, calculated fields, duplicate detection, and record workflow.
@@ -21,6 +22,7 @@ This repository owns official .NET client libraries and shared host-neutral cont
 - Admin and catalog clients: `src/Honua.Sdk.Admin/`
 - Processes client: `src/Honua.Sdk.Processes/`
 - Spec client: `src/Honua.Sdk.Spec/`
+- Studio client and report contracts: `src/Honua.Sdk.Studio/`, `src/Honua.Sdk.Abstractions/Studio/`
 - Scene client: `src/Honua.Sdk.Scenes/`
 - OGC Records + STAC catalog client: `src/Honua.Sdk.Catalogs/`
 - Offline and field packages: `src/Honua.Sdk.Offline*`, `src/Honua.Sdk.Field/`

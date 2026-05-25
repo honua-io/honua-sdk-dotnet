@@ -92,3 +92,10 @@ This package wraps the analysis-report read path that the server exposes today.
 Map/App package bodies, publication/share/embed, and discrete
 query/dashboard/form/workflow/ETL package clients are gated on server contracts
 that do not yet exist and are tracked as separate, server-paired tickets.
+
+## Documentation
+
+- [Console client contracts](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/console-client-contracts.md)
+- [Client behavior](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/client-behavior.md)
+- [Browser / WASM support](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/browser-wasm-support.md)
+- [Studio analysis report sample](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/examples/StudioAnalysisReportConsole/README.md)
