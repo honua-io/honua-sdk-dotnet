@@ -69,10 +69,12 @@ if (validation.IsValid)
 
 `GetArtifactAsync` calls `GET /v1/spec/artifact/{hash}` and returns
 `HonuaSpecArtifact` with the raw bytes, response content type, and
-`X-Spec-Content-Hash` echo. Successful responses are treated as binary payloads
-and buffered into `HonuaSpecArtifact.Content`; problem-details bodies are read
-only for non-success responses. Use this for bounded, content-hash-addressed
-cache artifacts, not unbounded archive or publish/download flows.
+`X-Spec-Content-Hash` echo. If the server omits `Content-Type`, the SDK uses
+`application/octet-stream`; if the hash header is absent, it uses the requested
+hash. Successful responses are treated as binary payloads and buffered into
+`HonuaSpecArtifact.Content`; problem-details bodies are read only for
+non-success responses. Use this for bounded, content-hash-addressed cache
+artifacts, not unbounded archive or publish/download flows.
 
 ## Documentation
 

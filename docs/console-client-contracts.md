@@ -238,15 +238,19 @@ source-generated JSON context. Those eight kinds are exhaustive within report
 contract version `honua.report.v1`; consumers gate on
 `HonuaAnalysisReport.ReportContractVersion`. New fields on a known kind are
 tolerated; an unmodeled `kind` surfaces as `HonuaStudioContractException`
-(loud drift signal). `RenderReportAsync` returns `HonuaRenderedReport` carrying
-the Markdown or HTML body and its media type.
+(loud drift signal). `RenderReportAsync` sends a format-specific `Accept`
+header and returns `HonuaRenderedReport` carrying the Markdown or HTML body and
+its media type. If the response omits `Content-Type`, the SDK reports the media
+type implied by the requested format.
 
 `GetArtifactAsync` retrieves a cached artifact by content hash and returns
 `HonuaSpecArtifact` (bytes, content type, and the `X-Spec-Content-Hash` echo).
-The SDK buffers successful artifact responses into `HonuaSpecArtifact.Content`;
-use this for bounded cache entries, not large publish/download flows. This is
-the closest analog the server exposes today to generated-artifact retrieval;
-there is no `/publish`, `/share`, or `/embed` surface yet.
+If the server omits `Content-Type`, the SDK uses `application/octet-stream`; if
+the hash header is absent, it uses the requested hash. The SDK buffers
+successful artifact responses into `HonuaSpecArtifact.Content`; use this for
+bounded cache entries, not large publish/download flows. This is the closest
+analog the server exposes today to generated-artifact retrieval; there is no
+`/publish`, `/share`, or `/embed` surface yet.
 
 `HonuaAnalysisResultPackage` and its `HonuaArtifactRef` / `HonuaWorkspaceRef` /
 `HonuaGeoprocessingError` members are **deserialization-only** projections of

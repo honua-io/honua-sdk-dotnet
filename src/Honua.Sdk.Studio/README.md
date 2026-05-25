@@ -36,8 +36,10 @@ The client targets the analysis-reporting surface under
 
 `GetReportAsync` returns `HonuaAnalysisReport` deserialized from the **unwrapped**
 server JSON (analysis reports are not wrapped in the Admin `ApiResponse<T>`
-envelope). `RenderReportAsync` returns `HonuaRenderedReport` carrying the text
-body and its media type (`text/markdown` or `text/html`).
+envelope). `RenderReportAsync` requests `text/markdown` for `format=md` and
+`text/html` for `format=html`, then returns `HonuaRenderedReport` carrying the
+text body and media type. If the response omits `Content-Type`, the SDK reports
+the media type implied by the requested format.
 
 ```csharp
 var report = await studio.GetReportAsync(jobId, cancellationToken);
