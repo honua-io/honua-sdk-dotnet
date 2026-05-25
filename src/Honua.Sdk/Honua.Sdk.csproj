@@ -39,6 +39,7 @@
     <ProjectReference Include="..\Honua.Sdk.Catalogs\Honua.Sdk.Catalogs.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Scenes\Honua.Sdk.Scenes.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Spec\Honua.Sdk.Spec.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.Studio\Honua.Sdk.Studio.csproj" />
   </ItemGroup>
 
   <ItemGroup>

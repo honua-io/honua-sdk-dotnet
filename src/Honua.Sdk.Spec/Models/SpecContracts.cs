@@ -452,3 +452,29 @@ public sealed record SpecProblem
     /// <summary>Optional remediation hint.</summary>
     public string? Remedy { get; init; }
 }
+
+/// <summary>
+/// A cached spec artifact retrieved by content hash from
+/// <c>GET /v1/spec/artifact/{hash}</c>. This is the closest analog the server
+/// exposes today to generated-artifact retrieval. The body is read fully into
+/// memory; spec artifacts are content-hash-addressed cache entries (node
+/// outputs), so their size is bounded by the producing node.
+/// </summary>
+public sealed record HonuaSpecArtifact
+{
+    /// <summary>
+    /// Content hash echoed by the server in the <c>X-Spec-Content-Hash</c>
+    /// header (the cache key). Falls back to the requested hash when the header
+    /// is absent.
+    /// </summary>
+    public required string ContentHash { get; init; }
+
+    /// <summary>
+    /// Response content type, e.g. <c>application/x-arrow</c>. Defaults to
+    /// <c>application/octet-stream</c> when the server does not specify one.
+    /// </summary>
+    public required string ContentType { get; init; }
+
+    /// <summary>Raw artifact bytes.</summary>
+    public required ReadOnlyMemory<byte> Content { get; init; }
+}

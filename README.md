@@ -10,7 +10,7 @@ real-time feature stream contracts.
 
 > **New here? Pick your path:**
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
-> - Want a map of the 13 packages before you choose → [docs/architecture.md](docs/architecture.md)
+> - Want a map of the 14 packages before you choose → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
 > - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
@@ -27,7 +27,8 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk.Grpc** | gRPC client for `FeatureService` and native `ProcessService` jobs -- typed queries, feature streaming, edits, spatial filters, job lifecycle |
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata, RBAC/users, alerts, observability, feature-event replay, streaming operations |
 | **Honua.Sdk.Processes** | Browser-safe OGC API Processes REST client -- process discovery, async jobs, polling, dismissal, results, shared job models |
-| **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel |
+| **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel, cached artifact retrieval |
+| **Honua.Sdk.Studio** | Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
 | **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
@@ -59,6 +60,7 @@ dotnet add package Honua.Sdk.Grpc
 dotnet add package Honua.Sdk.Admin
 dotnet add package Honua.Sdk.Processes
 dotnet add package Honua.Sdk.Spec
+dotnet add package Honua.Sdk.Studio
 dotnet add package Honua.Sdk.Field
 dotnet add package Honua.Sdk.Geometry
 dotnet add package Honua.Sdk.GeoServices
@@ -177,6 +179,7 @@ src/
   Honua.Sdk.Geometry/            NTS/ProjNet geometry, CRS, planar analysis, geofence
   Honua.Sdk.Admin/               Admin + Catalog + Geocoding client package
   Honua.Sdk.Spec/                Spec workspace validate/plan/apply client package
+  Honua.Sdk.Studio/              Console Studio analysis-report read client package
   Honua.Sdk.Field/               Field form, validation, and workflow contracts
   Honua.Sdk.GeoServices/         GeoServices FeatureServer + routing client package
   Honua.Sdk.Scenes/              Scene metadata and offline package contract client

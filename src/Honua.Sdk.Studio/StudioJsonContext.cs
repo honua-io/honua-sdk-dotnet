@@ -3,35 +3,20 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Honua.Sdk.Abstractions.Console;
-using Honua.Sdk.Abstractions.Environments;
 using Honua.Sdk.Abstractions.Studio;
+using Honua.Sdk.Studio.Models;
 
-namespace Honua.Sdk.Abstractions.Serialization;
+namespace Honua.Sdk.Studio;
 
 /// <summary>
-/// Source-generated JSON context for shared SDK contracts.
+/// Source-generated JSON context for Console Studio payloads. Trimming/AOT-safe:
+/// every report contract, including the polymorphic
+/// <see cref="HonuaAnalysisReportSection"/> hierarchy, resolves through this
+/// context without reflection.
 /// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-[JsonSerializable(typeof(HonuaEnvironmentProfileSet))]
-[JsonSerializable(typeof(HonuaEnvironmentProfile))]
-[JsonSerializable(typeof(HonuaEnvironmentProfile[]))]
-[JsonSerializable(typeof(HonuaTenantScope))]
-[JsonSerializable(typeof(HonuaTransportCapabilities))]
-[JsonSerializable(typeof(HonuaTrustProfile))]
-[JsonSerializable(typeof(HonuaClientCertificateReference))]
-[JsonSerializable(typeof(HonuaEnvironmentTrustState))]
-[JsonSerializable(typeof(HonuaConsoleShellDescriptor))]
-[JsonSerializable(typeof(HonuaConsolePrincipal))]
-[JsonSerializable(typeof(HonuaConsoleNavigationItem))]
-[JsonSerializable(typeof(HonuaConsoleNavigationItem[]))]
-[JsonSerializable(typeof(HonuaConsoleRouteGuard))]
-[JsonSerializable(typeof(HonuaConsoleRouteGuard[]))]
-[JsonSerializable(typeof(HonuaConsoleRouteGuardDecision))]
-[JsonSerializable(typeof(HonuaConsolePermissionGrant))]
-[JsonSerializable(typeof(HonuaConsolePermissionGrant[]))]
 [JsonSerializable(typeof(HonuaAnalysisReport))]
 [JsonSerializable(typeof(HonuaAnalysisReportSection))]
 [JsonSerializable(typeof(HonuaAnalysisReportSection[]))]
@@ -47,14 +32,14 @@ namespace Honua.Sdk.Abstractions.Serialization;
 [JsonSerializable(typeof(HonuaResultSummary))]
 [JsonSerializable(typeof(HonuaProvenanceRecord))]
 [JsonSerializable(typeof(HonuaProvenanceSource))]
-[JsonSerializable(typeof(HonuaRenderedReport))]
 [JsonSerializable(typeof(HonuaAnalysisResultPackage))]
 [JsonSerializable(typeof(HonuaArtifactRef))]
 [JsonSerializable(typeof(HonuaWorkspaceRef))]
 [JsonSerializable(typeof(HonuaGeoprocessingError))]
 [JsonSerializable(typeof(HonuaGeoprocessingValidationFailure))]
+[JsonSerializable(typeof(StudioProblem))]
 [JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
-public sealed partial class HonuaAbstractionsJsonContext : JsonSerializerContext
+internal sealed partial class StudioJsonContext : JsonSerializerContext
 {
 }

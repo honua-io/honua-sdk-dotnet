@@ -201,7 +201,7 @@ jobs:
 
   dotnet-sdk:
     # Matrix replacement for the 13 previously-duplicated dotnet-<package>-sdk
-    # jobs. Each matrix leg builds one shipped SDK package (12 sub-packages plus
+    # jobs. Each matrix leg builds one shipped SDK package (13 sub-packages plus
     # the Honua.Sdk meta) under strict release flags and, when present, runs its
     # dedicated test project. The strict flag set
     # (TreatWarningsAsErrors=true / EnforceCodeStyleInBuild=true / Release) is
@@ -270,6 +270,12 @@ jobs:
             src: src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj
             tests:
               - tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj
+          # Console Studio analysis-report read client (ticket 169). Report DTOs
+          # live in Honua.Sdk.Abstractions; this package ships the HTTP client.
+          - label: Studio
+            src: src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj
+            tests:
+              - tests/Honua.Sdk.Studio.Tests/Honua.Sdk.Studio.Tests.csproj
           # Umbrella meta package -- builds Honua.Sdk and runs the AddHonua DI
           # smoke test that exercises the umbrella's registration surface.
           - label: Meta
@@ -358,6 +364,9 @@ jobs:
 
       - name: Build spec plan apply sample
         run: dotnet build examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Build studio analysis report sample
+        run: dotnet build examples/StudioAnalysisReportConsole/StudioAnalysisReportConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Build realtime worker sample
         run: dotnet build examples/RealtimeWorker/RealtimeWorker.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true

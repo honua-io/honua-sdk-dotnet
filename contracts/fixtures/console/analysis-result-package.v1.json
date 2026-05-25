@@ -1,0 +1,55 @@
+{
+  "resultPackageId": "result-pkg-7f3c",
+  "status": 5,
+  "summary": {
+    "title": "Flood buffer impact summary",
+    "description": "Aggregated population within 500 m of the flood extent."
+  },
+  "assumptions": ["Buffer distance defaulted to 500 m."],
+  "artifacts": [
+    {
+      "artifactId": "artifact:affected-population",
+      "kind": 0,
+      "label": "Affected population",
+      "contentType": "application/json",
+      "metadata": {
+        "unit": "people"
+      }
+    },
+    {
+      "artifactId": "artifact:affected-parcels",
+      "kind": 1,
+      "label": "Affected parcels",
+      "uri": "honua://artifacts/affected-parcels",
+      "contentType": "application/geo+json",
+      "metadata": {
+        "featureCount": "505"
+      }
+    }
+  ],
+  "workspaceRefs": [
+    {
+      "workspaceId": "ws-7f3c",
+      "kind": 4,
+      "label": "Result collection",
+      "uri": "honua://workspaces/ws-7f3c",
+      "expiresAt": "2026-06-24T18:00:00Z"
+    }
+  ],
+  "mapPackageId": "map-7f3c",
+  "appPackageId": "app-7f3c",
+  "provenance": {
+    "sources": [
+      {
+        "sourceId": "dataset:flood-extent",
+        "version": "2026-05-20",
+        "description": "Modeled 100-year flood extent"
+      }
+    ],
+    "processDefinitions": ["geometry.buffer", "analytics.aggregate"],
+    "assumptions": ["Buffer distance defaulted to 500 m."],
+    "executedAt": "2026-05-24T17:55:00Z",
+    "generatedArtifactIds": ["artifact:affected-parcels"]
+  },
+  "errors": []
+}

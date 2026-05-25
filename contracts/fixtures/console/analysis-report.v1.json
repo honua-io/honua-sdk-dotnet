@@ -1,0 +1,99 @@
+{
+  "reportId": "report-buffer-aggregate-001",
+  "reportContractVersion": "honua.report.v1",
+  "jobId": "job-7f3c",
+  "resultPackageId": "result-pkg-7f3c",
+  "processId": "analytics.buffer-aggregate",
+  "processFamily": "analytics",
+  "templateId": "analysis-report.generic",
+  "templateVersion": "1.0.0",
+  "summary": {
+    "title": "Flood buffer impact summary",
+    "description": "Aggregated population within 500 m of the flood extent."
+  },
+  "sections": [
+    {
+      "kind": "heading",
+      "text": "Flood Buffer Impact",
+      "level": 1
+    },
+    {
+      "kind": "paragraph",
+      "text": "The analysis buffered the flood extent and aggregated affected parcels."
+    },
+    {
+      "kind": "key-metric",
+      "label": "Affected population",
+      "value": "12,480",
+      "unit": "people",
+      "spatialReference": "EPSG:4326"
+    },
+    {
+      "kind": "table",
+      "caption": "Parcels by zone",
+      "columns": ["Zone", "Parcels", "Area (km²)"],
+      "rows": [
+        ["North", "320", "4.10"],
+        ["South", "185", "2.74"]
+      ],
+      "truncatedRowCount": 3
+    },
+    {
+      "kind": "chart",
+      "caption": "Parcels by zone",
+      "chartKind": "bar",
+      "categories": ["North", "South"],
+      "series": [
+        {
+          "name": "Parcels",
+          "values": [320, 185]
+        }
+      ],
+      "xAxisLabel": "Zone",
+      "yAxisLabel": "Parcels"
+    },
+    {
+      "kind": "map-embed",
+      "caption": "Flood buffer overlay",
+      "mapPackageUri": "honua://map-packages/map-7f3c"
+    },
+    {
+      "kind": "narrative",
+      "slotId": "summary-narrative",
+      "deterministicText": "12,480 people fall within the 500 m flood buffer.",
+      "llmText": "An estimated 12,480 residents live inside the half-kilometer flood buffer, concentrated in the northern zone.",
+      "mode": "llm-assisted"
+    },
+    {
+      "kind": "provenance-footer",
+      "resultPackageId": "result-pkg-7f3c",
+      "jobId": "job-7f3c",
+      "processDefinitions": ["geometry.buffer", "analytics.aggregate"],
+      "sources": ["dataset:flood-extent", "dataset:parcels"],
+      "executedAt": "2026-05-24T17:55:00Z",
+      "generatedAt": "2026-05-24T18:00:00Z"
+    }
+  ],
+  "narrativeMode": "llm-assisted",
+  "provenance": {
+    "sources": [
+      {
+        "sourceId": "dataset:flood-extent",
+        "version": "2026-05-20",
+        "description": "Modeled 100-year flood extent"
+      },
+      {
+        "sourceId": "dataset:parcels",
+        "version": "2026-05-01"
+      }
+    ],
+    "processDefinitions": ["geometry.buffer", "analytics.aggregate"],
+    "assumptions": ["Buffer distance defaulted to 500 m."],
+    "clarificationsAsked": ["q-buffer-distance"],
+    "clarificationsAnswered": ["q-buffer-distance"],
+    "executedAt": "2026-05-24T17:55:00Z",
+    "generatedArtifactIds": ["artifact:affected-parcels"]
+  },
+  "generatedAt": "2026-05-24T18:00:00Z",
+  "assumptions": ["Buffer distance defaulted to 500 m."]
+}

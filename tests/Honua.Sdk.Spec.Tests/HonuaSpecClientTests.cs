@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Spec.Models;
@@ -183,12 +184,91 @@ public sealed class HonuaSpecClientTests
         Assert.Contains("exactly one", ex.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task GetArtifactAsync_ReturnsBytesContentTypeAndHash()
+    {
+        HttpRequestMessage? captured = null;
+        var payload = new byte[] { 1, 2, 3, 4 };
+        using var http = CreateHttpClient(request =>
+        {
+            captured = request;
+            return BinaryResponse(payload, "application/x-arrow", "sha256-abc");
+        });
+        var client = new HonuaSpecClient(http);
+
+        var artifact = await client.GetArtifactAsync("sha256-abc");
+
+        Assert.Equal(HttpMethod.Get, captured?.Method);
+        Assert.Equal("/v1/spec/artifact/sha256-abc", captured?.RequestUri?.PathAndQuery);
+        Assert.Equal("application/x-arrow", artifact.ContentType);
+        Assert.Equal("sha256-abc", artifact.ContentHash);
+        Assert.Equal(payload, artifact.Content.ToArray());
+    }
+
+    [Fact]
+    public async Task GetArtifactAsync_FallsBackToRequestedHash_WhenHeaderAbsent()
+    {
+        using var http = CreateHttpClient(_ => BinaryResponse([9, 8, 7], "application/octet-stream", contentHash: null));
+        var client = new HonuaSpecClient(http);
+
+        var artifact = await client.GetArtifactAsync("requested-hash");
+
+        Assert.Equal("requested-hash", artifact.ContentHash);
+        Assert.Equal("application/octet-stream", artifact.ContentType);
+    }
+
+    [Fact]
+    public async Task GetArtifactAsync_NotFound_ThrowsSpecException()
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(
+            """
+            {
+              "type": "urn:honua:spec:artifact-not-found",
+              "title": "Artifact not found",
+              "status": 404,
+              "detail": "Artifact 'x' is unknown or has been evicted.",
+              "code": "artifact-not-found"
+            }
+            """,
+            HttpStatusCode.NotFound));
+        var client = new HonuaSpecClient(http);
+
+        var ex = await Assert.ThrowsAsync<HonuaSpecException>(() => client.GetArtifactAsync("x"));
+
+        Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
+        Assert.Equal("artifact-not-found", ex.Problem?.Code);
+    }
+
+    [Fact]
+    public async Task GetArtifactAsync_BlankHash_Throws()
+    {
+        using var http = CreateHttpClient(_ => JsonResponse("{}"));
+        var client = new HonuaSpecClient(http);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetArtifactAsync("  "));
+    }
+
     private static HttpClient CreateHttpClient(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
     {
         return new HttpClient(new MockHttpHandler(handler))
         {
             BaseAddress = new Uri("https://server.example")
         };
+    }
+
+    private static Task<HttpResponseMessage> BinaryResponse(byte[] bytes, string contentType, string? contentHash)
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(bytes)
+        };
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+        if (contentHash is not null)
+        {
+            response.Headers.Add("X-Spec-Content-Hash", contentHash);
+        }
+
+        return Task.FromResult(response);
     }
 
     private const string PlanJson = """

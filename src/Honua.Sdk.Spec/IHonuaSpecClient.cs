@@ -41,4 +41,12 @@ public interface IHonuaSpecClient
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Cancellation response.</returns>
     Task<SpecCancelResponse> CancelAsync(string applyToken, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a cached artifact by content hash.
+    /// </summary>
+    /// <param name="hash">Content hash (cache key) of the artifact.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The artifact bytes, content type, and echoed content hash.</returns>
+    Task<HonuaSpecArtifact> GetArtifactAsync(string hash, CancellationToken cancellationToken = default);
 }

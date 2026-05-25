@@ -215,6 +215,12 @@ public sealed class HonuaSdkOptions
     /// </summary>
     public bool UseOgcRecords { get; set; }
 
+    /// <summary>
+    /// When <c>true</c>, registers the Console Studio analysis-report read
+    /// client (<c>IHonuaStudioReportsClient</c>). Defaults to <c>false</c>.
+    /// </summary>
+    public bool UseStudio { get; set; }
+
     internal bool AnyModuleEnabled =>
         UseGrpc ||
         UseAdmin ||
@@ -227,5 +233,6 @@ public sealed class HonuaSdkOptions
         UseScenes ||
         UseSpec ||
         UseStac ||
-        UseOgcRecords;
+        UseOgcRecords ||
+        UseStudio;
 }

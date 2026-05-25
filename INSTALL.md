@@ -9,7 +9,8 @@
 | `Honua.Sdk.Offline` | Provider-neutral offline push/pull planner and sync engine over the shared feature abstractions |
 | `Honua.Sdk.Admin` | Admin client for managing services, layers, connections, styles, metadata, roles, users, alerts, observability, feature-event replay, and streaming subscriber operations. Also exposes Catalog discovery (`IHonuaCatalogClient`, `AddHonuaCatalog`) and Geocoding (`IHonuaGeocodingClient`, `AddHonuaGeocoding`) using the same options/auth handler. |
 | `Honua.Sdk.Processes` | OGC API Processes REST client for process discovery, async job submission, polling, dismissal, results, and shared job models |
-| `Honua.Sdk.Spec` | Spec workspace client for validate, plan, apply stream, and cancel |
+| `Honua.Sdk.Spec` | Spec workspace client for validate, plan, apply stream, cancel, and cached artifact retrieval |
+| `Honua.Sdk.Studio` | Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs |
 | `Honua.Sdk.Field` | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries/edits and native `ProcessService` job lifecycle access |
 | `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
@@ -53,6 +54,9 @@ dotnet add package Honua.Sdk.Processes
 
 # Spec workspace client
 dotnet add package Honua.Sdk.Spec
+
+# Console Studio analysis-report read client
+dotnet add package Honua.Sdk.Studio
 
 # Field form and record workflow contracts
 dotnet add package Honua.Sdk.Field
@@ -111,6 +115,7 @@ dotnet add package Honua.Sdk.Geometry --source honua
 dotnet add package Honua.Sdk.Admin --source honua
 dotnet add package Honua.Sdk.Processes --source honua
 dotnet add package Honua.Sdk.Spec --source honua
+dotnet add package Honua.Sdk.Studio --source honua
 dotnet add package Honua.Sdk.Field --source honua
 dotnet add package Honua.Sdk.GeoServices --source honua
 dotnet add package Honua.Sdk.Scenes --source honua
