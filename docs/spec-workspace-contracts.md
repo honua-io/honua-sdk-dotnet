@@ -30,10 +30,12 @@ planning, execution, cache behavior, RBAC, operator capability registries,
 local demo stubs, panes, previews, or display behavior.
 
 `GetArtifactAsync` returns raw artifact bytes, the response content type, and
-the `X-Spec-Content-Hash` echo. It reads problem-details bodies for failed
-responses, but keeps the success path binary-oriented. There is no
-publish/share/embed client in this SDK slice because the server does not expose
-that HTTP surface yet.
+the `X-Spec-Content-Hash` echo. Successful responses are binary payloads
+buffered into `HonuaSpecArtifact.Content`; failed responses read
+problem-details bodies before throwing `HonuaSpecException`. This method is for
+bounded, content-hash-addressed cache artifacts. There is no publish/share/embed
+client in this SDK slice because the server does not expose that HTTP surface
+yet.
 
 ## Repo Ownership
 

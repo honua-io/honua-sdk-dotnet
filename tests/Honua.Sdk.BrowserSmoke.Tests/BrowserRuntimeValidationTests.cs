@@ -143,8 +143,8 @@ public sealed class BrowserRuntimeValidationTests
     private static async Task<WebApplication> StartBrowserSmokeHostAsync(Uri appUri)
     {
         var repoRoot = GetRepoRoot();
-        var webRoot = Path.Combine(repoRoot, "tests", "Honua.Sdk.BrowserSmoke", "wwwroot");
-        var frameworkRoot = Path.Combine(
+        var webRoot = Path.Join(repoRoot, "tests", "Honua.Sdk.BrowserSmoke", "wwwroot");
+        var frameworkRoot = Path.Join(
             repoRoot,
             "tests",
             "Honua.Sdk.BrowserSmoke",
@@ -179,7 +179,7 @@ public sealed class BrowserRuntimeValidationTests
         app.MapFallback(async context =>
         {
             context.Response.ContentType = "text/html";
-            await context.Response.SendFileAsync(Path.Combine(webRoot, "index.html"), context.RequestAborted)
+            await context.Response.SendFileAsync(Path.Join(webRoot, "index.html"), context.RequestAborted)
                 .ConfigureAwait(false);
         });
 
@@ -193,7 +193,7 @@ public sealed class BrowserRuntimeValidationTests
         ConcurrentQueue<ObservedRequest> observed)
     {
         var analysisReportJson = await File.ReadAllTextAsync(
-            Path.Combine(GetRepoRoot(), "contracts", "fixtures", "console", "analysis-report.v1.json"))
+            Path.Join(GetRepoRoot(), "contracts", "fixtures", "console", "analysis-report.v1.json"))
             .ConfigureAwait(false);
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -356,7 +356,7 @@ public sealed class BrowserRuntimeValidationTests
         var current = new DirectoryInfo(AppContext.BaseDirectory);
         while (current is not null)
         {
-            if (File.Exists(Path.Combine(current.FullName, "Honua.Sdk.sln")))
+            if (File.Exists(Path.Join(current.FullName, "Honua.Sdk.sln")))
             {
                 return current.FullName;
             }

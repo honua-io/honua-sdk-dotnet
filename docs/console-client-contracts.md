@@ -243,8 +243,10 @@ the Markdown or HTML body and its media type.
 
 `GetArtifactAsync` retrieves a cached artifact by content hash and returns
 `HonuaSpecArtifact` (bytes, content type, and the `X-Spec-Content-Hash` echo).
-This is the closest analog the server exposes today to generated-artifact
-retrieval; there is no `/publish`, `/share`, or `/embed` surface yet.
+The SDK buffers successful artifact responses into `HonuaSpecArtifact.Content`;
+use this for bounded cache entries, not large publish/download flows. This is
+the closest analog the server exposes today to generated-artifact retrieval;
+there is no `/publish`, `/share`, or `/embed` surface yet.
 
 `HonuaAnalysisResultPackage` and its `HonuaArtifactRef` / `HonuaWorkspaceRef` /
 `HonuaGeoprocessingError` members are **deserialization-only** projections of

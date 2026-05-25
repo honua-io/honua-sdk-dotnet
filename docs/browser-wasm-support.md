@@ -84,6 +84,12 @@ preflight. The CI `Browser WASM Smoke` job runs this mode with a cross-origin
 fake Honua API so package changes cannot regress browser fetch/preflight
 behavior.
 
+The fake API backs the Studio check with
+`contracts/fixtures/console/analysis-report.v1.json` and observes both
+`/api/v1/analysis/reports/{jobId}` and
+`/api/v1/analysis/reports/{jobId}/render?format=md`, matching
+`IHonuaStudioReportsClient.GetReportAsync` and `RenderReportAsync`.
+
 Example local live run:
 
 ```bash

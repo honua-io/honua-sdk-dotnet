@@ -257,6 +257,9 @@ public sealed class HonuaSpecClientTests
     }
 
     private static Task<HttpResponseMessage> BinaryResponse(byte[] bytes, string contentType, string? contentHash)
+        => Task.FromResult(CreateBinaryResponse(bytes, contentType, contentHash));
+
+    private static HttpResponseMessage CreateBinaryResponse(byte[] bytes, string contentType, string? contentHash)
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -268,7 +271,7 @@ public sealed class HonuaSpecClientTests
             response.Headers.Add("X-Spec-Content-Hash", contentHash);
         }
 
-        return Task.FromResult(response);
+        return response;
     }
 
     private const string PlanJson = """
@@ -291,15 +294,23 @@ public sealed class HonuaSpecClientTests
     };
 
     private static Task<HttpResponseMessage> JsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)
+        => Task.FromResult(CreateJsonResponse(json, statusCode));
+
+    private static HttpResponseMessage CreateJsonResponse(string json, HttpStatusCode statusCode)
     {
         var response = new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
-        return Task.FromResult(response);
+        return response;
     }
 
     private static Task<HttpResponseMessage> SseResponse(
+        string text,
+        params (string Name, string Value)[] headers)
+        => Task.FromResult(CreateSseResponse(text, headers));
+
+    private static HttpResponseMessage CreateSseResponse(
         string text,
         params (string Name, string Value)[] headers)
     {
@@ -313,6 +324,6 @@ public sealed class HonuaSpecClientTests
             response.Headers.Add(name, value);
         }
 
-        return Task.FromResult(response);
+        return response;
     }
 }

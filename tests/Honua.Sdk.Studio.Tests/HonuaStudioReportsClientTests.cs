@@ -210,31 +210,29 @@ public sealed class HonuaStudioReportsClientTests
             BaseAddress = new Uri("https://server.example")
         };
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "Ownership transfers to the HttpClient pipeline, which disposes the response.")]
     private static Task<HttpResponseMessage> JsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)
+        => Task.FromResult(CreateJsonResponse(json, statusCode));
+
+    private static HttpResponseMessage CreateJsonResponse(string json, HttpStatusCode statusCode)
     {
         var response = new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
-        return Task.FromResult(response);
+        return response;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "Ownership transfers to the HttpClient pipeline, which disposes the response.")]
     private static Task<HttpResponseMessage> TextResponse(string text, string mediaType)
+        => Task.FromResult(CreateTextResponse(text, mediaType));
+
+    private static HttpResponseMessage CreateTextResponse(string text, string mediaType)
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(text, Encoding.UTF8)
         };
         response.Content.Headers.ContentType = new MediaTypeHeaderValue(mediaType) { CharSet = "utf-8" };
-        return Task.FromResult(response);
+        return response;
     }
 
     private static string ReadFixture(string name)
