@@ -18,6 +18,7 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
 {
     private const string SpecPrefix = "/v1/spec";
     private const string ApplyTokenHeader = "X-Spec-Apply-Token";
+    private const string ContentHashHeader = "X-Spec-Content-Hash";
 
     private readonly HttpClient _http;
 
@@ -107,6 +108,38 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
             cancellationToken).ConfigureAwait(false);
 
         return response ?? throw new HonuaSpecException(System.Net.HttpStatusCode.OK, "Server returned null cancel response.");
+    }
+
+    /// <inheritdoc />
+    public async Task<HonuaSpecArtifact> GetArtifactAsync(string hash, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(hash))
+        {
+            throw new ArgumentException("Content hash is required.", nameof(hash));
+        }
+
+        using var response = await _http.GetAsync(
+            CreateRequestUri($"{SpecPrefix}/artifact/{Uri.EscapeDataString(hash)}"),
+            cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // Error bodies are problem-details JSON; only read them as a string
+            // on failure so the success path streams binary bytes directly.
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureSuccess(response, errorBody);
+        }
+
+        var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        var contentType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+        var contentHash = TryGetHeader(response, ContentHashHeader) ?? hash;
+
+        return new HonuaSpecArtifact
+        {
+            ContentHash = contentHash,
+            ContentType = contentType,
+            Content = bytes
+        };
     }
 
     private async Task<TResponse?> PostJsonAsync<TRequest, TResponse>(

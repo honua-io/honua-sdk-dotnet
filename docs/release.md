@@ -13,6 +13,7 @@ The publish workflow builds and packs:
 - `Honua.Sdk.Processes`
 - `Honua.Sdk.Geometry`
 - `Honua.Sdk.Spec`
+- `Honua.Sdk.Studio`
 - `Honua.Sdk.Grpc`
 - `Honua.Sdk.GeoServices`
 - `Honua.Sdk.Scenes`
@@ -82,6 +83,7 @@ for project in \
   src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj \
   src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj \
   src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj \
+  src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj \
   src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj \
   src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj \
   src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj \

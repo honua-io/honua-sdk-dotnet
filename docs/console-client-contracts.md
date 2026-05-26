@@ -15,6 +15,9 @@ integration.
 | Process/job discovery and polling | `Honua.Sdk.Processes` OGC API Processes REST | Same REST models, plus native gRPC when needed |
 | Native ProcessService job lifecycle | Not a browser runtime surface | `Honua.Sdk.Grpc` (`IHonuaProcessGrpcClient`) |
 | Spec validate/plan/apply workflows | `Honua.Sdk.Spec` REST/SSE candidate | Same REST/SSE client |
+| Analysis report retrieve/render | `Honua.Sdk.Studio` (`IHonuaStudioReportsClient`) | Same client |
+| Generated artifact retrieval | `Honua.Sdk.Spec` (`IHonuaSpecClient.GetArtifactAsync`) | Same client |
+| Server capability / edition gating | `Honua.Sdk.Admin` (`GetCapabilitiesAsync`, `GetLicenseEntitlementsAsync`) | Same Admin REST client |
 
 `Honua.Sdk.Grpc` is intentionally native-only. Browser hosts should use REST
 clients and browser-safe realtime transports exposed by the server or BFF.
@@ -214,6 +217,58 @@ process model package where practical. `ExecutePlanAsync` and
 Processes job status values (`accepted`, `running`, `successful`, `failed`,
 `dismissed`) for both the REST and gRPC clients.
 
+## Analysis Report And Artifact Contracts
+
+`Honua.Sdk.Studio` provides the browser-safe Console Studio read surface for
+analysis reports. The report DTOs live in `Honua.Sdk.Abstractions`
+(`Honua.Sdk.Abstractions.Studio`) so browser and native hosts share one set.
+
+| REST method | Path | SDK method |
+| --- | --- | --- |
+| `GET` | `/api/v1/analysis/reports/{jobId}` | `IHonuaStudioReportsClient.GetReportAsync` |
+| `GET` | `/api/v1/analysis/reports/{jobId}/render?format=md\|html` | `IHonuaStudioReportsClient.RenderReportAsync` |
+| `GET` | `/v1/spec/artifact/{hash}` | `IHonuaSpecClient.GetArtifactAsync` |
+
+`GetReportAsync` returns `HonuaAnalysisReport` from the **unwrapped** server JSON
+(analysis reports are not wrapped in the Admin `ApiResponse<T>` envelope).
+`HonuaAnalysisReport.Sections` is a polymorphic hierarchy keyed by the `kind`
+discriminator (`heading`, `paragraph`, `key-metric`, `table`, `chart`,
+`map-embed`, `narrative`, `provenance-footer`) resolved through a
+source-generated JSON context. Those eight kinds are exhaustive within report
+contract version `honua.report.v1`; consumers gate on
+`HonuaAnalysisReport.ReportContractVersion`. New fields on a known kind are
+tolerated; an unmodeled `kind` surfaces as `HonuaStudioContractException`
+(loud drift signal). `RenderReportAsync` sends a format-specific `Accept`
+header and returns `HonuaRenderedReport` carrying the Markdown or HTML body and
+its media type. If the response omits `Content-Type`, the SDK reports the media
+type implied by the requested format.
+
+`GetArtifactAsync` retrieves a cached artifact by content hash and returns
+`HonuaSpecArtifact` (bytes, content type, and the `X-Spec-Content-Hash` echo).
+If the server omits `Content-Type`, the SDK uses `application/octet-stream`; if
+the hash header is absent, it uses the requested hash. The SDK buffers
+successful artifact responses into `HonuaSpecArtifact.Content`; use this for
+bounded cache entries, not large publish/download flows. This is the closest
+analog the server exposes today to generated-artifact retrieval; there is no
+`/publish`, `/share`, or `/embed` surface yet.
+
+`HonuaAnalysisResultPackage` and its `HonuaArtifactRef` / `HonuaWorkspaceRef` /
+`HonuaGeoprocessingError` members are **deserialization-only** projections of
+the server `AnalysisResultPackage`. There is no HTTP retrieval client for them
+(the server exposes result packages only by id reference and over MCP). Their
+enum members mirror the server's numeric wire encoding. Do not confuse this with
+`HonuaProcessResults` from `/ogc/processes/jobs/{jobId}/results`, which is a
+flattened OGC outputs dictionary, not the raw result package.
+
+Capability and edition state is read through `Honua.Sdk.Admin`
+(`GetCapabilitiesAsync`, `GetLicenseEntitlementsAsync`); native transport,
+gRPC, and mTLS capability state is read from `Honua.Sdk.Abstractions.Environments`
+(`HonuaTransportCapabilities`, `HonuaTrustProfile`, `HonuaEnvironmentTrustState`).
+Together these satisfy the Console capability-manifest need without a single
+combined server document. Map/App package bodies, publication/share/embed, and
+discrete query/dashboard/form/workflow/ETL package clients are gated on server
+contracts that do not yet exist and are tracked as server-paired child tickets.
+
 ## Fixtures And Drift Checks
 
 Console contract fixtures live under `contracts/fixtures/console/`:
@@ -226,14 +281,19 @@ Console contract fixtures live under `contracts/fixtures/console/`:
 - `jobs.v1.json`
 - `alerts-rules.v1.json`
 - `ogc-processes-openapi-paths.v1.json`
+- `analysis-report.v1.json`
+- `analysis-result-package.v1.json`
 
 The focused unit tests deserialize these fixtures through source-generated JSON
 contexts and assert route/path coverage:
 
 - `tests/Honua.Sdk.Abstractions.Tests/ConsoleContractFixtureTests.cs`
+- `tests/Honua.Sdk.Abstractions.Tests/ConsoleTransportInspectionTests.cs`
 - `tests/Honua.Sdk.Admin.Tests/ConsoleAdminContractTests.cs`
 - `tests/Honua.Sdk.Processes.Tests/ConsoleJobFixtureTests.cs`
 - `tests/Honua.Sdk.Grpc.Tests/HonuaProcessGrpcClientTests.cs`
+- `tests/Honua.Sdk.Studio.Tests/StudioReportContractFixtureTests.cs`
+- `tests/Honua.Sdk.Studio.Tests/HonuaStudioReportsClientTests.cs`
 
 The OGC Processes path fixture is pinned from
 `honua-server/src/Honua.Server/ogc-processes-openapi.json`. Admin OpenAPI and

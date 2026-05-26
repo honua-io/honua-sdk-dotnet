@@ -87,9 +87,9 @@ dotnet add package Microsoft.Extensions.Hosting
 
 > Add the rest of the SDK -- `Honua.Sdk.GeoServices`, `Honua.Sdk.Scenes`,
 > `Honua.Sdk.Catalogs`, `Honua.Sdk.Field`,
-> `Honua.Sdk.Spec`, `Honua.Sdk.Geometry`, `Honua.Sdk.Offline` -- only when
-> you reach the step that needs them. The full catalog is in
-> [INSTALL.md](../INSTALL.md).
+> `Honua.Sdk.Spec`, `Honua.Sdk.Studio`, `Honua.Sdk.Geometry`,
+> `Honua.Sdk.Offline` -- only when you reach the step that needs them. The full
+> catalog is in [INSTALL.md](../INSTALL.md).
 
 ## Step 2: Configure the client with DI (60 seconds)
 
@@ -117,7 +117,7 @@ var serverUri = new Uri("https://localhost:5001");
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
 // Processes, and WFS 2.0 clients. Flip Use* flags to opt in to the more situational
-// sub-packages (Scenes, Spec, Stac, OgcRecords, GeoServices, Routing).
+// sub-packages (Scenes, Spec, Studio, Stac, OgcRecords, GeoServices, Routing).
 builder.Services.AddHonua(o =>
 {
     o.BaseAddress = serverUri;

@@ -53,6 +53,7 @@ projects=(
   "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures"
   "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj|Honua.Sdk.Catalogs"
   "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj|Honua.Sdk.Offline"
+  "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj|Honua.Sdk.Studio"
   "src/Honua.Sdk/Honua.Sdk.csproj|Honua.Sdk"
 )
 

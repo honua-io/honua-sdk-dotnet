@@ -18,6 +18,7 @@ rendering stay in host applications or downstream adapter packages.
 | `Honua.Sdk.Admin` | Candidate | REST client over injected `HttpClient`. Browser hosts must use same-origin/BFF credentials or delegated bearer tokens, and the server must allow the required CORS policy when cross-origin. Static privileged admin API keys must not be shipped in browser config. |
 | Geocoding client in `Honua.Sdk.Admin` | Candidate | Same REST, CORS, and browser credential requirements as `Honua.Sdk.Admin`. |
 | `Honua.Sdk.Spec` | Candidate | REST validation/plan/cancel paths are browser candidates. Apply streaming uses SSE-style responses and still needs runtime validation under Blazor WebAssembly before being called supported. |
+| `Honua.Sdk.Studio` | Candidate | REST analysis-report retrieve/render client over browser `HttpClient`; requires server CORS and browser-owned auth. The SDK returns report DTOs or rendered Markdown/HTML and does not render reports itself. |
 | `Honua.Sdk.Processes` | Candidate | OGC API Processes REST client over browser `HttpClient`; covered by the browser smoke runtime fake-server path. Native ProcessService gRPC remains in `Honua.Sdk.Grpc`, not this browser package. |
 | `Honua.Sdk.OgcFeatures.Wfs` | Candidate | REST/XML/GeoJSON client over browser `HttpClient`; requires server CORS and browser-owned auth. Ships inside `Honua.Sdk.OgcFeatures`. |
 | `Honua.Sdk.GeoServices` | Candidate | REST/JSON FeatureServer client over browser `HttpClient`; requires server CORS and browser-owned auth. |
@@ -59,7 +60,7 @@ dependencies. It also compile-checks pure contracts for field records, offline
 manifests, advanced editing rules, plugin manifests, realtime stream envelopes,
 utility-network trace requests, and raster/elevation/enrichment data requests.
 The registered browser REST clients include Admin, Geocoding, Spec, Processes,
-WFS, GeoServices, OGC API Features, OGC API Records, STAC, and Scenes.
+Studio, WFS, GeoServices, OGC API Features, OGC API Records, STAC, and Scenes.
 
 The smoke app also contains a compile-checked browser feature-map sample. It
 uses `IHonuaOgcFeaturesClient` to query a GeoJSON feature collection, uses
@@ -76,18 +77,25 @@ transport adapter.
 The same smoke app has a runtime validation mode for browser `HttpClient`
 behavior. Launch it with `live=1` and a browser-safe `baseUrl` query parameter
 to call OGC API Features, Geocoding, GeoServices FeatureServer metadata, WFS,
-and OGC API Processes from inside WebAssembly. The optional `corsProbe=1` query parameter adds a
+OGC API Processes, and Studio report retrieve/render paths from inside
+WebAssembly. The optional `corsProbe=1` query parameter adds a
 non-secret probe header so cross-origin hosts must satisfy a real browser CORS
 preflight. The CI `Browser WASM Smoke` job runs this mode with a cross-origin
 fake Honua API so package changes cannot regress browser fetch/preflight
 behavior.
+
+The fake API backs the Studio check with
+`contracts/fixtures/console/analysis-report.v1.json` and observes both
+`/api/v1/analysis/reports/{jobId}` and
+`/api/v1/analysis/reports/{jobId}/render?format=md`, matching
+`IHonuaStudioReportsClient.GetReportAsync` and `RenderReportAsync`.
 
 Example local live run:
 
 ```bash
 dotnet run --project tests/Honua.Sdk.BrowserSmoke/Honua.Sdk.BrowserSmoke.csproj
 # Open the printed localhost URL with:
-# ?live=1&baseUrl=https%3A%2F%2Fstaging.example.honua.test%2F&collectionId=sdk-demo&serviceName=sdk-demo&layerId=0&wfsTypeName=public%3Asdk_demo_points&address=Honolulu%2C%20HI
+# ?live=1&baseUrl=https%3A%2F%2Fstaging.example.honua.test%2F&collectionId=sdk-demo&serviceName=sdk-demo&layerId=0&wfsTypeName=public%3Asdk_demo_points&address=Honolulu%2C%20HI&reportJobId=completed-job-id
 ```
 
 Example local automated browser run:
@@ -105,6 +113,7 @@ SDK sample wired to a test Honua deployment:
 - cross-origin CORS behavior where the deployment is not same-origin;
 - delegated bearer-token or BFF authentication;
 - `Honua.Sdk.Spec` apply-stream behavior;
+- `Honua.Sdk.Studio` report retrieval/rendering against completed jobs;
 - `Honua.Sdk.Processes` job polling against a deployment's real OGC Processes endpoint;
 - offline storage adapters such as IndexedDB.
 

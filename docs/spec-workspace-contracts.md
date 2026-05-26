@@ -3,17 +3,20 @@
 `Honua.Sdk.Spec` is the client-stable contract package for Honua spec
 workspace automation. It exists so admin UI, CLI, tests, and other clients use
 one typed surface for spec validation, planning, apply streaming, and
-cancellation instead of copying internal server or admin workspace models.
+cancellation instead of copying internal server or admin workspace models. It
+also exposes the current generated-artifact retrieval analog:
+content-hash-addressed cached artifacts from `/v1/spec/artifact/{hash}`.
 
 ## Package Surface
 
 The package owns:
 
 - `IHonuaSpecClient` for `/v1/spec/validate`, `/v1/spec/plan`,
-  `/v1/spec/apply`, and `/v1/spec/cancel`.
+  `/v1/spec/apply`, `/v1/spec/cancel`, and `/v1/spec/artifact/{hash}`.
 - DTOs under `Honua.Sdk.Spec.Models` for spec document requests, validation
   diagnostics, plan responses, warnings, apply events, apply summaries,
-  cancellation payloads, and problem-details errors.
+  cancellation payloads, cached artifacts (`HonuaSpecArtifact`), and
+  problem-details errors.
 - HTTP auth, timeout, and retry configuration through `HonuaSpecClientOptions`,
   matching the other HTTP SDK packages. Credentials are only sent over HTTPS,
   except loopback HTTP for local development.
@@ -25,6 +28,15 @@ The package owns:
 The package does not own UI state, parser internals, canonicalization,
 planning, execution, cache behavior, RBAC, operator capability registries,
 local demo stubs, panes, previews, or display behavior.
+
+`GetArtifactAsync` returns raw artifact bytes, the response content type, and
+the `X-Spec-Content-Hash` echo. If the server omits `Content-Type`, the SDK
+uses `application/octet-stream`; if the hash header is absent, it uses the
+requested hash. Successful responses are binary payloads buffered into
+`HonuaSpecArtifact.Content`; failed responses read problem-details bodies before
+throwing `HonuaSpecException`. This method is for bounded,
+content-hash-addressed cache artifacts. There is no publish/share/embed client
+in this SDK slice because the server does not expose that HTTP surface yet.
 
 ## Repo Ownership
 

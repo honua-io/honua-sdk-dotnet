@@ -67,6 +67,7 @@ jobs:
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -123,6 +124,7 @@ jobs:
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -147,6 +149,7 @@ jobs:
             "tests/Honua.Sdk.Catalogs.RecordsTests/Honua.Sdk.Catalogs.RecordsTests.csproj"
             "tests/Honua.Sdk.Catalogs.StacTests/Honua.Sdk.Catalogs.StacTests.csproj"
             "tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj"
+            "tests/Honua.Sdk.Studio.Tests/Honua.Sdk.Studio.Tests.csproj"
             "tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj"
           )
 
@@ -159,6 +162,9 @@ jobs:
 
       - name: Build spec plan apply sample
         run: dotnet build examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Build studio analysis report sample
+        run: dotnet build examples/StudioAnalysisReportConsole/StudioAnalysisReportConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Build realtime worker sample
         run: dotnet build examples/RealtimeWorker/RealtimeWorker.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
@@ -205,6 +211,7 @@ jobs:
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -241,6 +248,7 @@ jobs:
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -269,6 +277,7 @@ jobs:
             "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
+            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -378,6 +387,7 @@ jobs:
           dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Catalogs --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.Studio --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk --version "${PACKAGE_VERSION}"
 
           cat <<'EOF' > Program.cs
@@ -418,6 +428,8 @@ jobs:
           using Honua.Sdk.OgcFeatures.Wfs;
           using Honua.Sdk.OgcFeatures.Wfs.Extensions;
           using Honua.Sdk.OgcFeatures.Wfs.Models;
+          using Honua.Sdk.Studio;
+          using Honua.Sdk.Studio.Extensions;
           using Microsoft.Extensions.DependencyInjection;
           using Microsoft.Extensions.Hosting;
 
@@ -453,6 +465,7 @@ jobs:
           builder.Services.AddHonuaOgcFeatures(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaOgcRecords(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaStac(options => options.BaseAddress = baseUri);
+          builder.Services.AddHonuaStudio(options => options.BaseAddress = baseUri);
 
           using var host = builder.Build();
 
@@ -467,6 +480,7 @@ jobs:
           _ = host.Services.GetRequiredService<IHonuaOgcFeaturesClient>();
           _ = host.Services.GetRequiredService<IHonuaOgcRecordsClient>();
           _ = host.Services.GetRequiredService<IHonuaStacClient>();
+          _ = host.Services.GetRequiredService<IHonuaStudioReportsClient>();
           _ = host.Services.GetServices<IHonuaFeatureQueryClient>().ToArray();
           _ = HonuaSpatialReference.Wgs84;
 

@@ -5,6 +5,7 @@ using System.Text.Json;
 using Honua.Sdk.Abstractions.Console;
 using Honua.Sdk.Abstractions.Environments;
 using Honua.Sdk.Abstractions.Serialization;
+using Honua.Sdk.Abstractions.Studio;
 
 namespace Honua.Sdk.Abstractions.Tests;
 
@@ -88,6 +89,32 @@ public sealed class ConsoleContractFixtureTests
         Assert.Contains(decisions, decision => decision.Access == HonuaConsoleRouteAccess.Denied);
         Assert.Contains(decisions, decision => decision.Access == HonuaConsoleRouteAccess.Challenge);
         Assert.Contains(decisions, decision => decision.ReasonCodes.Contains("missing-permission", StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void AnalysisReportFixture_UsesSharedAbstractionsSourceGenContext()
+    {
+        var report = JsonSerializer.Deserialize(
+            ReadFixture("analysis-report.v1.json"),
+            HonuaAbstractionsJsonContext.Default.HonuaAnalysisReport)
+            ?? throw new InvalidOperationException("Analysis report fixture was empty.");
+
+        Assert.Equal(HonuaReportingContract.ContractVersionV1, report.ReportContractVersion);
+        Assert.Contains(report.Sections, section => section is HonuaMapEmbedSection);
+        Assert.Contains(report.Sections, section => section is HonuaNarrativeSection { Mode: HonuaNarrativeMode.LlmAssisted });
+    }
+
+    [Fact]
+    public void AnalysisResultPackageFixture_UsesSharedAbstractionsSourceGenContext()
+    {
+        var package = JsonSerializer.Deserialize(
+            ReadFixture("analysis-result-package.v1.json"),
+            HonuaAbstractionsJsonContext.Default.HonuaAnalysisResultPackage)
+            ?? throw new InvalidOperationException("Analysis result package fixture was empty.");
+
+        Assert.Equal(HonuaGeoprocessingWorkflowStatus.Completed, package.Status);
+        Assert.Equal(HonuaArtifactKind.FeatureLayer, package.Artifacts.Single(artifact => artifact.Uri is not null).Kind);
+        Assert.Equal("people", package.Artifacts.Single(artifact => artifact.Kind == HonuaArtifactKind.Scalar).Metadata["unit"]);
     }
 
     private static string ReadFixture(string name)

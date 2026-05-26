@@ -7,12 +7,12 @@ An index of the public documentation that ships alongside the
 
 ## Get started
 
-- [Architecture overview](architecture.md) — a one-page map of the 13 packages, how they compose, and which one to depend on.
+- [Architecture overview](architecture.md) — a one-page map of the 14 packages (meta plus 13 sub-packages), how they compose, and which one to depend on.
 - [Quickstart](quickstart.md) — build a console app that talks gRPC + REST in 5 minutes.
 - [API reference](api-reference.md) — how to browse the full XML-doc API surface (IDE hover, local DocFX site, or GitHub source).
 - [INSTALL.md](../INSTALL.md) — NuGet, GitHub Packages, version policy, server compatibility baseline.
 - [Authentication](authentication.md) — credential providers, refresh, HTTPS-only transport, diagnostics.
-- [Console client contracts](console-client-contracts.md) — Blazor Web and MAUI host contract map, route guards, environment profiles, native mTLS state, and fixtures.
+- [Console client contracts](console-client-contracts.md) — Blazor Web and MAUI host contract map, route guards, environment profiles, Studio reports/artifacts, native mTLS state, and fixtures.
 - [Browser / WASM support](browser-wasm-support.md) — supported surface, gRPC-Web, host-side constraints.
 - [Troubleshooting](troubleshooting.md) — concrete failure modes and fixes for configuration, auth, retry, CORS, compatibility, Catalog/Records/STAC/Scenes, and offline sync.
 
@@ -24,7 +24,7 @@ An index of the public documentation that ships alongside the
 - [Geofencing](geofencing.md) — evaluation contracts, dwell logic, geofence sources.
 - [Scenes](scenes.md) — scene discovery, render endpoint resolution, offline scene packages.
 - [Offline sync core](offline-sync-core.md) — planner, checkpoints, conflicts, change journals, storage.
-- [Spec workspace contracts](spec-workspace-contracts.md) — package ownership and fixtures for spec plan/apply.
+- [Spec workspace contracts](spec-workspace-contracts.md) — package ownership and fixtures for spec validate/plan/apply and cached artifact retrieval.
 - [Source facade](source-facade.md) — source descriptors, protocol aliases, capabilities, native escape hatches.
 - [Plugin contracts](plugin-contracts.md) — host-neutral plugin manifests, permissions, compatibility.
 - [Metadata catalog parity](metadata-catalog-parity.md) — Catalog vs OGC API Records vs STAC surface comparison.

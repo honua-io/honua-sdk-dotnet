@@ -1,12 +1,15 @@
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Xml;
+using Honua.Sdk.Abstractions;
+using Honua.Sdk.Abstractions.Studio;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Models;
 using Honua.Sdk.OgcFeatures.Wfs;
 using Honua.Sdk.Processes;
+using Honua.Sdk.Studio;
 
 namespace Honua.Sdk.BrowserSmoke;
 
@@ -51,6 +54,7 @@ public sealed class BrowserRuntimeValidationService
         var featureServer = new HonuaFeatureServerClient(http);
         var wfs = new HonuaWfsClient(http);
         var processes = new HonuaProcessesClient(http);
+        var studio = new HonuaStudioReportsClient(http);
 
         await RunCheckAsync(
             checks,
@@ -129,6 +133,32 @@ public sealed class BrowserRuntimeValidationService
             },
             cancellationToken).ConfigureAwait(false);
 
+        await RunCheckAsync(
+            checks,
+            "studio-reports",
+            async token =>
+            {
+                var report = await studio.GetReportAsync(options.ReportJobId, token).ConfigureAwait(false);
+                if (!string.Equals(report.JobId, options.ReportJobId, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        FormattableString.Invariant($"Studio report job id {report.JobId} did not match {options.ReportJobId}."));
+                }
+
+                var rendered = await studio.RenderReportAsync(
+                    options.ReportJobId,
+                    HonuaReportRenderFormat.Markdown,
+                    token).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(rendered.Content))
+                {
+                    throw new InvalidOperationException("Studio report render returned an empty body.");
+                }
+
+                return FormattableString.Invariant(
+                    $"Report {report.ReportId} returned for {report.JobId} and rendered {rendered.MediaType}.");
+            },
+            cancellationToken).ConfigureAwait(false);
+
         return checks.Any(check => check.Status == BrowserRuntimeValidationCheckStatus.Failed)
             ? BrowserRuntimeValidationReport.Failed(checks)
             : BrowserRuntimeValidationReport.Passed(checks);
@@ -171,6 +201,10 @@ public sealed class BrowserRuntimeValidationService
         {
             checks.Add(BrowserRuntimeValidationCheck.Failed(name, ex.Message));
         }
+        catch (HonuaException ex)
+        {
+            checks.Add(BrowserRuntimeValidationCheck.Failed(name, ex.Message));
+        }
         catch (InvalidOperationException ex)
         {
             checks.Add(BrowserRuntimeValidationCheck.Failed(name, ex.Message));
@@ -203,6 +237,8 @@ public sealed record BrowserRuntimeValidationOptions
     public string WfsTypeName { get; init; } = "parcels";
 
     public string Address { get; init; } = "Honolulu, HI";
+
+    public string ReportJobId { get; init; } = "job-7f3c";
 
     public int FeatureLimit { get; init; } = 5;
 
@@ -249,6 +285,7 @@ public sealed record BrowserRuntimeValidationOptions
             LayerId = ParseInt(Get(query, "layerId"), 0),
             WfsTypeName = Get(query, "wfsTypeName") ?? "parcels",
             Address = Get(query, "address") ?? "Honolulu, HI",
+            ReportJobId = Get(query, "reportJobId") ?? "job-7f3c",
             FeatureLimit = ParsePositiveInt(Get(query, "featureLimit"), 5),
             GeocodeLimit = ParsePositiveInt(Get(query, "geocodeLimit"), 3),
             BearerToken = Get(query, "bearerToken"),

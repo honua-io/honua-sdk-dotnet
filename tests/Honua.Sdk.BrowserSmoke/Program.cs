@@ -24,6 +24,8 @@ using Honua.Sdk.Scenes;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Spec.Extensions;
+using Honua.Sdk.Studio;
+using Honua.Sdk.Studio.Extensions;
 using Honua.Sdk.Catalogs.Stac;
 using Honua.Sdk.Catalogs.Stac.Extensions;
 using Honua.Sdk.OgcFeatures.Wfs;
@@ -48,6 +50,7 @@ RegisterUtilityNetworkContracts(builder.Services);
 
 var host = builder.Build();
 _ = host.Services.GetRequiredService<BrowserFeatureMapSample>();
+_ = host.Services.GetRequiredService<IHonuaStudioReportsClient>();
 await host.RunAsync().ConfigureAwait(false);
 
 static void ConfigureRestClients(IServiceCollection services, Uri server)
@@ -95,6 +98,10 @@ static void ConfigureRestClients(IServiceCollection services, Uri server)
     services.AddHonuaScenes(options =>
     {
         ConfigureSceneBrowserCandidate(options, server);
+    });
+    services.AddHonuaStudio(options =>
+    {
+        ConfigureStudioBrowserCandidate(options, server);
     });
 }
 
@@ -155,6 +162,13 @@ static void ConfigureStacBrowserCandidate(HonuaStacClientOptions options, Uri se
 }
 
 static void ConfigureSceneBrowserCandidate(HonuaSceneClientOptions options, Uri server)
+{
+    options.BaseAddress = server;
+    options.BearerTokenProvider = NoBrowserTokenAsync;
+    options.EnableRetry = false;
+}
+
+static void ConfigureStudioBrowserCandidate(HonuaStudioClientOptions options, Uri server)
 {
     options.BaseAddress = server;
     options.BearerTokenProvider = NoBrowserTokenAsync;

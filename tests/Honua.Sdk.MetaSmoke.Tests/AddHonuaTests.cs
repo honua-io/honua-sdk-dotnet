@@ -14,6 +14,7 @@ using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.Processes;
 using Honua.Sdk.Catalogs.Records;
 using Honua.Sdk.Spec;
+using Honua.Sdk.Studio;
 using Honua.Sdk.Catalogs.Stac;
 using Honua.Sdk.OgcFeatures.Wfs;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,6 +77,7 @@ public sealed class AddHonuaTests
             o.UseSpec = true;
             o.UseStac = true;
             o.UseOgcRecords = true;
+            o.UseStudio = true;
         });
 
         using var provider = services.BuildServiceProvider();
@@ -93,6 +95,7 @@ public sealed class AddHonuaTests
         Assert.NotNull(provider.GetRequiredService<IHonuaSpecClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaStacClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaOgcRecordsClient>());
+        Assert.NotNull(provider.GetRequiredService<IHonuaStudioReportsClient>());
     }
 
     [Fact]
@@ -116,6 +119,7 @@ public sealed class AddHonuaTests
                 o.UseSpec = false;
                 o.UseStac = false;
                 o.UseOgcRecords = false;
+                o.UseStudio = false;
             }));
 
         Assert.Contains("at least one Honua module", ex.Message, StringComparison.Ordinal);

@@ -10,6 +10,7 @@ contract workflows.
 |----------|------------------|------------|-------|
 | Operator/admin bootstrap | `Honua.Sdk.Admin`, `Honua.Sdk.Grpc` | `examples/AdminBootstrapConsole` | Canonical sample. It should stay focused on compatibility, connection reuse, layer publish, protocol enablement, and bounded gRPC verification. |
 | Spec plan/apply | `Honua.Sdk.Spec` | `examples/SpecPlanApplyConsole` | Runnable scaffold. Uses a deterministic in-process Spec API by default and can target a real Honua Server with env vars. |
+| Studio analysis reports | `Honua.Sdk.Studio`, `Honua.Sdk.Abstractions` | `examples/StudioAnalysisReportConsole` | Runnable scaffold. Retrieves the structured report envelope, walks polymorphic sections, and renders Markdown with a deterministic in-process fallback. |
 | Realtime worker | `Honua.Sdk.Abstractions` | `examples/RealtimeWorker` | Runnable deterministic worker. Server realtime remains gated; the sample fails fast in server mode and uses `FeatureStreamEvent` buffering with simulated insert/update/delete events by default. |
 | Routing/geofence | `Honua.Sdk.Abstractions`, `Honua.Sdk.GeoServices`, `Honua.Sdk.Geometry` | `examples/RoutingGeofenceConsole` | Runnable deterministic geofence fixture with simulated route output by default. Live routing can target a configured GeoServices/NAServer route layer. |
 | Mobile offline boundary | `Honua.Sdk.Offline.Abstractions`, `Honua.Sdk.Offline` | Docs and contract tests | SDK owns portable offline manifests, journals, checkpoints, conflicts, adapters, planners, and `OfflineSyncEngine`. `honua-mobile` owns native GeoPackage storage and mobile runtime. |
@@ -23,6 +24,16 @@ export HONUA_SPEC_MODE=server
 export HONUA_SPEC_SERVER_URL=https://your-honua.example
 export HONUA_SPEC_API_KEY=
 export HONUA_SPEC_BEARER_TOKEN=
+```
+
+Studio report live mode uses its own variables:
+
+```bash
+export HONUA_STUDIO_MODE=server
+export HONUA_STUDIO_SERVER_URL=https://your-honua.example
+export HONUA_STUDIO_JOB_ID=job-id-with-completed-report
+export HONUA_STUDIO_API_KEY=
+export HONUA_STUDIO_BEARER_TOKEN=
 ```
 
 Routing live mode uses parallel variables:
@@ -47,6 +58,7 @@ Use these local smoke commands for the CI-friendly paths:
 ```bash
 dotnet build examples/AdminBootstrapConsole/AdminBootstrapConsole.csproj
 dotnet run --project examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj
+dotnet run --project examples/StudioAnalysisReportConsole/StudioAnalysisReportConsole.csproj
 dotnet run --project examples/RealtimeWorker/RealtimeWorker.csproj
 dotnet run --project examples/RoutingGeofenceConsole/RoutingGeofenceConsole.csproj
 dotnet test tests/AdminBootstrapConsole.Tests/AdminBootstrapConsole.Tests.csproj
@@ -55,8 +67,9 @@ dotnet test tests/DemoSuite.Tests/DemoSuite.Tests.csproj
 
 `AdminBootstrapConsole` requires a local or cloud Honua Server plus PostGIS
 configuration for a full operator bootstrap run. `SpecPlanApplyConsole`,
-`RealtimeWorker`, and `RoutingGeofenceConsole` have deterministic default paths
-that run without live services.
+`StudioAnalysisReportConsole`, `RealtimeWorker`, and
+`RoutingGeofenceConsole` have deterministic default paths that run without live
+services.
 
 ## Realtime Worker
 
