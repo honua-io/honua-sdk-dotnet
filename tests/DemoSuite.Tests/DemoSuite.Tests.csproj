@@ -17,6 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\examples\RealtimeWorker\RealtimeWorker.csproj" />
     <ProjectReference Include="..\..\examples\RoutingGeofenceConsole\RoutingGeofenceConsole.csproj" />
+    <ProjectReference Include="..\..\examples\OfflineConflictConsole\OfflineConflictConsole.csproj" />
+    <ProjectReference Include="..\..\examples\FieldFormConsole\FieldFormConsole.csproj" />
   </ItemGroup>
 
 </Project>
