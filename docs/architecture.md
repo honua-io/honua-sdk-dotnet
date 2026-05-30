@@ -46,6 +46,7 @@ per-package `AddHonua*` extensions remain available unchanged.
 │  Honua.Sdk.Processes (OGC API Processes REST + job models)        │
 │  Honua.Sdk.Spec      (validate / plan / apply stream / artifacts) │
 │  Honua.Sdk.Studio    (analysis report retrieve / render)          │
+│  Honua.Sdk.ConsoleShare (share access / public-link / embed token)│
 │  Honua.Sdk.Scenes    (scene metadata, render endpoints)           │
 └───────────────────────────────────────────────────────────────────┘
 
@@ -73,6 +74,7 @@ per-package `AddHonua*` extensions remain available unchanged.
 | Forward / reverse / autocomplete geocode | `Honua.Sdk.Admin` (`IHonuaGeocodingClient`) |
 | Validate / plan / apply spec workspaces or retrieve cached spec artifacts | `Honua.Sdk.Spec` |
 | Retrieve structured analysis reports or render them to Markdown/HTML | `Honua.Sdk.Studio` |
+| Read Console Share detail, update access, and manage public-link / embed-token lifecycle | `Honua.Sdk.ConsoleShare` |
 | Discover or resolve scenes / offline scene packages | `Honua.Sdk.Scenes` |
 | Perform CRS transforms, planar predicates, geofence evaluation | `Honua.Sdk.Geometry` |
 | Build offline sync (push/pull, conflicts, manifests) | `Honua.Sdk.Offline` (offline contracts ship in `Honua.Sdk.Abstractions`) |

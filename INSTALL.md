@@ -11,6 +11,7 @@
 | `Honua.Sdk.Processes` | OGC API Processes REST client for process discovery, async job submission, polling, dismissal, results, and shared job models |
 | `Honua.Sdk.Spec` | Spec workspace client for validate, plan, apply stream, cancel, and cached artifact retrieval |
 | `Honua.Sdk.Studio` | Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs |
+| `Honua.Sdk.ConsoleShare` | Console Share client -- read share detail, update access, validate dependency closure, and manage public-link and embed-token lifecycle |
 | `Honua.Sdk.Field` | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries/edits and native `ProcessService` job lifecycle access |
 | `Honua.Sdk.Geometry` | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
