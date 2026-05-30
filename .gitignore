@@ -15,3 +15,8 @@ coverage*/
 # DocFX local build output
 docs/_site/
 docs/api/
+
+# Fetched conformance fixtures (pulled from geospatial-grpc, never committed)
+conformance/.fixtures/
+conformance-fixtures-*/
+.conformance/

@@ -91,13 +91,16 @@ src/Honua.Sdk*/          One shipped NuGet package each (Abstractions, Grpc, Adm
                          Processes, Spec, Studio, Field, Geometry, GeoServices,
                          Scenes, OgcFeatures, Catalogs, Offline, + Honua.Sdk umbrella)
 tests/                   Per-package *.Tests, plus IntegrationTests, ProtocolIntegration.Tests,
-                         BrowserSmoke[.Tests], DemoSuite.Tests, AdminBootstrapConsole.Tests
+                         Conformance.Tests (contract conformance gate), BrowserSmoke[.Tests],
+                         DemoSuite.Tests, AdminBootstrapConsole.Tests
 examples/                Console/worker sample apps (AdminBootstrapConsole is canonical)
 docs/                    Per-topic guides + DocFX config (docfx.json, toc.yml); docs/internal/ is contributor-only
 contracts/               Golden JSON/protobuf fixtures shared with consuming repos
 third_party/geospatial-grpc/  Vendored proto input (source of truth lives in geospatial-grpc)
 scripts/                 validate-api-compat.sh
-.github/workflows/       ci.yml, codeql.yml, docs.yml, publish-dotnet-sdk.yml, release-please.yml, staging-integration.yml
+conformance/             Conformance gate helpers: fetch-fixtures.sh (pull pinned geospatial-grpc
+                         fixtures), check-version.sh, FIXTURE_VERSION, PINS.md
+.github/workflows/       ci.yml, conformance.yml, codeql.yml, docs.yml, publish-dotnet-sdk.yml, release-please.yml, staging-integration.yml
 Honua.Sdk.sln            Solution; Directory.Build.props / Directory.Packages.props at root
 ```
 

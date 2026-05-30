@@ -1,0 +1,182 @@
+name: Conformance Gate
+
+# Runs the shared geospatial-grpc conformance fixtures against a pinned
+# honua-server:nightly image and fails on contract drift. This is the
+# honua-sdk-dotnet child (#181) of the Compatibility Train epic
+# (geospatial-grpc#18). Fixtures are consumed from geospatial-grpc via the
+# mechanism delivered in geospatial-grpc#19 (conformance/fetch-fixtures.sh),
+# never copied into this repo. Pins live in conformance/PINS.md.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [trunk]
+  pull_request:
+    branches: [trunk]
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  # Pinned conformance fixture version (must equal Geospatial.Grpc <Version>;
+  # enforced by conformance/check-version.sh).
+  CONFORMANCE_FIXTURE_VERSION: "0.1.0-alpha.1"
+  # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
+  # nightly-86042bd, dated 20260530. The :nightly tag is a moving pointer; the
+  # digest is what is actually pinned.
+  HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865"
+  # honua-server commit that produced the pinned nightly image (for the seed SQL).
+  HONUA_SERVER_SEED_REF: "86042bd"
+  # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
+  HONUA_PROTOCOL_SERVICE_NAME: "test_service"
+  HONUA_PROTOCOL_LAYER_ID: "0"
+  HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  conformance:
+    name: Contract Conformance (pinned honua-server:nightly)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: honua
+          POSTGRES_PASSWORD: honua
+          POSTGRES_DB: honua_test
+          POSTGIS_GDAL_ENABLED_DRIVERS: ENABLE_ALL
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v6
+
+      # 1. Enforce the fixture/schema pin equality before doing anything else.
+      - name: Verify fixture version matches pinned Geospatial.Grpc
+        run: conformance/check-version.sh
+
+      # 2. Pull the pinned shared conformance fixtures from geospatial-grpc.
+      #    Uses the committed helper; verifies the tarball + per-file SHA-256 and
+      #    asserts the embedded VERSION equals the pin.
+      - name: Fetch pinned conformance fixtures
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          conformance/fetch-fixtures.sh \
+            --version "${CONFORMANCE_FIXTURE_VERSION}" \
+            --dest conformance/.fixtures
+          echo "HONUA_CONFORMANCE_FIXTURES_DIR=${GITHUB_WORKSPACE}/conformance/.fixtures" >> "$GITHUB_ENV"
+
+      - name: Record pins in run summary
+        run: |
+          {
+            echo "## Conformance gate pins"
+            echo
+            echo "- Fixtures: \`${CONFORMANCE_FIXTURE_VERSION}\` (geospatial-grpc v${CONFORMANCE_FIXTURE_VERSION})"
+            echo "- Server image: \`${HONUA_SERVER_IMAGE}\`"
+            echo "- Seed ref: \`${HONUA_SERVER_SEED_REF}\` (honua-server tests/seed/base-schema.sql)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup .NET + NuGet
+        uses: ./.github/actions/setup-dotnet-and-nuget
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build conformance suite
+        run: |
+          dotnet build tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
+            --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      # 3. Schema conformance: round-trip every canonical FeatureService fixture
+      #    through the SDK's pinned generated gRPC client + converter. No server
+      #    required; injected drift (renamed/removed field, type/enum change)
+      #    fails here.
+      - name: Run schema conformance
+        run: |
+          dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~SchemaConformanceTests" \
+            --logger "console;verbosity=normal"
+
+      # 4. Seed PostGIS from the pinned honua-server release's base schema, then
+      #    boot the pinned honua-server:nightly image against it.
+      - name: Fetch pinned server seed schema
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p .conformance
+          gh api \
+            "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${HONUA_SERVER_SEED_REF}" \
+            -H "Accept: application/vnd.github.raw" > .conformance/base-schema.sql
+          test -s .conformance/base-schema.sql
+
+      - name: Apply seed to PostGIS
+        env:
+          PGPASSWORD: honua
+        run: |
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .conformance/base-schema.sql
+
+      - name: Start pinned honua-server:nightly
+        run: |
+          key="$(head -c 32 /dev/urandom | base64)"
+          salt="$(head -c 16 /dev/urandom | base64)"
+          docker run -d --name honua-server --network host \
+            -e ASPNETCORE_ENVIRONMENT=Development \
+            -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
+            -e Security__ConnectionEncryption__MasterKey="${key}" \
+            -e Security__ConnectionEncryption__Salt="${salt}" \
+            -e HONUA_ADMIN_PASSWORD="ci-admin-password" \
+            -e Kestrel__Endpoints__Http__Url="http://+:8080" \
+            -e Kestrel__Endpoints__Http__Protocols="Http1" \
+            -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
+            -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
+            "${HONUA_SERVER_IMAGE}"
+
+          echo "Waiting for honua-server readiness ..."
+          for i in $(seq 1 60); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/healthz/ready || true)"
+            if [ "$code" = "200" ]; then
+              echo "honua-server ready after $((i*3))s"
+              break
+            fi
+            sleep 3
+          done
+          if [ "${code:-}" != "200" ]; then
+            echo "::error::honua-server did not become ready"
+            docker logs honua-server || true
+            exit 1
+          fi
+
+      # 5. Live conformance: drive the canonical fixture workflows through the
+      #    real SDK protocol clients against the pinned server. Known nightly
+      #    gaps (honua-server#1238/#1166/#1167/#1237) are marked
+      #    known-expected-failing in the suite (skipped with explicit issue
+      #    references); any new/untracked drift fails here.
+      - name: Run live conformance
+        env:
+          HONUA_PROTOCOL_INTEGRATION: "true"
+          # gRPC client talks h2c on 8081; HTTP protocol clients on 8080. The
+          # suite's gRPC facts use the gRPC endpoint; FeatureServer/WFS/OGC facts
+          # use HTTP. Point the base at HTTP and let the gRPC client target 8081
+          # via the same host.
+          HONUA_PROTOCOL_EXTERNAL_BASE_URL: "http://localhost:8080"
+          HONUA_PROTOCOL_GRPC_BASE_URL: "http://localhost:8081"
+        run: |
+          dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~LiveConformanceTests" \
+            --logger "console;verbosity=normal"
+
+      - name: Dump server logs on failure
+        if: failure()
+        run: docker logs honua-server || true
