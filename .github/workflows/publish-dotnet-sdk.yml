@@ -306,22 +306,25 @@ jobs:
         run: |
           set -euo pipefail
           cert_path="$(mktemp --suffix=.pfx)"
-          signer_crt="$(mktemp --suffix=.crt)"
-          trap 'shred -u "${cert_path}" "${signer_crt}" 2>/dev/null || rm -f "${cert_path}" "${signer_crt}"' EXIT
+          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"' EXIT
           echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
 
-          # Trust the signer cert on this runner so `dotnet nuget verify` can validate the
-          # author-signature chain. The cert is self-signed (private GitHub Packages feed),
-          # so its root is not in the default trust store; add it for this run.
-          openssl pkcs12 -in "${cert_path}" -clcerts -nokeys -passin "pass:${NUGET_SIGNING_PASSWORD}" -out "${signer_crt}"
-          sudo cp "${signer_crt}" /usr/local/share/ca-certificates/honua-sdk-signer.crt
-          sudo update-ca-certificates >/dev/null
-
+          # Sign every package.
           for nupkg in ./nupkgs/*.nupkg; do
             dotnet nuget sign "${nupkg}" \
               --certificate-path "${cert_path}" \
               --certificate-password "${NUGET_SIGNING_PASSWORD}" \
               --timestamper "${NUGET_SIGNING_TIMESTAMP_URL}"
+          done
+
+          # The signing cert is self-signed (private GitHub Packages feed), so its root is
+          # not trusted by default — `dotnet nuget verify` would reject it (NU3018). Register
+          # the author signer (allowing the untrusted self-signed root) so verify can
+          # validate the author signatures against a configured trusted signer.
+          first_pkg="$(ls ./nupkgs/*.nupkg | head -n1)"
+          dotnet nuget trust author honua-sdk-self "${first_pkg}" --allow-untrusted-root
+
+          for nupkg in ./nupkgs/*.nupkg; do
             dotnet nuget verify "${nupkg}"
           done
 
