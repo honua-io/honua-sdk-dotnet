@@ -97,6 +97,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.ConsoleShare", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.ConsoleShare.Tests", "tests\Honua.Sdk.ConsoleShare.Tests\Honua.Sdk.ConsoleShare.Tests.csproj", "{68A8457E-4830-45F3-A0BA-C68F706201B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Conformance.Tests", "tests\Honua.Sdk.Conformance.Tests\Honua.Sdk.Conformance.Tests.csproj", "{11481936-9CF4-444A-A1A7-B7E56C118278}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -635,6 +637,18 @@ Global
 		{68A8457E-4830-45F3-A0BA-C68F706201B4}.Release|x64.Build.0 = Release|Any CPU
 		{68A8457E-4830-45F3-A0BA-C68F706201B4}.Release|x86.ActiveCfg = Release|Any CPU
 		{68A8457E-4830-45F3-A0BA-C68F706201B4}.Release|x86.Build.0 = Release|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Debug|x64.Build.0 = Debug|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Debug|x86.Build.0 = Debug|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x64.ActiveCfg = Release|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x64.Build.0 = Release|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x86.ActiveCfg = Release|Any CPU
+		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -684,5 +698,6 @@ Global
 		{76878BA2-BA46-4E8A-9722-CE704FDA1636} = {4E4E4E4E-4E4E-4E4E-4E4E-4E4E4E4E4E4E}
 		{2A710C6A-B656-4803-A3D0-A38FE81E21B7} = {2F8F8F8F-8F8F-8F8F-8F8F-8F8F8F8F8F8F}
 		{68A8457E-4830-45F3-A0BA-C68F706201B4} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
+		{11481936-9CF4-444A-A1A7-B7E56C118278} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 	EndGlobalSection
 EndGlobal
