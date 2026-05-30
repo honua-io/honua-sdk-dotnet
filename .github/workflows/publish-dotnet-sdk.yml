@@ -306,8 +306,16 @@ jobs:
         run: |
           set -euo pipefail
           cert_path="$(mktemp --suffix=.pfx)"
-          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"' EXIT
+          signer_crt="$(mktemp --suffix=.crt)"
+          trap 'shred -u "${cert_path}" "${signer_crt}" 2>/dev/null || rm -f "${cert_path}" "${signer_crt}"' EXIT
           echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
+
+          # Trust the signer cert on this runner so `dotnet nuget verify` can validate the
+          # author-signature chain. The cert is self-signed (private GitHub Packages feed),
+          # so its root is not in the default trust store; add it for this run.
+          openssl pkcs12 -in "${cert_path}" -clcerts -nokeys -passin "pass:${NUGET_SIGNING_PASSWORD}" -out "${signer_crt}"
+          sudo cp "${signer_crt}" /usr/local/share/ca-certificates/honua-sdk-signer.crt
+          sudo update-ca-certificates >/dev/null
 
           for nupkg in ./nupkgs/*.nupkg; do
             dotnet nuget sign "${nupkg}" \
