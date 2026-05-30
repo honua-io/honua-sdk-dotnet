@@ -306,7 +306,10 @@ jobs:
         run: |
           set -euo pipefail
           cert_path="$(mktemp --suffix=.pfx)"
-          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"' EXIT
+          # Clean up the temp cert AND the temporary trusted-signer on exit, so later
+          # pipeline steps' restores from nuget.org aren't rejected (a configured trusted
+          # signer otherwise gates ALL signed packages -> NU3034 on Microsoft packages).
+          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"; dotnet nuget trust remove honua-sdk-self >/dev/null 2>&1 || true' EXIT
           echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
 
           # Sign every package.
@@ -319,11 +322,10 @@ jobs:
 
           # The signing cert is self-signed (private GitHub Packages feed), so its root is
           # not trusted by default — `dotnet nuget verify` would reject it (NU3018). Register
-          # the author signer (allowing the untrusted self-signed root) so verify can
-          # validate the author signatures against a configured trusted signer.
+          # the author signer (allowing the untrusted self-signed root) JUST for verification;
+          # the EXIT trap removes it again immediately after.
           first_pkg="$(ls ./nupkgs/*.nupkg | head -n1)"
           dotnet nuget trust author honua-sdk-self "${first_pkg}" --allow-untrusted-root
-
           for nupkg in ./nupkgs/*.nupkg; do
             dotnet nuget verify "${nupkg}"
           done
