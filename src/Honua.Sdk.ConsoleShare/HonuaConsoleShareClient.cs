@@ -177,7 +177,7 @@ public sealed class HonuaConsoleShareClient : IHonuaConsoleShareClient
         }
     }
 
-    private static HttpContent JsonContent<T>(T value, JsonTypeInfo<T> typeInfo)
+    private static StringContent JsonContent<T>(T value, JsonTypeInfo<T> typeInfo)
     {
         var json = JsonSerializer.Serialize(value, typeInfo);
         return new StringContent(json, Encoding.UTF8, "application/json");
