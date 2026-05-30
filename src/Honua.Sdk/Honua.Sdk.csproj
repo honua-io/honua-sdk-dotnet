@@ -40,6 +40,7 @@
     <ProjectReference Include="..\Honua.Sdk.Scenes\Honua.Sdk.Scenes.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Spec\Honua.Sdk.Spec.csproj" />
     <ProjectReference Include="..\Honua.Sdk.Studio\Honua.Sdk.Studio.csproj" />
+    <ProjectReference Include="..\Honua.Sdk.ConsoleShare\Honua.Sdk.ConsoleShare.csproj" />
   </ItemGroup>
 
   <ItemGroup>

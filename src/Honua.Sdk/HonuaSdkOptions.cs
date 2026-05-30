@@ -221,6 +221,12 @@ public sealed class HonuaSdkOptions
     /// </summary>
     public bool UseStudio { get; set; }
 
+    /// <summary>
+    /// When <c>true</c>, registers the Console Share access, public-link, and
+    /// embed-token client (<c>IHonuaConsoleShareClient</c>). Defaults to <c>false</c>.
+    /// </summary>
+    public bool UseConsoleShare { get; set; }
+
     internal bool AnyModuleEnabled =>
         UseGrpc ||
         UseAdmin ||
@@ -234,5 +240,6 @@ public sealed class HonuaSdkOptions
         UseSpec ||
         UseStac ||
         UseOgcRecords ||
-        UseStudio;
+        UseStudio ||
+        UseConsoleShare;
 }
