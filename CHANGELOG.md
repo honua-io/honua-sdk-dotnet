@@ -2,6 +2,18 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+* `Honua.Sdk.Field`: native repeatable-section support. `FieldRecord.Repeats`
+  carries captured rows (`FieldRepeatInstance`) per repeatable section, so repeat
+  data is part of the portable record contract and round-trips through
+  serialization, sync, and export rather than being flattened by consumers.
+  `FormValidator` and `CalculatedFieldEvaluator` now evaluate each row against
+  its own values; repeat-row validation errors are reported with field ids of
+  the form `sectionId[index].fieldId`. Additive and backward compatible.
+
 ## [1.0.0] - 2026-05-21
 
 First stable release of the Honua .NET SDK. Subsequent releases follow standard
