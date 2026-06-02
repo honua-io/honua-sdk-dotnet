@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.OgcFeatures.Styles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
@@ -58,6 +59,33 @@ public static class ServiceCollectionExtensions
         if (snapshot.EnableRetry)
         {
             httpBuilder.AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = snapshot.Timeout;
+                options.AttemptTimeout.Timeout = snapshot.Timeout;
+                options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
+                options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+                options.Retry.DisableForUnsafeHttpMethods();
+                options.Retry.UseJitter = true;
+            });
+        }
+
+        var stylesBuilder = services.AddHttpClient<HonuaOgcStylesClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaOgcFeaturesClientOptions>>().Value;
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
+        })
+        .AddHttpMessageHandler<HonuaOgcFeaturesAuthHandler>();
+        services.AddTransient<IHonuaOgcStylesClient>(sp => sp.GetRequiredService<HonuaOgcStylesClient>());
+
+        if (snapshot.PrimaryHttpMessageHandlerFactory is { } stylesPrimaryHandlerFactory)
+        {
+            stylesBuilder.ConfigurePrimaryHttpMessageHandler(stylesPrimaryHandlerFactory);
+        }
+
+        if (snapshot.EnableRetry)
+        {
+            stylesBuilder.AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = snapshot.Timeout;
                 options.AttemptTimeout.Timeout = snapshot.Timeout;

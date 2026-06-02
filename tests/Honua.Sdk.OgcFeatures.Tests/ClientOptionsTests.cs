@@ -4,6 +4,7 @@
 using System.Reflection;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.OgcFeatures.Styles;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.OgcFeatures.Tests;
@@ -63,6 +64,22 @@ public sealed class ClientOptionsTests
         Assert.Equal("ogc-features", attachmentClient.ProviderName);
         Assert.False(attachmentClient.AttachmentCapabilities.SupportsList);
         Assert.Contains("attachment operations", attachmentClient.AttachmentCapabilities.UnsupportedReason);
+    }
+
+    [Fact]
+    public void AddHonuaOgcFeatures_RegistersStylesClient()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaOgcFeatures(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var stylesClient = Assert.Single(provider.GetServices<IHonuaOgcStylesClient>());
+
+        Assert.IsType<HonuaOgcStylesClient>(stylesClient);
     }
 
     [Fact]
