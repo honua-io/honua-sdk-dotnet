@@ -22,6 +22,13 @@ public sealed class FieldRecord
     /// <summary>Portable media attachment metadata. Host-specific local paths stay outside the SDK contract.</summary>
     public Collection<FieldMediaAttachment> Media { get; init; } = [];
 
+    /// <summary>
+    /// Captured rows for repeatable sections, keyed by <see cref="Forms.FormSection.SectionId"/>.
+    /// Each section maps to its ordered list of <see cref="FieldRepeatInstance"/> rows, so repeat
+    /// data is part of the portable contract rather than flattened into <see cref="Values"/>.
+    /// </summary>
+    public Dictionary<string, IList<FieldRepeatInstance>> Repeats { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Capture location, when available.</summary>
     public FieldGeoPoint? Location { get; set; }
 
