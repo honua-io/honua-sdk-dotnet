@@ -252,4 +252,16 @@ public class HonuaOgcStylesClientTests
         await Assert.ThrowsAsync<ArgumentException>(
             () => client.UpdateStyleAsync("topographic", "   "));
     }
+
+    // ── Encoding-id alignment with geospatial.v1.StyleEncoding (#184) ─
+
+    [Theory]
+    [InlineData(OgcStyleEncoding.MapboxStyle, "mapbox-style")]
+    [InlineData(OgcStyleEncoding.Sld10, "sld-1.0.0")]
+    [InlineData(OgcStyleEncoding.Sld11, "sld-1.1.0")]
+    public void ToCanonicalEncodingId_MapsToGrpcStyleEncodingVocabulary(
+        OgcStyleEncoding encoding, string expected)
+    {
+        Assert.Equal(expected, encoding.ToCanonicalEncodingId());
+    }
 }

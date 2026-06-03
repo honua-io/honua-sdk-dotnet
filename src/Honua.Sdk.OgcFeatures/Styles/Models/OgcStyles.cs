@@ -6,10 +6,33 @@ using Honua.Sdk.OgcFeatures.Models;
 
 namespace Honua.Sdk.OgcFeatures.Styles.Models;
 
-// TODO(#184): dedup these envelopes against Geospatial.Grpc StyleRef once the
-// 0.1.0-alpha.2 package is consumable in this repo's restore. The repo currently
-// pins Geospatial.Grpc 0.1.0-alpha.1 (Directory.Build.props) and the OgcFeatures
-// package does not reference the proto package, so the dedup is deferred.
+// Resolves TODO(#184) — relationship to Geospatial.Grpc StyleRef / StyleEncoding
+// (geospatial.v1, available from Geospatial.Grpc 0.1.0-alpha.2):
+//
+// These types intentionally stay separate from the generated proto messages and
+// the OgcFeatures package does NOT take a dependency on Geospatial.Grpc:
+//
+//   * Layering. OgcFeatures is the REST-over-HttpClient surface and ships to
+//     browser/WASM consumers that deliberately exclude the gRPC/proto stack.
+//     Referencing Geospatial.Grpc here would force Google.Protobuf onto that
+//     subset for no shared serialization benefit.
+//   * Different wire shapes. The OGC API - Styles responses below are
+//     link-driven (HATEOAS) projections: a styles list / metadata document plus
+//     `links` that enumerate the available stylesheet encodings. StyleRef is a
+//     self-contained, encoding-list-centric message (an `encodings` collection
+//     of inline/stored bodies, no links). They model the same logical style at
+//     two different layers, so neither is a drop-in for the other.
+//   * No gRPC style surface exists in this SDK yet. There is currently no
+//     gRPC client that exposes StyleRef, so there is nothing in this repo for a
+//     REST DTO to be deduped against; StyleRef is consumed only inside
+//     Honua.Sdk.Grpc (the one package that references Geospatial.Grpc).
+//
+// The one concept the two layers genuinely share is the *encoding identifier*
+// vocabulary. To keep that aligned without coupling packages, the
+// <see cref="OgcStyleEncoding"/> members below map 1:1 onto the canonical
+// StyleEncoding.encoding values defined by geospatial.v1.StyleEncoding
+// (`mapbox-style`, `sld-1.0.0`, `sld-1.1.0`); see
+// <see cref="OgcStyleEncodingExtensions.ToCanonicalEncodingId"/>.
 
 /// <summary>
 /// OGC API - Styles styles list response (<c>GET /ogc/styles</c>).
@@ -97,6 +120,48 @@ public enum OgcStyleEncoding
 
     /// <summary>OGC SLD 1.1 (<c>application/vnd.ogc.sld+xml;version=1.1</c>), derived from the canonical style.</summary>
     Sld11
+}
+
+/// <summary>
+/// Helpers for <see cref="OgcStyleEncoding"/> that align the REST encoding enum
+/// with the canonical encoding identifiers used by the gRPC style contract
+/// (<c>geospatial.v1.StyleEncoding.encoding</c> in <c>Geospatial.Grpc</c>).
+/// </summary>
+public static class OgcStyleEncodingExtensions
+{
+    /// <summary>
+    /// Canonical encoding identifier for MapLibre/Mapbox style JSON, matching
+    /// <c>geospatial.v1.StyleEncoding.encoding == "mapbox-style"</c>.
+    /// </summary>
+    public const string MapboxStyleEncodingId = "mapbox-style";
+
+    /// <summary>
+    /// Canonical encoding identifier for OGC SLD 1.0, matching
+    /// <c>geospatial.v1.StyleEncoding.encoding == "sld-1.0.0"</c>.
+    /// </summary>
+    public const string Sld10EncodingId = "sld-1.0.0";
+
+    /// <summary>
+    /// Canonical encoding identifier for OGC SLD 1.1, matching
+    /// <c>geospatial.v1.StyleEncoding.encoding == "sld-1.1.0"</c>.
+    /// </summary>
+    public const string Sld11EncodingId = "sld-1.1.0";
+
+    /// <summary>
+    /// Maps an <see cref="OgcStyleEncoding"/> to the canonical encoding
+    /// identifier shared with the gRPC style contract
+    /// (<c>geospatial.v1.StyleEncoding.encoding</c>). This keeps the REST and
+    /// gRPC layers using one encoding vocabulary without coupling the packages.
+    /// </summary>
+    /// <param name="encoding">The REST stylesheet encoding.</param>
+    /// <returns>The canonical <c>StyleEncoding.encoding</c> identifier.</returns>
+    public static string ToCanonicalEncodingId(this OgcStyleEncoding encoding) => encoding switch
+    {
+        OgcStyleEncoding.MapboxStyle => MapboxStyleEncodingId,
+        OgcStyleEncoding.Sld10 => Sld10EncodingId,
+        OgcStyleEncoding.Sld11 => Sld11EncodingId,
+        _ => MapboxStyleEncodingId,
+    };
 }
 
 /// <summary>
