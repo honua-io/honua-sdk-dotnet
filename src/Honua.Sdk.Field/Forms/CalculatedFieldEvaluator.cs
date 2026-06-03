@@ -1,7 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-using System.Globalization;
+using Honua.Sdk.Field.Forms.Expressions;
 using Honua.Sdk.Field.Records;
 
 namespace Honua.Sdk.Field.Forms;
@@ -51,64 +51,14 @@ public static class CalculatedFieldEvaluator
                 continue;
             }
 
-            values[field.FieldId] = EvaluateExpression(field.CalculatedExpression!, values);
+            var result = ExpressionEvaluator.EvaluateDetailed(field.CalculatedExpression, values);
+
+            // A malformed or unresolvable expression must not clobber an existing
+            // value with null; only write through results that actually evaluated.
+            if (result.Succeeded)
+            {
+                values[field.FieldId] = result.Value;
+            }
         }
-    }
-
-    private static object? EvaluateExpression(string expression, Dictionary<string, object?> values)
-    {
-        var openParen = expression.IndexOf('(', StringComparison.Ordinal);
-        var closeParen = expression.LastIndexOf(')');
-
-        if (openParen <= 0 || closeParen <= openParen)
-        {
-            return expression;
-        }
-
-        var function = expression[..openParen].Trim();
-        var args = expression[(openParen + 1)..closeParen]
-            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Select(arg => ResolveArg(arg, values))
-            .ToArray();
-
-        if (string.Equals(function, "concat", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Concat(args.Select(arg => arg?.ToString() ?? string.Empty));
-        }
-
-        if (string.Equals(function, "sum", StringComparison.OrdinalIgnoreCase))
-        {
-            return args.Sum(ParseDouble);
-        }
-
-        return expression;
-    }
-
-    private static object? ResolveArg(string arg, Dictionary<string, object?> values)
-    {
-        if (arg.StartsWith('$'))
-        {
-            var key = arg[1..];
-            return values.TryGetValue(key, out var value) ? value : null;
-        }
-
-        if (arg.Length >= 2 && arg[0] == '\'' && arg[^1] == '\'')
-        {
-            return arg[1..^1];
-        }
-
-        return arg;
-    }
-
-    private static double ParseDouble(object? value)
-    {
-        if (value is null)
-        {
-            return 0;
-        }
-
-        return double.TryParse(Convert.ToString(value, CultureInfo.InvariantCulture), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed
-            : 0;
     }
 }
