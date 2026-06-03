@@ -15,9 +15,9 @@ And the **OGC API – Styles** surface under `Honua.Sdk.OgcFeatures.Styles.*`:
 `/ogc/styles` (ADR-0048) — list styles, get a content-negotiated stylesheet
 (MapLibre default, or derived SLD 1.0/1.1), read style metadata, and update a
 style's MapLibre stylesheet. This is the canonical styles surface; the per-layer
-`IHonuaAdminStylesClient` (keyed by `layerId`) remains a back-compat alias for
-editing a layer's default style. Registered alongside the features client via
-`AddHonuaOgcFeatures(...)`.
+`IHonuaAdminStylesClient` (keyed by `layerId`) is **deprecated** and retained
+only as a back-compat alias for editing a layer's default style. Registered
+alongside the features client via `AddHonuaOgcFeatures(...)`.
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
