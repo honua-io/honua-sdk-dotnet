@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.2.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.1.0...dotnet-sdk-v1.2.0) (2026-06-03)
+
+
+### Features
+
+* **forms:** real expression engine for calculated, constraint, and relevance fields ([#189](https://github.com/honua-io/honua-sdk-dotnet/issues/189)) ([50eb982](https://github.com/honua-io/honua-sdk-dotnet/commit/50eb982e7772cdc066818627d6e1a49d87e16e3c))
+
 ## [1.1.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.0.0...dotnet-sdk-v1.1.0) (2026-06-02)
 
 
