@@ -92,6 +92,7 @@ public static class FormValidator
             {
                 ValidateType(local, field, rawValue);
                 ValidateRules(local, field, rawValue);
+                ValidateConstraintExpression(local, field, rawValue, values);
             }
 
             ValidateMediaRules(local, field, mediaCount);
@@ -105,6 +106,12 @@ public static class FormValidator
 
     private static bool IsVisible(FormField field, Dictionary<string, object?> values)
     {
+        // A boolean relevance expression, when present, supersedes the single-comparison rule.
+        if (!string.IsNullOrWhiteSpace(field.RelevanceExpression))
+        {
+            return Expressions.ExpressionEvaluator.EvaluateBoolean(field.RelevanceExpression, values);
+        }
+
         if (field.VisibilityRule is null)
         {
             return true;
@@ -193,6 +200,32 @@ public static class FormValidator
             {
                 errors.Add(new FormValidationError(field.FieldId, $"{field.Label} must be <= {max}."));
             }
+        }
+    }
+
+    private static void ValidateConstraintExpression(
+        List<FormValidationError> errors,
+        FormField field,
+        object? rawValue,
+        Dictionary<string, object?> values)
+    {
+        if (string.IsNullOrWhiteSpace(field.Validation.ConstraintExpression))
+        {
+            return;
+        }
+
+        // Overlay a "." self-reference (and keep $thisFieldId resolving via the field id)
+        // without mutating the caller's record values.
+        var context = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase)
+        {
+            ["."] = rawValue,
+        };
+
+        if (!Expressions.ExpressionEvaluator.EvaluateBoolean(field.Validation.ConstraintExpression, context))
+        {
+            errors.Add(new FormValidationError(
+                field.FieldId,
+                field.Validation.ConstraintMessage ?? $"{field.Label} does not satisfy its constraint."));
         }
     }
 
