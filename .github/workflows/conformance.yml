@@ -9,6 +9,15 @@ name: Conformance Gate
 
 on:
   workflow_dispatch:
+    inputs:
+      server_image:
+        description: "honua-server image to certify against (repo:tag or repo@sha256:digest). Blank = pinned nightly digest. Used by the release-bundle train to certify the RC image."
+        required: false
+        default: ""
+      server_seed_ref:
+        description: "honua-server git ref for the seed SQL (should match the server_image commit). Blank = pinned seed ref."
+        required: false
+        default: ""
   push:
     branches: [trunk]
   pull_request:
@@ -24,9 +33,9 @@ env:
   # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
   # nightly-86042bd, dated 20260530. The :nightly tag is a moving pointer; the
   # digest is what is actually pinned.
-  HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865"
+  HONUA_SERVER_IMAGE: ${{ github.event.inputs.server_image || 'ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865' }}
   # honua-server commit that produced the pinned nightly image (for the seed SQL).
-  HONUA_SERVER_SEED_REF: "86042bd"
+  HONUA_SERVER_SEED_REF: ${{ github.event.inputs.server_seed_ref || '86042bd' }}
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
