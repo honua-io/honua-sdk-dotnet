@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.2.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.2.0...dotnet-sdk-v1.2.1) (2026-06-09)
+
+
+### Documentation
+
+* add OpenSSF Scorecard badge ([#193](https://github.com/honua-io/honua-sdk-dotnet/issues/193)) ([f46085f](https://github.com/honua-io/honua-sdk-dotnet/commit/f46085f52dca90261b122235a0caf84637644679))
+
 ## [1.2.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.1.0...dotnet-sdk-v1.2.0) (2026-06-03)
 
 
