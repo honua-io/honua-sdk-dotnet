@@ -1,5 +1,7 @@
 # Honua .NET SDK
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
+
 Official .NET client libraries for [Honua](https://github.com/honua-io/honua-server) --
 an open-source geospatial feature server. The SDK provides typed clients for
 querying and editing features over gRPC, querying via OGC WFS 2.0, managing
