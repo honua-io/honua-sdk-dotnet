@@ -276,6 +276,13 @@ jobs:
             src: src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj
             tests:
               - tests/Honua.Sdk.Studio.Tests/Honua.Sdk.Studio.Tests.csproj
+          # Console Share access/public-link/embed-token client (ticket 171).
+          # Share DTOs live in Honua.Sdk.Abstractions; this package ships the
+          # HTTP client.
+          - label: ConsoleShare
+            src: src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj
+            tests:
+              - tests/Honua.Sdk.ConsoleShare.Tests/Honua.Sdk.ConsoleShare.Tests.csproj
           # Umbrella meta package -- builds Honua.Sdk and runs the AddHonua DI
           # smoke test that exercises the umbrella's registration surface.
           - label: Meta

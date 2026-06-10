@@ -1,0 +1,39 @@
+{
+  "item": {
+    "shareId": "share-7f3c",
+    "resourceId": "map-7f3c",
+    "resourceKind": "map",
+    "title": "Flood buffer impact map",
+    "visibility": "organization",
+    "ownerId": "user-alice",
+    "updatedAt": "2026-05-24T18:00:00Z"
+  },
+  "grants": [
+    {
+      "principalId": "user-bob",
+      "principalKind": "user",
+      "displayName": "Bob Lin",
+      "role": "viewer"
+    },
+    {
+      "principalId": "group-gis",
+      "principalKind": "group",
+      "displayName": "GIS Team",
+      "role": "editor"
+    }
+  ],
+  "publicLink": {
+    "linkId": "link-9a21",
+    "url": "https://share.example/p/9a21",
+    "enabled": true,
+    "expiresAt": "2026-06-24T18:00:00Z",
+    "createdAt": "2026-05-24T18:00:00Z"
+  },
+  "embedToken": {
+    "tokenId": "embed-3b55",
+    "token": "et_live_3b55abcd",
+    "allowedOrigins": ["https://partner.example", "https://atlas.example"],
+    "expiresAt": "2026-06-24T18:00:00Z",
+    "createdAt": "2026-05-24T18:00:00Z"
+  }
+}

@@ -17,11 +17,16 @@ public static class FormValidator
     private static readonly TimeSpan RegexEvaluationTimeout = TimeSpan.FromMilliseconds(250);
 
     /// <summary>
-    /// Validates every visible field in a form.
+    /// Validates every visible field in a form, including each captured row of a
+    /// repeatable section.
     /// </summary>
     /// <param name="form">Form definition.</param>
     /// <param name="record">Record values to validate.</param>
-    /// <returns>Validation result with field-level errors.</returns>
+    /// <returns>
+    /// Validation result with field-level errors. Errors raised inside a
+    /// repeatable section are reported with a field id of the form
+    /// <c>sectionId[index].fieldId</c>.
+    /// </returns>
     public static FormValidationResult Validate(FormDefinition form, FieldRecord record)
     {
         ArgumentNullException.ThrowIfNull(form);
@@ -29,43 +34,90 @@ public static class FormValidator
 
         var errors = new List<FormValidationError>();
 
-        foreach (var field in form.Sections.SelectMany(section => section.Fields))
+        foreach (var section in form.Sections)
         {
-            var isVisible = IsVisible(field, record);
-            record.Values.TryGetValue(field.FieldId, out var rawValue);
-            var mediaCount = CountMedia(record, field);
-
-            if (field.Required && isVisible && IsMissing(rawValue) && mediaCount == 0)
+            if (section.Repeatable)
             {
-                errors.Add(new FormValidationError(field.FieldId, $"{field.Label} is required."));
+                ValidateRepeatSection(errors, section, record);
                 continue;
             }
 
-            if (!isVisible || (IsMissing(rawValue) && mediaCount == 0))
+            foreach (var field in section.Fields)
             {
-                continue;
+                ValidateField(errors, field, record.Values, record.Media, prefix: null);
             }
-
-            if (!IsMissing(rawValue))
-            {
-                ValidateType(errors, field, rawValue);
-                ValidateRules(errors, field, rawValue);
-            }
-
-            ValidateMediaRules(errors, field, mediaCount);
         }
 
         return new FormValidationResult(errors);
     }
 
-    private static bool IsVisible(FormField field, FieldRecord record)
+    private static void ValidateRepeatSection(List<FormValidationError> errors, FormSection section, FieldRecord record)
     {
+        if (!record.Repeats.TryGetValue(section.SectionId, out var instances) || instances is null)
+        {
+            return;
+        }
+
+        for (var index = 0; index < instances.Count; index++)
+        {
+            var instance = instances[index];
+            var prefix = $"{section.SectionId}[{index}].";
+            foreach (var field in section.Fields)
+            {
+                ValidateField(errors, field, instance.Values, instance.Media, prefix);
+            }
+        }
+    }
+
+    private static void ValidateField(
+        List<FormValidationError> errors,
+        FormField field,
+        Dictionary<string, object?> values,
+        IEnumerable<FieldMediaAttachment> media,
+        string? prefix)
+    {
+        var local = new List<FormValidationError>();
+
+        var isVisible = IsVisible(field, values);
+        values.TryGetValue(field.FieldId, out var rawValue);
+        var mediaCount = CountMedia(media, field);
+
+        if (field.Required && isVisible && IsMissing(rawValue) && mediaCount == 0)
+        {
+            local.Add(new FormValidationError(field.FieldId, $"{field.Label} is required."));
+        }
+        else if (isVisible && (!IsMissing(rawValue) || mediaCount > 0))
+        {
+            if (!IsMissing(rawValue))
+            {
+                ValidateType(local, field, rawValue);
+                ValidateRules(local, field, rawValue);
+                ValidateConstraintExpression(local, field, rawValue, values);
+            }
+
+            ValidateMediaRules(local, field, mediaCount);
+        }
+
+        foreach (var error in local)
+        {
+            errors.Add(prefix is null ? error : new FormValidationError(prefix + error.FieldId, error.Message));
+        }
+    }
+
+    private static bool IsVisible(FormField field, Dictionary<string, object?> values)
+    {
+        // A boolean relevance expression, when present, supersedes the single-comparison rule.
+        if (!string.IsNullOrWhiteSpace(field.RelevanceExpression))
+        {
+            return Expressions.ExpressionEvaluator.EvaluateBoolean(field.RelevanceExpression, values);
+        }
+
         if (field.VisibilityRule is null)
         {
             return true;
         }
 
-        if (!record.Values.TryGetValue(field.VisibilityRule.DependsOnFieldId, out var actual))
+        if (!values.TryGetValue(field.VisibilityRule.DependsOnFieldId, out var actual))
         {
             return false;
         }
@@ -151,6 +203,32 @@ public static class FormValidator
         }
     }
 
+    private static void ValidateConstraintExpression(
+        List<FormValidationError> errors,
+        FormField field,
+        object? rawValue,
+        Dictionary<string, object?> values)
+    {
+        if (string.IsNullOrWhiteSpace(field.Validation.ConstraintExpression))
+        {
+            return;
+        }
+
+        // Overlay a "." self-reference (and keep $thisFieldId resolving via the field id)
+        // without mutating the caller's record values.
+        var context = new Dictionary<string, object?>(values, StringComparer.OrdinalIgnoreCase)
+        {
+            ["."] = rawValue,
+        };
+
+        if (!Expressions.ExpressionEvaluator.EvaluateBoolean(field.Validation.ConstraintExpression, context))
+        {
+            errors.Add(new FormValidationError(
+                field.FieldId,
+                field.Validation.ConstraintMessage ?? $"{field.Label} does not satisfy its constraint."));
+        }
+    }
+
     private static void ValidateMediaRules(List<FormValidationError> errors, FormField field, int mediaCount)
     {
         if (field.Validation.MinMediaCount is { } minMedia && mediaCount < minMedia)
@@ -164,16 +242,16 @@ public static class FormValidator
         }
     }
 
-    private static int CountMedia(FieldRecord record, FormField field)
+    private static int CountMedia(IEnumerable<FieldMediaAttachment> media, FormField field)
     {
         if (!IsMediaField(field.Type))
         {
             return 0;
         }
 
-        return record.Media.Count(media =>
-            string.IsNullOrWhiteSpace(media.FieldId) ||
-            string.Equals(media.FieldId, field.FieldId, StringComparison.OrdinalIgnoreCase));
+        return media.Count(item =>
+            string.IsNullOrWhiteSpace(item.FieldId) ||
+            string.Equals(item.FieldId, field.FieldId, StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsMediaField(FormFieldType fieldType)

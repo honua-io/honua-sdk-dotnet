@@ -116,3 +116,51 @@ The eventual server seed should expose:
 
 Until those server prerequisites are all available, the suite is intentionally
 useful as a scaffold and opt-in smoke lane rather than a PR-blocking gate.
+
+## Contract Conformance Gate
+
+`tests/Honua.Sdk.Conformance.Tests` is a PR-blocking gate
+(`.github/workflows/conformance.yml`) that runs the **shared `geospatial-grpc`
+conformance fixtures** against a **pinned `honua-server:nightly`** image and
+fails on contract drift. It is the `honua-sdk-dotnet` child (#181) of the
+Compatibility Train epic (`geospatial-grpc#18`), and the SDK-side answer to
+`honua-server#1238`. See [`conformance/README.md`](../conformance/README.md) and
+[`conformance/PINS.md`](../conformance/PINS.md) for the full design and pins.
+
+The fixtures are **consumed from `geospatial-grpc`**, never copied here: the CI
+job runs `conformance/fetch-fixtures.sh --version <X.Y.Z>` to pull and verify the
+pinned release asset (mechanism delivered in `geospatial-grpc#19`). The fixture
+version equals the SDK's `Geospatial.Grpc` pin (enforced by
+`conformance/check-version.sh`), so a fixture set maps 1:1 to a `geospatial.v1`
+schema release.
+
+The suite has two tiers:
+
+- **Schema conformance** (`SchemaConformanceTests`): round-trips every canonical
+  FeatureService fixture through the SDK's pinned generated gRPC client and its
+  public converter. No server required; runs whenever
+  `HONUA_CONFORMANCE_FIXTURES_DIR` points at an extracted bundle. Injected drift
+  (renamed/removed field, type/enum change, projection shape change) turns it
+  red.
+- **Live conformance** (`LiveConformanceTests`): drives the canonical workflows
+  through the real protocol clients (gRPC, FeatureServer, WFS, OGC API Features)
+  against the pinned server (Testcontainers / external URL via the same
+  `HONUA_PROTOCOL_*` variables as above). `HONUA_PROTOCOL_GRPC_BASE_URL` targets
+  the h2c gRPC endpoint when it differs from the HTTP base.
+
+### Known-expected-failing server gaps
+
+Already-tracked nightly server gaps are marked known-expected-failing in the
+suite — the affected live assertions skip with an explicit `honua-server#NNNN`
+reference (never silently, never via blanket `continue-on-error`), so the job is
+green and the harness is in place while any new/untracked drift still fails:
+`#1238` (FeatureServer/OGC JSONB projection), `#1166` (temporal), `#1167`
+(replica), `#1237` (analysis list/estimate). When a gap lands server-side, drop
+its `knownGap` marker so the assertion becomes a required check.
+
+### Recorded pins
+
+- Fixtures: `0.1.0-alpha.1` (`conformance/FIXTURE_VERSION` = `Geospatial.Grpc`
+  pin).
+- Server image: `ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865`
+  (`nightly-86042bd`, dated `20260530`).

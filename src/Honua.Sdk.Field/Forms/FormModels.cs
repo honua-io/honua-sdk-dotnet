@@ -116,6 +116,14 @@ public sealed record FormField
     /// <summary>Optional visibility rule evaluated against the current record.</summary>
     public FieldVisibilityRule? VisibilityRule { get; init; }
 
+    /// <summary>
+    /// Optional boolean relevance expression. When set it supersedes
+    /// <see cref="VisibilityRule"/> and is evaluated by the expression engine,
+    /// enabling compound conditions such as <c>${a}='x' and ${b}&gt;5</c>. The
+    /// field is shown only when the expression evaluates truthy.
+    /// </summary>
+    public string? RelevanceExpression { get; init; }
+
     /// <summary>Optional calculated expression, such as <c>concat($first, ' ', $last)</c>.</summary>
     public string? CalculatedExpression { get; init; }
 
@@ -189,7 +197,13 @@ public enum FormFieldType
     File,
 
     /// <summary>GPS or map-picked location input.</summary>
-    Location
+    Location,
+
+    /// <summary>Multi-vertex polygon geometry input.</summary>
+    GeoShape,
+
+    /// <summary>Multi-vertex polyline geometry input.</summary>
+    GeoTrace
 }
 
 /// <summary>
@@ -235,6 +249,17 @@ public sealed record FieldValidationRule
 
     /// <summary>Maximum media attachment count allowed for media fields.</summary>
     public int? MaxMediaCount { get; init; }
+
+    /// <summary>
+    /// Optional boolean constraint expression evaluated against the record values.
+    /// Validation fails when the expression evaluates falsey. Within the expression
+    /// the field's own value is addressable as <c>.</c> (and as <c>$thisFieldId</c>).
+    /// Example: <c>. &gt;= 0 and . &lt;= 100</c>.
+    /// </summary>
+    public string? ConstraintExpression { get; init; }
+
+    /// <summary>Optional message reported when <see cref="ConstraintExpression"/> fails.</summary>
+    public string? ConstraintMessage { get; init; }
 }
 
 /// <summary>

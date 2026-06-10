@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text.Json;
+using Honua.Sdk.OgcFeatures.Styles;
 
 namespace Honua.Sdk.OgcFeatures.Tests.Fixtures;
 
@@ -20,6 +21,29 @@ internal static class TestHelpers
             BaseAddress = new Uri("http://localhost:5000")
         };
         return new HonuaOgcFeaturesClient(httpClient);
+    }
+
+    public static HonuaOgcStylesClient CreateOgcStylesClient(
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+    {
+        var mockHandler = new MockHttpHandler(handler);
+        var httpClient = new HttpClient(mockHandler)
+        {
+            BaseAddress = new Uri("http://localhost:5000")
+        };
+        return new HonuaOgcStylesClient(httpClient);
+    }
+
+    public static HttpResponseMessage CreateRawResponse(
+        string content, string mediaType, HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        var httpContent = new StringContent(content, System.Text.Encoding.UTF8);
+        httpContent.Headers.ContentType =
+            System.Net.Http.Headers.MediaTypeHeaderValue.Parse(mediaType);
+        return new HttpResponseMessage(statusCode)
+        {
+            Content = httpContent
+        };
     }
 
     public static HttpResponseMessage CreateRawJsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)

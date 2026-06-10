@@ -123,6 +123,11 @@ public sealed class HonuaGeoServicesClientOptions : IHonuaAuthenticationOptions,
     /// </summary>
     public string RoutingClosestFacilityLayerName { get; set; } = "ClosestFacility";
 
+    /// <summary>
+    /// Default GeoServices GeometryServer service id used by the geometry client.
+    /// </summary>
+    public string GeometryServiceId { get; set; } = "Geometry";
+
     internal static void ValidateBaseAddress(Uri? baseAddress)
     {
         if (baseAddress is null)

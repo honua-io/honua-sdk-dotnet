@@ -68,6 +68,7 @@ jobs:
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
+            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -125,6 +126,7 @@ jobs:
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
+            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -150,6 +152,7 @@ jobs:
             "tests/Honua.Sdk.Catalogs.StacTests/Honua.Sdk.Catalogs.StacTests.csproj"
             "tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj"
             "tests/Honua.Sdk.Studio.Tests/Honua.Sdk.Studio.Tests.csproj"
+            "tests/Honua.Sdk.ConsoleShare.Tests/Honua.Sdk.ConsoleShare.Tests.csproj"
             "tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj"
           )
 
@@ -212,6 +215,7 @@ jobs:
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
+            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -249,6 +253,7 @@ jobs:
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
+            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -278,6 +283,7 @@ jobs:
             "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
+            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -306,14 +312,27 @@ jobs:
         run: |
           set -euo pipefail
           cert_path="$(mktemp --suffix=.pfx)"
-          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"' EXIT
+          # Clean up the temp cert AND the temporary trusted-signer on exit, so later
+          # pipeline steps' restores from nuget.org aren't rejected (a configured trusted
+          # signer otherwise gates ALL signed packages -> NU3034 on Microsoft packages).
+          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"; dotnet nuget trust remove honua-sdk-self >/dev/null 2>&1 || true' EXIT
           echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
 
+          # Sign every package.
           for nupkg in ./nupkgs/*.nupkg; do
             dotnet nuget sign "${nupkg}" \
               --certificate-path "${cert_path}" \
               --certificate-password "${NUGET_SIGNING_PASSWORD}" \
               --timestamper "${NUGET_SIGNING_TIMESTAMP_URL}"
+          done
+
+          # The signing cert is self-signed (private GitHub Packages feed), so its root is
+          # not trusted by default — `dotnet nuget verify` would reject it (NU3018). Register
+          # the author signer (allowing the untrusted self-signed root) JUST for verification;
+          # the EXIT trap removes it again immediately after.
+          first_pkg="$(ls ./nupkgs/*.nupkg | head -n1)"
+          dotnet nuget trust author honua-sdk-self "${first_pkg}" --allow-untrusted-root
+          for nupkg in ./nupkgs/*.nupkg; do
             dotnet nuget verify "${nupkg}"
           done
 
@@ -388,6 +407,7 @@ jobs:
           dotnet add package Honua.Sdk.Catalogs --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Offline --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk.Studio --version "${PACKAGE_VERSION}"
+          dotnet add package Honua.Sdk.ConsoleShare --version "${PACKAGE_VERSION}"
           dotnet add package Honua.Sdk --version "${PACKAGE_VERSION}"
 
           cat <<'EOF' > Program.cs
@@ -430,6 +450,8 @@ jobs:
           using Honua.Sdk.OgcFeatures.Wfs.Models;
           using Honua.Sdk.Studio;
           using Honua.Sdk.Studio.Extensions;
+          using Honua.Sdk.ConsoleShare;
+          using Honua.Sdk.ConsoleShare.Extensions;
           using Microsoft.Extensions.DependencyInjection;
           using Microsoft.Extensions.Hosting;
 
@@ -466,6 +488,7 @@ jobs:
           builder.Services.AddHonuaOgcRecords(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaStac(options => options.BaseAddress = baseUri);
           builder.Services.AddHonuaStudio(options => options.BaseAddress = baseUri);
+          builder.Services.AddHonuaConsoleShare(options => options.BaseAddress = baseUri);
 
           using var host = builder.Build();
 
@@ -481,6 +504,7 @@ jobs:
           _ = host.Services.GetRequiredService<IHonuaOgcRecordsClient>();
           _ = host.Services.GetRequiredService<IHonuaStacClient>();
           _ = host.Services.GetRequiredService<IHonuaStudioReportsClient>();
+          _ = host.Services.GetRequiredService<IHonuaConsoleShareClient>();
           _ = host.Services.GetServices<IHonuaFeatureQueryClient>().ToArray();
           _ = HonuaSpatialReference.Wgs84;
 
