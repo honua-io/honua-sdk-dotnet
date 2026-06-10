@@ -38,10 +38,15 @@ dotnet_diagnostic.CA2000.severity = none
 dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.CA2234.severity = none
 
-# Samples are executable guidance, not reusable library surface.
+# Samples are executable guidance, not reusable library surface. The in-memory
+# store/client fakes intentionally expose mutable collections for inspection and
+# skip null-argument guards that the real SDK contracts already enforce.
 [examples/**/*.cs]
+dotnet_diagnostic.CA1002.severity = none
 dotnet_diagnostic.CA1031.severity = none
 dotnet_diagnostic.CA1032.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1305.severity = none
 dotnet_diagnostic.CA1515.severity = none
 dotnet_diagnostic.CA1859.severity = none
 dotnet_diagnostic.CA2007.severity = none

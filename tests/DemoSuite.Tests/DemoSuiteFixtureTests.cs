@@ -1,6 +1,8 @@
 using System.Globalization;
+using FieldFormConsole;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Geometry;
+using OfflineConflictConsole;
 using RealtimeWorker;
 using RoutingGeofenceConsole;
 using Xunit;
@@ -55,5 +57,57 @@ public sealed class DemoSuiteFixtureTests
             summary.GeofenceTransitions);
         Assert.Contains("Honolulu Harbor to Dispatch Yard distance=4200m", text);
         Assert.Contains("12:00:30 truck-7 Outside Departed distance=15m", text);
+    }
+
+    [Fact]
+    public async Task OfflineConflictDemo_WalksManualServerAndClientResolutionPaths()
+    {
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+
+        var summary = await OfflineConflictDemo.RunAsync(output);
+        var text = output.ToString();
+
+        // ManualReview: a conflict envelope is produced, detected, and resolved.
+        Assert.Equal(1, summary.ManualReview.Conflicts);
+        Assert.True(summary.ManualReview.ConflictDetected);
+        Assert.Equal(1, summary.ManualReview.EditRequestCount);
+        Assert.Equal(1, summary.ManualReview.JournalConflicts);
+        Assert.Equal(0, summary.ManualReview.JournalSucceeded);
+
+        // ServerWins: local edit dropped, no envelope, single edit request.
+        Assert.Equal(1, summary.ServerWins.Succeeded);
+        Assert.False(summary.ServerWins.ConflictDetected);
+        Assert.Equal(1, summary.ServerWins.EditRequestCount);
+
+        // ClientWins: force-write retry succeeds on the second edit request.
+        Assert.Equal(1, summary.ClientWins.Succeeded);
+        Assert.False(summary.ClientWins.ConflictDetected);
+        Assert.Equal(2, summary.ClientWins.EditRequestCount);
+
+        Assert.Contains("conflict detected: op=op-1", text);
+        Assert.Contains("errorCode=409", text);
+        Assert.Contains("resolved by reviewer: open conflicts now 0", text);
+        Assert.Contains("forceWrite flags: False,True", text);
+    }
+
+    [Fact]
+    public void FieldFormDemo_ReportsValidationErrorsAndCalculatedFields()
+    {
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+
+        var summary = FieldFormDemo.Run(output);
+        var text = output.ToString();
+
+        Assert.False(summary.InvalidIsValid);
+        Assert.True(summary.InvalidErrorCount >= 3);
+        Assert.True(summary.ValidIsValid);
+        Assert.Equal("Leilani Kealoha", summary.CalculatedInspectorName);
+        Assert.Equal("10", summary.CalculatedSampleTotal);
+
+        Assert.Contains("First name must be at least 2 character(s).", text);
+        Assert.Contains("Contact email does not match the required format.", text);
+        Assert.Contains("Reason for removal is required.", text);
+        Assert.Contains("validation: VALID (0 errors)", text);
+        Assert.Contains("calculated inspectorName = \"Leilani Kealoha\"", text);
     }
 }
