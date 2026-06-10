@@ -4,6 +4,8 @@
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Routing;
 using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.GeometryServer;
+using Honua.Sdk.GeoServices.ImageServer;
 using Honua.Sdk.GeoServices.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -87,6 +89,70 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
+
+        ApplyHandlerAndResilience(httpBuilder, snapshot);
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Honua GeoServices ImageServer client with the DI container.
+    /// </summary>
+    /// <param name="services">The service collection to register with.</param>
+    /// <param name="configure">Configuration delegate for client options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddHonuaImageServer(
+        this IServiceCollection services,
+        Action<HonuaGeoServicesClientOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var snapshot = new HonuaGeoServicesClientOptions();
+        configure(snapshot);
+        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
+        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = services.AddHttpClient<HonuaImageServerClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
+        })
+        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
+
+        ApplyHandlerAndResilience(httpBuilder, snapshot);
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Honua GeoServices GeometryServer client with the DI container.
+    /// </summary>
+    /// <param name="services">The service collection to register with.</param>
+    /// <param name="configure">Configuration delegate for client options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddHonuaGeometryServer(
+        this IServiceCollection services,
+        Action<HonuaGeoServicesClientOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var snapshot = new HonuaGeoServicesClientOptions();
+        configure(snapshot);
+        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
+        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = services.AddHttpClient<HonuaGeometryServerClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
+        })
+        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
 
         ApplyHandlerAndResilience(httpBuilder, snapshot);
         return services;
