@@ -24,9 +24,11 @@ builder.Services.AddHonuaConsoleShare(o =>
 
 Use `IHonuaConsoleShareClient` to read a share detail, update access, validate a
 dependency closure before a visibility change, and manage the public-link and
-embed-token lifecycle. The share contracts live in `Honua.Sdk.Abstractions`
-(namespace `Honua.Sdk.Abstractions.Console.Share`) so browser and native hosts
-share one DTO set.
+embed-token lifecycle. Use `IHonuaConsoleShareExportClient` (register with
+`AddHonuaConsoleShareExport`) to manage scheduled Share export definitions and
+runs and to read Share traffic projections. The share contracts live in
+`Honua.Sdk.Abstractions` (namespace `Honua.Sdk.Abstractions.Console.Share`) so
+browser and native hosts share one DTO set.
 
 ## REST surface
 
@@ -41,6 +43,26 @@ The client targets the Console Share surface under `/api/v1/console/shares`.
 | `RevokePublicLinkAsync` | `DELETE /api/v1/console/shares/{shareId}/public-link` |
 | `CreateEmbedTokenAsync` | `PUT /api/v1/console/shares/{shareId}/embed-token` |
 | `RevokeEmbedTokenAsync` | `DELETE /api/v1/console/shares/{shareId}/embed-token` |
+
+`IHonuaConsoleShareExportClient` targets the Share export and traffic admin
+surface under `/api/v1/admin/share`.
+
+| SDK method | HTTP contract |
+|---|---|
+| `ListExportDefinitionsAsync` | `GET /api/v1/admin/share/exports` |
+| `CreateExportDefinitionAsync` | `POST /api/v1/admin/share/exports` |
+| `GetExportDefinitionAsync` | `GET /api/v1/admin/share/exports/{exportId}` |
+| `UpdateExportDefinitionAsync` | `PUT /api/v1/admin/share/exports/{exportId}` |
+| `DeleteExportDefinitionAsync` | `DELETE /api/v1/admin/share/exports/{exportId}` |
+| `TriggerExportAsync` | `POST /api/v1/admin/share/exports/{exportId}/trigger` |
+| `PauseExportAsync` | `POST /api/v1/admin/share/exports/{exportId}/pause` |
+| `ResumeExportAsync` | `POST /api/v1/admin/share/exports/{exportId}/resume` |
+| `ListExportRunsAsync` | `GET /api/v1/admin/share/exports/{exportId}/runs` |
+| `GetExportRunAsync` | `GET /api/v1/admin/share/exports/{exportId}/runs/{runId}` |
+| `GetTrafficSummaryAsync` | `GET /api/v1/admin/share/traffic` |
+| `GetTrafficSeriesAsync` | `GET /api/v1/admin/share/traffic/series` |
+| `GetItemTrafficSummaryAsync` | `GET /api/v1/admin/services/{serviceName}/layers/{layerId}/share/traffic` |
+| `GetItemTrafficSeriesAsync` | `GET /api/v1/admin/services/{serviceName}/layers/{layerId}/share/traffic/series` |
 
 `GetShareAsync` returns `HonuaShareItemDetail` (the share summary plus grants and
 any active public link / embed token) deserialized from the **unwrapped** server
@@ -85,9 +107,10 @@ responses whose body does not satisfy the share contract throw
 ## Scope
 
 This package wraps the Console Share access, public-link, and embed-token
-lifecycle surface. Open-data / DCAT / STAC publication and Share export/traffic
-clients are paired with separate server contracts and tracked as follow-on
-slices of the same SDK projection ticket.
+lifecycle surface, plus the Share export-definition / export-run and
+Share-traffic admin surface. Open-data / DCAT / STAC publication clients are
+paired with a separate server contract and tracked as a follow-on slice of the
+same SDK projection ticket.
 
 ## Documentation
 
