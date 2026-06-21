@@ -60,9 +60,17 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
     }
 
     /// <inheritdoc />
+    public Task<ExtractChangesResult> ExtractChangesAsync(
+        string serviceId,
+        string replicaId,
+        CancellationToken cancellationToken = default)
+        => ExtractChangesAsync(serviceId, replicaId, sinceServerGen: null, cancellationToken);
+
+    /// <inheritdoc />
     public async Task<ExtractChangesResult> ExtractChangesAsync(
         string serviceId,
         string replicaId,
+        string? sinceServerGen,
         CancellationToken cancellationToken = default)
     {
         ValidateServiceId(serviceId);
@@ -72,6 +80,16 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
             ["replicaID"] = replicaId,
             ["f"] = "json",
         };
+
+        // Scope the extract to changes since the supplied server generation. The GeoServices
+        // replica protocol expects an array of per-layer generations; a single value is broadcast
+        // to all layers by the server. Without it the server returns the full change set every
+        // run, defeating delta sync.
+        if (!string.IsNullOrWhiteSpace(sinceServerGen))
+        {
+            parameters["serverGens"] = $"[{sinceServerGen}]";
+            parameters["replicaServerGen"] = sinceServerGen;
+        }
 
         using var doc = await PostAsync(url, parameters, cancellationToken).ConfigureAwait(false);
         var root = doc.RootElement;
