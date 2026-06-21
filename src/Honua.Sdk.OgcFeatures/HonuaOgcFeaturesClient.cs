@@ -26,6 +26,12 @@ public sealed class HonuaOgcFeaturesClient :
     IHonuaFeatureAttachmentClient
 {
     private const string BasePath = "/ogc/features";
+
+    /// <summary>
+    /// Safety cap on the number of pages auto-pagination will fetch before throwing,
+    /// guarding against servers that emit self-referential or cyclic next-links.
+    /// </summary>
+    private const int MaxAutoPages = 100;
     private const string RollbackUnsupportedReason =
         "OGC API Features create, update, and delete endpoints do not support rollback-on-failure edit batches.";
     private const string UnsupportedAttachmentReason =
@@ -299,7 +305,9 @@ public sealed class HonuaOgcFeaturesClient :
         var page = await GetItemsAsync(collectionId, query, cancellationToken).ConfigureAwait(false);
         yield return page;
 
-        while (true)
+        var visitedHrefs = new HashSet<string>(StringComparer.Ordinal);
+        var pageCount = 0;
+        while (pageCount < MaxAutoPages)
         {
             var nextLink = page.Links?.FirstOrDefault(l =>
                 string.Equals(l.Rel, "next", StringComparison.OrdinalIgnoreCase));
@@ -311,6 +319,13 @@ public sealed class HonuaOgcFeaturesClient :
 
             ValidateNextLinkOrigin(nextLink.Href);
 
+            // A next-link that points back to a page already fetched (or to itself) would
+            // loop forever. Track visited hrefs and stop on a repeat.
+            if (!visitedHrefs.Add(nextLink.Href))
+            {
+                yield break;
+            }
+
             var body = await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
             page = JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeatureCollection)
                 ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize paged items.", body);
@@ -321,7 +336,12 @@ public sealed class HonuaOgcFeaturesClient :
             }
 
             yield return page;
+            pageCount++;
         }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use manual paging with GetItemsAsync for larger result sets.");
     }
 
     /// <inheritdoc />

@@ -17,6 +17,12 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
 {
     private const string BasePath = "/ogc/records";
 
+    /// <summary>
+    /// Safety cap on the number of pages auto-pagination will fetch before throwing,
+    /// guarding against servers that emit self-referential or cyclic next-links.
+    /// </summary>
+    private const int MaxAutoPages = 100;
+
     private readonly HttpClient _http;
 
     /// <summary>
@@ -111,7 +117,9 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
         var page = await GetRecordsAsync(collectionId, query, cancellationToken).ConfigureAwait(false);
         yield return page;
 
-        while (true)
+        var visitedHrefs = new HashSet<string>(StringComparer.Ordinal);
+        var pageCount = 0;
+        while (pageCount < MaxAutoPages)
         {
             var nextLink = page.Links?.FirstOrDefault(static link =>
                 string.Equals(link.Rel, "next", StringComparison.OrdinalIgnoreCase));
@@ -123,6 +131,13 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
 
             ValidateNextLinkOrigin(nextLink.Href);
 
+            // A next-link that points back to a page already fetched (or to itself) would
+            // loop forever. Track visited hrefs and stop on a repeat.
+            if (!visitedHrefs.Add(nextLink.Href))
+            {
+                yield break;
+            }
+
             var body = await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
             page = JsonSerializer.Deserialize(body, OgcRecordsJsonContext.Default.OgcRecordCollection)
                 ?? throw new HonuaOgcRecordsException(HttpStatusCode.OK, "Failed to deserialize paged Records response.", body);
@@ -133,7 +148,12 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
             }
 
             yield return page;
+            pageCount++;
         }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use manual paging with GetRecordsAsync for larger result sets.");
     }
 
     /// <inheritdoc />
