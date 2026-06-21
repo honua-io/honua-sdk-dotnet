@@ -59,6 +59,7 @@ public sealed class FeatureStreamEventBuffer : IDisposable
     private readonly SemaphoreSlim _space;
     private readonly object _gate = new();
     private bool _completed;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FeatureStreamEventBuffer"/> class.
@@ -71,7 +72,12 @@ public sealed class FeatureStreamEventBuffer : IDisposable
     {
         _options = NormalizeOptions(options);
         _processor = processor;
-        _space = new SemaphoreSlim(_options.Capacity, _options.Capacity);
+
+        // No maximum count: completion uses a baton-passing _space.Release() to wake parked
+        // writers, which can transiently leave the available-slot count above capacity. A bounded
+        // semaphore would throw SemaphoreFullException; capacity is still enforced by the queue
+        // and the matched acquire/release accounting on the write/dequeue paths.
+        _space = new SemaphoreSlim(_options.Capacity);
     }
 
     /// <summary>
@@ -100,6 +106,31 @@ public sealed class FeatureStreamEventBuffer : IDisposable
                 };
             }
 
+            // In Wait mode the _space semaphore is the single source of truth for capacity:
+            // a non-blocking acquire both tests for free space and reserves it atomically,
+            // avoiding the divergence a separate _queue.Count pre-check could introduce under
+            // concurrent producers. Every successful acquire is matched by a _space.Release()
+            // when the event is dequeued in ReadAllAsync, keeping the count balanced.
+            if (_options.Mode == FeatureStreamBackpressureMode.Wait)
+            {
+                if (!_space.Wait(0))
+                {
+                    return new FeatureStreamBufferWriteResult
+                    {
+                        Decision = FeatureStreamBufferWriteDecision.BackpressureRejected,
+                        SequenceResult = sequenceResult
+                    };
+                }
+
+                _queue.Enqueue(featureEvent);
+                _items.Release();
+                return new FeatureStreamBufferWriteResult
+                {
+                    Decision = FeatureStreamBufferWriteDecision.Accepted,
+                    SequenceResult = sequenceResult
+                };
+            }
+
             if (_queue.Count >= _options.Capacity)
             {
                 return _options.Mode switch
@@ -115,15 +146,6 @@ public sealed class FeatureStreamEventBuffer : IDisposable
                         Decision = FeatureStreamBufferWriteDecision.BackpressureRejected,
                         SequenceResult = sequenceResult
                     }
-                };
-            }
-
-            if (_options.Mode == FeatureStreamBackpressureMode.Wait && !_space.Wait(0))
-            {
-                return new FeatureStreamBufferWriteResult
-                {
-                    Decision = FeatureStreamBufferWriteDecision.BackpressureRejected,
-                    SequenceResult = sequenceResult
                 };
             }
 
@@ -165,7 +187,14 @@ public sealed class FeatureStreamEventBuffer : IDisposable
         {
             if (_completed)
             {
-                _space.Release();
+                // We consumed a completion wakeup, not a real capacity slot. Pass the baton on to
+                // the next parked writer so every waiter wakes, unless the buffer is already being
+                // disposed (the semaphore may be gone). Done under _gate to order against Dispose().
+                if (!_disposed)
+                {
+                    _space.Release();
+                }
+
                 return new FeatureStreamBufferWriteResult
                 {
                     Decision = FeatureStreamBufferWriteDecision.Completed,
@@ -218,6 +247,10 @@ public sealed class FeatureStreamEventBuffer : IDisposable
 
             if (shouldStop)
             {
+                // Completed with an empty queue. Complete() only released _items once, so a
+                // single reader was woken. Pass the wakeup on to the next blocked reader before
+                // exiting so every concurrent reader drains rather than hanging on a lost wakeup.
+                _items.Release();
                 yield break;
             }
 
@@ -229,14 +262,24 @@ public sealed class FeatureStreamEventBuffer : IDisposable
             yield return featureEvent;
             if (completeAfterYield)
             {
+                // We drained the final queued item after completion. Baton-pass a wakeup so any
+                // other readers blocked on an empty, completed queue also wake and exit.
+                _items.Release();
                 yield break;
             }
         }
     }
 
     /// <summary>
-    /// Completes the buffer and wakes pending readers.
+    /// Completes the buffer and wakes pending readers and writers.
     /// </summary>
+    /// <remarks>
+    /// When the queue is empty a single reader wakeup is released; that reader observes
+    /// completion and passes the wakeup on to the next blocked reader (baton passing) so
+    /// all blocked readers drain. A writer parked in <see cref="FeatureStreamBackpressureMode.Wait"/>
+    /// mode is woken by releasing <c>_space</c>; it then observes completion under the gate and
+    /// returns <see cref="FeatureStreamBufferWriteDecision.Completed"/> instead of faulting.
+    /// </remarks>
     public void Complete()
     {
         lock (_gate)
@@ -247,9 +290,21 @@ public sealed class FeatureStreamEventBuffer : IDisposable
             }
 
             _completed = true;
+
+            // Wake one reader when nothing is queued; it baton-passes the wakeup to peers.
             if (_queue.Count == 0)
             {
                 _items.Release();
+            }
+
+            // Wake a writer parked on _space.WaitAsync so it observes completion gracefully
+            // instead of faulting with ObjectDisposedException once the semaphore is disposed.
+            // The woken writer re-checks _completed under the gate and releases _space again,
+            // which keeps the wakeup propagating to any further parked writers without
+            // permanently inflating the capacity count.
+            if (_options.Mode == FeatureStreamBackpressureMode.Wait)
+            {
+                _space.Release();
             }
         }
     }
@@ -259,7 +314,19 @@ public sealed class FeatureStreamEventBuffer : IDisposable
     /// </summary>
     public void Dispose()
     {
+        // Complete() (under _gate) wakes parked readers/writers before any semaphore is disposed.
         Complete();
+
+        lock (_gate)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+        }
+
         _items.Dispose();
         _space.Dispose();
     }
