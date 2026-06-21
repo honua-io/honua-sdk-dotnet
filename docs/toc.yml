@@ -24,6 +24,8 @@
       href: feature-edits.md
     - name: Geometry analysis
       href: geometry-analysis.md
+    - name: Process authoring & ArcObjects-GP migration
+      href: process-authoring.md
     - name: Geofencing
       href: geofencing.md
     - name: Scenes

@@ -109,3 +109,41 @@ var bufferJob = await processes.SubmitJobAsync(
 Non-success responses throw `HonuaProcessesException`. When the server returns
 problem-details JSON, the exception preserves `StatusCode`, `ProblemType`,
 `ProblemTitle`, `ProblemDetail`, and the raw `ResponseBody`.
+
+## Authoring processes and plans
+
+The `Honua.Sdk.Processes.Authoring` namespace adds a fluent API for authoring
+Honua geoprocessing processes in C# and unit-testing executor logic locally,
+without a running server.
+
+```csharp
+using Honua.Sdk.Processes.Authoring;
+
+// Describe a process for the catalog.
+var definition = HonuaProcessAuthoring.DefineProcess("geometry.buffer")
+    .WithTitle("Buffer")
+    .AddInput("wkb", HonuaProcessParameterValueType.Wkb, p => p.Required())
+    .AddInput("distance", HonuaProcessParameterValueType.FloatingPoint, p => p.Required())
+    .AddOutput("outputFeatureLayer", HonuaProcessArtifactKind.FeatureLayer)
+    .Build();
+
+var ogcDescription = definition.ToOgcDescription(); // server process-description shape
+
+// Author a multi-step plan for the canonical honua-geoprocessing process.
+var request = HonuaProcessAuthoring.DefinePlan("plan-1")
+    .AddGeoprocessStep("buffer", "geometry.buffer", s => s.WithInput("distance", 100))
+    .BuildExecuteRequest();
+
+// Unit-test an IHonuaProcessExecutor in-process.
+var harness = new HonuaProcessTestHarness(myExecutor, definition);
+var run = await harness.RunAsync(new Dictionary<string, string>
+{
+    ["wkb"] = "AAAA",
+    ["distance"] = "100",
+});
+Assert.True(run.Succeeded);
+```
+
+See [`docs/process-authoring.md`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/process-authoring.md)
+for the full guide, including the ArcObjects/ArcPy GP migration mapping and the
+federate-bridge approach.
