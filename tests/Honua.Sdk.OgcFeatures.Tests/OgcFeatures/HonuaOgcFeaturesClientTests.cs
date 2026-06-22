@@ -1005,4 +1005,46 @@ public class HonuaOgcFeaturesClientTests
         Assert.NotNull(capturedUrl);
         Assert.Contains("f=csv", capturedUrl);
     }
+
+    // ── numberMatched tolerance ─────────────────────────────────────
+
+    [Fact]
+    public async Task GetItemsAsync_TreatsNumberMatchedUnknownAsNull()
+    {
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": "unknown",
+            "numberReturned": 1,
+            "features": [{ "type": "Feature", "id": "feature-001", "geometry": null, "properties": {} }]
+        }
+        """;
+        var client = TestHelpers.CreateOgcFeaturesClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.GetItemsAsync("buildings");
+
+        Assert.Null(result.NumberMatched);
+        Assert.Equal(1, result.NumberReturned);
+        Assert.Single(result.Features!);
+    }
+
+    [Fact]
+    public async Task GetItemsAsync_ParsesNumberMatchedFromNumericString()
+    {
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": "256",
+            "numberReturned": 1,
+            "features": [{ "type": "Feature", "id": "feature-001", "geometry": null, "properties": {} }]
+        }
+        """;
+        var client = TestHelpers.CreateOgcFeaturesClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.GetItemsAsync("buildings");
+
+        Assert.Equal(256, result.NumberMatched);
+    }
 }

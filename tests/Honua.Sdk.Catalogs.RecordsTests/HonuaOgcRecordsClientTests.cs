@@ -356,4 +356,44 @@ public sealed class HonuaOgcRecordsClientTests
         Assert.Contains("bbox parameter", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(json, ex.ResponseBody);
     }
+
+    [Fact]
+    public async Task GetRecordsAsync_TreatsNumberMatchedUnknownAsNull()
+    {
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": "unknown",
+            "numberReturned": 1,
+            "features": [{ "type": "Feature", "id": "record-001" }]
+        }
+        """;
+        var client = TestHelpers.CreateOgcRecordsClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.GetRecordsAsync("default");
+
+        Assert.Null(result.NumberMatched);
+        Assert.Equal(1, result.NumberReturned);
+        Assert.Single(result.Records!);
+    }
+
+    [Fact]
+    public async Task GetRecordsAsync_ParsesNumberMatchedFromNumericString()
+    {
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": "128",
+            "numberReturned": 1,
+            "features": [{ "type": "Feature", "id": "record-001" }]
+        }
+        """;
+        var client = TestHelpers.CreateOgcRecordsClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.GetRecordsAsync("default");
+
+        Assert.Equal(128, result.NumberMatched);
+    }
 }

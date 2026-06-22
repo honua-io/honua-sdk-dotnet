@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Catalogs.Stac.Exceptions;
 using Honua.Sdk.Catalogs.Stac.Models;
@@ -127,7 +128,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
                 yield break;
             }
 
-            var body = await GetNextPageStringAsync(nextLink, cancellationToken).ConfigureAwait(false);
+            var body = await FollowNextLinkAsync(nextLink, originalRequest: null, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC items response.");
 
             if (page.Features is null or { Count: 0 })
@@ -155,7 +156,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
                 yield break;
             }
 
-            var body = await GetNextPageStringAsync(nextLink, cancellationToken).ConfigureAwait(false);
+            var body = await FollowNextLinkAsync(nextLink, originalRequest: null, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC search response.");
 
             if (page.Features is null or { Count: 0 })
@@ -172,7 +173,8 @@ public sealed class HonuaStacClient : IHonuaStacClient
         StacSearchRequest? request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var page = await PostSearchAsync(request, cancellationToken).ConfigureAwait(false);
+        var originalRequest = request ?? new StacSearchRequest();
+        var page = await PostSearchAsync(originalRequest, cancellationToken).ConfigureAwait(false);
         yield return page;
 
         while (true)
@@ -183,7 +185,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
                 yield break;
             }
 
-            var body = await GetNextPageStringAsync(nextLink, cancellationToken).ConfigureAwait(false);
+            var body = await FollowNextLinkAsync(nextLink, originalRequest, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC search response.");
 
             if (page.Features is null or { Count: 0 })
@@ -276,10 +278,111 @@ public sealed class HonuaStacClient : IHonuaStacClient
         return responseBody;
     }
 
-    private async Task<string> GetNextPageStringAsync(StacLink nextLink, CancellationToken cancellationToken)
+    private async Task<string> FollowNextLinkAsync(
+        StacLink nextLink,
+        StacSearchRequest? originalRequest,
+        CancellationToken cancellationToken)
     {
         ValidateNextLinkOrigin(nextLink.Href);
-        return await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
+
+        // STAC API pagination links may advertise a method; POST continuation
+        // links carry the page token in a JSON body (optionally merged with the
+        // caller's original search parameters) rather than in the href.
+        var usePost = string.Equals(nextLink.Method, "POST", StringComparison.OrdinalIgnoreCase);
+        if (!usePost)
+        {
+            return await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
+        }
+
+        var requestUri = CreateRequestUri(nextLink.Href);
+        var bodyBytes = BuildNextPostBody(nextLink, originalRequest);
+
+        using var content = new ByteArrayContent(bodyBytes);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        ApplyLinkHeaders(content, nextLink.Headers);
+
+        using var response = await _http.PostAsync(requestUri, content, cancellationToken).ConfigureAwait(false);
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        EnsureSuccess(response, responseBody);
+        return responseBody;
+    }
+
+    private static byte[] BuildNextPostBody(StacLink nextLink, StacSearchRequest? originalRequest)
+    {
+        // When the link advertises `merge: true`, the advertised body is merged
+        // over the caller's original request; otherwise the advertised body (if
+        // any) is sent verbatim. With no body at all, re-POST the original request.
+        var merge = nextLink.Merge ?? false;
+        var hasBody = nextLink.Body is { ValueKind: JsonValueKind.Object };
+
+        if (!hasBody)
+        {
+            var fallback = originalRequest ?? new StacSearchRequest();
+            return JsonSerializer.SerializeToUtf8Bytes(fallback, StacJsonContext.Default.StacSearchRequest);
+        }
+
+        var linkBody = nextLink.Body!.Value;
+        if (!merge || originalRequest is null)
+        {
+            return Encoding.UTF8.GetBytes(linkBody.GetRawText());
+        }
+
+        return MergeRequestWithLinkBody(originalRequest, linkBody);
+    }
+
+    private static byte[] MergeRequestWithLinkBody(StacSearchRequest originalRequest, JsonElement linkBody)
+    {
+        using var originalDoc = JsonSerializer.SerializeToDocument(
+            originalRequest,
+            StacJsonContext.Default.StacSearchRequest);
+
+        var merged = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        foreach (var property in originalDoc.RootElement.EnumerateObject())
+        {
+            merged[property.Name] = property.Value.Clone();
+        }
+
+        // Link-advertised members win on conflict: they carry the continuation token.
+        foreach (var property in linkBody.EnumerateObject())
+        {
+            merged[property.Name] = property.Value.Clone();
+        }
+
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            foreach (var (key, value) in merged)
+            {
+                writer.WritePropertyName(key);
+                value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+        }
+
+        return stream.ToArray();
+    }
+
+    private static void ApplyLinkHeaders(HttpContent content, IReadOnlyDictionary<string, string>? headers)
+    {
+        if (headers is not { Count: > 0 })
+        {
+            return;
+        }
+
+        foreach (var (name, value) in headers)
+        {
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.Equals(name, "Content-Type", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            // Header values advertised by the server are applied best-effort; an
+            // invalid header should not abort an otherwise valid continuation.
+            content.Headers.TryAddWithoutValidation(name, value);
+        }
     }
 
     private static StacItemCollection DeserializeItemCollection(string body, string errorMessage)

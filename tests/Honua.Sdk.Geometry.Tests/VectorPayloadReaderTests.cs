@@ -81,6 +81,164 @@ public sealed class VectorPayloadReaderTests
     }
 
     [Fact]
+    public async Task GeoJsonReader_Parses3DBboxUsingHorizontalOrdinates()
+    {
+        // RFC 7946 §5: a 3D bbox is [west, south, minElev, east, north, maxElev].
+        const string json = """
+            {
+              "type": "FeatureCollection",
+              "bbox": [-158, 21, 0, -157, 22, 100],
+              "features": []
+            }
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoJson);
+
+        Assert.NotNull(result.Extent);
+        Assert.Equal(-158, result.Extent!.MinX, 6);
+        Assert.Equal(21, result.Extent.MinY, 6);
+        Assert.Equal(-157, result.Extent.MaxX, 6);
+        Assert.Equal(22, result.Extent.MaxY, 6);
+    }
+
+    [Fact]
+    public async Task GeoJsonReader_Parses2DBboxUnchanged()
+    {
+        const string json = """
+            {
+              "type": "FeatureCollection",
+              "bbox": [-158, 21, -157, 22],
+              "features": []
+            }
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoJson);
+
+        Assert.NotNull(result.Extent);
+        Assert.Equal(-158, result.Extent!.MinX, 6);
+        Assert.Equal(21, result.Extent.MinY, 6);
+        Assert.Equal(-157, result.Extent.MaxX, 6);
+        Assert.Equal(22, result.Extent.MaxY, 6);
+    }
+
+    [Fact]
+    public async Task EsriJsonReader_MapsEsriWebMercatorWkidToEpsg()
+    {
+        const string json = """
+            {
+              "spatialReference": { "wkid": 102100, "latestWkid": 3857 },
+              "features": [
+                {
+                  "attributes": { "OBJECTID": 1 },
+                  "geometry": { "x": -17568000, "y": 2426000 }
+                }
+              ]
+            }
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+
+        Assert.Equal("EPSG:3857", result.Crs);
+        var feature = Assert.Single(result.Features);
+        Assert.Equal("EPSG:3857", feature.Crs);
+    }
+
+    [Fact]
+    public async Task EsriJsonReader_MapsProprietaryWkidWithoutLatestToEpsg()
+    {
+        const string json = """
+            {
+              "spatialReference": { "wkid": 102100 },
+              "features": []
+            }
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+
+        Assert.Equal("EPSG:3857", result.Crs);
+    }
+
+    [Fact]
+    public async Task EsriJsonReader_EmitsEsriAuthorityForNonEpsgWkid()
+    {
+        const string json = """
+            {
+              "spatialReference": { "wkid": 54009 },
+              "features": []
+            }
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+
+        Assert.Equal("ESRI:54009", result.Crs);
+    }
+
+    [Fact]
+    public async Task GmlReader_AppliesLatLonAxisOrderForUrnGeographicCrs()
+    {
+        // urn:ogc:def:crs:EPSG::4326 mandates lat,lon, so gml:pos is "lat lon".
+        const string gml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wfs:FeatureCollection
+                xmlns:wfs="http://www.opengis.net/wfs/2.0"
+                xmlns:gml="http://www.opengis.net/gml/3.2"
+                xmlns:honua="https://honua.io/schemas/test"
+                numberMatched="1"
+                numberReturned="1">
+              <wfs:member>
+                <honua:park gml:id="parks.1">
+                  <honua:shape>
+                    <gml:Point srsName="urn:ogc:def:crs:EPSG::4326">
+                      <gml:pos>21.267 -157.819</gml:pos>
+                    </gml:Point>
+                  </honua:shape>
+                </honua:park>
+              </wfs:member>
+            </wfs:FeatureCollection>
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(gml), VectorPayloadFormat.Gml);
+
+        var feature = Assert.Single(result.Features);
+        var point = Assert.IsType<Point>(feature.Geometry);
+        Assert.Equal(4326, point.SRID);
+        Assert.Equal(-157.819, point.X, 3);
+        Assert.Equal(21.267, point.Y, 3);
+    }
+
+    [Fact]
+    public async Task GmlReader_KeepsLonLatForShortFormCrs()
+    {
+        // The legacy short form EPSG:4326 implies lon,lat (no swap).
+        const string gml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wfs:FeatureCollection
+                xmlns:wfs="http://www.opengis.net/wfs/2.0"
+                xmlns:gml="http://www.opengis.net/gml/3.2"
+                xmlns:honua="https://honua.io/schemas/test"
+                numberMatched="1"
+                numberReturned="1">
+              <wfs:member>
+                <honua:park gml:id="parks.1">
+                  <honua:shape>
+                    <gml:Point srsName="EPSG:4326">
+                      <gml:pos>-157.819 21.267</gml:pos>
+                    </gml:Point>
+                  </honua:shape>
+                </honua:park>
+              </wfs:member>
+            </wfs:FeatureCollection>
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(gml), VectorPayloadFormat.Gml);
+
+        var feature = Assert.Single(result.Features);
+        var point = Assert.IsType<Point>(feature.Geometry);
+        Assert.Equal(-157.819, point.X, 3);
+        Assert.Equal(21.267, point.Y, 3);
+    }
+
+    [Fact]
     public async Task GmlReader_ParsesWfsMembersIntoNtsGeometry()
     {
         const string gml = """

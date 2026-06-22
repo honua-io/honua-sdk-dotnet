@@ -20,12 +20,35 @@ public class GeographicBoundingBoxTests
     }
 
     [Fact]
-    public void Construction_WithMinLongitudeNotLessThanMax_Throws()
+    public void Construction_WithEqualLongitudeBounds_Throws()
     {
+        // A zero-width longitude span is degenerate and remains rejected.
         Assert.Throws<ArgumentException>(
             () => new GeographicBoundingBox(10.0, 0.0, 10.0, 1.0));
+    }
+
+    [Fact]
+    public void Construction_WithAntimeridianCrossingLongitudes_Succeeds()
+    {
+        // minLongitude > maxLongitude denotes an antimeridian-crossing extent and is allowed.
+        var bbox = new GeographicBoundingBox(170.0, -10.0, -170.0, 10.0);
+
+        Assert.True(bbox.IsAntimeridianCrossing);
+        Assert.Equal(170.0, bbox.MinLongitude);
+        Assert.Equal(-170.0, bbox.MaxLongitude);
+    }
+
+    [Fact]
+    public void Construction_WithOutOfRangeCoordinate_Throws()
+    {
         Assert.Throws<ArgumentException>(
-            () => new GeographicBoundingBox(11.0, 0.0, 10.0, 1.0));
+            () => new GeographicBoundingBox(-181.0, 0.0, 1.0, 1.0));
+        Assert.Throws<ArgumentException>(
+            () => new GeographicBoundingBox(0.0, -91.0, 1.0, 1.0));
+        Assert.Throws<ArgumentException>(
+            () => new GeographicBoundingBox(0.0, 0.0, 181.0, 1.0));
+        Assert.Throws<ArgumentException>(
+            () => new GeographicBoundingBox(0.0, 0.0, 1.0, 91.0));
     }
 
     [Fact]
@@ -101,6 +124,35 @@ public class GeographicBoundingBoxTests
         var b = new GeographicBoundingBox(5.0, 0.0, 10.0, 5.0);
 
         Assert.True(a.Intersects(b));
+    }
+
+    [Fact]
+    public void Contains_AntimeridianCrossingBox_HandlesWrap()
+    {
+        var bbox = new GeographicBoundingBox(170.0, -10.0, -170.0, 10.0);
+
+        Assert.True(bbox.Contains(175.0, 0.0));   // east of min, before the date line
+        Assert.True(bbox.Contains(-175.0, 0.0));  // west of the date line, before max
+        Assert.True(bbox.Contains(180.0, 0.0));   // on the date line
+        Assert.False(bbox.Contains(0.0, 0.0));    // in the excluded interior band
+        Assert.False(bbox.Contains(160.0, 0.0));  // west of min
+        Assert.False(bbox.Contains(175.0, 20.0)); // outside latitude band
+    }
+
+    [Fact]
+    public void Intersects_AntimeridianCrossingBox_ReturnsTrueAcrossDateLine()
+    {
+        var crossing = new GeographicBoundingBox(170.0, -10.0, -170.0, 10.0);
+        var eastSide = new GeographicBoundingBox(178.0, -5.0, 179.0, 5.0);
+        var westSide = new GeographicBoundingBox(-179.0, -5.0, -178.0, 5.0);
+        var disjoint = new GeographicBoundingBox(0.0, -5.0, 10.0, 5.0);
+
+        Assert.True(crossing.Intersects(eastSide));
+        Assert.True(eastSide.Intersects(crossing));
+        Assert.True(crossing.Intersects(westSide));
+        Assert.True(westSide.Intersects(crossing));
+        Assert.False(crossing.Intersects(disjoint));
+        Assert.False(disjoint.Intersects(crossing));
     }
 
     [Fact]

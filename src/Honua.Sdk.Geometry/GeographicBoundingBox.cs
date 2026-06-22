@@ -23,17 +23,25 @@ public sealed record GeographicBoundingBox
     public const string Wgs84CrsIdentifier = "EPSG:4326";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GeographicBoundingBox"/> record, validating
-    /// that the minimum coordinates are strictly less than the corresponding maximum coordinates.
+    /// Initializes a new instance of the <see cref="GeographicBoundingBox"/> record.
     /// </summary>
     /// <param name="minLongitude">Western boundary in decimal degrees.</param>
     /// <param name="minLatitude">Southern boundary in decimal degrees.</param>
     /// <param name="maxLongitude">Eastern boundary in decimal degrees.</param>
     /// <param name="maxLatitude">Northern boundary in decimal degrees.</param>
+    /// <remarks>
+    /// Longitude bounds may be supplied with <paramref name="minLongitude"/> greater than
+    /// <paramref name="maxLongitude"/> to describe an extent that crosses the antimeridian
+    /// (±180°); for example, a Pacific extent of <c>min = 170°, max = -170°</c> spans the
+    /// 20° band straddling the date line. Equal longitude bounds describe a zero-width box
+    /// and are rejected. Latitude is not periodic, so the southern bound must remain strictly
+    /// less than the northern bound.
+    /// </remarks>
     /// <exception cref="ArgumentException">
-    /// Thrown when any coordinate is not finite, when <paramref name="minLongitude"/> is not
-    /// strictly less than <paramref name="maxLongitude"/>, or when <paramref name="minLatitude"/>
-    /// is not strictly less than <paramref name="maxLatitude"/>.
+    /// Thrown when any coordinate is not finite, when any coordinate is outside its valid
+    /// range (longitude ±180°, latitude ±90°), when <paramref name="minLongitude"/> equals
+    /// <paramref name="maxLongitude"/>, or when <paramref name="minLatitude"/> is not strictly
+    /// less than <paramref name="maxLatitude"/>.
     /// </exception>
     public GeographicBoundingBox(
         double minLongitude,
@@ -46,12 +54,19 @@ public sealed record GeographicBoundingBox
         ValidateFinite(maxLongitude, nameof(maxLongitude));
         ValidateFinite(maxLatitude, nameof(maxLatitude));
 
-        if (!(minLongitude < maxLongitude))
+        ValidateLongitude(minLongitude, nameof(minLongitude));
+        ValidateLongitude(maxLongitude, nameof(maxLongitude));
+        ValidateLatitude(minLatitude, nameof(minLatitude));
+        ValidateLatitude(maxLatitude, nameof(maxLatitude));
+
+        // Longitude is periodic: minLongitude > maxLongitude denotes an antimeridian-crossing
+        // extent and is allowed. Only a zero-width longitude span is rejected.
+        if (minLongitude == maxLongitude)
         {
             throw new ArgumentException(
                 string.Create(
                     CultureInfo.InvariantCulture,
-                    $"{nameof(minLongitude)} ({minLongitude}) must be strictly less than {nameof(maxLongitude)} ({maxLongitude})."),
+                    $"{nameof(minLongitude)} ({minLongitude}) must not equal {nameof(maxLongitude)} ({maxLongitude})."),
                 nameof(maxLongitude));
         }
 
@@ -91,6 +106,12 @@ public sealed record GeographicBoundingBox
     public double MaxLatitude { get; }
 
     /// <summary>
+    /// Gets a value indicating whether this bounding box crosses the antimeridian (±180°),
+    /// i.e. whether <see cref="MinLongitude"/> is greater than <see cref="MaxLongitude"/>.
+    /// </summary>
+    public bool IsAntimeridianCrossing => MinLongitude > MaxLongitude;
+
+    /// <summary>
     /// Determines whether the supplied WGS84 coordinate lies on or within this bounding box.
     /// </summary>
     /// <param name="longitude">Longitude in decimal degrees.</param>
@@ -101,8 +122,11 @@ public sealed record GeographicBoundingBox
     /// </returns>
     public bool Contains(double longitude, double latitude)
     {
-        return longitude >= MinLongitude
-            && longitude <= MaxLongitude
+        var longitudeInside = IsAntimeridianCrossing
+            ? longitude >= MinLongitude || longitude <= MaxLongitude
+            : longitude >= MinLongitude && longitude <= MaxLongitude;
+
+        return longitudeInside
             && latitude >= MinLatitude
             && latitude <= MaxLatitude;
     }
@@ -120,10 +144,38 @@ public sealed record GeographicBoundingBox
     public bool Intersects(GeographicBoundingBox other)
     {
         ArgumentNullException.ThrowIfNull(other);
-        return MinLongitude <= other.MaxLongitude
-            && MaxLongitude >= other.MinLongitude
-            && MinLatitude <= other.MaxLatitude
+
+        var latitudeOverlaps = MinLatitude <= other.MaxLatitude
             && MaxLatitude >= other.MinLatitude;
+        return latitudeOverlaps && LongitudeOverlaps(other);
+    }
+
+    private bool LongitudeOverlaps(GeographicBoundingBox other)
+    {
+        // For antimeridian-crossing boxes the longitude span is the union of
+        // [MinLongitude, 180] and [-180, MaxLongitude], so the simple min/max overlap
+        // test does not apply. Decompose into non-crossing segments and test each pair.
+        var self = ToLongitudeSegments();
+        var others = other.ToLongitudeSegments();
+        foreach (var (selfMin, selfMax) in self)
+        {
+            foreach (var (otherMin, otherMax) in others)
+            {
+                if (selfMin <= otherMax && selfMax >= otherMin)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private (double Min, double Max)[] ToLongitudeSegments()
+    {
+        return IsAntimeridianCrossing
+            ? [(MinLongitude, 180.0), (-180.0, MaxLongitude)]
+            : [(MinLongitude, MaxLongitude)];
     }
 
     /// <summary>
@@ -199,6 +251,30 @@ public sealed record GeographicBoundingBox
         if (!double.IsFinite(value))
         {
             throw new ArgumentException($"{paramName} must be a finite number.", paramName);
+        }
+    }
+
+    private static void ValidateLongitude(double value, string paramName)
+    {
+        if (value is < -180.0 or > 180.0)
+        {
+            throw new ArgumentException(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{paramName} ({value}) must be between -180 and 180 degrees."),
+                paramName);
+        }
+    }
+
+    private static void ValidateLatitude(double value, string paramName)
+    {
+        if (value is < -90.0 or > 90.0)
+        {
+            throw new ArgumentException(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{paramName} ({value}) must be between -90 and 90 degrees."),
+                paramName);
         }
     }
 }

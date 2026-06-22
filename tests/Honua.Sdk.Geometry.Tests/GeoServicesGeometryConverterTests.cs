@@ -80,6 +80,31 @@ public class GeoServicesGeometryConverterTests
     }
 
     [Fact]
+    public void ReadGeometry_ClassifiesRingsByOrientationRegardlessOfOrder()
+    {
+        // A counter-clockwise hole is listed BEFORE its clockwise shell. Esri JSON does
+        // not mandate shell-before-hole ordering, so the hole must not be promoted to a
+        // shell and the later shell must keep its interior ring.
+        using var document = JsonDocument.Parse(
+            """
+            {
+                "rings": [
+                    [[2,2],[8,2],[8,8],[2,8],[2,2]],
+                    [[0,0],[0,10],[10,10],[10,0],[0,0]]
+                ],
+                "spatialReference": { "wkid": 4326 }
+            }
+            """);
+
+        var geometry = GeoServicesGeometryConverter.ReadGeometry(document.RootElement);
+
+        var polygon = Assert.IsType<Polygon>(geometry);
+        Assert.Equal(1, polygon.NumInteriorRings);
+        // Shell area is the outer 10x10 box; the inner 6x6 hole reduces it to 100 - 36.
+        Assert.Equal(64, polygon.Area, 6);
+    }
+
+    [Fact]
     public void WriteGeometry_WritesLinePathWithDimensionality()
     {
         var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

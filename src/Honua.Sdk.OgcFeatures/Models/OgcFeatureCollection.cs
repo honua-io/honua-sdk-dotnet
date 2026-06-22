@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Text.Json.Serialization;
+using Honua.Sdk.Abstractions.Serialization;
 
 namespace Honua.Sdk.OgcFeatures.Models;
 
@@ -18,8 +19,12 @@ public sealed class OgcFeatureCollection
     [JsonPropertyName("features")]
     public IReadOnlyList<OgcFeature>? Features { get; init; }
 
-    /// <summary>Total number of features matching the query (server-reported).</summary>
+    /// <summary>
+    /// Total number of features matching the query (server-reported), or
+    /// <see langword="null"/> when the server reports the count as unknown.
+    /// </summary>
     [JsonPropertyName("numberMatched")]
+    [JsonConverter(typeof(TolerantInt64Converter))]
     public long? NumberMatched { get; init; }
 
     /// <summary>Number of features returned in this page.</summary>

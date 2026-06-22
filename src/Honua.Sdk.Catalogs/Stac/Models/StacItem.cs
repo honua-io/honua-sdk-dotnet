@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Honua.Sdk.Abstractions.Serialization;
 
 namespace Honua.Sdk.Catalogs.Stac.Models;
 
@@ -107,8 +108,12 @@ public sealed class StacItemCollection
     [JsonIgnore]
     public IReadOnlyList<StacItem>? Items => Features;
 
-    /// <summary>Total number of items matching the query when reported by the server.</summary>
+    /// <summary>
+    /// Total number of items matching the query when reported by the server, or
+    /// <see langword="null"/> when the server reports the count as unknown.
+    /// </summary>
     [JsonPropertyName("numberMatched")]
+    [JsonConverter(typeof(TolerantInt64Converter))]
     public long? NumberMatched { get; init; }
 
     /// <summary>Number of items returned in this page.</summary>

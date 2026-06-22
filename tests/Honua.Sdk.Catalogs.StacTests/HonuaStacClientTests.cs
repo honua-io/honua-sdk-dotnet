@@ -483,4 +483,159 @@ public sealed class HonuaStacClientTests
         Assert.Contains("bbox parameter", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(json, ex.ResponseBody);
     }
+
+    [Fact]
+    public async Task PostSearchPagesAsync_FollowsPostMethodNextLinkWithBody()
+    {
+        var calls = 0;
+        var methods = new List<HttpMethod>();
+        var bodies = new List<string?>();
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            calls++;
+            methods.Add(req.Method);
+            bodies.Add(req.Content is null ? null : await req.Content.ReadAsStringAsync());
+
+            var json = calls == 1
+                ? """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-001" }],
+                      "links": [
+                          {
+                              "href": "https://honua.example.test/stac/search",
+                              "rel": "next",
+                              "method": "POST",
+                              "body": { "token": "page-2", "limit": 1 }
+                          }
+                      ]
+                  }
+                  """
+                : """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-002" }]
+                  }
+                  """;
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.PostSearchPagesAsync(new StacSearchRequest
+        {
+            Collections = ["imagery"],
+            Limit = 1
+        }))
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal([HttpMethod.Post, HttpMethod.Post], methods);
+
+        // The continuation must re-POST the advertised body (carrying the token),
+        // not GET the bare href.
+        Assert.NotNull(bodies[1]);
+        using var continuation = JsonDocument.Parse(bodies[1]!);
+        Assert.Equal("page-2", continuation.RootElement.GetProperty("token").GetString());
+        Assert.Equal(1, continuation.RootElement.GetProperty("limit").GetInt32());
+    }
+
+    [Fact]
+    public async Task PostSearchPagesAsync_MergesNextLinkBodyOverOriginalRequest()
+    {
+        var calls = 0;
+        string? continuationBody = null;
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            calls++;
+            if (calls == 2)
+            {
+                continuationBody = req.Content is null ? null : await req.Content.ReadAsStringAsync();
+            }
+
+            var json = calls == 1
+                ? """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-001" }],
+                      "links": [
+                          {
+                              "href": "https://honua.example.test/stac/search",
+                              "rel": "next",
+                              "method": "POST",
+                              "merge": true,
+                              "body": { "token": "page-2" }
+                          }
+                      ]
+                  }
+                  """
+                : """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-002" }]
+                  }
+                  """;
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        await foreach (var _ in client.PostSearchPagesAsync(new StacSearchRequest
+        {
+            Collections = ["imagery"],
+            Limit = 5
+        }))
+        {
+        }
+
+        Assert.NotNull(continuationBody);
+        using var merged = JsonDocument.Parse(continuationBody!);
+        var root = merged.RootElement;
+
+        // Original request members are preserved...
+        Assert.Equal("imagery", root.GetProperty("collections")[0].GetString());
+        Assert.Equal(5, root.GetProperty("limit").GetInt32());
+
+        // ...and the link body's continuation token is merged in.
+        Assert.Equal("page-2", root.GetProperty("token").GetString());
+    }
+
+    [Fact]
+    public async Task SearchAsync_TreatsNumberMatchedUnknownAsNull()
+    {
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": "unknown",
+            "numberReturned": 1,
+            "features": [{ "type": "Feature", "id": "scene-001" }]
+        }
+        """;
+        var client = TestHelpers.CreateStacClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.SearchAsync(new StacSearchQuery { Limit = 1 });
+
+        Assert.Null(result.NumberMatched);
+        Assert.Equal(1, result.NumberReturned);
+        Assert.Equal("scene-001", result.Features?[0].Id);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ParsesNumberMatchedFromNumericString()
+    {
+        var json = """
+        {
+            "type": "FeatureCollection",
+            "numberMatched": "42",
+            "numberReturned": 1,
+            "features": [{ "type": "Feature", "id": "scene-001" }]
+        }
+        """;
+        var client = TestHelpers.CreateStacClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.SearchAsync(new StacSearchQuery { Limit = 1 });
+
+        Assert.Equal(42, result.NumberMatched);
+    }
 }

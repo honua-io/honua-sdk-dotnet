@@ -145,6 +145,7 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
     {
         var geometry = ReadGeometry(geometryElement, options?.GeometryFactory);
         var crs = ReadSrsName(geometryElement);
+        ApplyAxisOrder(geometry, crs);
         ApplySrid(geometry, crs);
         return new VectorPayloadFeature
         {
@@ -173,8 +174,9 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
 
             if (geometryElement is not null && geometry is null)
             {
-                geometry = ReadGeometry(geometryElement, options?.GeometryFactory);
                 crs = ReadSrsName(geometryElement);
+                geometry = ReadGeometry(geometryElement, options?.GeometryFactory);
+                ApplyAxisOrder(geometry, crs);
                 ApplySrid(geometry, crs);
                 continue;
             }
@@ -216,6 +218,7 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
         try
         {
             var geometry = ReadGeometry(envelopeElement, geometryFactory);
+            ApplyAxisOrder(geometry, ReadSrsName(envelopeElement));
             return geometry.EnvelopeInternal;
         }
         catch (ArgumentException)
@@ -251,6 +254,68 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
         {
             geometry.SRID = srid;
         }
+    }
+
+    /// <summary>
+    /// Swaps the X and Y ordinates of <paramref name="geometry"/> when its GML 3.2
+    /// <c>srsName</c> mandates latitude/longitude (Y,X) axis order.
+    /// </summary>
+    /// <remarks>
+    /// NTS's <c>GMLReader</c> reads ordinates positionally and never applies
+    /// authority axis order. Per OGC, a URN-form CRS reference
+    /// (<c>urn:ogc:def:crs:EPSG::4326</c>) honors the authority's defined axis order,
+    /// which for EPSG geographic CRSes is latitude,longitude. Without this swap such
+    /// features come back transposed (wrong hemisphere). The legacy short form
+    /// (<c>EPSG:4326</c>) and <c>CRS84</c> keep longitude,latitude and are left alone.
+    /// </remarks>
+    private static void ApplyAxisOrder(NetTopologySuite.Geometries.Geometry geometry, string? crs)
+    {
+        if (!RequiresLatLonAxisOrder(crs))
+        {
+            return;
+        }
+
+        geometry.Apply(SwapXyFilter.Instance);
+        geometry.GeometryChanged();
+    }
+
+    private static bool RequiresLatLonAxisOrder(string? crs)
+    {
+        if (string.IsNullOrWhiteSpace(crs))
+        {
+            return false;
+        }
+
+        var trimmed = crs.Trim();
+
+        // Only the URN form binds authority (lat/lon) axis order. Short EPSG:xxxx,
+        // OGC CRS84, and the OGC HTTP URI form all imply lon/lat and are excluded.
+        if (!trimmed.StartsWith("urn:ogc:def:crs:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return HonuaSpatialReference.TryParse(trimmed, out var spatialReference) &&
+            IsGeographicCrs(spatialReference);
+    }
+
+    private static bool IsGeographicCrs(HonuaSpatialReference spatialReference)
+    {
+        if (!string.Equals(spatialReference.Authority, "EPSG", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var code = spatialReference.LatestWkid ?? spatialReference.Wkid ?? spatialReference.Code;
+
+        // Well-known EPSG geographic (2D) CRSes whose authority axis order is lat,lon.
+        return code is 4326   // WGS 84
+            or 4258           // ETRS89
+            or 4269           // NAD83
+            or 4267           // NAD27
+            or 4283           // GDA94
+            or 4759           // NAD83(NSRS2007)
+            or 4979;          // WGS 84 (3D, lat/lon/h)
     }
 
     private static bool TryReadSrid(string? crs, out int srid)
@@ -367,5 +432,26 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
     {
         using var document = JsonDocument.Parse(bytes);
         return document.RootElement.Clone();
+    }
+
+    /// <summary>
+    /// Coordinate sequence filter that swaps the X and Y ordinates in place, used to
+    /// convert lat/lon authority axis order into the lon/lat order used internally.
+    /// </summary>
+    private sealed class SwapXyFilter : ICoordinateSequenceFilter
+    {
+        public static SwapXyFilter Instance { get; } = new();
+
+        public bool Done => false;
+
+        public bool GeometryChanged => true;
+
+        public void Filter(CoordinateSequence seq, int i)
+        {
+            var x = seq.GetX(i);
+            var y = seq.GetY(i);
+            seq.SetOrdinate(i, Ordinate.X, y);
+            seq.SetOrdinate(i, Ordinate.Y, x);
+        }
     }
 }

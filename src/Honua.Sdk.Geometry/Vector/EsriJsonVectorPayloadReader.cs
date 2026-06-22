@@ -105,7 +105,7 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
                 Geometry = geometry,
                 GeometryJson = geometryJson,
                 Crs = geometry?.SRID > 0
-                    ? string.Create(CultureInfo.InvariantCulture, $"EPSG:{geometry.SRID}")
+                    ? IdentifierForWkid(geometry.SRID)
                     : null
             };
         }
@@ -213,17 +213,62 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
             return null;
         }
 
+        // Prefer latestWkid: Esri emits it precisely to carry the EPSG-equivalent code
+        // for proprietary WKIDs (e.g. wkid 102100 with latestWkid 3857).
         if (TryGetInt32(spatialReference, "latestWkid", out var latestWkid) && latestWkid > 0)
         {
-            return string.Create(CultureInfo.InvariantCulture, $"EPSG:{latestWkid}");
+            return IdentifierForWkid(latestWkid);
         }
 
         if (TryGetInt32(spatialReference, "wkid", out var wkid) && wkid > 0)
         {
-            return string.Create(CultureInfo.InvariantCulture, $"EPSG:{wkid}");
+            return IdentifierForWkid(wkid);
         }
 
         return TryGetString(spatialReference, "wkt");
+    }
+
+    /// <summary>
+    /// Maps an Esri WKID to a CRS identifier. Esri-proprietary WKIDs are not EPSG
+    /// codes: well-known ones are translated to their EPSG equivalents
+    /// (e.g. 102100/102113 -&gt; 3857) and any remaining proprietary WKID is emitted
+    /// under the <c>ESRI:</c> authority so EPSG-based resolvers are not handed a
+    /// non-existent EPSG code such as <c>EPSG:102100</c>.
+    /// </summary>
+    private static string IdentifierForWkid(int wkid)
+    {
+        if (TryMapEsriWkidToEpsg(wkid, out var epsg))
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"EPSG:{epsg}");
+        }
+
+        return IsEsriProprietaryWkid(wkid)
+            ? string.Create(CultureInfo.InvariantCulture, $"ESRI:{wkid}")
+            : string.Create(CultureInfo.InvariantCulture, $"EPSG:{wkid}");
+    }
+
+    private static bool TryMapEsriWkidToEpsg(int wkid, out int epsg)
+    {
+        switch (wkid)
+        {
+            // Web Mercator (Auxiliary Sphere) — both legacy Esri WKIDs map to EPSG:3857.
+            case 102100:
+            case 102113:
+                epsg = 3857;
+                return true;
+            default:
+                epsg = 0;
+                return false;
+        }
+    }
+
+    private static bool IsEsriProprietaryWkid(int wkid)
+    {
+        // Esri reserves 32767 for "unknown" and uses the 53xxx/54xxx/102xxx/103xxx
+        // ranges (plus a handful of others) for non-EPSG, proprietary references.
+        return wkid == 32767
+            || (wkid >= 53000 && wkid <= 54999)
+            || (wkid >= 102000 && wkid <= 103999);
     }
 
     private static bool TryReadSrid(string? spatialReference, out int srid)
