@@ -20,12 +20,85 @@ public class GeographicBoundingBoxTests
     }
 
     [Fact]
-    public void Construction_WithMinLongitudeNotLessThanMax_Throws()
+    public void Construction_WithMinLongitudeGreaterThanMax_DenotesAntimeridianCrossing()
+    {
+        // west=170, east=-170 spans the Pacific across ±180°; this is now a valid extent.
+        var bbox = new GeographicBoundingBox(170.0, -10.0, -170.0, 10.0);
+
+        Assert.True(bbox.CrossesAntimeridian);
+        Assert.Equal(170.0, bbox.MinLongitude);
+        Assert.Equal(-170.0, bbox.MaxLongitude);
+
+        // Span wraps: (360 - 170) + (-170) = 20 degrees.
+        Assert.Equal(20.0, bbox.LongitudeSpan);
+    }
+
+    [Fact]
+    public void Construction_WithEqualLongitudes_DoesNotCrossAntimeridian()
+    {
+        var bbox = new GeographicBoundingBox(10.0, 0.0, 10.0, 1.0);
+
+        Assert.False(bbox.CrossesAntimeridian);
+        Assert.Equal(0.0, bbox.LongitudeSpan);
+    }
+
+    [Fact]
+    public void Construction_NormalBox_IsNotFlaggedAntimeridian()
+    {
+        var bbox = new GeographicBoundingBox(-122.5, 37.5, -122.0, 38.0);
+
+        Assert.False(bbox.CrossesAntimeridian);
+        Assert.Equal(0.5, bbox.LongitudeSpan, 10);
+    }
+
+    [Fact]
+    public void Construction_WithOutOfRangeLongitude_Throws()
     {
         Assert.Throws<ArgumentException>(
-            () => new GeographicBoundingBox(10.0, 0.0, 10.0, 1.0));
+            () => new GeographicBoundingBox(-181.0, 0.0, 1.0, 1.0));
         Assert.Throws<ArgumentException>(
-            () => new GeographicBoundingBox(11.0, 0.0, 10.0, 1.0));
+            () => new GeographicBoundingBox(0.0, 0.0, 181.0, 1.0));
+    }
+
+    [Fact]
+    public void Construction_WithOutOfRangeLatitude_Throws()
+    {
+        Assert.Throws<ArgumentException>(
+            () => new GeographicBoundingBox(0.0, -91.0, 1.0, 1.0));
+        Assert.Throws<ArgumentException>(
+            () => new GeographicBoundingBox(0.0, 0.0, 1.0, 91.0));
+    }
+
+    [Fact]
+    public void Contains_AntimeridianCrossingBox_HandlesWrap()
+    {
+        var bbox = new GeographicBoundingBox(170.0, -10.0, -170.0, 10.0);
+
+        // Inside the wrapped band (either side of 180°).
+        Assert.True(bbox.Contains(175.0, 0.0));
+        Assert.True(bbox.Contains(-175.0, 0.0));
+        Assert.True(bbox.Contains(180.0, 0.0));
+
+        // Outside the longitude band.
+        Assert.False(bbox.Contains(0.0, 0.0));
+        Assert.False(bbox.Contains(160.0, 0.0));
+
+        // Outside the latitude band.
+        Assert.False(bbox.Contains(175.0, 20.0));
+    }
+
+    [Fact]
+    public void Intersects_AntimeridianCrossingBoxes_OverlapAcrossSeam()
+    {
+        var crossing = new GeographicBoundingBox(170.0, -10.0, -170.0, 10.0);
+        var nearSeam = new GeographicBoundingBox(178.0, -5.0, 179.0, 5.0);
+        var otherSide = new GeographicBoundingBox(-179.0, -5.0, -178.0, 5.0);
+        var disjoint = new GeographicBoundingBox(0.0, -5.0, 10.0, 5.0);
+
+        Assert.True(crossing.Intersects(nearSeam));
+        Assert.True(nearSeam.Intersects(crossing));
+        Assert.True(crossing.Intersects(otherSide));
+        Assert.False(crossing.Intersects(disjoint));
     }
 
     [Fact]

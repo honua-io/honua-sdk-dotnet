@@ -795,6 +795,27 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
+    public async Task DownloadAttachmentAsync_HttpError_ThrowsWithStatusCode()
+    {
+        // Verifies the status code is read correctly (EnsureSuccess runs before the response
+        // is disposed) when the download responds with a non-success status.
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateErrorResponse(HttpStatusCode.Forbidden, "Access denied")));
+
+        var attachments = (IHonuaFeatureAttachmentClient)client;
+
+        var ex = await Assert.ThrowsAsync<HonuaFeatureServerException>(
+            () => attachments.DownloadAttachmentAsync(new FeatureAttachmentDownloadRequest
+            {
+                Source = new FeatureSource { ServiceId = "parks", LayerId = 0 },
+                ObjectId = 42,
+                AttachmentId = 7
+            }));
+
+        Assert.Equal(HttpStatusCode.Forbidden, ex.StatusCode);
+    }
+
+    [Fact]
     public async Task GetEditCapabilitiesAsync_ParsesLayerCapabilities()
     {
         var client = TestHelpers.CreateFeatureServerClient(_ =>

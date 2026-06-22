@@ -24,16 +24,22 @@ public sealed record GeographicBoundingBox
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeographicBoundingBox"/> record, validating
-    /// that the minimum coordinates are strictly less than the corresponding maximum coordinates.
+    /// that all coordinates are finite and within the WGS84 ranges, and that the southern
+    /// boundary is strictly less than the northern boundary.
     /// </summary>
-    /// <param name="minLongitude">Western boundary in decimal degrees.</param>
-    /// <param name="minLatitude">Southern boundary in decimal degrees.</param>
-    /// <param name="maxLongitude">Eastern boundary in decimal degrees.</param>
-    /// <param name="maxLatitude">Northern boundary in decimal degrees.</param>
+    /// <param name="minLongitude">Western boundary in decimal degrees, within [-180, 180].</param>
+    /// <param name="minLatitude">Southern boundary in decimal degrees, within [-90, 90].</param>
+    /// <param name="maxLongitude">Eastern boundary in decimal degrees, within [-180, 180].</param>
+    /// <param name="maxLatitude">Northern boundary in decimal degrees, within [-90, 90].</param>
+    /// <remarks>
+    /// A box whose <paramref name="minLongitude"/> is greater than its <paramref name="maxLongitude"/>
+    /// is interpreted as an extent that crosses the antimeridian (±180°), spanning eastward from
+    /// the western edge across 180° to the eastern edge. See <see cref="CrossesAntimeridian"/>.
+    /// </remarks>
     /// <exception cref="ArgumentException">
-    /// Thrown when any coordinate is not finite, when <paramref name="minLongitude"/> is not
-    /// strictly less than <paramref name="maxLongitude"/>, or when <paramref name="minLatitude"/>
-    /// is not strictly less than <paramref name="maxLatitude"/>.
+    /// Thrown when any coordinate is not finite, when a longitude falls outside [-180, 180],
+    /// when a latitude falls outside [-90, 90], or when <paramref name="minLatitude"/> is not
+    /// strictly less than <paramref name="maxLatitude"/>.
     /// </exception>
     public GeographicBoundingBox(
         double minLongitude,
@@ -46,14 +52,13 @@ public sealed record GeographicBoundingBox
         ValidateFinite(maxLongitude, nameof(maxLongitude));
         ValidateFinite(maxLatitude, nameof(maxLatitude));
 
-        if (!(minLongitude < maxLongitude))
-        {
-            throw new ArgumentException(
-                string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"{nameof(minLongitude)} ({minLongitude}) must be strictly less than {nameof(maxLongitude)} ({maxLongitude})."),
-                nameof(maxLongitude));
-        }
+        ValidateLongitudeRange(minLongitude, nameof(minLongitude));
+        ValidateLongitudeRange(maxLongitude, nameof(maxLongitude));
+        ValidateLatitudeRange(minLatitude, nameof(minLatitude));
+        ValidateLatitudeRange(maxLatitude, nameof(maxLatitude));
+
+        // Longitude ordering is intentionally NOT enforced: minLongitude > maxLongitude denotes
+        // an antimeridian-crossing extent (e.g. west=170, east=-170 spans the Pacific across 180°).
 
         if (!(minLatitude < maxLatitude))
         {
@@ -91,7 +96,25 @@ public sealed record GeographicBoundingBox
     public double MaxLatitude { get; }
 
     /// <summary>
-    /// Determines whether the supplied WGS84 coordinate lies on or within this bounding box.
+    /// Gets a value indicating whether this bounding box crosses the antimeridian (±180°),
+    /// which is the case when <see cref="MinLongitude"/> is greater than <see cref="MaxLongitude"/>.
+    /// When <see langword="true"/>, the longitudinal extent wraps eastward from
+    /// <see cref="MinLongitude"/> across 180° to <see cref="MaxLongitude"/>.
+    /// </summary>
+    public bool CrossesAntimeridian => MinLongitude > MaxLongitude;
+
+    /// <summary>
+    /// Gets the longitudinal span of this bounding box in decimal degrees, accounting for
+    /// antimeridian wrapping. For a non-crossing box this is <c>MaxLongitude - MinLongitude</c>;
+    /// for an antimeridian-crossing box it is <c>(180 - MinLongitude) + (MaxLongitude - (-180))</c>.
+    /// </summary>
+    public double LongitudeSpan => CrossesAntimeridian
+        ? (360.0 - MinLongitude) + MaxLongitude
+        : MaxLongitude - MinLongitude;
+
+    /// <summary>
+    /// Determines whether the supplied WGS84 coordinate lies on or within this bounding box,
+    /// accounting for antimeridian wrapping.
     /// </summary>
     /// <param name="longitude">Longitude in decimal degrees.</param>
     /// <param name="latitude">Latitude in decimal degrees.</param>
@@ -101,10 +124,16 @@ public sealed record GeographicBoundingBox
     /// </returns>
     public bool Contains(double longitude, double latitude)
     {
-        return longitude >= MinLongitude
-            && longitude <= MaxLongitude
-            && latitude >= MinLatitude
-            && latitude <= MaxLatitude;
+        if (latitude < MinLatitude || latitude > MaxLatitude)
+        {
+            return false;
+        }
+
+        // For an antimeridian-crossing box the valid longitude band is the union of
+        // [MinLongitude, 180] and [-180, MaxLongitude].
+        return CrossesAntimeridian
+            ? longitude >= MinLongitude || longitude <= MaxLongitude
+            : longitude >= MinLongitude && longitude <= MaxLongitude;
     }
 
     /// <summary>
@@ -120,10 +149,50 @@ public sealed record GeographicBoundingBox
     public bool Intersects(GeographicBoundingBox other)
     {
         ArgumentNullException.ThrowIfNull(other);
-        return MinLongitude <= other.MaxLongitude
-            && MaxLongitude >= other.MinLongitude
-            && MinLatitude <= other.MaxLatitude
-            && MaxLatitude >= other.MinLatitude;
+
+        if (MinLatitude > other.MaxLatitude || MaxLatitude < other.MinLatitude)
+        {
+            return false;
+        }
+
+        return LongitudeBandsOverlap(this, other);
+    }
+
+    /// <summary>
+    /// Tests whether the longitude bands of two boxes overlap, accounting for antimeridian
+    /// wrapping on either box. A crossing box is treated as the union of two non-crossing
+    /// half-bands split at ±180°.
+    /// </summary>
+    private static bool LongitudeBandsOverlap(GeographicBoundingBox a, GeographicBoundingBox b)
+    {
+        foreach (var (aMin, aMax) in LongitudeBands(a))
+        {
+            foreach (var (bMin, bMax) in LongitudeBands(b))
+            {
+                if (aMin <= bMax && aMax >= bMin)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Decomposes a box's longitude extent into one or two non-wrapping [min, max] bands.
+    /// </summary>
+    private static IEnumerable<(double Min, double Max)> LongitudeBands(GeographicBoundingBox box)
+    {
+        if (box.CrossesAntimeridian)
+        {
+            yield return (box.MinLongitude, 180.0);
+            yield return (-180.0, box.MaxLongitude);
+        }
+        else
+        {
+            yield return (box.MinLongitude, box.MaxLongitude);
+        }
     }
 
     /// <summary>
@@ -199,6 +268,30 @@ public sealed record GeographicBoundingBox
         if (!double.IsFinite(value))
         {
             throw new ArgumentException($"{paramName} must be a finite number.", paramName);
+        }
+    }
+
+    private static void ValidateLongitudeRange(double value, string paramName)
+    {
+        if (value < -180.0 || value > 180.0)
+        {
+            throw new ArgumentException(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{paramName} ({value}) must be within [-180, 180]."),
+                paramName);
+        }
+    }
+
+    private static void ValidateLatitudeRange(double value, string paramName)
+    {
+        if (value < -90.0 || value > 90.0)
+        {
+            throw new ArgumentException(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{paramName} ({value}) must be within [-90, 90]."),
+                paramName);
         }
     }
 }
