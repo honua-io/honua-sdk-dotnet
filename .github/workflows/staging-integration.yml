@@ -48,7 +48,7 @@ jobs:
       TEST_RESULTS_FILE: staging-integration.trx
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
