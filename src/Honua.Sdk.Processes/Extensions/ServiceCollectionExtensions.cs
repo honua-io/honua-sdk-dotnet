@@ -33,7 +33,7 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaProcessesClientOptions>>().Value;
             client.BaseAddress = options.BaseAddress;
-            client.Timeout = options.Timeout;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
         })
         .AddHttpMessageHandler<HonuaProcessesAuthHandler>();
 
@@ -46,8 +46,8 @@ public static class ServiceCollectionExtensions
         {
             httpBuilder.AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = snapshot.Timeout;
-                options.AttemptTimeout.Timeout = snapshot.Timeout;
+                options.TotalRequestTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.TotalRequestTimeout(snapshot.Timeout);
+                options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
                 options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
                 options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
                 options.Retry.DisableForUnsafeHttpMethods();
