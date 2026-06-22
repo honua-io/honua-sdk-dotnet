@@ -1074,6 +1074,76 @@ public class HonuaFeatureServerClientTests
         Assert.Equal(2, callCount);
     }
 
+    [Fact]
+    public async Task QueryPagesAsync_ServerIgnoresOffset_StopsAtMaxAutoPagesWithoutInfiniteLoop()
+    {
+        // Adversarial server: always returns the same page-1 with exceededTransferLimit=true,
+        // ignoring resultOffset. Must terminate at the MaxAutoPages cap (100), not loop forever.
+        var callCount = 0;
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            callCount++;
+            var json = """
+            {
+                "features": [{ "attributes": { "ID": 1 } }, { "attributes": { "ID": 2 } }],
+                "exceededTransferLimit": true
+            }
+            """;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<FeatureServerQueryResponse>();
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var page in client.QueryPagesAsync("svc", 0, new FeatureServerQueryParams { Where = "1=1" }))
+            {
+                pages.Add(page);
+            }
+        });
+
+        // Bounded by MaxAutoPages (100): exactly 100 pages are yielded before the cap throws,
+        // proving the loop terminates instead of running forever on duplicates.
+        Assert.Equal(100, pages.Count);
+        Assert.Equal(100, callCount);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_NonFinalEmptyPageWithExceededLimit_StopsWithoutDuplicates()
+    {
+        // A non-final page that returns 0 features while exceededTransferLimit=true must not
+        // advance forever; the non-advancing cursor terminates paging cleanly.
+        var callCount = 0;
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            callCount++;
+            var json = callCount switch
+            {
+                1 => """
+                {
+                    "features": [{ "attributes": { "ID": 1 } }],
+                    "exceededTransferLimit": true
+                }
+                """,
+                // Non-final page: 0 features but still exceededTransferLimit=true.
+                _ => """{ "features": [], "exceededTransferLimit": true }"""
+            };
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<FeatureServerQueryResponse>();
+        await foreach (var page in client.QueryPagesAsync("svc", 0, new FeatureServerQueryParams { Where = "1=1" }))
+        {
+            pages.Add(page);
+        }
+
+        // Page 1 (1 feature, exceeded) is yielded and continues; page 2 (0 features) is yielded
+        // because the continuation signal is evaluated first, then the non-advancing cursor stops.
+        Assert.Equal(2, pages.Count);
+        Assert.Single(pages[0].Features!);
+        Assert.Empty(pages[1].Features!);
+        Assert.Equal(2, callCount);
+    }
+
     // ── QueryStatisticsAsync ────────────────────────────────────────
 
     [Fact]

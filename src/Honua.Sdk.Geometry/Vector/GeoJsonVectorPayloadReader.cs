@@ -158,11 +158,20 @@ public sealed class GeoJsonVectorPayloadReader : IVectorPayloadReader
         var coordinates = bboxElement.EnumerateArray()
             .Where(item => item.ValueKind == JsonValueKind.Number)
             .Select(item => item.GetDouble())
-            .Take(4)
             .ToArray();
-        return coordinates.Length >= 4
-            ? new Envelope(coordinates[0], coordinates[2], coordinates[1], coordinates[3])
-            : null;
+
+        // RFC 7946 section 5: a 2D bbox is [west, south, east, north] (4 elements);
+        // a 3D bbox is [west, south, minElev, east, north, maxElev] (6 elements).
+        // For 3D, the horizontal coordinates live at indices 0,1,3,4 and the
+        // elevation values at indices 2,5 are ignored. Other lengths are rejected.
+        // Envelope(double x1, double x2, double y1, double y2) takes
+        // (west, east, south, north).
+        return coordinates.Length switch
+        {
+            4 => new Envelope(coordinates[0], coordinates[2], coordinates[1], coordinates[3]),
+            6 => new Envelope(coordinates[0], coordinates[3], coordinates[1], coordinates[4]),
+            _ => null,
+        };
     }
 
     private static string? ReadCrs(JsonElement root)

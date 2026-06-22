@@ -18,6 +18,12 @@ public sealed class HonuaStacClient : IHonuaStacClient
 {
     private const string BasePath = "/stac";
 
+    /// <summary>
+    /// Safety cap on the number of pages auto-pagination will fetch before throwing,
+    /// guarding against servers that emit self-referential or cyclic next-links.
+    /// </summary>
+    private const int MaxAutoPages = 100;
+
     private readonly HttpClient _http;
 
     /// <summary>
@@ -119,10 +125,17 @@ public sealed class HonuaStacClient : IHonuaStacClient
         var page = await GetItemsAsync(collectionId, query, cancellationToken).ConfigureAwait(false);
         yield return page;
 
-        while (true)
+        var visitedHrefs = new HashSet<string>(StringComparer.Ordinal);
+        var pageCount = 0;
+        while (pageCount < MaxAutoPages)
         {
             var nextLink = FindNextLink(page);
             if (nextLink is null)
+            {
+                yield break;
+            }
+
+            if (!visitedHrefs.Add(nextLink.Href))
             {
                 yield break;
             }
@@ -136,7 +149,12 @@ public sealed class HonuaStacClient : IHonuaStacClient
             }
 
             yield return page;
+            pageCount++;
         }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use manual paging with GetItemsAsync for larger result sets.");
     }
 
     /// <inheritdoc />
@@ -147,10 +165,17 @@ public sealed class HonuaStacClient : IHonuaStacClient
         var page = await SearchAsync(query, cancellationToken).ConfigureAwait(false);
         yield return page;
 
-        while (true)
+        var visitedHrefs = new HashSet<string>(StringComparer.Ordinal);
+        var pageCount = 0;
+        while (pageCount < MaxAutoPages)
         {
             var nextLink = FindNextLink(page);
             if (nextLink is null)
+            {
+                yield break;
+            }
+
+            if (!visitedHrefs.Add(nextLink.Href))
             {
                 yield break;
             }
@@ -164,7 +189,12 @@ public sealed class HonuaStacClient : IHonuaStacClient
             }
 
             yield return page;
+            pageCount++;
         }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use manual paging with SearchAsync for larger result sets.");
     }
 
     /// <inheritdoc />
@@ -172,10 +202,18 @@ public sealed class HonuaStacClient : IHonuaStacClient
         StacSearchRequest? request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var page = await PostSearchAsync(request, cancellationToken).ConfigureAwait(false);
+        var searchRequest = request ?? new StacSearchRequest();
+
+        // Serialize the original request body once so POST continuation links can merge their
+        // continuation token onto it, per the STAC API pagination spec.
+        var requestBody = JsonSerializer.SerializeToElement(searchRequest, StacJsonContext.Default.StacSearchRequest);
+
+        var page = await PostSearchAsync(searchRequest, cancellationToken).ConfigureAwait(false);
         yield return page;
 
-        while (true)
+        var visitedHrefs = new HashSet<string>(StringComparer.Ordinal);
+        var pageCount = 0;
+        while (pageCount < MaxAutoPages)
         {
             var nextLink = FindNextLink(page);
             if (nextLink is null)
@@ -183,7 +221,12 @@ public sealed class HonuaStacClient : IHonuaStacClient
                 yield break;
             }
 
-            var body = await GetNextPageStringAsync(nextLink, cancellationToken).ConfigureAwait(false);
+            if (!visitedHrefs.Add(nextLink.Href))
+            {
+                yield break;
+            }
+
+            var body = await FollowNextLinkAsync(nextLink, requestBody, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC search response.");
 
             if (page.Features is null or { Count: 0 })
@@ -192,7 +235,12 @@ public sealed class HonuaStacClient : IHonuaStacClient
             }
 
             yield return page;
+            pageCount++;
         }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use manual paging with PostSearchAsync for larger result sets.");
     }
 
     /// <inheritdoc />
@@ -280,6 +328,97 @@ public sealed class HonuaStacClient : IHonuaStacClient
     {
         ValidateNextLinkOrigin(nextLink.Href);
         return await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Follows a STAC pagination link, honoring its advertised HTTP method, headers, and body.
+    /// When the link advertises <c>method:POST</c> the continuation body (typically carrying the
+    /// continuation token) is merged onto the original search request body and re-POSTed; otherwise
+    /// the href is fetched with a plain GET (current behavior).
+    /// </summary>
+    private async Task<string> FollowNextLinkAsync(
+        StacLink nextLink,
+        JsonElement originalBody,
+        CancellationToken cancellationToken)
+    {
+        ValidateNextLinkOrigin(nextLink.Href);
+
+        if (!string.Equals(nextLink.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        {
+            return await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
+        }
+
+        // STAC API pagination: a POST next-link's body should be merged onto the original
+        // request body (link members override). The default merge behavior is to merge unless
+        // the link explicitly sets merge:false.
+        var mergedBody = nextLink.Merge == false
+            ? nextLink.Body ?? originalBody
+            : MergeJsonObjects(originalBody, nextLink.Body);
+
+        var payload = JsonSerializer.SerializeToUtf8Bytes(mergedBody, StacJsonContext.Default.JsonElement);
+        using var content = new ByteArrayContent(payload);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, CreateRequestUri(nextLink.Href))
+        {
+            Content = content,
+        };
+
+        if (nextLink.Headers is not null)
+        {
+            foreach (var header in nextLink.Headers)
+            {
+                requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+        }
+
+        using var response = await _http.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        EnsureSuccess(response, responseBody);
+        return responseBody;
+    }
+
+    /// <summary>
+    /// Merges the members of <paramref name="overlay"/> onto <paramref name="baseline"/>, with overlay
+    /// members overriding. Both are expected to be JSON objects; non-object inputs degrade gracefully.
+    /// </summary>
+    private static JsonElement MergeJsonObjects(JsonElement baseline, JsonElement? overlay)
+    {
+        if (overlay is not { ValueKind: JsonValueKind.Object } overlayElement)
+        {
+            return baseline;
+        }
+
+        if (baseline.ValueKind != JsonValueKind.Object)
+        {
+            return overlayElement;
+        }
+
+        var merged = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        foreach (var property in baseline.EnumerateObject())
+        {
+            merged[property.Name] = property.Value;
+        }
+
+        foreach (var property in overlayElement.EnumerateObject())
+        {
+            merged[property.Name] = property.Value;
+        }
+
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartObject();
+            foreach (var entry in merged)
+            {
+                writer.WritePropertyName(entry.Key);
+                entry.Value.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+        }
+
+        return JsonSerializer.Deserialize(buffer.ToArray(), StacJsonContext.Default.JsonElement);
     }
 
     private static StacItemCollection DeserializeItemCollection(string body, string errorMessage)

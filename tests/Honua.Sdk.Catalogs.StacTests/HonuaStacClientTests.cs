@@ -396,6 +396,100 @@ public sealed class HonuaStacClientTests
     }
 
     [Fact]
+    public async Task PostSearchPagesAsync_PostNextLink_RePostsWithMergedBody()
+    {
+        // STAC API POST pagination: the next link advertises method:POST with a body carrying
+        // the continuation token. The pager must re-POST (not GET) and merge the link body onto
+        // the original search request body (token overrides/adds, original collections retained).
+        var calls = 0;
+        var methods = new List<HttpMethod>();
+        var requestBodies = new List<string>();
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            calls++;
+            methods.Add(req.Method);
+            requestBodies.Add(req.Content is null
+                ? string.Empty
+                : await req.Content.ReadAsStringAsync(CancellationToken.None));
+
+            var json = calls == 1
+                ? """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-001" }],
+                      "links": [
+                          {
+                              "href": "https://honua.example.test/stac/search",
+                              "rel": "next",
+                              "method": "POST",
+                              "body": { "token": "page-2-token" }
+                          }
+                      ]
+                  }
+                  """
+                : """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-002" }]
+                  }
+                  """;
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.PostSearchPagesAsync(new StacSearchRequest
+        {
+            Collections = ["imagery"],
+            Limit = 1
+        }))
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal([HttpMethod.Post, HttpMethod.Post], methods);
+
+        // The second (continuation) request must be a POST whose body merges the original search
+        // parameters with the link's continuation token.
+        using var continuationBody = JsonDocument.Parse(requestBodies[1]);
+        Assert.Equal("page-2-token", continuationBody.RootElement.GetProperty("token").GetString());
+        var collections = continuationBody.RootElement.GetProperty("collections");
+        Assert.Equal("imagery", collections[0].GetString());
+    }
+
+    [Fact]
+    public async Task SearchPagesAsync_SelfReferentialNextLink_TerminatesWithoutInfiniteLoop()
+    {
+        // Adversarial server: every page returns a next link equal to its own href.
+        // Visited-href tracking must stop paging instead of looping forever.
+        var calls = 0;
+        var client = TestHelpers.CreateStacClient(_ =>
+        {
+            calls++;
+            var json = """
+            {
+                "type": "FeatureCollection",
+                "features": [{ "type": "Feature", "id": "scene-001" }],
+                "links": [
+                    { "href": "https://honua.example.test/stac/search?limit=1&offset=1", "rel": "next" }
+                ]
+            }
+            """;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.SearchPagesAsync(new StacSearchQuery { Limit = 1 }))
+        {
+            pages.Add(page);
+        }
+
+        // First page + one fetch of the next href, then the repeated href is detected and paging stops.
+        Assert.Equal(2, pages.Count);
+        Assert.Equal(2, calls);
+    }
+
+    [Fact]
     public async Task SearchPagesAsync_RejectsCrossOriginNextLink()
     {
         var json = """

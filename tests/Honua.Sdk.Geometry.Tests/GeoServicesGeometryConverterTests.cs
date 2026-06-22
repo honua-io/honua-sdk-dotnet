@@ -80,6 +80,33 @@ public class GeoServicesGeometryConverterTests
     }
 
     [Fact]
+    public void ReadGeometry_LeadingHoleRing_ClassifiesByOrientationNotPosition()
+    {
+        // The CCW hole ring is listed FIRST, before the CW outer shell. Esri JSON does
+        // not mandate shell-before-hole ordering; classification must be by orientation
+        // (CW = shell, CCW = hole), so the hole must not be promoted to the exterior.
+        using var document = JsonDocument.Parse(
+            """
+            {
+                "rings": [
+                    [[2,2],[8,2],[8,8],[2,8],[2,2]],
+                    [[0,0],[0,10],[10,10],[10,0],[0,0]]
+                ],
+                "spatialReference": { "wkid": 4326 }
+            }
+            """);
+
+        var geometry = GeoServicesGeometryConverter.ReadGeometry(document.RootElement);
+
+        var polygon = Assert.IsType<Polygon>(geometry);
+        Assert.True(polygon.IsValid);
+        Assert.Equal(1, polygon.NumInteriorRings);
+        // Exterior is the 10x10 outer ring; the 6x6 hole is subtracted -> area 100 - 36 = 64.
+        Assert.Equal(5, polygon.ExteriorRing.NumPoints);
+        Assert.Equal(64.0, polygon.Area, 6);
+    }
+
+    [Fact]
     public void WriteGeometry_WritesLinePathWithDimensionality()
     {
         var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

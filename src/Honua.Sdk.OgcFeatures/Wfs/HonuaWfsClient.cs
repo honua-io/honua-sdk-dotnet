@@ -177,12 +177,15 @@ public sealed class HonuaWfsClient :
             var page = await GetFeaturesAsync(BuildWfsQuery(current), cancellationToken).ConfigureAwait(false);
             yield return ToFeatureQueryResult(page);
 
-            if (page.NumberReturned == 0)
+            // Advance by the ACTUAL number of features in the page, not the server-reported
+            // numberReturned (which may be 0 or larger than the body, skipping or dropping records).
+            var returnedCount = page.Features.Count;
+            if (returnedCount == 0)
             {
                 yield break;
             }
 
-            startIndex += page.NumberReturned;
+            startIndex += returnedCount;
             if (page.NumberMatched.HasValue && startIndex >= page.NumberMatched.Value)
             {
                 yield break;
@@ -359,12 +362,15 @@ public sealed class HonuaWfsClient :
                 yield return feature;
             }
 
-            if (page.NumberReturned == 0)
+            // Advance by the ACTUAL number of features in the page, not the server-reported
+            // numberReturned (which may be 0 or larger than the body, skipping or dropping records).
+            var returnedCount = page.Features.Count;
+            if (returnedCount == 0)
             {
                 yield break;
             }
 
-            startIndex += page.NumberReturned;
+            startIndex += returnedCount;
 
             if (page.NumberMatched.HasValue && startIndex >= page.NumberMatched.Value)
             {
