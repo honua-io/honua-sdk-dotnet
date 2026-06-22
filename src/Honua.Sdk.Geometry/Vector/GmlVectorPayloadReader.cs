@@ -200,8 +200,66 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
         GeometryFactory? geometryFactory)
     {
         var reader = new GMLReader(geometryFactory ?? DefaultGeometryFactory);
-        return reader.Read(new XDocument(new XElement(geometryElement)));
+        var geometry = reader.Read(new XDocument(new XElement(geometryElement)));
+
+        // GML 3.2 / OGC URN axis-order handling. NTS GMLReader always reads
+        // coordinates in document order (X then Y) and never swaps based on the
+        // declared CRS. However, when the CRS is referenced in OGC URN form for a
+        // geographic CRS that mandates a lat,lon (Y,X) axis order — notably
+        // urn:ogc:def:crs:EPSG::4326 — the GML coordinates are encoded lat,lon and
+        // must be swapped to NTS's lon,lat (X,Y) convention. The legacy, non-URN
+        // forms (EPSG:4326, http://www.opengis.net/gml/srs/epsg.xml#4326) are
+        // interpreted by clients as lon,lat and must NOT be swapped. Be conservative:
+        // only swap for URN-form geographic EPSG CRSes.
+        if (ShouldSwapAxes(ReadSrsName(geometryElement)))
+        {
+            geometry.Apply(SwapXyCoordinateFilter.Instance);
+        }
+
+        return geometry;
     }
+
+    /// <summary>
+    /// Determines whether a parsed geometry's X/Y coordinates should be swapped to
+    /// honor a CRS-mandated lat,lon axis order. Only OGC URN-form geographic EPSG
+    /// CRSes (e.g. <c>urn:ogc:def:crs:EPSG::4326</c>, <c>urn:x-ogc:def:crs:EPSG:4326</c>)
+    /// trigger a swap; legacy short or HTTP forms are treated as lon,lat.
+    /// </summary>
+    private static bool ShouldSwapAxes(string? srsName)
+    {
+        if (string.IsNullOrWhiteSpace(srsName))
+        {
+            return false;
+        }
+
+        var trimmed = srsName.Trim();
+        var isUrn = trimmed.StartsWith("urn:ogc:def:crs:EPSG:", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("urn:x-ogc:def:crs:EPSG:", StringComparison.OrdinalIgnoreCase);
+        if (!isUrn)
+        {
+            return false;
+        }
+
+        return TryReadSrid(trimmed, out var srid) && IsLatLonGeographicCrs(srid);
+    }
+
+    /// <summary>
+    /// Returns whether the given EPSG code is a geographic CRS whose authoritative
+    /// axis order is lat,lon (Y,X). The common geographic CRSes used in OGC services
+    /// are enumerated; this errs on the side of not swapping for unknown codes.
+    /// </summary>
+    private static bool IsLatLonGeographicCrs(int srid)
+        => srid switch
+        {
+            4326 or // WGS 84
+            4269 or // NAD83
+            4258 or // ETRS89
+            4267 or // NAD27
+            4283 or // GDA94
+            4019 or // GRS 1980 ensemble
+            4979 => true, // WGS 84 (3D)
+            _ => false,
+        };
 
     private static Envelope? ReadEnvelope(XElement root, GeometryFactory? geometryFactory)
     {
@@ -367,5 +425,27 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
     {
         using var document = JsonDocument.Parse(bytes);
         return document.RootElement.Clone();
+    }
+
+    /// <summary>
+    /// An NTS coordinate filter that swaps the X and Y ordinates of every coordinate
+    /// in place, used to convert lat,lon-ordered geographic GML coordinates into
+    /// NTS's lon,lat (X,Y) convention.
+    /// </summary>
+    private sealed class SwapXyCoordinateFilter : ICoordinateSequenceFilter
+    {
+        public static SwapXyCoordinateFilter Instance { get; } = new();
+
+        public bool Done => false;
+
+        public bool GeometryChanged => true;
+
+        public void Filter(CoordinateSequence seq, int i)
+        {
+            var x = seq.GetX(i);
+            var y = seq.GetY(i);
+            seq.SetX(i, y);
+            seq.SetY(i, x);
+        }
     }
 }
