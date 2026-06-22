@@ -196,19 +196,34 @@ public static class GeoServicesGeometryConverter
         foreach (var ring in rings.EnumerateArray())
         {
             var linearRing = factory.CreateLinearRing(CloseRing(ReadCoordinates(ring, hasZ, hasM)));
-            if (shells.Count == 0 || !Orientation.IsCCW(linearRing.Coordinates))
+
+            // Esri JSON uses clockwise-outer ring orientation: clockwise (NOT CCW)
+            // rings are outer shells and counter-clockwise rings are holes. Classify
+            // strictly by orientation/signed area rather than ring position, so a
+            // leading hole is not mistakenly promoted to a shell and a later shell
+            // keeps its hole.
+            if (Orientation.IsCCW(linearRing.CoordinateSequence))
             {
-                shells.Add(new PolygonShell(linearRing));
+                holeRings.Add(linearRing);
             }
             else
             {
-                holeRings.Add(linearRing);
+                shells.Add(new PolygonShell(linearRing));
             }
         }
 
         if (shells.Count == 0)
         {
-            return factory.CreatePolygon();
+            // No clockwise (outer) rings were found. Rather than discarding the
+            // geometry, treat every counter-clockwise ring as a shell so the
+            // coordinates survive round-tripping.
+            if (holeRings.Count == 0)
+            {
+                return factory.CreatePolygon();
+            }
+
+            shells.AddRange(holeRings.Select(ring => new PolygonShell(ring)));
+            holeRings.Clear();
         }
 
         foreach (var holeRing in holeRings)

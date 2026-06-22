@@ -105,7 +105,7 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
                 Geometry = geometry,
                 GeometryJson = geometryJson,
                 Crs = geometry?.SRID > 0
-                    ? string.Create(CultureInfo.InvariantCulture, $"EPSG:{geometry.SRID}")
+                    ? FormatWkidAuthority(geometry.SRID)
                     : null
             };
         }
@@ -213,18 +213,49 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
             return null;
         }
 
+        // Esri provides latestWkid as the EPSG-correct code when the wkid is an
+        // Esri-proprietary identifier; prefer it when present.
         if (TryGetInt32(spatialReference, "latestWkid", out var latestWkid) && latestWkid > 0)
         {
-            return string.Create(CultureInfo.InvariantCulture, $"EPSG:{latestWkid}");
+            return FormatWkidAuthority(latestWkid);
         }
 
         if (TryGetInt32(spatialReference, "wkid", out var wkid) && wkid > 0)
         {
-            return string.Create(CultureInfo.InvariantCulture, $"EPSG:{wkid}");
+            return FormatWkidAuthority(wkid);
         }
 
         return TryGetString(spatialReference, "wkt");
     }
+
+    /// <summary>
+    /// Formats an Esri WKID as an authority-qualified CRS identifier. Known
+    /// Esri-proprietary WKIDs are mapped to their EPSG equivalents (e.g. 102100 and
+    /// 102113 to Web Mercator EPSG:3857). WKIDs that fall in Esri-only ranges with no
+    /// EPSG equivalent are emitted with an <c>ESRI:</c> authority prefix so EPSG-based
+    /// resolvers do not choke; all other codes are treated as standard EPSG codes.
+    /// </summary>
+    private static string FormatWkidAuthority(int wkid)
+    {
+        switch (wkid)
+        {
+            case 102100:
+            case 102113:
+                return "EPSG:3857";
+        }
+
+        return IsEsriProprietaryWkid(wkid)
+            ? string.Create(CultureInfo.InvariantCulture, $"ESRI:{wkid}")
+            : string.Create(CultureInfo.InvariantCulture, $"EPSG:{wkid}");
+    }
+
+    /// <summary>
+    /// Returns whether the given WKID falls in a range reserved for Esri-proprietary
+    /// spatial references that are not EPSG codes (the 53xxx, 54xxx, and 102xxx
+    /// ranges), excluding codes already mapped to an EPSG equivalent.
+    /// </summary>
+    private static bool IsEsriProprietaryWkid(int wkid)
+        => wkid is (>= 53000 and <= 54999) or (>= 102000 and <= 103999);
 
     private static bool TryReadSrid(string? spatialReference, out int srid)
     {
