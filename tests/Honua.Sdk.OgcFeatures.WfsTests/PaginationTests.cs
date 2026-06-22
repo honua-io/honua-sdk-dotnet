@@ -129,6 +129,60 @@ public sealed class PaginationTests
     }
 
     [Fact]
+    public async Task AutoPage_ServerReportsZeroReturnedButHasFeatures_AdvancesByActualCount()
+    {
+        // Adversarial/buggy server: numberReturned=0 on page 1 even though the body carries
+        // features. The pager must advance by the ACTUAL feature count (2), request STARTINDEX=2,
+        // and not break prematurely on the bogus numberReturned=0.
+        var page1 = """
+            {
+                "type": "FeatureCollection",
+                "numberMatched": 3,
+                "numberReturned": 0,
+                "features": [
+                    { "type": "Feature", "id": "1", "geometry": null, "properties": {} },
+                    { "type": "Feature", "id": "2", "geometry": null, "properties": {} }
+                ]
+            }
+            """;
+
+        var page2 = """
+            {
+                "type": "FeatureCollection",
+                "numberMatched": 3,
+                "numberReturned": 99,
+                "features": [
+                    { "type": "Feature", "id": "3", "geometry": null, "properties": {} }
+                ]
+            }
+            """;
+
+        var observedStartIndexes = new List<string>();
+        var callCount = 0;
+        var client = TestHelpers.CreateClient(req =>
+        {
+            callCount++;
+            observedStartIndexes.Add(req.RequestUri!.Query);
+            var query = req.RequestUri!.Query;
+            return Task.FromResult(TestHelpers.CreateGeoJsonResponse(
+                query.Contains("STARTINDEX=2") ? page2 : page1));
+        });
+
+        var features = new List<WfsFeature>();
+        await foreach (var feature in client.GetFeaturesAsyncEnumerable(
+            new GetFeaturesRequest { TypeNames = "parcels", StartIndex = 0 }))
+        {
+            features.Add(feature);
+        }
+
+        // All 3 features delivered; advancement used the actual count (2), so STARTINDEX=2 fetched
+        // page 2, and over-advancing by numberReturned=99 did not skip records.
+        Assert.Equal(3, features.Count);
+        Assert.Equal(["1", "2", "3"], features.Select(f => f.Id));
+        Assert.Contains(observedStartIndexes, q => q.Contains("STARTINDEX=2"));
+    }
+
+    [Fact]
     public void HasMoreResults_AllReturned_ReturnsFalse()
     {
         var collection = new WfsFeatureCollection

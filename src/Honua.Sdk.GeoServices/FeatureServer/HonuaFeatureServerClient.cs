@@ -28,6 +28,13 @@ public sealed class HonuaFeatureServerClient :
     IHonuaFeatureAttachmentClient
 {
     private const int PostFallbackThreshold = 2000;
+
+    /// <summary>
+    /// Safety cap on the number of pages auto-pagination will fetch before throwing,
+    /// guarding against servers that never signal termination.
+    /// </summary>
+    private const int MaxAutoPages = 100;
+
     private static readonly FeatureEditCapabilities ProviderEditCapabilities = new()
     {
         SupportsAdds = true,
@@ -447,22 +454,40 @@ public sealed class HonuaFeatureServerClient :
         ArgumentNullException.ThrowIfNull(query);
 
         var currentQuery = query;
-        while (true)
+        var pageCount = 0;
+        while (pageCount < MaxAutoPages)
         {
             var page = await QueryAsync(serviceId, layerId, currentQuery, cancellationToken).ConfigureAwait(false);
             yield return page;
 
-            var count = currentQuery.ReturnIdsOnly is true
+            // Evaluate the continuation signal BEFORE the empty-page check so a non-final
+            // page that legitimately returns 0 features (but still reports more pending) is
+            // not prematurely dropped.
+            if (!page.ExceededTransferLimit)
+            {
+                yield break;
+            }
+
+            // Advance by the ACTUAL returned record count, never a server-reported total.
+            var returnedCount = currentQuery.ReturnIdsOnly is true
                 ? page.ObjectIds?.Count ?? 0
                 : page.Features?.Count ?? 0;
-            if (count == 0 || !page.ExceededTransferLimit)
+
+            // A non-advancing cursor means the server ignored resultOffset (real Esri-compat
+            // behavior) and would re-yield page 1 forever. Stop rather than loop on duplicates.
+            if (returnedCount == 0)
             {
                 yield break;
             }
 
             var currentOffset = currentQuery.ResultOffset ?? 0;
-            currentQuery = currentQuery with { ResultOffset = currentOffset + count };
+            currentQuery = currentQuery with { ResultOffset = currentOffset + returnedCount };
+            pageCount++;
         }
+
+        throw new InvalidOperationException(
+            $"Auto-pagination safety limit reached ({MaxAutoPages} pages). " +
+            "Use manual paging with QueryAsync for larger result sets.");
     }
 
     /// <inheritdoc />
