@@ -74,6 +74,42 @@ public sealed class HonuaGeocodingClientTests
     }
 
     [Fact]
+    public async Task ForwardGeocode_CandidateWithNullLocation_IsSkipped()
+    {
+        var responseJson = """
+        {
+            "spatialReference": { "wkid": 4326, "latestWkid": 4326 },
+            "candidates": [
+                {
+                    "address": "No location candidate",
+                    "location": null,
+                    "score": 50.0,
+                    "attributes": {}
+                },
+                {
+                    "address": "123 Main St, Springfield, IL",
+                    "location": { "x": -89.6501, "y": 39.7817 },
+                    "score": 97.5,
+                    "attributes": {}
+                }
+            ]
+        }
+        """;
+
+        var client = CreateGeocodingClient(_ =>
+            Task.FromResult(CreateGeoJsonResponse(responseJson)));
+
+        var results = await client.ForwardGeocodeAsync("123 Main St");
+
+        // The null-location candidate is dropped (no false (0, 0) "Null Island" result).
+        Assert.Single(results);
+        Assert.Equal("123 Main St, Springfield, IL", results[0].Address);
+        Assert.Equal(39.7817, results[0].Latitude);
+        Assert.Equal(-89.6501, results[0].Longitude);
+        Assert.DoesNotContain(results, r => Math.Abs(r.Latitude) < 1e-9 && Math.Abs(r.Longitude) < 1e-9);
+    }
+
+    [Fact]
     public async Task ForwardGeocode_EmptyResults_ReturnsEmptyList()
     {
         var responseJson = """
@@ -180,7 +216,7 @@ public sealed class HonuaGeocodingClientTests
     }
 
     [Fact]
-    public async Task ForwardGeocode_CandidateWithNullLocation_DefaultsToZero()
+    public async Task ForwardGeocode_CandidateWithNullLocation_IsSkippedNotNullIsland()
     {
         var responseJson = """
         {
@@ -201,9 +237,9 @@ public sealed class HonuaGeocodingClientTests
 
         var results = await client.ForwardGeocodeAsync("test");
 
-        Assert.Single(results);
-        Assert.Equal(0, results[0].Latitude);
-        Assert.Equal(0, results[0].Longitude);
+        // A candidate without a location must not surface as a (0, 0) "Null Island" match;
+        // it is dropped entirely.
+        Assert.Empty(results);
     }
 
     // ── ReverseGeocodeAsync ─────────────────────────────────────────────

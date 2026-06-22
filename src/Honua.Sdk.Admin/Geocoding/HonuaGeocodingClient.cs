@@ -91,13 +91,18 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
             return [];
         }
 
-        return result.Candidates.Select(c => new GeocodeResult(
-            Address: c.Address,
-            Latitude: c.Location?.Y ?? 0,
-            Longitude: c.Location?.X ?? 0,
-            Score: c.Score,
-            Attributes: FlattenAttributes(c.Attributes)
-        )).ToList().AsReadOnly();
+        // Skip candidates without a location rather than emitting (0, 0) "Null Island":
+        // GeocodeResult exposes non-nullable coordinates, so a missing location would otherwise
+        // surface as a false match at the equator/prime-meridian intersection.
+        return result.Candidates
+            .Where(c => c.Location is not null)
+            .Select(c => new GeocodeResult(
+                Address: c.Address,
+                Latitude: c.Location!.Y,
+                Longitude: c.Location!.X,
+                Score: c.Score,
+                Attributes: FlattenAttributes(c.Attributes)
+            )).ToList().AsReadOnly();
     }
 
     /// <inheritdoc />

@@ -306,9 +306,18 @@ public sealed class HonuaFeatureServerClient :
         var response = await _http.GetAsync(CreateRequestUri(path), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
+            // Read the body and run the status check while the response is still alive,
+            // then dispose. EnsureSuccess reads response.StatusCode, so it must run before
+            // Dispose to remain correct under refactoring.
             var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            response.Dispose();
-            EnsureSuccess(response, body);
+            try
+            {
+                EnsureSuccess(response, body);
+            }
+            finally
+            {
+                response.Dispose();
+            }
         }
 
         var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
