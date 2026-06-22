@@ -106,7 +106,7 @@ public sealed class HonuaGeocodingClientTests
         Assert.Equal("123 Main St, Springfield, IL", results[0].Address);
         Assert.Equal(39.7817, results[0].Latitude);
         Assert.Equal(-89.6501, results[0].Longitude);
-        Assert.DoesNotContain(results, r => r.Latitude == 0 && r.Longitude == 0);
+        Assert.DoesNotContain(results, r => Math.Abs(r.Latitude) < 1e-9 && Math.Abs(r.Longitude) < 1e-9);
     }
 
     [Fact]
