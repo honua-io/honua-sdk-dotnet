@@ -2,6 +2,21 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.3.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.2.1...dotnet-sdk-v1.3.0) (2026-06-24)
+
+
+### Features
+
+* **console-share:** add open-data (DCAT/STAC) SDK client; FeatureServer Multi* edit-projection tests ([#216](https://github.com/honua-io/honua-sdk-dotnet/issues/216)) ([5a96cba](https://github.com/honua-io/honua-sdk-dotnet/commit/5a96cba79373b8802f65a2a427e8fba9782c228f))
+* **offline:** scope extractChanges by server generation ([#199](https://github.com/honua-io/honua-sdk-dotnet/issues/199)) ([b73a460](https://github.com/honua-io/honua-sdk-dotnet/commit/b73a460b21bcf98e4515073e4c203ff3e923284a))
+
+
+### Bug Fixes
+
+* **abstractions:** disable HTTP auto-redirect by default to stop X-API-Key leak ([#215](https://github.com/honua-io/honua-sdk-dotnet/issues/215)) ([130e4ef](https://github.com/honua-io/honua-sdk-dotnet/commit/130e4efef7f82dfc4dce66ced8cb9f3ffd2305a8))
+* **abstractions:** resolve FeatureStreamEventBuffer completion/backpressure deadlocks ([#208](https://github.com/honua-io/honua-sdk-dotnet/issues/208)) ([34218ae](https://github.com/honua-io/honua-sdk-dotnet/commit/34218ae82c542ff89c1570425fd91becf5b64cbc)), closes [#201](https://github.com/honua-io/honua-sdk-dotnet/issues/201)
+* **resilience:** correct default resilience config that broke clients on first use ([#212](https://github.com/honua-io/honua-sdk-dotnet/issues/212)) ([c97a9a9](https://github.com/honua-io/honua-sdk-dotnet/commit/c97a9a996c7efeacce8ce5201f106324918a8387)), closes [#200](https://github.com/honua-io/honua-sdk-dotnet/issues/200)
+
 ## [1.2.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.2.0...dotnet-sdk-v1.2.1) (2026-06-09)
 
 
