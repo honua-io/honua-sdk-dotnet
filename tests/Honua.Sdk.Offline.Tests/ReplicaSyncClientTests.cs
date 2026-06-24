@@ -111,6 +111,54 @@ public sealed class ReplicaSyncClientTests
     }
 
     [Fact]
+    public async Task ExtractChangesAsync_WithServerGen_SendsServerGenParameters()
+    {
+        string? capturedBody = null;
+        var handler = new StubHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"serverGen":70,"layerChanges":[]}""", Encoding.UTF8, "application/json"),
+            };
+        });
+
+        var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
+
+        await client.ExtractChangesAsync("assets", "replica-abc-123", "55");
+
+        Assert.NotNull(capturedBody);
+        // serverGens is URL-encoded ([55] -> %5B55%5D) and replicaServerGen carries the same value.
+        Assert.Contains("serverGens=%5B55%5D", capturedBody);
+        Assert.Contains("replicaServerGen=55", capturedBody);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task ExtractChangesAsync_WithoutServerGen_OmitsServerGenParameters(string? serverGen)
+    {
+        string? capturedBody = null;
+        var handler = new StubHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"serverGen":70,"layerChanges":[]}""", Encoding.UTF8, "application/json"),
+            };
+        });
+
+        var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
+
+        await client.ExtractChangesAsync("assets", "replica-abc-123", serverGen);
+
+        Assert.NotNull(capturedBody);
+        Assert.DoesNotContain("serverGens", capturedBody);
+        Assert.DoesNotContain("replicaServerGen", capturedBody);
+    }
+
+    [Fact]
     public async Task ExtractChangesAsync_EmptyChanges_ReturnsEmptyLayerChanges()
     {
         var responseJson = """

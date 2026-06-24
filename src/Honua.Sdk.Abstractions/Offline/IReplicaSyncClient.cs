@@ -38,6 +38,33 @@ public interface IReplicaSyncClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Extracts feature changes (adds, updates, deletes) from the server, scoped to the changes
+    /// that occurred after the supplied server generation.
+    /// </summary>
+    /// <remarks>
+    /// The GeoServices replica protocol scopes <c>extractChanges</c> by the replica's last-known
+    /// server generation. Passing the persisted generation here yields only the delta since the
+    /// previous sync; omitting it (or using the parameterless overload) re-extracts the full change
+    /// set every run, which defeats delta sync. The default implementation delegates to the
+    /// generation-less overload for backward compatibility with existing implementations.
+    /// </remarks>
+    /// <param name="serviceId">The feature service identifier.</param>
+    /// <param name="replicaId">The replica ID obtained from <see cref="CreateReplicaAsync"/>.</param>
+    /// <param name="sinceServerGen">
+    /// The server generation the local replica last synchronized to, used as the lower bound
+    /// ("since") for the extract. When <see langword="null"/> or whitespace, the server returns
+    /// the full change set (equivalent to extracting from the replica's creation generation).
+    /// </param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>Layer-level change sets and the current server generation number.</returns>
+    Task<ExtractChangesResult> ExtractChangesAsync(
+        string serviceId,
+        string replicaId,
+        string? sinceServerGen,
+        CancellationToken cancellationToken = default)
+        => ExtractChangesAsync(serviceId, replicaId, cancellationToken);
+
+    /// <summary>
     /// Acknowledges received changes and advances the replica's server generation number.
     /// </summary>
     /// <param name="serviceId">The feature service identifier.</param>
