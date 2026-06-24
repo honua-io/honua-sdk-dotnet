@@ -21,7 +21,7 @@ jobs:
     name: Security Audit (NuGet)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
@@ -74,7 +74,7 @@ jobs:
     name: Code Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
@@ -177,7 +177,7 @@ jobs:
     name: API Compatibility
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -290,7 +290,7 @@ jobs:
             tests:
               - tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
@@ -322,7 +322,7 @@ jobs:
     name: Browser WASM Smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
@@ -357,7 +357,7 @@ jobs:
     name: Admin Bootstrap Sample
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
