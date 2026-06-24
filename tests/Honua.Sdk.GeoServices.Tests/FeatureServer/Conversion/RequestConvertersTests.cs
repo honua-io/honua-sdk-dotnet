@@ -293,6 +293,124 @@ public class RequestConvertersTests
     }
 
     [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonMultiPointToPoints()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "MultiPoint",
+                coordinates = new[]
+                {
+                    new[] { 10.0, 20.0 },
+                    new[] { 30.0, 40.0 },
+                },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.False(geometry.TryGetProperty("type", out _));
+        var points = geometry.GetProperty("points");
+        Assert.Equal(JsonValueKind.Array, points.ValueKind);
+        Assert.Equal(2, points.GetArrayLength());
+        Assert.Equal(10.0, points[0][0].GetDouble());
+        Assert.Equal(20.0, points[0][1].GetDouble());
+        Assert.Equal(30.0, points[1][0].GetDouble());
+        Assert.Equal(40.0, points[1][1].GetDouble());
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonMultiLineStringToPaths()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "MultiLineString",
+                coordinates = new[]
+                {
+                    new[]
+                    {
+                        new[] { 0.0, 0.0 },
+                        new[] { 1.0, 1.0 },
+                    },
+                    new[]
+                    {
+                        new[] { 2.0, 2.0 },
+                        new[] { 3.0, 3.0 },
+                    },
+                },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.False(geometry.TryGetProperty("type", out _));
+        var paths = geometry.GetProperty("paths");
+        Assert.Equal(JsonValueKind.Array, paths.ValueKind);
+        Assert.Equal(2, paths.GetArrayLength());
+        Assert.Equal(0.0, paths[0][0][0].GetDouble());
+        Assert.Equal(0.0, paths[0][0][1].GetDouble());
+        Assert.Equal(3.0, paths[1][1][0].GetDouble());
+        Assert.Equal(3.0, paths[1][1][1].GetDouble());
+    }
+
+    [Fact]
+    public void ToFeatureServerFeature_ProjectsGeoJsonMultiPolygonToRings()
+    {
+        var feature = new FeatureEditFeature
+        {
+            Geometry = JsonSerializer.SerializeToElement(new
+            {
+                type = "MultiPolygon",
+                coordinates = new[]
+                {
+                    new[]
+                    {
+                        new[]
+                        {
+                            new[] { 0.0, 0.0 },
+                            new[] { 0.0, 1.0 },
+                            new[] { 1.0, 1.0 },
+                            new[] { 1.0, 0.0 },
+                            new[] { 0.0, 0.0 },
+                        },
+                    },
+                    new[]
+                    {
+                        new[]
+                        {
+                            new[] { 10.0, 10.0 },
+                            new[] { 10.0, 11.0 },
+                            new[] { 11.0, 11.0 },
+                            new[] { 11.0, 10.0 },
+                            new[] { 10.0, 10.0 },
+                        },
+                    },
+                },
+            }),
+        };
+
+        var converted = RequestConverters.ToFeatureServerFeature(feature);
+
+        Assert.True(converted.Geometry.HasValue);
+        var geometry = converted.Geometry!.Value;
+        Assert.False(geometry.TryGetProperty("type", out _));
+        var rings = geometry.GetProperty("rings");
+        Assert.Equal(JsonValueKind.Array, rings.ValueKind);
+        // A MultiPolygon with two single-ring polygons projects to two Esri rings.
+        Assert.Equal(2, rings.GetArrayLength());
+        Assert.All(
+            Enumerable.Range(0, rings.GetArrayLength()),
+            i => Assert.Equal(5, rings[i].GetArrayLength()));
+    }
+
+    [Fact]
     public void ToFeatureServerFeature_LeavesNullGeometryNull()
     {
         var feature = new FeatureEditFeature
