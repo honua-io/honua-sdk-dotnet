@@ -166,6 +166,13 @@ public static class ServiceCollectionExtensions
         {
             httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
         }
+        else
+        {
+            // Disable auto-redirect by default so the custom X-API-Key header is
+            // never forwarded to an attacker-controlled 30x redirect target.
+            httpBuilder.ConfigurePrimaryHttpMessageHandler(
+                Honua.Sdk.Abstractions.HonuaHttpHandlerDefaults.CreateNoRedirectPrimaryHandler);
+        }
 
         if (snapshot.EnableRetry)
         {
