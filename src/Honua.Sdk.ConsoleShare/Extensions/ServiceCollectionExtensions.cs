@@ -77,6 +77,41 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers the Honua Console Share open-data / DCAT / STAC publication client
+    /// (<see cref="IHonuaConsoleShareOpenDataClient"/>) over the same options,
+    /// authentication, and resilience pipeline as <see cref="AddHonuaConsoleShare"/>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">Callback that configures the client options.</param>
+    /// <returns>The service collection, for chaining.</returns>
+    public static IServiceCollection AddHonuaConsoleShareOpenData(
+        this IServiceCollection services,
+        Action<HonuaConsoleShareClientOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var snapshot = new HonuaConsoleShareClientOptions();
+        configure(snapshot);
+        HonuaConsoleShareClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaConsoleShareClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        services.AddSingleton<IOptions<HonuaConsoleShareClientOptions>>(Options.Create(snapshot));
+        services.AddTransient<HonuaConsoleShareAuthHandler>();
+        var httpBuilder = services.AddHttpClient<IHonuaConsoleShareOpenDataClient, HonuaConsoleShareOpenDataClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaConsoleShareClientOptions>>().Value;
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = options.Timeout;
+        })
+        .AddHttpMessageHandler<HonuaConsoleShareAuthHandler>();
+
+        ConfigureTransport(httpBuilder, snapshot);
+
+        return services;
+    }
+
     private static void ConfigureTransport(IHttpClientBuilder httpBuilder, HonuaConsoleShareClientOptions snapshot)
     {
         if (snapshot.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)

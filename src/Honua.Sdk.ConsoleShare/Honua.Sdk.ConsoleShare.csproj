@@ -7,7 +7,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Honua.Sdk.ConsoleShare</PackageId>
-    <Description>Console Share clients (access, public-link, and embed-token lifecycle, plus scheduled export definitions/runs and Share traffic) and shared contracts for Honua Console hosts</Description>
+    <Description>Console Share clients (access, public-link, and embed-token lifecycle, scheduled export definitions/runs and Share traffic, and open-data/DCAT/STAC publication) and shared contracts for Honua Console hosts</Description>
     <RootNamespace>Honua.Sdk.ConsoleShare</RootNamespace>
     <Authors>Honua</Authors>
     <Copyright>Copyright (c) Honua</Copyright>
@@ -15,7 +15,7 @@
     <PackageProjectUrl>https://github.com/honua-io/honua-sdk-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>geospatial;share;public-link;embed;export;traffic;console;rest;honua</PackageTags>
+    <PackageTags>geospatial;share;public-link;embed;export;traffic;open-data;dcat;stac;console;rest;honua</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
