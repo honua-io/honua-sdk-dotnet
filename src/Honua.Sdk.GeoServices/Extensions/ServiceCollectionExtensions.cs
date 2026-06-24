@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
             client.BaseAddress = options.BaseAddress;
-            client.Timeout = options.Timeout;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaFeatureServerClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
@@ -85,7 +85,7 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
             client.BaseAddress = options.BaseAddress;
-            client.Timeout = options.Timeout;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
@@ -118,7 +118,7 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
             client.BaseAddress = options.BaseAddress;
-            client.Timeout = options.Timeout;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
 
@@ -150,7 +150,7 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
             client.BaseAddress = options.BaseAddress;
-            client.Timeout = options.Timeout;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
 
@@ -171,8 +171,8 @@ public static class ServiceCollectionExtensions
         {
             httpBuilder.AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = snapshot.Timeout;
-                options.AttemptTimeout.Timeout = snapshot.Timeout;
+                options.TotalRequestTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.TotalRequestTimeout(snapshot.Timeout);
+                options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
                 options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
                 options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
                 options.Retry.DisableForUnsafeHttpMethods();
