@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using Honua.Sdk.Abstractions;
+using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Admin;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.GeoServices;
@@ -74,7 +75,8 @@ public static class ServiceCollectionExtensions
             throw new HonuaConfigurationException(
                 "Configure at least one Honua module via AddHonua(...) before resolving clients. " +
                 "Every Use* flag (UseGrpc, UseAdmin, UseGeocoding, UseOgcFeatures, UseWfs, UseGeoServices, " +
-                "UseProcesses, UseRouting, UseScenes, UseSpec, UseStac, UseOgcRecords, UseStudio, UseConsoleShare) is currently false.");
+                "UseProcesses, UseRouting, UseScenes, UseSpec, UseStac, UseOgcRecords, UseStudio, UseConsoleShare, " +
+                "UseGeoprocessingProfile) is currently false.");
         }
 
         if (snapshot.UseGrpc)
@@ -107,9 +109,20 @@ public static class ServiceCollectionExtensions
             services.AddHonuaWfs(options => ApplyWfs(options, snapshot));
         }
 
-        if (snapshot.UseGeoServices)
+        if (snapshot.GeoServicesRequired)
         {
             services.AddHonuaFeatureServer(options => ApplyGeoServices(options, snapshot));
+        }
+
+        if (snapshot.UseGeoprocessingProfile)
+        {
+            // Unified accessor: a GP tool reads/writes attachments and runs
+            // temporal / grouped-statistics queries through one client that routes
+            // each operation to a capable provider, regardless of the feature
+            // transport (gRPC exposes no attachment RPCs and no time/having facet).
+            services.AddTransient<IHonuaFeatureGateway>(sp => new HonuaFeatureGateway(
+                sp.GetServices<IHonuaFeatureQueryClient>(),
+                sp.GetServices<IHonuaFeatureAttachmentClient>()));
         }
 
         if (snapshot.UseRouting)

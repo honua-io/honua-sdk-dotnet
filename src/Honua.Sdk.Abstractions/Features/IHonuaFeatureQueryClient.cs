@@ -14,6 +14,20 @@ public interface IHonuaFeatureQueryClient
     string ProviderName { get; }
 
     /// <summary>
+    /// Provider query capabilities exposed by this client. A geoprocessing tool
+    /// inspects these flags (for example <see cref="FeatureQueryCapabilities.SupportsTimeFilter"/>
+    /// or <see cref="FeatureQueryCapabilities.SupportsHaving"/>) to pick a provider
+    /// that supports a temporal or grouped-statistics query instead of catching a
+    /// runtime <see cref="NotSupportedException"/>. The default implementation
+    /// reports every facet as unsupported so providers must opt in explicitly.
+    /// </summary>
+    FeatureQueryCapabilities QueryCapabilities => new()
+    {
+        UnsupportedReason =
+            "Provider did not advertise query capabilities; treat temporal and grouped-statistics facets as unsupported.",
+    };
+
+    /// <summary>
     /// Executes a feature query and returns a single result page.
     /// </summary>
     /// <param name="request">Provider-neutral query request.</param>

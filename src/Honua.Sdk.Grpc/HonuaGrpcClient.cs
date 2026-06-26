@@ -25,7 +25,12 @@ public sealed class HonuaGrpcClient :
     IDisposable
 {
     private const string FeatureServiceName = "geospatial.v1.FeatureService";
+    // Long-term native fix tracked in geospatial-grpc#43 (attachment RPCs + time/having facets).
     private const string UnsupportedAttachmentReason = "gRPC FeatureService does not expose attachment RPCs yet.";
+    private const string UnsupportedQueryFacetReason =
+        "gRPC FeatureService does not expose time-filter or grouped-statistics having facets yet; " +
+        "route these queries through an attachment/query-capable provider (for example GeoServices FeatureServer) " +
+        "or the GP feature gateway.";
 
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
@@ -43,6 +48,15 @@ public sealed class HonuaGrpcClient :
     {
         NativeSurface = "grpc FeatureService attachments",
         UnsupportedReason = UnsupportedAttachmentReason
+    };
+    private static readonly FeatureQueryCapabilities GrpcQueryCapabilities = new()
+    {
+        SupportsTimeFilter = false,
+        SupportsStatistics = true,
+        SupportsGroupBy = true,
+        SupportsHaving = false,
+        NativeSurface = "grpc FeatureService.QueryFeatures",
+        UnsupportedReason = UnsupportedQueryFacetReason,
     };
 
     private readonly Proto.FeatureService.FeatureServiceClient _client;
@@ -126,6 +140,9 @@ public sealed class HonuaGrpcClient :
 
     /// <inheritdoc />
     public FeatureAttachmentCapabilities AttachmentCapabilities => GrpcAttachmentCapabilities;
+
+    /// <inheritdoc />
+    public FeatureQueryCapabilities QueryCapabilities => GrpcQueryCapabilities;
 
     /// <inheritdoc />
     public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default)
@@ -537,12 +554,18 @@ public sealed class HonuaGrpcClient :
     {
         if (request.TimeFilter is not null)
         {
-            throw new NotSupportedException("gRPC shared queries do not support provider-neutral time filters until the geospatial proto adds a time query contract.");
+            throw new NotSupportedException(
+                "gRPC shared queries do not support provider-neutral time filters until the geospatial proto adds a time query contract. " +
+                "Check IHonuaFeatureQueryClient.QueryCapabilities.SupportsTimeFilter or route the query through IHonuaFeatureGateway, " +
+                "which forwards temporal queries to a time-capable provider (for example GeoServices FeatureServer).");
         }
 
         if (!string.IsNullOrWhiteSpace(request.Having))
         {
-            throw new NotSupportedException("gRPC shared statistics queries do not support provider-neutral having clauses yet.");
+            throw new NotSupportedException(
+                "gRPC shared statistics queries do not support provider-neutral having clauses yet. " +
+                "Check IHonuaFeatureQueryClient.QueryCapabilities.SupportsHaving or route the query through IHonuaFeatureGateway, " +
+                "which forwards having queries to a having-capable provider (for example GeoServices FeatureServer).");
         }
     }
 

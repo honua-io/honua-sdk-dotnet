@@ -52,6 +52,14 @@ public sealed class HonuaFeatureServerClient :
         SupportsDelete = true,
         NativeSurface = "GeoServices FeatureServer attachments"
     };
+    private static readonly FeatureQueryCapabilities ProviderQueryCapabilities = new()
+    {
+        SupportsTimeFilter = true,
+        SupportsStatistics = true,
+        SupportsGroupBy = true,
+        SupportsHaving = true,
+        NativeSurface = "GeoServices FeatureServer query"
+    };
 
     private readonly HttpClient _http;
 
@@ -72,6 +80,9 @@ public sealed class HonuaFeatureServerClient :
 
     /// <inheritdoc />
     public FeatureAttachmentCapabilities AttachmentCapabilities => ProviderAttachmentCapabilities;
+
+    /// <inheritdoc />
+    public FeatureQueryCapabilities QueryCapabilities => ProviderQueryCapabilities;
 
     private static string ServicePath(string serviceId) =>
         $"/rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer";

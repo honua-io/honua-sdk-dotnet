@@ -50,6 +50,38 @@ situational sub-packages or to opt out of any default module:
 | `UseStac` | `false` | `IHonuaStacClient` |
 | `UseOgcRecords` | `false` | `IHonuaOgcRecordsClient` |
 | `UseStudio` | `false` | `IHonuaStudioReportsClient` (analysis report retrieve / render) |
+| `UseGeoprocessingProfile` | `false` | `IHonuaFeatureGateway` + the GeoServices FeatureServer client it routes attachments and time/having queries to |
+
+### Geoprocessing (GP) feature profile
+
+The workhorse gRPC `FeatureService` exposes only
+`QueryFeatures`/`QueryFeaturesStream`/`ApplyEdits`: it has **no attachment RPCs**
+and **no provider-neutral time-filter or grouped-statistics `having` contract**.
+A GP tool that reads features over gRPC therefore used to hit
+`NotSupportedException` the moment it touched media or a time-aware / summary
+query.
+
+Enable `UseGeoprocessingProfile` to register the unified `IHonuaFeatureGateway`
+(plus the GeoServices FeatureServer client it needs). The gateway routes each
+operation to a capable provider: attachments resolve over GeoServices even when
+features stream over gRPC, and temporal / `having` queries transparently fall
+back from gRPC to a time/having-capable provider. Every feature query client also
+exposes `QueryCapabilities` (`SupportsTimeFilter`, `SupportsHaving`,
+`SupportsStatistics`, `SupportsGroupBy`) so a tool can pick a provider up front
+instead of relying on routing.
+
+```csharp
+builder.Services.AddHonua(o =>
+{
+    o.BaseAddress = new Uri("https://your-honua-server");
+    o.UseGeoprocessingProfile = true; // gateway + GeoServices, no NotSupportedException
+
+    // later, in a GP tool — attachments and temporal queries just work:
+    // var gateway = sp.GetRequiredService<IHonuaFeatureGateway>();
+    // var media   = await gateway.ListAttachmentsAsync(listRequest);
+    // var summary = await gateway.QueryAsync(temporalStatsRequest);
+});
+```
 
 ```csharp
 builder.Services.AddHonua(o =>

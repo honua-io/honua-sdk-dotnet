@@ -3,7 +3,11 @@
 Shared, provider-neutral contracts used across the Honua .NET SDK. Defines the
 core feature interfaces (`IHonuaFeatureQueryClient`, `IHonuaFeatureEditClient`,
 `IHonuaFeatureAttachmentClient`, `IHonuaFeatureDescriptorClient`,
-`IHonuaSource`, `SourceDescriptor`), feature query/edit request and result
+`IHonuaSource`, `SourceDescriptor`), the unified `IHonuaFeatureGateway` /
+`HonuaFeatureGateway` that route attachments and temporal / grouped-statistics
+queries to a capable provider (so a geoprocessing tool reaching media or
+time-aware queries over gRPC never hits `NotSupportedException`),
+feature query/edit request and result
 models, feature stream-event processors, the provider-neutral routing client
 (`IHonuaRoutingClient`) and routing models, scene client and scene-package
 contracts, Studio analysis-report and analysis-result-package DTOs,
