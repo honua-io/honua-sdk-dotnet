@@ -95,6 +95,13 @@ public sealed record RasterDataCapabilities
     /// <summary>Whether no-data masks or no-data counts can be returned.</summary>
     public bool SupportsNoDataMasks { get; init; }
 
+    /// <summary>
+    /// Whether a windowed/subset raster read (bbox extent sampled to a target
+    /// pixel size) is supported. Required for a raster geoprocessing tool to
+    /// read a clipped window of a large raster instead of the whole dataset.
+    /// </summary>
+    public bool SupportsWindowReads { get; init; }
+
     /// <summary>Native provider surface backing the implementation.</summary>
     public string? NativeSurface { get; init; }
 
@@ -328,4 +335,139 @@ public sealed record RasterCoverageStatisticsResponse
 
     /// <summary>Whether the response does not contain provider errors.</summary>
     public bool Succeeded => !Messages.Any(static message => message.Severity == SpatialDataMessageSeverity.Error);
+}
+
+/// <summary>
+/// Request for a windowed/subset raster read: the cells covered by an extent,
+/// sampled to a target pixel size. Mirrors a clipped-extent raster read used by
+/// geoprocessing tools so a large raster can be windowed rather than transferred
+/// whole.
+/// </summary>
+public sealed record RasterWindowReadRequest
+{
+    /// <summary>Provider-specific raster source identifiers.</summary>
+    public SpatialDataSource Source { get; init; } = new();
+
+    /// <summary>Bounding extent of the window to read. Required.</summary>
+    public required FeatureBoundingBox Extent { get; init; }
+
+    /// <summary>
+    /// Target window width in pixels. Required and must be positive. Combined
+    /// with <see cref="Height"/> this is the sampled raster size returned for
+    /// the requested extent.
+    /// </summary>
+    public required int Width { get; init; }
+
+    /// <summary>Target window height in pixels. Required and must be positive.</summary>
+    public required int Height { get; init; }
+
+    /// <summary>
+    /// Output spatial reference identifier for the returned window. When null
+    /// the provider returns the window in the dataset / extent CRS.
+    /// </summary>
+    public string? OutputSpatialReference { get; init; }
+
+    /// <summary>
+    /// Requested output format. <see cref="RasterWindowFormat.GeoTiff"/> yields
+    /// a georeferenced window suitable for writing to disk; provider defaults
+    /// apply for <see cref="RasterWindowFormat.ProviderDefault"/>.
+    /// </summary>
+    public RasterWindowFormat Format { get; init; } = RasterWindowFormat.ProviderDefault;
+
+    /// <summary>Band indexes to include. Empty or null means provider default.</summary>
+    public IReadOnlyList<int>? BandIndexes { get; init; }
+
+    /// <summary>No-data value(s) to apply to the returned window, when supported.</summary>
+    public string? NoData { get; init; }
+
+    /// <summary>Resampling method used when sampling the window to the target size.</summary>
+    public RasterResamplingMethod ResamplingMethod { get; init; } = RasterResamplingMethod.ProviderDefault;
+
+    /// <summary>Optional provider mosaic rule, raster item filter, or version selector.</summary>
+    public JsonElement? Selector { get; init; }
+
+    /// <summary>Additional provider parameters that do not affect SDK display behavior.</summary>
+    public IReadOnlyDictionary<string, string?>? AdditionalParameters { get; init; }
+}
+
+/// <summary>
+/// Output encoding requested for a windowed raster read.
+/// </summary>
+public enum RasterWindowFormat
+{
+    /// <summary>Use the provider default encoding.</summary>
+    ProviderDefault = 0,
+
+    /// <summary>Georeferenced GeoTIFF, suitable for writing to disk.</summary>
+    GeoTiff = 1,
+
+    /// <summary>PNG raster.</summary>
+    Png = 2,
+
+    /// <summary>JPEG raster.</summary>
+    Jpeg = 3,
+}
+
+/// <summary>
+/// Result of a windowed raster read. Owns the response-backed content stream;
+/// dispose it when done.
+/// </summary>
+public sealed class RasterWindowReadResult : IDisposable, IAsyncDisposable
+{
+    private readonly Stream _content;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RasterWindowReadResult"/> class.
+    /// </summary>
+    /// <param name="content">The raster window content stream (owned by this result).</param>
+    /// <param name="source">Source that produced the window.</param>
+    /// <param name="extent">Extent covered by the returned window.</param>
+    /// <param name="width">Window width in pixels.</param>
+    /// <param name="height">Window height in pixels.</param>
+    /// <param name="contentType">Response content type.</param>
+    /// <param name="contentLength">Response content length, when reported.</param>
+    public RasterWindowReadResult(
+        Stream content,
+        SpatialDataSource source,
+        FeatureBoundingBox? extent,
+        int? width,
+        int? height,
+        string? contentType,
+        long? contentLength)
+    {
+        _content = content ?? throw new ArgumentNullException(nameof(content));
+        Source = source ?? new SpatialDataSource();
+        Extent = extent;
+        Width = width;
+        Height = height;
+        ContentType = contentType;
+        ContentLength = contentLength;
+    }
+
+    /// <summary>Source that produced the window.</summary>
+    public SpatialDataSource Source { get; }
+
+    /// <summary>The raster window stream. Disposing this result disposes the stream.</summary>
+    public Stream Content => _content;
+
+    /// <summary>Extent covered by the returned window, when known.</summary>
+    public FeatureBoundingBox? Extent { get; }
+
+    /// <summary>Window width in pixels, when known.</summary>
+    public int? Width { get; }
+
+    /// <summary>Window height in pixels, when known.</summary>
+    public int? Height { get; }
+
+    /// <summary>Response content type (e.g. <c>image/tiff</c>).</summary>
+    public string? ContentType { get; }
+
+    /// <summary>Response content length, when reported by the provider.</summary>
+    public long? ContentLength { get; }
+
+    /// <inheritdoc />
+    public void Dispose() => _content.Dispose();
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync() => _content.DisposeAsync();
 }

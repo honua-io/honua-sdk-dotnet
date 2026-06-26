@@ -28,8 +28,9 @@ namespace Honua.Sdk;
 /// <see cref="UseProcesses"/>, and <see cref="UseWfs"/>) default to
 /// <c>true</c> for the common query, edit, admin, geocoding, OGC API Features,
 /// OGC API Processes, and WFS client set. The more situational sub-packages
-/// (<see cref="UseGeoServices"/>, <see cref="UseRouting"/>, <see cref="UseScenes"/>,
-/// <see cref="UseSpec"/>, <see cref="UseStac"/>, <see cref="UseOgcRecords"/>)
+/// (<see cref="UseGeoServices"/>, <see cref="UseRouting"/>, <see cref="UseImageServer"/>,
+/// <see cref="UseScenes"/>, <see cref="UseSpec"/>, <see cref="UseStac"/>,
+/// <see cref="UseOgcRecords"/>)
 /// default to <c>false</c> so callers who want the smallest registration footprint
 /// don't get every client they don't use.
 /// </para>
@@ -192,6 +193,15 @@ public sealed class HonuaSdkOptions
     public bool UseRouting { get; set; }
 
     /// <summary>
+    /// When <c>true</c>, registers the GeoServices ImageServer raster client
+    /// (<c>HonuaImageServerClient</c>) and the provider-neutral raster data
+    /// client (<c>IHonuaRasterDataClient</c>) for raster metadata, coverage
+    /// statistics, and windowed reads. Ships in the GeoServices package and
+    /// reuses its options / auth handler. Defaults to <c>false</c>.
+    /// </summary>
+    public bool UseImageServer { get; set; }
+
+    /// <summary>
     /// When <c>true</c>, registers the scene metadata client
     /// (<c>IHonuaSceneClient</c>). Defaults to <c>false</c>.
     /// </summary>
@@ -236,6 +246,7 @@ public sealed class HonuaSdkOptions
         UseWfs ||
         UseGeoServices ||
         UseRouting ||
+        UseImageServer ||
         UseScenes ||
         UseSpec ||
         UseStac ||

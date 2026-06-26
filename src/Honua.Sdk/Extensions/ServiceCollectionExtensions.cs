@@ -74,7 +74,7 @@ public static class ServiceCollectionExtensions
             throw new HonuaConfigurationException(
                 "Configure at least one Honua module via AddHonua(...) before resolving clients. " +
                 "Every Use* flag (UseGrpc, UseAdmin, UseGeocoding, UseOgcFeatures, UseWfs, UseGeoServices, " +
-                "UseProcesses, UseRouting, UseScenes, UseSpec, UseStac, UseOgcRecords, UseStudio, UseConsoleShare) is currently false.");
+                "UseProcesses, UseRouting, UseImageServer, UseScenes, UseSpec, UseStac, UseOgcRecords, UseStudio, UseConsoleShare) is currently false.");
         }
 
         if (snapshot.UseGrpc)
@@ -115,6 +115,11 @@ public static class ServiceCollectionExtensions
         if (snapshot.UseRouting)
         {
             services.AddHonuaRouting(options => ApplyGeoServices(options, snapshot));
+        }
+
+        if (snapshot.UseImageServer)
+        {
+            services.AddHonuaImageServer(options => ApplyGeoServices(options, snapshot));
         }
 
         if (snapshot.UseScenes)
