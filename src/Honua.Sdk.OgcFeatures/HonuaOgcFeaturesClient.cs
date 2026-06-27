@@ -362,7 +362,11 @@ public sealed class HonuaOgcFeaturesClient :
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
-        return await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+
+        // ResponseHeadersRead: return the response without buffering the body so the caller can
+        // stream large export payloads (PBF/FlatGeobuf/Parquet). The caller owns disposal.
+        return await _http.GetAsync(
+            CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -378,9 +382,19 @@ public sealed class HonuaOgcFeaturesClient :
         var protocolFormat = OgcFeaturesVectorFormats.ToOgcFeaturesFormat(vectorFormat);
         var vectorQuery = (query ?? new OgcItemsParams()) with { Format = protocolFormat };
         var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(vectorQuery)}";
-        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        // Stream the response body directly into the reader (ResponseHeadersRead): no buffering
+        // to a string and no UTF-8 round-trip, so large/binary vector payloads are neither
+        // buffered whole nor corrupted.
+        using var response = await _http.GetAsync(
+            CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            EnsureSuccess(response, body);
+        }
+
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 

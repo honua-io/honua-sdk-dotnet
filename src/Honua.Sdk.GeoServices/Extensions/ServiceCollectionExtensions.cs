@@ -10,6 +10,7 @@ using Honua.Sdk.GeoServices.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace Honua.Sdk.GeoServices.Extensions;
 
@@ -188,8 +189,19 @@ public static class ServiceCollectionExtensions
                 options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
                 options.CircuitBreaker.SamplingDuration = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.SamplingDuration(snapshot.Timeout);
                 options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
-                options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
-                options.Retry.DisableForUnsafeHttpMethods();
+                options.Retry.ShouldHandle = args =>
+                {
+                    if (!HttpClientResiliencePredicates.IsTransient(args.Outcome))
+                    {
+                        return ValueTask.FromResult(false);
+                    }
+
+                    // Retry idempotent methods plus the idempotent /query POST fallback, so that a
+                    // long filter string (which forces GET->POST) does not silently lose retry.
+                    // Genuine mutations (applyEdits, attachment edits) remain excluded. Replaces
+                    // DisableForUnsafeHttpMethods(), which would drop the /query POST.
+                    return ValueTask.FromResult(GeoServicesRetryPolicy.IsRetryableRequest(args.Context.GetRequestMessage()));
+                };
                 options.Retry.UseJitter = true;
             });
         }
