@@ -8,16 +8,8 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// Configuration options for the Honua gRPC client.
 /// </summary>
-public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions, Honua.Sdk.Abstractions.IHonuaClientOptions
+public sealed class HonuaGrpcClientOptions : Honua.Sdk.Abstractions.HonuaClientOptionsBase, IHonuaAuthenticationOptions
 {
-    /// <summary>
-    /// Base address of the Honua gRPC server. Required; the SDK no longer assumes a
-    /// localhost default so that missing configuration surfaces loudly at
-    /// registration time via the static <see cref="ParseAndValidateAddress"/> check.
-    /// Matches the <c>BaseAddress</c> property exposed by every REST SDK options class.
-    /// </summary>
-    public Uri? BaseAddress { get; set; }
-
     /// <summary>
     /// API key for authentication (sent as grpc-metadata header).
     /// </summary>
@@ -65,12 +57,6 @@ public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions, Honua.
     public HonuaAuthenticationDiagnosticHandler? AuthenticationDiagnostics { get; set; }
 
     /// <summary>
-    /// Optional primary HTTP message handler factory for certificate, mTLS, or
-    /// enterprise transport configuration.
-    /// </summary>
-    public Func<HttpMessageHandler>? PrimaryHttpMessageHandlerFactory { get; set; }
-
-    /// <summary>
     /// Enables gRPC compression negotiation for responses.
     /// </summary>
     public bool EnableCompressionNegotiation { get; set; } = true;
@@ -79,41 +65,6 @@ public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions, Honua.
     /// Accepted gRPC compression algorithms advertised to the server.
     /// </summary>
     public string AcceptedCompressionEncodings { get; set; } = "gzip,identity";
-
-    /// <summary>
-    /// Enables the default retry policy for transient gRPC failures
-    /// (Unavailable, Internal). Defaults to <c>true</c>.
-    /// </summary>
-    public bool EnableRetry { get; set; } = true;
-
-    /// <summary>
-    /// Overall deadline applied to each gRPC call, including retry attempts (default: 100 seconds).
-    /// Must be greater than 10 milliseconds and less than 24 hours.
-    /// </summary>
-    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
-
-    /// <summary>
-    /// Maximum number of retry attempts (including the original call). Only used
-    /// when <see cref="EnableRetry"/> is <c>true</c>. Defaults to 3. Must be in
-    /// the inclusive range [2, 5]; the setter throws
-    /// <see cref="ArgumentOutOfRangeException"/> for values outside that range.
-    /// </summary>
-    public int MaxRetryAttempts
-    {
-        get => _maxRetryAttempts;
-        set
-        {
-            if (value is < 2 or > 5)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value), value,
-                    "MaxRetryAttempts must be in the inclusive range [2, 5].");
-            }
-            _maxRetryAttempts = value;
-        }
-    }
-
-    private int _maxRetryAttempts = 3;
 
     internal static Uri ParseAndValidateAddress(HonuaGrpcClientOptions options)
     {
@@ -146,36 +97,11 @@ public sealed class HonuaGrpcClientOptions : IHonuaAuthenticationOptions, Honua.
     }
 
     internal static void ValidateTimeout(TimeSpan timeout)
-    {
-        if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
-        {
-            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua gRPC timeout must be greater than 10 milliseconds and less than 24 hours.");
-        }
-    }
+        => Honua.Sdk.Abstractions.HonuaClientOptionsValidation.ValidateTimeout(timeout, "Honua gRPC");
 
     internal static bool RequiresHttpsForAuthentication(Uri? uri)
-    {
-        if (uri is null)
-        {
-            return true;
-        }
-
-        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return !IsLocalDevelopmentHttp(uri);
-    }
+        => Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationSupport.RequiresHttpsForAuthentication(uri);
 
     internal static bool IsLocalDevelopmentHttp(Uri uri)
-    {
-        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return uri.IsLoopback ||
-               string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
-    }
+        => Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationSupport.IsLocalDevelopmentHttp(uri);
 }

@@ -433,7 +433,7 @@ internal static class HonuaOAuthTokenEndpoint
         }
 
         if (!string.Equals(tokenEndpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-            !IsLocalDevelopmentHttp(tokenEndpoint))
+            !HonuaAuthenticationSupport.IsLocalDevelopmentHttp(tokenEndpoint))
         {
             throw new ArgumentException(
                 "OAuth token endpoint must use HTTPS, except loopback HTTP for local development.",
@@ -471,10 +471,6 @@ internal static class HonuaOAuthTokenEndpoint
         using var document = await JsonDocument.ParseAsync(responseStream, default, cancellationToken).ConfigureAwait(false);
         return HonuaOAuthTokenEndpointResponse.Parse(document.RootElement, DateTimeOffset.UtcNow);
     }
-
-    private static bool IsLocalDevelopmentHttp(Uri uri)
-        => string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-           (uri.IsLoopback || string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase));
 }
 
 internal sealed class HonuaOAuthTokenEndpointResponse
