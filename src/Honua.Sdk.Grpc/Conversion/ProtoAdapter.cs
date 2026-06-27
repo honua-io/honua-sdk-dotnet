@@ -212,7 +212,14 @@ internal static class ProtoAdapter
                 attr.BoolValue = b;
                 break;
             case DateTime dateTime:
-                attr.DatetimeValue = new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
+                // Treat Unspecified as UTC rather than local time. new DateTimeOffset(dateTime)
+                // interprets Kind=Unspecified using the host timezone, so the same instant would
+                // serialize to different wire values per machine. Normalize to UTC for a stable,
+                // timezone-independent round-trip (the read path returns Kind=Utc).
+                var utcDateTime = dateTime.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
+                    : dateTime;
+                attr.DatetimeValue = new DateTimeOffset(utcDateTime).ToUnixTimeMilliseconds();
                 break;
             case DateTimeOffset dateTimeOffset:
                 attr.DatetimeValue = dateTimeOffset.ToUnixTimeMilliseconds();
@@ -273,7 +280,7 @@ internal static class ProtoAdapter
             Proto.AttributeValue.ValueOneofCase.DoubleValue => attr.DoubleValue,
             Proto.AttributeValue.ValueOneofCase.FloatValue => (double)attr.FloatValue,
             Proto.AttributeValue.ValueOneofCase.BoolValue => attr.BoolValue,
-            Proto.AttributeValue.ValueOneofCase.DatetimeValue => DateTimeOffset.FromUnixTimeMilliseconds(attr.DatetimeValue).DateTime,
+            Proto.AttributeValue.ValueOneofCase.DatetimeValue => DateTimeOffset.FromUnixTimeMilliseconds(attr.DatetimeValue).UtcDateTime,
             Proto.AttributeValue.ValueOneofCase.BytesValue => attr.BytesValue.ToByteArray(),
             Proto.AttributeValue.ValueOneofCase.NullValue => null,
             Proto.AttributeValue.ValueOneofCase.None => null,

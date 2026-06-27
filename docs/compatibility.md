@@ -7,7 +7,7 @@ for runtime behavior and package API compatibility for released .NET packages.
 
 | SDK package baseline | Honua Server baseline | Release channel baseline | Admin API major | Admin API base path |
 |----------------------|-----------------------|--------------------------|-----------------|---------------------|
-| `0.1.x` | `0.1.0` or newer | `preview` or later | `1` | `/api/v1/admin` |
+| `1.x` | `0.1.0` or newer | `preview` or later | `1` | `/api/v1/admin` |
 
 `Honua.Sdk.Admin` evaluates this matrix through
 `HonuaAdminCompatibility.Evaluate()` and `IHonuaAdminClient.CheckCompatibilityAsync()`.
@@ -38,7 +38,7 @@ Run the same check locally with:
 scripts/validate-api-compat.sh origin/trunk
 ```
 
-Breaking public API changes should be avoided for the current `0.1.x` package
+Breaking public API changes should be avoided for the current `1.x` package
 line unless the release plan explicitly accepts the break. When the server
 compatibility baseline changes, update `HonuaAdminCompatibility`, the
 compatibility matrix tests, and this document in the same pull request.
