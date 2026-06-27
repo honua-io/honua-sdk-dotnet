@@ -176,7 +176,12 @@ internal static class ProtoAdapter
             proto.Attributes[kvp.Key] = ConvertAttributeToProto(kvp.Value);
         }
 
-        if (feature.Geometry is not null)
+        if (feature.NtsGeometry is not null)
+        {
+            // NTS-native write path: convert straight to the proto with no Esri JSON round-trip.
+            proto.Geometry = GrpcGeometryConverter.WriteGeometry(feature.NtsGeometry);
+        }
+        else if (feature.Geometry is not null)
         {
             var conversion = ConvertGeometryToProto(feature.Geometry);
             proto.Geometry = conversion.Geometry;
@@ -262,11 +267,23 @@ internal static class ProtoAdapter
             attributes[kvp.Key] = ConvertAttribute(kvp.Value);
         }
 
+        NetTopologySuite.Geometries.Geometry? ntsGeometry = null;
+        IReadOnlyDictionary<string, object?>? esriGeometry = null;
+        if (feature.Geometry is not null && feature.Geometry.ShapeCase != Proto.Geometry.ShapeOneofCase.None)
+        {
+            // Read the proto geometry once into NTS (the proto-native shape) and derive the Esri
+            // JSON dictionary from that same instance, so there is no serialize-then-reparse and the
+            // existing proto->NTS converter is the source of truth for SDK query results.
+            ntsGeometry = GrpcGeometryConverter.ReadGeometry(feature.Geometry);
+            esriGeometry = ConvertGeometry(ntsGeometry);
+        }
+
         return new Models.Feature
         {
             Id = feature.Id,
             Attributes = attributes,
-            Geometry = feature.Geometry is not null ? ConvertGeometry(feature.Geometry) : null,
+            NtsGeometry = ntsGeometry,
+            Geometry = esriGeometry,
         };
     }
 
@@ -295,7 +312,12 @@ internal static class ProtoAdapter
             return null;
         }
 
-        var ntsGeometry = GrpcGeometryConverter.ReadGeometry(geometry);
+        return ConvertGeometry(GrpcGeometryConverter.ReadGeometry(geometry));
+    }
+
+    private static IReadOnlyDictionary<string, object?>? ConvertGeometry(
+        NetTopologySuite.Geometries.Geometry ntsGeometry)
+    {
         var geoServicesJson = GeoServicesGeometryConverter.WriteGeometry(ntsGeometry);
         return UnwrapGeometryJsonValue(geoServicesJson) as IReadOnlyDictionary<string, object?>;
     }
@@ -522,7 +544,7 @@ internal static class ProtoAdapter
         };
     }
 
-    private static object? UnwrapGeometryJsonValue(JsonElement element)
+    internal static object? UnwrapGeometryJsonValue(JsonElement element)
     {
         return element.ValueKind switch
         {

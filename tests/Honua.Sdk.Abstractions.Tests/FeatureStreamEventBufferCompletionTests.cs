@@ -115,6 +115,27 @@ public sealed class FeatureStreamEventBufferCompletionTests
     }
 
     [Fact]
+    public async Task WriteAsync_AfterDispose_ReturnsCompletedRatherThanThrowing()
+    {
+        var buffer = new FeatureStreamEventBuffer(new FeatureStreamBackpressureOptions
+        {
+            Capacity = 1,
+            Mode = FeatureStreamBackpressureMode.Wait
+        });
+
+        using var failFast = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Fill capacity so any further writer must park on _space, then dispose the buffer.
+        Assert.True((await buffer.WriteAsync(Event("first"), failFast.Token)).Accepted);
+        buffer.Dispose();
+
+        // A writer that reaches _space.WaitAsync after disposal must observe graceful
+        // completion instead of leaking ObjectDisposedException from the disposed semaphore.
+        var result = await buffer.WriteAsync(Event("after-dispose"), failFast.Token);
+        Assert.Equal(FeatureStreamBufferWriteDecision.Completed, result.Decision);
+    }
+
+    [Fact]
     public async Task TryWrite_WaitMode_DoesNotSpuriouslyRejectWhenCapacityAvailable()
     {
         const int capacity = 64;
