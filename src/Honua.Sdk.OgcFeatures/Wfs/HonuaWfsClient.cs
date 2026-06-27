@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Geometry.Vector;
 using Honua.Sdk.OgcFeatures.Wfs.Exceptions;
 using Honua.Sdk.OgcFeatures.Wfs.Formats;

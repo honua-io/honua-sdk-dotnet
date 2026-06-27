@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Text.Json.Serialization;
-using Honua.Sdk.OgcFeatures.Conversion;
+using Honua.Sdk.Abstractions.Serialization;
 
 namespace Honua.Sdk.OgcFeatures.Models;
 
