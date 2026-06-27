@@ -11,52 +11,73 @@ namespace Honua.Sdk.Abstractions;
 /// <remarks>
 /// <para>
 /// <c>AddStandardResilienceHandler</c> validates that the circuit-breaker
-/// <c>SamplingDuration</c> (default 30 s) is at least <em>double</em> the
-/// per-attempt timeout. With the default option <see cref="IHonuaClientOptions.Timeout"/>
-/// of 100 s, naively setting <c>AttemptTimeout = Timeout</c> fails that check and
-/// throws <c>OptionsValidationException</c> the first time any client is resolved.
+/// <c>SamplingDuration</c> is at least <em>double</em> the per-attempt timeout,
+/// and that the total request timeout is greater than both. With the default
+/// option <see cref="IHonuaClientOptions.Timeout"/> of 100 s, naively setting
+/// <c>AttemptTimeout = Timeout</c> fails those checks and throws
+/// <c>OptionsValidationException</c> the first time any client is resolved.
 /// </para>
 /// <para>
 /// This helper treats <see cref="IHonuaClientOptions.Timeout"/> as the
 /// <em>overall</em> request budget (matching its documented meaning, "including
-/// retry attempts") and derives a per-attempt timeout that (a) stays strictly
-/// below half the circuit-breaker sampling window and (b) leaves room for retries
-/// when the overall budget allows it.
+/// retry attempts") and derives <em>both</em> the per-attempt timeout
+/// (<see cref="AttemptTimeout(TimeSpan)"/>) and the circuit-breaker sampling
+/// window (<see cref="SamplingDuration(TimeSpan)"/>) <em>from that budget</em>.
+/// Deriving the sampling window from the budget — instead of pinning the
+/// per-attempt timeout under a fixed 30 s window — means a configured 100 s budget
+/// genuinely permits a single attempt of up to ~45 s (and a 24 h budget scales up
+/// accordingly), rather than aborting every attempt at a hard-coded 14 s ceiling.
 /// </para>
 /// </remarks>
 public static class HonuaResilienceTimeouts
 {
+    // Per-attempt timeout as a fraction of the overall budget. At 0.45 the
+    // budget always covers at least two attempts, and the derived sampling
+    // window (2 x attempt + slack) stays strictly below the total budget, so
+    // the standard resilience handler's validator is satisfied for any budget:
+    //   total > sampling (0.95) >= 2 x attempt (0.90)  and  total > attempt (0.45).
+    private const double AttemptFraction = 0.45;
+    private const double SamplingFraction = 0.95;
+
     /// <summary>
     /// The standard resilience handler's default circuit-breaker sampling
-    /// duration. The handler requires <c>SamplingDuration &gt;= 2 * AttemptTimeout</c>.
+    /// duration. Retained for backwards compatibility; the effective sampling
+    /// window is now derived from the configured budget via
+    /// <see cref="SamplingDuration(TimeSpan)"/> so that the per-attempt timeout is
+    /// not pinned under a fixed 30 s window.
     /// </summary>
     public static readonly TimeSpan CircuitBreakerSamplingDuration = TimeSpan.FromSeconds(30);
 
-    // A small margin below SamplingDuration/2 (15 s) keeps the validator happy
-    // even accounting for any internal rounding, and is a sane per-attempt ceiling.
-    private static readonly TimeSpan MaxAttemptTimeout = TimeSpan.FromSeconds(14);
-
     /// <summary>
     /// Computes the per-attempt timeout for the standard resilience handler from
-    /// the caller's overall <paramref name="totalTimeout"/> budget. The result is
-    /// always strictly less than half of <see cref="CircuitBreakerSamplingDuration"/>
-    /// (so handler validation passes) and never exceeds the overall budget. When
-    /// the overall budget is large, the per-attempt timeout is capped so multiple
-    /// attempts fit inside the budget.
+    /// the caller's overall <paramref name="totalTimeout"/> budget. The result
+    /// scales with the budget (≈45% of it) so a long single call is allowed to
+    /// run for a meaningful fraction of the configured budget instead of being
+    /// aborted at a fixed ceiling, while still leaving room for a retry. Pair this
+    /// with <see cref="SamplingDuration(TimeSpan)"/> when configuring the handler
+    /// so that <c>SamplingDuration &gt;= 2 * AttemptTimeout</c> always holds.
     /// </summary>
     /// <param name="totalTimeout">The overall request budget (the option <c>Timeout</c>).</param>
     /// <returns>A per-attempt timeout suitable for <c>AttemptTimeout.Timeout</c>.</returns>
     public static TimeSpan AttemptTimeout(TimeSpan totalTimeout)
-    {
-        if (totalTimeout <= MaxAttemptTimeout)
-        {
-            // Budget already fits within a single valid attempt; leave a little
-            // headroom for at least a second attempt when the budget is not tiny.
-            return totalTimeout;
-        }
+        => totalTimeout <= TimeSpan.Zero
+            ? totalTimeout
+            : TimeSpan.FromTicks((long)(totalTimeout.Ticks * AttemptFraction));
 
-        return MaxAttemptTimeout;
-    }
+    /// <summary>
+    /// Computes the circuit-breaker sampling window for the standard resilience
+    /// handler from the caller's overall <paramref name="totalTimeout"/> budget.
+    /// The result (≈95% of the budget) is guaranteed to be at least double the
+    /// per-attempt timeout returned by <see cref="AttemptTimeout(TimeSpan)"/> for
+    /// the same budget, and strictly less than the total budget, so the handler's
+    /// validation passes for any configured <c>Timeout</c>.
+    /// </summary>
+    /// <param name="totalTimeout">The overall request budget (the option <c>Timeout</c>).</param>
+    /// <returns>A sampling duration suitable for <c>CircuitBreaker.SamplingDuration</c>.</returns>
+    public static TimeSpan SamplingDuration(TimeSpan totalTimeout)
+        => totalTimeout <= TimeSpan.Zero
+            ? totalTimeout
+            : TimeSpan.FromTicks((long)(totalTimeout.Ticks * SamplingFraction));
 
     /// <summary>
     /// Computes the overall request timeout for the standard resilience handler's

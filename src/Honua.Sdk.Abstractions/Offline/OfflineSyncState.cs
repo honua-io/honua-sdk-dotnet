@@ -68,7 +68,12 @@ public sealed record OfflineSyncCheckpoint
     /// <summary>Source identifier inside the package.</summary>
     public required string SourceId { get; init; }
 
-    /// <summary>Provider sync token associated with the checkpoint.</summary>
+    /// <summary>
+    /// Provider sync token associated with the checkpoint. Reserved for providers
+    /// that supply a server high-water mark; <c>OfflineSyncEngine</c>
+    /// performs a full-refresh pull and leaves this <c>null</c> (it does not record
+    /// an advancing token).
+    /// </summary>
     public string? SyncToken { get; init; }
 
     /// <summary>Time when the checkpoint was recorded.</summary>
