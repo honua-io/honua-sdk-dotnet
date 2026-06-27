@@ -2,6 +2,20 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.4.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.3.0...dotnet-sdk-v1.4.0) (2026-06-27)
+
+
+### Features
+
+* **geometry:** NTS-native feature geometry and client-side reprojection ([#218](https://github.com/honua-io/honua-sdk-dotnet/issues/218)) ([9978a71](https://github.com/honua-io/honua-sdk-dotnet/commit/9978a7102a3e82001042ab7e17b2a27804e0b016))
+* **raster:** reach raster client via AddHonua DI and implement IHonuaRasterDataClient ([#220](https://github.com/honua-io/honua-sdk-dotnet/issues/220)) ([2333f3b](https://github.com/honua-io/honua-sdk-dotnet/commit/2333f3bee92bb7e09249096ebf83b742a40dee00))
+
+
+### Bug Fixes
+
+* pre-release audit S2 correctness fixes (auth, parser, gRPC datetime, docs) ([#229](https://github.com/honua-io/honua-sdk-dotnet/issues/229)) ([34c8d99](https://github.com/honua-io/honua-sdk-dotnet/commit/34c8d99cff05d1ff687d627eed7a53b3e008f716))
+* **reliability:** scale resilience timeouts to budget; mark offline pull as full-refresh ([#231](https://github.com/honua-io/honua-sdk-dotnet/issues/231)) ([5961dba](https://github.com/honua-io/honua-sdk-dotnet/commit/5961dba45a5dc7f69251f312a24bd1ba0d0492b7))
+
 ## [1.3.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.2.1...dotnet-sdk-v1.3.0) (2026-06-24)
 
 
