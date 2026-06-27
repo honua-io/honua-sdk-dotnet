@@ -7,8 +7,10 @@ using Honua.Sdk.Abstractions.Routing;
 using Honua.Sdk.Abstractions.Scenes;
 using Honua.Sdk.Admin;
 using Honua.Sdk.Admin.Catalog;
+using Honua.Sdk.Abstractions.Data;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.ImageServer;
 using Honua.Sdk.Grpc;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.Processes;
@@ -74,6 +76,7 @@ public sealed class AddHonuaTests
             o.UseWfs = true;
             o.UseGeoServices = true;
             o.UseRouting = true;
+            o.UseImageServer = true;
             o.UseScenes = true;
             o.UseSpec = true;
             o.UseStac = true;
@@ -93,6 +96,8 @@ public sealed class AddHonuaTests
         Assert.NotNull(provider.GetRequiredService<IHonuaWfsClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaFeatureServerClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaRoutingClient>());
+        Assert.NotNull(provider.GetRequiredService<HonuaImageServerClient>());
+        Assert.NotNull(provider.GetRequiredService<IHonuaRasterDataClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaSceneClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaSpecClient>());
         Assert.NotNull(provider.GetRequiredService<IHonuaStacClient>());
@@ -118,6 +123,7 @@ public sealed class AddHonuaTests
                 o.UseWfs = false;
                 o.UseGeoServices = false;
                 o.UseRouting = false;
+                o.UseImageServer = false;
                 o.UseScenes = false;
                 o.UseSpec = false;
                 o.UseStac = false;
@@ -127,5 +133,42 @@ public sealed class AddHonuaTests
             }));
 
         Assert.Contains("at least one Honua module", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AddHonua_WithUseImageServer_RegistersRasterClients()
+    {
+        var services = new ServiceCollection();
+
+        services.AddHonua(o =>
+        {
+            o.BaseAddress = TestBaseAddress;
+            o.EnableRetry = false;
+            o.UseImageServer = true;
+        });
+
+        using var provider = services.BuildServiceProvider();
+
+        Assert.NotNull(provider.GetRequiredService<HonuaImageServerClient>());
+        var raster = provider.GetRequiredService<IHonuaRasterDataClient>();
+        Assert.True(raster.RasterCapabilities.SupportsWindowReads);
+    }
+
+    [Fact]
+    public void AddHonua_WithDefaults_DoesNotRegisterImageServer()
+    {
+        var services = new ServiceCollection();
+
+        services.AddHonua(o =>
+        {
+            o.BaseAddress = TestBaseAddress;
+            o.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+
+        // UseImageServer defaults to false, so the raster clients are not registered.
+        Assert.Null(provider.GetService<HonuaImageServerClient>());
+        Assert.Null(provider.GetService<IHonuaRasterDataClient>());
     }
 }

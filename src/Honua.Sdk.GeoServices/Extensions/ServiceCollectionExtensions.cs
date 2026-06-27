@@ -122,6 +122,12 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
 
+        // Provider-neutral raster data client (metadata, coverage statistics, windowed
+        // reads) so a raster geoprocessing tool can resolve IHonuaRasterDataClient from DI.
+        services.AddTransient<HonuaImageServerRasterDataClient>();
+        services.AddTransient<Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient>(
+            sp => sp.GetRequiredService<HonuaImageServerRasterDataClient>());
+
         ApplyHandlerAndResilience(httpBuilder, snapshot);
         return services;
     }
