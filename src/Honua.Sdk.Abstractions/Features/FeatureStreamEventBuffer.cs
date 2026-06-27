@@ -182,7 +182,23 @@ public sealed class FeatureStreamEventBuffer : IDisposable
             return SequenceRejected(sequenceResult);
         }
 
-        await _space.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await _space.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (ObjectDisposedException)
+        {
+            // The buffer was disposed while (or just before) this writer parked on _space.
+            // Dispose() always transitions to completed before disposing the semaphore, so a
+            // late writer must observe graceful completion rather than the semaphore's
+            // ObjectDisposedException leaking out to the caller.
+            return new FeatureStreamBufferWriteResult
+            {
+                Decision = FeatureStreamBufferWriteDecision.Completed,
+                SequenceResult = sequenceResult
+            };
+        }
+
         lock (_gate)
         {
             if (_completed)
