@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.GeoServices;
@@ -554,13 +553,19 @@ public sealed class HonuaFeatureServerClient :
 
         var vectorFormat = format ?? FeatureServerVectorFormats.FromFeatureServerFormat(query.Format);
         var protocolFormat = FeatureServerVectorFormats.ToFeatureServerFormat(vectorFormat);
-        var body = await ExecuteQueryAsync(
+
+        // Stream the response straight into the payload reader (ResponseHeadersRead): no
+        // intermediate string allocation and no UTF-8 round-trip, so large/binary-ish vector
+        // payloads (PBF/FlatGeobuf/Parquet) are not buffered or corrupted. This converges the
+        // concrete client onto the same streaming path the third-party extension uses.
+        using var response = await SendQueryAsync(
             serviceId,
             layerId,
             BuildQueryParams(query with { Format = protocolFormat }),
             cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessStreamingAsync(response, cancellationToken).ConfigureAwait(false);
 
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -571,19 +576,52 @@ public sealed class HonuaFeatureServerClient :
         ArgumentNullException.ThrowIfNull(serviceId);
         ArgumentNullException.ThrowIfNull(query);
 
-        var parameters = BuildQueryParams(query);
+        // ResponseHeadersRead: hand the caller a response whose body has NOT been buffered, so
+        // they own streaming/disposal of large export payloads. The caller is responsible for
+        // disposing the returned HttpResponseMessage.
+        return await SendQueryAsync(serviceId, layerId, BuildQueryParams(query), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sends a layer <c>/query</c> request returning the response with headers read only (body
+    /// left unbuffered for streaming). Falls back from GET to a form POST when the query string
+    /// exceeds <see cref="PostFallbackThreshold"/> characters; the POST <c>/query</c> remains an
+    /// idempotent read and is kept retry-eligible by the GeoServices resilience policy.
+    /// </summary>
+    private async Task<HttpResponseMessage> SendQueryAsync(
+        string serviceId, int layerId, List<(string Key, string? Value)> parameters, CancellationToken cancellationToken)
+    {
         var basePath = $"{ServicePath(serviceId)}/{layerId}/query";
         var queryString = BuildQueryString(parameters);
         var url = basePath + queryString;
 
         if (url.Length > PostFallbackThreshold)
         {
-            using var content = new FormUrlEncodedContent(
+            var content = new FormUrlEncodedContent(
                 parameters.Where(p => p.Value is not null).Select(p => new KeyValuePair<string, string>(p.Key, p.Value!)));
-            return await _http.PostAsync(CreateRequestUri(basePath), content, cancellationToken).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Post, CreateRequestUri(basePath)) { Content = content };
+            return await _http.SendAsync(
+                request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
 
-        return await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        return await _http.GetAsync(
+            CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Validates an unbuffered streaming response without consuming the body on success. On a
+    /// non-success status the (small) error body is read and routed through <see cref="EnsureSuccess"/>
+    /// so callers still observe the normal <see cref="HonuaFeatureServerException"/>.
+    /// </summary>
+    private static async Task EnsureSuccessStreamingAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        EnsureSuccess(response, body);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
