@@ -8,15 +8,8 @@ namespace Honua.Sdk.Scenes;
 /// <summary>
 /// Configuration options for the Honua scene metadata client.
 /// </summary>
-public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions, Honua.Sdk.Abstractions.IHonuaClientOptions
+public sealed class HonuaSceneClientOptions : Honua.Sdk.Abstractions.HonuaClientOptionsBase, IHonuaAuthenticationOptions
 {
-    /// <summary>
-    /// Base address of the Honua server. Required; the SDK no longer assumes a
-    /// localhost default so that missing configuration surfaces loudly at
-    /// registration time via the static ValidateBaseAddress check.
-    /// </summary>
-    public Uri? BaseAddress { get; set; }
-
     /// <summary>
     /// Server-relative scene metadata API path.
     /// </summary>
@@ -64,92 +57,15 @@ public sealed class HonuaSceneClientOptions : IHonuaAuthenticationOptions, Honua
     /// </summary>
     public HonuaAuthenticationDiagnosticHandler? AuthenticationDiagnostics { get; set; }
 
-    /// <summary>
-    /// Optional primary HTTP message handler factory for certificate, mTLS, or
-    /// enterprise transport configuration.
-    /// </summary>
-    public Func<HttpMessageHandler>? PrimaryHttpMessageHandlerFactory { get; set; }
-
-    /// <summary>
-    /// Whether to enable automatic retry on transient HTTP failures.
-    /// </summary>
-    public bool EnableRetry { get; set; } = true;
-
-    /// <summary>
-    /// Overall timeout for each HTTP request, including retry attempts.
-    /// </summary>
-    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
-
-    /// <summary>
-    /// Maximum number of retry attempts. Only applies when <see cref="EnableRetry"/> is true.
-    /// </summary>
-    public int MaxRetryAttempts
-    {
-        get => _maxRetryAttempts;
-        set
-        {
-            if (value is < 2 or > 5)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value), value,
-                    "MaxRetryAttempts must be in the inclusive range [2, 5].");
-            }
-            _maxRetryAttempts = value;
-        }
-    }
-
-    private int _maxRetryAttempts = 3;
-
     internal static void ValidateBaseAddress(Uri? baseAddress)
-    {
-        if (baseAddress is null)
-        {
-            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene base address must be configured.");
-        }
-
-        if (!baseAddress.IsAbsoluteUri)
-        {
-            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene base address must be an absolute URI.");
-        }
-
-        if (!string.Equals(baseAddress.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(baseAddress.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene base address must use HTTP or HTTPS.");
-        }
-    }
+        => Honua.Sdk.Abstractions.HonuaClientOptionsValidation.ValidateBaseAddress(baseAddress, "Honua scene");
 
     internal static void ValidateTimeout(TimeSpan timeout)
-    {
-        if (timeout <= TimeSpan.FromMilliseconds(10) || timeout >= TimeSpan.FromHours(24))
-        {
-            throw new Honua.Sdk.Abstractions.HonuaConfigurationException("Honua scene timeout must be greater than 10 milliseconds and less than 24 hours.");
-        }
-    }
+        => Honua.Sdk.Abstractions.HonuaClientOptionsValidation.ValidateTimeout(timeout, "Honua scene");
 
     internal static bool RequiresHttpsForAuthentication(Uri? uri)
-    {
-        if (uri is null)
-        {
-            return true;
-        }
-
-        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return !IsLocalDevelopmentHttp(uri);
-    }
+        => Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationSupport.RequiresHttpsForAuthentication(uri);
 
     internal static bool IsLocalDevelopmentHttp(Uri uri)
-    {
-        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return uri.IsLoopback ||
-               string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
-    }
+        => Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationSupport.IsLocalDevelopmentHttp(uri);
 }
