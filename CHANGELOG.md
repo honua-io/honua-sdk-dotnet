@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.4.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.0...dotnet-sdk-v1.4.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **errors:** unify SDK error contract and stop bogus HttpStatusCode from GeoServices codes ([#235](https://github.com/honua-io/honua-sdk-dotnet/issues/235)) ([2896412](https://github.com/honua-io/honua-sdk-dotnet/commit/289641262232b25d9dbb711cf39cb6e18d9be3f6))
+* **geoservices,ogc:** stream feature query/export responses and keep idempotent /query retryable ([#234](https://github.com/honua-io/honua-sdk-dotnet/issues/234)) ([f97c5cb](https://github.com/honua-io/honua-sdk-dotnet/commit/f97c5cb2a648087da2ec47f7c32cbe74c3bce3eb))
+
 ## [1.4.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.3.0...dotnet-sdk-v1.4.0) (2026-06-27)
 
 
