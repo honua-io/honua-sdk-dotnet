@@ -87,21 +87,3 @@ public enum OgcRecordsFormat
     /// <summary>HTML representation.</summary>
     Html
 }
-
-/// <summary>
-/// RFC 7807 Problem Details wire model for OGC error responses.
-/// </summary>
-internal sealed class OgcRecordsProblemDetails
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("title")]
-    public string? Title { get; set; }
-
-    [JsonPropertyName("status")]
-    public int? Status { get; set; }
-
-    [JsonPropertyName("detail")]
-    public string? Detail { get; set; }
-}

@@ -40,6 +40,18 @@ public sealed class HonuaWfsException : Honua.Sdk.Abstractions.HonuaException
     /// <summary>HTTP status code returned by the server.</summary>
     public HttpStatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    public override int? HttpStatus => (int)StatusCode;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
+        new Honua.Sdk.Abstractions.HonuaProblemDetails
+        {
+            Status = (int)StatusCode,
+            Title = ExceptionCode,
+            Detail = Message,
+        };
+
     /// <summary>The raw response body, if available.</summary>
     public string? ResponseBody { get; }
 

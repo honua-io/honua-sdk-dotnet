@@ -21,7 +21,6 @@ namespace Honua.Sdk.Catalogs.Stac;
 [JsonSerializable(typeof(StacAsset))]
 [JsonSerializable(typeof(StacSearchRequest))]
 [JsonSerializable(typeof(StacFields))]
-[JsonSerializable(typeof(StacProblemDetails))]
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class StacJsonContext : JsonSerializerContext
 {

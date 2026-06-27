@@ -42,6 +42,29 @@ public sealed class HonuaAdminApiException : Honua.Sdk.Abstractions.HonuaExcepti
     /// </summary>
     public HttpStatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    public override int? HttpStatus => (int)StatusCode;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails
+    {
+        get
+        {
+            // Surface the full RFC 7807 document (type/title/detail/instance) when the body carries
+            // one, rather than collapsing it to a single message.
+            if (Honua.Sdk.Abstractions.HonuaProblemDetailsParser.TryParse(ResponseBody, out var problem) && problem is not null)
+            {
+                return problem with { Status = problem.Status ?? (int)StatusCode };
+            }
+
+            return new Honua.Sdk.Abstractions.HonuaProblemDetails
+            {
+                Status = (int)StatusCode,
+                Detail = Message,
+            };
+        }
+    }
+
     /// <summary>
     /// The raw response body, if available.
     /// </summary>

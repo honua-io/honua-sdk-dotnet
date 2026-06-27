@@ -208,36 +208,15 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
             return;
         }
 
-        string? problemType = null;
-        string? problemTitle = null;
-        string? problemDetail = null;
-
-        if (!string.IsNullOrWhiteSpace(body))
-        {
-            try
-            {
-                var problem = JsonSerializer.Deserialize(body, OgcRecordsJsonContext.Default.OgcRecordsProblemDetails);
-                if (problem is not null)
-                {
-                    problemType = problem.Type;
-                    problemTitle = problem.Title;
-                    problemDetail = problem.Detail;
-                }
-            }
-            catch (JsonException)
-            {
-                // Non-problem JSON responses still preserve the raw body below.
-            }
-        }
-
-        var message = problemDetail ?? problemTitle ?? response.ReasonPhrase ?? "OGC Records request failed";
+        var message = Honua.Sdk.Abstractions.HonuaProblemDetailsParser.ResolveMessage(
+            body, response.ReasonPhrase ?? "OGC Records request failed", out var problem);
         throw new HonuaOgcRecordsException(
             response.StatusCode,
             message,
             body,
-            problemType,
-            problemTitle,
-            problemDetail);
+            problem?.Type,
+            problem?.Title,
+            problem?.Detail);
     }
 
     private void ValidateNextLinkOrigin(string nextUrl)

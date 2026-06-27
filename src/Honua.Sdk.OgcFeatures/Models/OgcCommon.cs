@@ -28,24 +28,6 @@ public sealed class OgcLink
 }
 
 /// <summary>
-/// RFC 7807 Problem Details wire model for OGC error responses (internal).
-/// </summary>
-internal sealed class OgcProblemDetails
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("title")]
-    public string? Title { get; set; }
-
-    [JsonPropertyName("status")]
-    public int? Status { get; set; }
-
-    [JsonPropertyName("detail")]
-    public string? Detail { get; set; }
-}
-
-/// <summary>
 /// Output format for OGC Features queries.
 /// </summary>
 public enum OgcFeaturesFormat

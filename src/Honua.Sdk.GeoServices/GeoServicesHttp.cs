@@ -83,7 +83,7 @@ internal static class GeoServicesHttp
                 codeProp.TryGetInt32(out var errorCode))
             {
                 geoServicesCode = errorCode;
-                httpCode = (HttpStatusCode)errorCode;
+                httpCode = MapErrorCodeToStatus(errorCode, fallbackStatus);
             }
 
             if (errorElement.TryGetProperty("details", out var detailsProp) &&
@@ -108,6 +108,16 @@ internal static class GeoServicesHttp
             return null;
         }
     }
+
+    /// <summary>
+    /// Maps a GeoServices <c>error.code</c> to an <see cref="HttpStatusCode"/> only when it is a
+    /// valid HTTP status (100-599). GeoServices codes are an independent code space (e.g. 1000,
+    /// 4001) and must not be blindly cast — doing so produces nonsensical <see cref="HttpStatusCode"/>
+    /// values that break consumers branching on status for retry/auth. Out-of-range codes keep the
+    /// transport status; the Esri code is still exposed via <c>GeoServicesErrorCode</c>.
+    /// </summary>
+    internal static HttpStatusCode MapErrorCodeToStatus(int errorCode, HttpStatusCode transportStatus)
+        => errorCode is >= 100 and <= 599 ? (HttpStatusCode)errorCode : transportStatus;
 
     private static string? TryExtractErrorMessage(string body)
     {
