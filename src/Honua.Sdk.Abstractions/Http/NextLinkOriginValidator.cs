@@ -27,6 +27,16 @@ public static class NextLinkOriginValidator
             return true;
         }
 
+        // A next link can only point cross-origin when it carries its own HTTP(S) authority.
+        // On Unix a path-absolute reference such as "/collections/items" parses as an absolute
+        // file: URI (a leading slash is a rooted filesystem path), so restrict the cross-origin
+        // check to http/https links and treat any other scheme as same-origin/relative.
+        if (!string.Equals(nextUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(nextUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
         if (baseAddress is null)
         {
             return true;
