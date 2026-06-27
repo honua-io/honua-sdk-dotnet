@@ -51,6 +51,17 @@ public sealed class HonuaSpecException : Honua.Sdk.Abstractions.HonuaException
     /// <summary>HTTP status code.</summary>
     public HttpStatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    public override int? HttpStatus => (int)StatusCode;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
+        new Honua.Sdk.Abstractions.HonuaProblemDetails
+        {
+            Status = (int)StatusCode,
+            Detail = Message,
+        };
+
     /// <summary>Raw response body when available.</summary>
     public string? ResponseBody { get; }
 

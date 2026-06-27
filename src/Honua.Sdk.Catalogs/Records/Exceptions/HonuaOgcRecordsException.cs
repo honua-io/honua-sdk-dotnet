@@ -42,6 +42,21 @@ public sealed class HonuaOgcRecordsException : Honua.Sdk.Abstractions.HonuaExcep
     /// </summary>
     public HttpStatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    public override int? HttpStatus => (int)StatusCode;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
+        ProblemType is null && ProblemTitle is null && ProblemDetail is null
+            ? null
+            : new Honua.Sdk.Abstractions.HonuaProblemDetails
+            {
+                Type = ProblemType,
+                Title = ProblemTitle,
+                Status = (int)StatusCode,
+                Detail = ProblemDetail,
+            };
+
     /// <summary>
     /// The RFC 7807 problem type URI, if available.
     /// </summary>

@@ -1217,6 +1217,24 @@ public class HonuaFeatureServerClientTests
         Assert.Contains("Syntax error", ex.Details[0]);
     }
 
+    [Fact]
+    public async Task QueryAsync_GeoServicesErrorCodeOutOfHttpRange_KeepsTransportStatus()
+    {
+        // Esri error codes (e.g. 1000) are an independent code space and must NOT be cast to
+        // HttpStatusCode. The transport status (200 here) is preserved; the Esri code is exposed
+        // separately via GeoServicesErrorCode, and surfaced on the unified contract.
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateGeoServicesErrorResponse(1000, "Unable to complete operation")));
+
+        var ex = await Assert.ThrowsAsync<HonuaFeatureServerException>(
+            () => client.QueryAsync("svc", 0, new FeatureServerQueryParams()));
+
+        Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
+        Assert.Equal(1000, ex.GeoServicesErrorCode);
+        Assert.Equal(200, ex.HttpStatus);
+        Assert.NotNull(ex.ProblemDetails);
+    }
+
     // ── HTTP error ──────────────────────────────────────────────────
 
     [Fact]

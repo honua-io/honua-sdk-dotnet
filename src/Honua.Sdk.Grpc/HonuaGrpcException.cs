@@ -42,6 +42,18 @@ public sealed class HonuaGrpcException : Honua.Sdk.Abstractions.HonuaException
     /// </summary>
     public StatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    /// <remarks>gRPC is not an HTTP transport, so no HTTP status is surfaced; use <see cref="StatusCode"/>.</remarks>
+    public override int? HttpStatus => null;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
+        new Honua.Sdk.Abstractions.HonuaProblemDetails
+        {
+            Title = StatusCode.ToString(),
+            Detail = Message,
+        };
+
     /// <summary>
     /// Creates a new gRPC exception.
     /// </summary>

@@ -42,6 +42,17 @@ public sealed class HonuaFeatureServerException : Honua.Sdk.Abstractions.HonuaEx
     /// </summary>
     public HttpStatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    public override int? HttpStatus => (int)StatusCode;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
+        new Honua.Sdk.Abstractions.HonuaProblemDetails
+        {
+            Status = (int)StatusCode,
+            Detail = Message,
+        };
+
     /// <summary>
     /// The GeoServices-specific error code, if available.
     /// </summary>

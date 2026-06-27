@@ -95,21 +95,3 @@ public sealed class StacTemporalExtent
     [JsonPropertyName("trs")]
     public string? Trs { get; init; }
 }
-
-/// <summary>
-/// RFC 7807 Problem Details wire model for STAC error responses.
-/// </summary>
-internal sealed class StacProblemDetails
-{
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    [JsonPropertyName("title")]
-    public string? Title { get; set; }
-
-    [JsonPropertyName("status")]
-    public int? Status { get; set; }
-
-    [JsonPropertyName("detail")]
-    public string? Detail { get; set; }
-}
