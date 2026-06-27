@@ -168,27 +168,36 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
         return new ValueTask<HonuaAccessToken?>(GetOrRefreshAsync(request, cacheKey, cancellationToken));
     }
 
-    private Task<HonuaAccessToken?> GetOrRefreshAsync(
+    private async Task<HonuaAccessToken?> GetOrRefreshAsync(
         HonuaAuthenticationRequest request,
         string cacheKey,
         CancellationToken cancellationToken)
     {
+        Task<HonuaAccessToken?> refreshTask;
         lock (_syncRoot)
         {
             if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
                 cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
             {
-                return Task.FromResult<HonuaAccessToken?>(cachedToken);
+                return cachedToken;
             }
 
-            if (!_refreshTasks.TryGetValue(cacheKey, out var refreshTask) || refreshTask.IsCompleted)
+            if (!_refreshTasks.TryGetValue(cacheKey, out var existing) || existing.IsCompleted)
             {
-                refreshTask = RequestTokenAsync(request, cacheKey, cancellationToken);
-                _refreshTasks[cacheKey] = refreshTask;
+                // Coalesce concurrent refreshes, but run the shared request under a
+                // non-cancellable token. Binding it to the first caller's token would let
+                // that caller's cancellation/timeout fault the refresh for every other
+                // waiter (the exact thundering-herd case this de-duplication exists for).
+                existing = RequestTokenAsync(request, cacheKey, CancellationToken.None);
+                _refreshTasks[cacheKey] = existing;
             }
 
-            return refreshTask;
+            refreshTask = existing;
         }
+
+        // Each caller observes the shared refresh but honors its own cancellation token,
+        // so an abandoned caller never propagates failure to unrelated concurrent callers.
+        return await refreshTask.WaitAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<HonuaAccessToken?> RequestTokenAsync(
@@ -288,27 +297,36 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
         return new ValueTask<HonuaAccessToken?>(GetOrRefreshAsync(request, cacheKey, cancellationToken));
     }
 
-    private Task<HonuaAccessToken?> GetOrRefreshAsync(
+    private async Task<HonuaAccessToken?> GetOrRefreshAsync(
         HonuaAuthenticationRequest request,
         string cacheKey,
         CancellationToken cancellationToken)
     {
+        Task<HonuaAccessToken?> refreshTask;
         lock (_syncRoot)
         {
             if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
                 cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
             {
-                return Task.FromResult<HonuaAccessToken?>(cachedToken);
+                return cachedToken;
             }
 
-            if (!_refreshTasks.TryGetValue(cacheKey, out var refreshTask) || refreshTask.IsCompleted)
+            if (!_refreshTasks.TryGetValue(cacheKey, out var existing) || existing.IsCompleted)
             {
-                refreshTask = RequestTokenAsync(request, cacheKey, cancellationToken);
-                _refreshTasks[cacheKey] = refreshTask;
+                // Coalesce concurrent refreshes, but run the shared request under a
+                // non-cancellable token. Binding it to the first caller's token would let
+                // that caller's cancellation/timeout fault the refresh for every other
+                // waiter (the exact thundering-herd case this de-duplication exists for).
+                existing = RequestTokenAsync(request, cacheKey, CancellationToken.None);
+                _refreshTasks[cacheKey] = existing;
             }
 
-            return refreshTask;
+            refreshTask = existing;
         }
+
+        // Each caller observes the shared refresh but honors its own cancellation token,
+        // so an abandoned caller never propagates failure to unrelated concurrent callers.
+        return await refreshTask.WaitAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<HonuaAccessToken?> RequestTokenAsync(
