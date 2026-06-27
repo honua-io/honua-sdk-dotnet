@@ -72,6 +72,61 @@ public sealed class AuthenticationTests
     }
 
     [Fact]
+    public async Task ClientCredentialsProvider_CoalescedRefreshIsNotFailedByOneCallerCancelling()
+    {
+        var calls = 0;
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var http = new HttpClient(new RecordingHandler(async (request, cancellationToken) =>
+        {
+            Interlocked.Increment(ref calls);
+            requestStarted.TrySetResult();
+            await release.Task.ConfigureAwait(false);
+            return JsonResponse(
+                """
+                {
+                  "access_token": "shared-token",
+                  "token_type": "Bearer",
+                  "expires_in": 3600
+                }
+                """);
+        }));
+        var provider = new HonuaOAuthClientCredentialsTokenProvider(
+            http,
+            new HonuaOAuthClientCredentialsTokenProviderOptions
+            {
+                TokenEndpoint = new Uri("http://localhost/oauth/token"),
+                ClientId = "client-1",
+                ClientSecret = "secret-1",
+                RefreshSkew = TimeSpan.Zero
+            });
+        var request = new HonuaAuthenticationRequest
+        {
+            Transport = HonuaAuthenticationTransport.Http,
+            ServiceName = "admin"
+        };
+
+        using var firstCallerCts = new CancellationTokenSource();
+        using var secondCallerCts = new CancellationTokenSource();
+
+        // First caller starts the shared refresh; second caller coalesces onto it.
+        var firstCaller = provider.GetAccessTokenAsync(request, firstCallerCts.Token).AsTask();
+        await requestStarted.Task;
+        var secondCaller = provider.GetAccessTokenAsync(request, secondCallerCts.Token).AsTask();
+
+        // The first caller abandons its request; this must not fail the second caller.
+        await firstCallerCts.CancelAsync();
+        release.SetResult();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => firstCaller);
+        var secondToken = await secondCaller;
+
+        Assert.NotNull(secondToken);
+        Assert.Equal("shared-token", secondToken!.Token);
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
     public async Task AuthorizationCodeProvider_RefreshesWithReturnedRefreshToken()
     {
         var requests = new List<IReadOnlyDictionary<string, string>>();

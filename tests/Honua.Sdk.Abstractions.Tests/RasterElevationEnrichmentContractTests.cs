@@ -225,6 +225,14 @@ public sealed class RasterElevationEnrichmentContractTests
             Source = RasterSource(),
             BandIndexes = [1],
         });
+        await using var window = await client.ReadWindowAsync(new RasterWindowReadRequest
+        {
+            Source = RasterSource(),
+            Extent = new FeatureBoundingBox { MinX = -158, MinY = 21, MaxX = -157, MaxY = 22, Crs = "4326" },
+            Width = 256,
+            Height = 256,
+            Format = RasterWindowFormat.GeoTiff,
+        });
         var elevation = await client.SampleElevationAsync(new ElevationSamplingRequest
         {
             Source = new SpatialDataSource { ServiceId = "terrain" },
@@ -248,6 +256,10 @@ public sealed class RasterElevationEnrichmentContractTests
         Assert.True(client.EnrichmentCapabilities.SupportsFeatureEnrichment);
         Assert.Equal("landcover-2025", metadata.DatasetId);
         Assert.True(statistics.Succeeded);
+        Assert.True(client.RasterCapabilities.SupportsWindowReads);
+        Assert.Equal("image/tiff", window.ContentType);
+        Assert.Equal(256, window.Width);
+        Assert.Equal(4, window.ContentLength);
         Assert.Single(elevation.Samples);
         Assert.Single(enrichmentMetadata.Attributes);
         Assert.True(enrichment.Succeeded);
@@ -280,6 +292,7 @@ public sealed class RasterElevationEnrichmentContractTests
             SupportsBandMetadata = true,
             SupportsCoverageStatistics = true,
             SupportsNoDataMasks = true,
+            SupportsWindowReads = true,
             NativeSurface = "honua-server-raster",
         };
 
@@ -343,6 +356,22 @@ public sealed class RasterElevationEnrichmentContractTests
                     },
                 ],
             });
+        }
+
+        public Task<RasterWindowReadResult> ReadWindowAsync(
+            RasterWindowReadRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var stream = new MemoryStream([0x49, 0x49, 0x2A, 0x00]);
+            return Task.FromResult(new RasterWindowReadResult(
+                stream,
+                request.Source,
+                request.Extent,
+                request.Width,
+                request.Height,
+                "image/tiff",
+                stream.Length));
         }
 
         public Task<ElevationSamplingResponse> SampleElevationAsync(ElevationSamplingRequest request, CancellationToken cancellationToken = default)

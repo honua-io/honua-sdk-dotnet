@@ -47,7 +47,9 @@ public sealed class OfflineSyncEngineTests
         Assert.Equal("token-1", storedPage.SyncToken);
 
         var checkpoint = Assert.Single(store.Checkpoints.Values);
-        Assert.Equal("token-1", checkpoint.SyncToken);
+        // Full-refresh pull: no server high-water mark exists to advance, so the
+        // checkpoint must not persist a (misleading) static sync token.
+        Assert.Null(checkpoint.SyncToken);
         Assert.Equal(2, checkpoint.PulledFeatureCount);
     }
 
