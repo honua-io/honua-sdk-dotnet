@@ -183,6 +183,7 @@ public static class ServiceCollectionExtensions
             {
                 options.TotalRequestTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.TotalRequestTimeout(snapshot.Timeout);
                 options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
+                options.CircuitBreaker.SamplingDuration = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.SamplingDuration(snapshot.Timeout);
                 options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
                 options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
                 options.Retry.DisableForUnsafeHttpMethods();

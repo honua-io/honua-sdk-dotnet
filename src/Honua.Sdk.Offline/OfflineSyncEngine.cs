@@ -103,6 +103,23 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     /// <summary>
     /// Pulls remote feature pages into the local feature store.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is a <strong>full refresh</strong>: every call re-queries each source
+    /// from the beginning and re-stores all matching features. It is
+    /// <em>not</em> an incremental/delta pull. The provider-neutral feature query
+    /// API (<see cref="Honua.Sdk.Abstractions.Features.FeatureQueryResult"/>)
+    /// exposes no server high-water-mark / sync token, so there is nothing to
+    /// advance between runs; the persisted checkpoint therefore tracks only the
+    /// number of features pulled and does not record an advancing
+    /// <see cref="OfflineSyncCheckpoint.SyncToken"/>.
+    /// </para>
+    /// <para>
+    /// Callers that need server-driven delta sync (a <c>serverGen</c> high-water
+    /// mark) should use <see cref="ReplicaSyncClient"/> instead, which threads the
+    /// server generation through extract-changes requests.
+    /// </para>
+    /// </remarks>
     /// <param name="manifest">Offline package manifest.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Pull result.</returns>
@@ -162,7 +179,11 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                 {
                     PackageId = manifest.PackageId,
                     SourceId = source.SourceId,
-                    SyncToken = request.LastSyncToken,
+                    // Full-refresh pull: the query API surfaces no server-advanced
+                    // sync token, so there is no high-water mark to persist. Leave
+                    // SyncToken null rather than re-storing the (unchanged) request
+                    // token, which would falsely imply incremental progress.
+                    SyncToken = null,
                     PulledFeatureCount = sourceFeatureCount,
                 }, cancellationToken).ConfigureAwait(false);
             }
