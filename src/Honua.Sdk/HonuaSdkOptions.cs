@@ -237,6 +237,29 @@ public sealed class HonuaSdkOptions
     /// </summary>
     public bool UseConsoleShare { get; set; }
 
+    /// <summary>
+    /// When <c>true</c>, registers the geoprocessing (GP) feature profile: the
+    /// unified <c>IHonuaFeatureGateway</c> plus the providers it needs so a GP tool
+    /// can read/write feature attachments and run temporal / grouped-statistics
+    /// queries regardless of the feature transport.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The workhorse gRPC <c>FeatureService</c> exposes no attachment RPCs and no
+    /// provider-neutral time-filter or <c>having</c> contract, so a GP tool that
+    /// reads features over gRPC would otherwise hit <see cref="NotSupportedException"/>
+    /// on media-bearing or temporal/statistical operations. Enabling this profile
+    /// forces <see cref="UseGeoServices"/> on (the GeoServices FeatureServer client
+    /// backs attachments and time/having queries) and registers
+    /// <c>IHonuaFeatureGateway</c>, which routes each operation to a capable provider.
+    /// </para>
+    /// <para>
+    /// Defaults to <c>false</c>. Setting it to <c>true</c> does not disable any other
+    /// module; it only adds the GeoServices provider and the gateway.
+    /// </para>
+    /// </remarks>
+    public bool UseGeoprocessingProfile { get; set; }
+
     internal bool AnyModuleEnabled =>
         UseGrpc ||
         UseAdmin ||
@@ -252,5 +275,14 @@ public sealed class HonuaSdkOptions
         UseStac ||
         UseOgcRecords ||
         UseStudio ||
-        UseConsoleShare;
+        UseConsoleShare ||
+        UseGeoprocessingProfile;
+
+    /// <summary>
+    /// Whether the GeoServices FeatureServer client should be registered, either
+    /// because <see cref="UseGeoServices"/> is set explicitly or because the
+    /// geoprocessing profile (<see cref="UseGeoprocessingProfile"/>) requires it as
+    /// the attachment and time/having query backend.
+    /// </summary>
+    internal bool GeoServicesRequired => UseGeoServices || UseGeoprocessingProfile;
 }

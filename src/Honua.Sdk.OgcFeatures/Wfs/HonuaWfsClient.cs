@@ -43,6 +43,15 @@ public sealed class HonuaWfsClient :
         NativeSurface = "WFS attachments",
         UnsupportedReason = UnsupportedAttachmentReason
     };
+    private static readonly FeatureQueryCapabilities WfsQueryCapabilities = new()
+    {
+        SupportsTimeFilter = false,
+        SupportsStatistics = false,
+        SupportsGroupBy = false,
+        SupportsHaving = false,
+        NativeSurface = "WFS GetFeature",
+        UnsupportedReason = "WFS 2.0 GetFeature does not expose time-filter, statistics, group-by, or having facets.",
+    };
 
     private static readonly JsonSerializerOptions FeatureJsonOptions = new()
     {
@@ -71,6 +80,9 @@ public sealed class HonuaWfsClient :
 
     /// <inheritdoc />
     public FeatureAttachmentCapabilities AttachmentCapabilities => UnsupportedAttachmentCapabilities;
+
+    /// <inheritdoc />
+    public FeatureQueryCapabilities QueryCapabilities => WfsQueryCapabilities;
 
     /// <inheritdoc />
     public async Task<WfsCapabilities> GetCapabilitiesAsync(CancellationToken cancellationToken = default)

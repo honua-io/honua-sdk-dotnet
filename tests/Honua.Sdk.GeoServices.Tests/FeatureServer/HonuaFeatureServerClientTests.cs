@@ -859,6 +859,14 @@ public class HonuaFeatureServerClientTests
         Assert.True(attachmentClient.AttachmentCapabilities.SupportsAdd);
         Assert.True(attachmentClient.AttachmentCapabilities.SupportsUpdate);
         Assert.True(attachmentClient.AttachmentCapabilities.SupportsDelete);
+
+        // GeoServices is the time/having-capable query backend the GP gateway
+        // routes temporal and grouped-statistics queries to.
+        var queryClient = Assert.Single(provider.GetServices<IHonuaFeatureQueryClient>());
+        Assert.True(queryClient.QueryCapabilities.SupportsTimeFilter);
+        Assert.True(queryClient.QueryCapabilities.SupportsHaving);
+        Assert.True(queryClient.QueryCapabilities.SupportsStatistics);
+        Assert.True(queryClient.QueryCapabilities.SupportsGroupBy);
     }
 
     // ── GetFeatureAsync ────────────────────────────────────────────

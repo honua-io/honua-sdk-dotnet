@@ -269,6 +269,46 @@ public class HonuaGrpcClientTests
             }));
 
         Assert.Contains("time filters", ex.Message, StringComparison.OrdinalIgnoreCase);
+        // The throw message now points the caller at the capability flag / gateway
+        // so a GP tool can pick a time-capable provider instead of catching this.
+        Assert.Contains("QueryCapabilities.SupportsTimeFilter", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("IHonuaFeatureGateway", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void QueryCapabilities_AdvertiseGrpcFacetSupport()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var caps = ((IHonuaFeatureQueryClient)client).QueryCapabilities;
+
+        // gRPC supports statistics + group-by but NOT provider-neutral time filters
+        // or grouped-statistics having clauses; the flags let a GP tool route those
+        // queries elsewhere instead of hitting a runtime NotSupportedException.
+        Assert.False(caps.SupportsTimeFilter);
+        Assert.False(caps.SupportsHaving);
+        Assert.True(caps.SupportsStatistics);
+        Assert.True(caps.SupportsGroupBy);
+        Assert.NotNull(caps.UnsupportedReason);
+    }
+
+    [Fact]
+    public async Task QueryAsync_SharedAbstraction_UnsupportedHavingThrowsWithRoutingGuidance()
+    {
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var ex = await Assert.ThrowsAsync<NotSupportedException>(
+            () => ((IHonuaFeatureQueryClient)client).QueryAsync(new FeatureQueryRequest
+            {
+                Source = new FeatureSource { ServiceId = "test-svc", LayerId = 0 },
+                GroupBy = new[] { "category" },
+                Having = "COUNT(*) > 5",
+            }));
+
+        Assert.Contains("QueryCapabilities.SupportsHaving", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("IHonuaFeatureGateway", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]

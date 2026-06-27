@@ -50,6 +50,15 @@ public sealed class HonuaOgcFeaturesClient :
         NativeSurface = "OGC API Features attachments",
         UnsupportedReason = UnsupportedAttachmentReason
     };
+    private static readonly FeatureQueryCapabilities OgcQueryCapabilities = new()
+    {
+        SupportsTimeFilter = true,
+        SupportsStatistics = false,
+        SupportsGroupBy = false,
+        SupportsHaving = false,
+        NativeSurface = "OGC API Features items query",
+        UnsupportedReason = "OGC API Features does not expose server-side statistics, group-by, or having facets.",
+    };
 
     private readonly HttpClient _http;
 
@@ -70,6 +79,9 @@ public sealed class HonuaOgcFeaturesClient :
 
     /// <inheritdoc />
     public FeatureAttachmentCapabilities AttachmentCapabilities => OgcAttachmentCapabilities;
+
+    /// <inheritdoc />
+    public FeatureQueryCapabilities QueryCapabilities => OgcQueryCapabilities;
 
     /// <inheritdoc />
     public async Task<OgcLandingPage> GetLandingPageAsync(CancellationToken cancellationToken = default)
