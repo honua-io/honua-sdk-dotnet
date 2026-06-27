@@ -219,7 +219,6 @@ public sealed class HonuaStacClientTests
     {
         string? capturedUrl = null;
         var json = """{ "type": "FeatureCollection", "features": [] }""";
-        using var intersects = JsonDocument.Parse("""{ "type": "Point", "coordinates": [-158, 21] }""");
         using var queryPayload = JsonDocument.Parse("""{ "eo:cloud_cover": { "lt": 10 } }""");
         var client = TestHelpers.CreateStacClient(req =>
         {
@@ -233,7 +232,9 @@ public sealed class HonuaStacClientTests
             Ids = ["scene-001"],
             Bbox = [-158.4, 21.2, -157.6, 21.9],
             Datetime = "2026-05-01T00:00:00Z/..",
-            Intersects = intersects.RootElement,
+            // Intersects intentionally omitted here: it is POST-only and is covered by
+            // SearchAsync_WithIntersects_RoutesToPostBecauseItIsPostOnly. This case verifies
+            // the GET query-string serialization of the remaining parameters.
             Query = queryPayload.RootElement,
             Filter = "cloud_cover < 10",
             FilterLang = "cql2-text",
@@ -254,7 +255,6 @@ public sealed class HonuaStacClientTests
         Assert.Contains("ids=scene-001", capturedUrl);
         Assert.Contains("bbox=-158.4%2C21.2%2C-157.6%2C21.9", capturedUrl);
         Assert.Contains("datetime=2026-05-01T00:00:00Z/..", decodedUrl);
-        Assert.Contains("""intersects={ "type": "Point", "coordinates": [-158, 21] }""", decodedUrl);
         Assert.Contains("query={", decodedUrl);
         Assert.Contains("filter=cloud_cover < 10", decodedUrl);
         Assert.Contains("filter-lang=cql2-text", capturedUrl);
@@ -309,6 +309,54 @@ public sealed class HonuaStacClientTests
         Assert.Equal(50, root.GetProperty("offset").GetInt32());
         Assert.Equal("id", root.GetProperty("fields").GetProperty("include")[0].GetString());
         Assert.Equal("assets.thumbnail", root.GetProperty("fields").GetProperty("exclude")[0].GetString());
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithIntersects_RoutesToPostBecauseItIsPostOnly()
+    {
+        // `intersects` is only honored on POST /search per the STAC API spec; the GET search
+        // must route to POST rather than emit a non-conformant (silently-ignored) query param.
+        HttpMethod? capturedMethod = null;
+        string? capturedBody = null;
+        var json = """{ "type": "FeatureCollection", "features": [] }""";
+        using var intersects = JsonDocument.Parse("""{ "type": "Point", "coordinates": [-158, 21] }""");
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            capturedMethod = req.Method;
+            capturedBody = req.Content is null ? null : await req.Content.ReadAsStringAsync();
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        await client.SearchAsync(new StacSearchQuery
+        {
+            Collections = ["imagery"],
+            Intersects = intersects.RootElement,
+            Limit = 5,
+        });
+
+        Assert.Equal(HttpMethod.Post, capturedMethod);
+        Assert.NotNull(capturedBody);
+        using var document = JsonDocument.Parse(capturedBody!);
+        var root = document.RootElement;
+        Assert.Equal("Point", root.GetProperty("intersects").GetProperty("type").GetString());
+        Assert.Equal("imagery", root.GetProperty("collections")[0].GetString());
+        Assert.Equal(5, root.GetProperty("limit").GetInt32());
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithoutIntersects_UsesGet()
+    {
+        HttpMethod? capturedMethod = null;
+        var json = """{ "type": "FeatureCollection", "features": [] }""";
+        var client = TestHelpers.CreateStacClient(req =>
+        {
+            capturedMethod = req.Method;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        await client.SearchAsync(new StacSearchQuery { Collections = ["imagery"], Limit = 5 });
+
+        Assert.Equal(HttpMethod.Get, capturedMethod);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Catalogs.Records.Exceptions;
 using Honua.Sdk.Catalogs.Records.Models;
 
@@ -220,23 +221,11 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
 
     private void ValidateNextLinkOrigin(string nextUrl)
     {
-        if (!Uri.TryCreate(nextUrl, UriKind.Absolute, out var nextUri))
-        {
-            return;
-        }
-
-        var baseAddress = _http.BaseAddress;
-        if (baseAddress is null)
-        {
-            return;
-        }
-
-        if (!string.Equals(nextUri.Scheme, baseAddress.Scheme, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(nextUri.Authority, baseAddress.Authority, StringComparison.OrdinalIgnoreCase))
+        if (!NextLinkOriginValidator.IsSameOrigin(nextUrl, _http.BaseAddress))
         {
             throw new HonuaOgcRecordsException(
                 HttpStatusCode.BadGateway,
-                $"Server returned a next-page link to a different origin ({nextUri.Authority}), which may indicate an open-redirect attack. Paging stopped.",
+                NextLinkOriginValidator.CrossOriginMessage(nextUrl),
                 nextUrl);
         }
     }

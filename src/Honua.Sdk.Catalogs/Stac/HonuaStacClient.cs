@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Catalogs.Stac.Exceptions;
 using Honua.Sdk.Catalogs.Stac.Models;
 
@@ -100,8 +101,49 @@ public sealed class HonuaStacClient : IHonuaStacClient
         StacSearchQuery? query = null,
         CancellationToken cancellationToken = default)
     {
+        // `intersects` is only valid on POST /search per the STAC API spec; a conformant server
+        // may ignore it on a GET and silently return unfiltered results. Route such searches to
+        // the POST path so the geometry filter is actually honored.
+        if (query?.Intersects is not null)
+        {
+            return await PostSearchAsync(ToSearchRequest(query), cancellationToken).ConfigureAwait(false);
+        }
+
         var body = await GetStringAsync($"{BasePath}/search{BuildQueryString(query)}", cancellationToken).ConfigureAwait(false);
         return DeserializeItemCollection(body, "Failed to deserialize STAC search response.");
+    }
+
+    private static StacSearchRequest ToSearchRequest(StacSearchQuery query)
+    {
+        var request = new StacSearchRequest
+        {
+            Collections = query.Collections,
+            Ids = query.Ids,
+            Bbox = query.Bbox,
+            Datetime = query.Datetime,
+            Intersects = query.Intersects,
+            Query = query.Query,
+            Filter = query.Filter,
+            FilterLang = query.FilterLang,
+            Limit = query.Limit,
+            Offset = query.Offset,
+            Next = query.Next,
+            SortBy = query.SortBy,
+            Fields = query.Fields,
+        };
+
+        if (query.AdditionalParameters is { Count: > 0 })
+        {
+            var extra = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            foreach (var pair in query.AdditionalParameters)
+            {
+                extra[pair.Key] = JsonSerializer.SerializeToElement(pair.Value);
+            }
+
+            request = request with { AdditionalProperties = extra };
+        }
+
+        return request;
     }
 
     /// <inheritdoc />
@@ -450,23 +492,11 @@ public sealed class HonuaStacClient : IHonuaStacClient
 
     private void ValidateNextLinkOrigin(string nextUrl)
     {
-        if (!Uri.TryCreate(nextUrl, UriKind.Absolute, out var nextUri))
-        {
-            return;
-        }
-
-        var baseAddress = _http.BaseAddress;
-        if (baseAddress is null)
-        {
-            return;
-        }
-
-        if (!string.Equals(nextUri.Scheme, baseAddress.Scheme, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(nextUri.Authority, baseAddress.Authority, StringComparison.OrdinalIgnoreCase))
+        if (!NextLinkOriginValidator.IsSameOrigin(nextUrl, _http.BaseAddress))
         {
             throw new HonuaStacException(
                 HttpStatusCode.BadGateway,
-                $"Server returned a next-page link to a different origin ({nextUri.Authority}), which may indicate an open-redirect attack. Paging stopped.",
+                NextLinkOriginValidator.CrossOriginMessage(nextUrl),
                 nextUrl);
         }
     }

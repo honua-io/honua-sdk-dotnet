@@ -88,6 +88,24 @@ A concrete provider package (for example `Honua.Sdk.GeoServices` or
 `Honua.Sdk.Grpc`) registers an `IHonuaFeatureQueryClient` implementation in DI;
 your library code stays provider-neutral.
 
+## Observability
+
+SDK clients do not emit their own distributed-tracing spans uniformly; instead,
+observability is **delegated to the underlying transports**, which are already
+instrumented:
+
+- **REST clients** flow through `HttpClient`. Enable
+  `AddHttpClientInstrumentation()` (OpenTelemetry) — or the `System.Net.Http`
+  `EventSource`/`DiagnosticSource` — to capture per-request spans, status codes,
+  and timings for every `Honua.Sdk.*` REST client.
+- **gRPC client** flows through `Grpc.Net.Client`; enable
+  `AddGrpcClientInstrumentation()` for gRPC call spans.
+
+The resilience pipeline (`Microsoft.Extensions.Http.Resilience` / Polly) also
+emits telemetry for retries, timeouts, and circuit-breaker transitions. A few
+clients add finer-grained SDK-level spans on top of this (e.g. the WFS client);
+these are additive and not required for baseline tracing.
+
 ## Documentation
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)

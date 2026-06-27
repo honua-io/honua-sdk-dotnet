@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Geometry.Vector;
 using Honua.Sdk.OgcFeatures.Exceptions;
 using Honua.Sdk.OgcFeatures.Models;
@@ -488,23 +489,11 @@ public sealed class HonuaOgcFeaturesClient :
 
     private void ValidateNextLinkOrigin(string nextUrl)
     {
-        if (!Uri.TryCreate(nextUrl, UriKind.Absolute, out var nextUri))
-        {
-            return; // Relative URLs are safe — they use the same base
-        }
-
-        var baseAddress = _http.BaseAddress;
-        if (baseAddress is null)
-        {
-            return;
-        }
-
-        if (!string.Equals(nextUri.Scheme, baseAddress.Scheme, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(nextUri.Authority, baseAddress.Authority, StringComparison.OrdinalIgnoreCase))
+        if (!NextLinkOriginValidator.IsSameOrigin(nextUrl, _http.BaseAddress))
         {
             throw new HonuaOgcFeaturesException(
                 HttpStatusCode.BadGateway,
-                $"Server returned a next-page link to a different origin ({nextUri.Authority}), which may indicate an open-redirect attack. Paging stopped.",
+                NextLinkOriginValidator.CrossOriginMessage(nextUrl),
                 nextUrl);
         }
     }

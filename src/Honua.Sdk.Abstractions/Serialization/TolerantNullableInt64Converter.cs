@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Honua.Sdk.OgcFeatures.Conversion;
+namespace Honua.Sdk.Abstractions.Serialization;
 
 /// <summary>
 /// A tolerant <see cref="long"/>? converter for fields such as <c>numberMatched</c>
@@ -14,7 +14,7 @@ namespace Honua.Sdk.OgcFeatures.Conversion;
 /// numeric strings parse to a <see cref="long"/>; <c>null</c>, <c>"unknown"</c>, and any
 /// other non-numeric value deserialize to <c>null</c> rather than throwing.
 /// </summary>
-internal sealed class TolerantNullableInt64Converter : JsonConverter<long?>
+public sealed class TolerantNullableInt64Converter : JsonConverter<long?>
 {
     /// <inheritdoc />
     public override long? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Honua.Sdk.Catalogs.Serialization;
+using Honua.Sdk.Abstractions.Serialization;
 
 namespace Honua.Sdk.Catalogs.Records.Models;
 

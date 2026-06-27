@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.GeoServices;
 using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
