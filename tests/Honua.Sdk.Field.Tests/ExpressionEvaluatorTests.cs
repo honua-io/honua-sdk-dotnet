@@ -294,6 +294,18 @@ public sealed class ExpressionEvaluatorTests
     }
 
     [Fact]
+    public void Evaluate_DeeplyNestedUnary_DoesNotThrow()
+    {
+        // A long chain of prefix operators recurses through ParseUnary at parse time.
+        // Without a depth guard this overflows the stack (an uncatchable crash) before the
+        // evaluation-time limit can apply; it must instead surface as a catchable diagnostic.
+        var expr = new string('!', 5000) + "true";
+        var result = ExpressionEvaluator.EvaluateDetailed(expr, null);
+        Assert.False(result.Succeeded);
+        Assert.NotNull(result.Diagnostic);
+    }
+
+    [Fact]
     public void EvaluateBoolean_TruthyAndFalsy()
     {
         Assert.True(ExpressionEvaluator.EvaluateBoolean("$a > 5", Ctx(("a", 10))));
