@@ -19,7 +19,6 @@ namespace Honua.Sdk.Catalogs.Records;
 [JsonSerializable(typeof(OgcRecordsCollectionsResponse))]
 [JsonSerializable(typeof(OgcRecordCollection))]
 [JsonSerializable(typeof(OgcRecord))]
-[JsonSerializable(typeof(OgcRecordsProblemDetails))]
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class OgcRecordsJsonContext : JsonSerializerContext
 {

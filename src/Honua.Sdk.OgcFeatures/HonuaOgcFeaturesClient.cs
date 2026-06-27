@@ -479,32 +479,11 @@ public sealed class HonuaOgcFeaturesClient :
             return;
         }
 
-        // Attempt to parse RFC 7807 Problem Details
-        string? problemType = null;
-        string? problemTitle = null;
-        string? problemDetail = null;
-
-        if (!string.IsNullOrWhiteSpace(body))
-        {
-            try
-            {
-                var problem = JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcProblemDetails);
-                if (problem is not null)
-                {
-                    problemType = problem.Type;
-                    problemTitle = problem.Title;
-                    problemDetail = problem.Detail;
-                }
-            }
-            catch (JsonException)
-            {
-                // Not valid Problem Details JSON
-            }
-        }
-
-        var message = problemDetail ?? problemTitle ?? response.ReasonPhrase ?? "OGC Features request failed";
+        // Parse RFC 7807 Problem Details via the shared Abstractions parser.
+        var message = Honua.Sdk.Abstractions.HonuaProblemDetailsParser.ResolveMessage(
+            body, response.ReasonPhrase ?? "OGC Features request failed", out var problem);
         throw new HonuaOgcFeaturesException(
-            response.StatusCode, message, body, problemType, problemTitle, problemDetail);
+            response.StatusCode, message, body, problem?.Type, problem?.Title, problem?.Detail);
     }
 
     private void ValidateNextLinkOrigin(string nextUrl)

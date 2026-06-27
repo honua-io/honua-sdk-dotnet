@@ -731,7 +731,7 @@ public sealed class HonuaFeatureServerClient :
                             codeProp.TryGetInt32(out var errorCode))
                         {
                             geoServicesCode = errorCode;
-                            httpCode = (HttpStatusCode)errorCode;
+                            httpCode = GeoServicesHttp.MapErrorCodeToStatus(errorCode, response.StatusCode);
                         }
 
                         if (errorElement.TryGetProperty("details", out var detailsProp) &&

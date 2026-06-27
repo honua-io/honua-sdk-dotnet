@@ -1245,28 +1245,23 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         try
         {
             using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String)
+            if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+                doc.RootElement.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String)
             {
+                // Admin envelope shape: { "message": "..." }.
                 return msg.GetString();
-            }
-
-            // ProblemDetails format
-            if (doc.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String)
-            {
-                return detail.GetString();
-            }
-
-            if (doc.RootElement.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String)
-            {
-                return title.GetString();
             }
         }
         catch (JsonException)
         {
-            // Not JSON, that's fine
+            // Not JSON, that's fine.
+            return null;
         }
 
-        return null;
+        // RFC 7807 problem details via the shared Abstractions parser (detail, then title).
+        return Honua.Sdk.Abstractions.HonuaProblemDetailsParser.TryParse(body, out var problem)
+            ? problem?.Detail ?? problem?.Title
+            : null;
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);

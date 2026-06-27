@@ -53,6 +53,7 @@ namespace Honua.Sdk.Abstractions.Serialization;
 [JsonSerializable(typeof(HonuaWorkspaceRef))]
 [JsonSerializable(typeof(HonuaGeoprocessingError))]
 [JsonSerializable(typeof(HonuaGeoprocessingValidationFailure))]
+[JsonSerializable(typeof(HonuaProblemDetails))]
 [JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 public sealed partial class HonuaAbstractionsJsonContext : JsonSerializerContext

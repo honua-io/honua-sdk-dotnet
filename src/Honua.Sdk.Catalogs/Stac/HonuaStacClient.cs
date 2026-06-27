@@ -437,36 +437,15 @@ public sealed class HonuaStacClient : IHonuaStacClient
             return;
         }
 
-        string? problemType = null;
-        string? problemTitle = null;
-        string? problemDetail = null;
-
-        if (!string.IsNullOrWhiteSpace(body))
-        {
-            try
-            {
-                var problem = JsonSerializer.Deserialize(body, StacJsonContext.Default.StacProblemDetails);
-                if (problem is not null)
-                {
-                    problemType = problem.Type;
-                    problemTitle = problem.Title;
-                    problemDetail = problem.Detail;
-                }
-            }
-            catch (JsonException)
-            {
-                // Non-problem JSON responses still preserve the raw body below.
-            }
-        }
-
-        var message = problemDetail ?? problemTitle ?? response.ReasonPhrase ?? "STAC request failed";
+        var message = Honua.Sdk.Abstractions.HonuaProblemDetailsParser.ResolveMessage(
+            body, response.ReasonPhrase ?? "STAC request failed", out var problem);
         throw new HonuaStacException(
             response.StatusCode,
             message,
             body,
-            problemType,
-            problemTitle,
-            problemDetail);
+            problem?.Type,
+            problem?.Title,
+            problem?.Detail);
     }
 
     private void ValidateNextLinkOrigin(string nextUrl)

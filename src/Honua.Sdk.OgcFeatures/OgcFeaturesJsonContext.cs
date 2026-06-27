@@ -20,7 +20,6 @@ namespace Honua.Sdk.OgcFeatures;
 [JsonSerializable(typeof(OgcQueryables))]
 [JsonSerializable(typeof(OgcFeatureCollection))]
 [JsonSerializable(typeof(OgcFeature))]
-[JsonSerializable(typeof(OgcProblemDetails))]
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class OgcFeaturesJsonContext : JsonSerializerContext
 {

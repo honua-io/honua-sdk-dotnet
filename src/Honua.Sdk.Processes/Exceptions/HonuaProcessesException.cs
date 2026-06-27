@@ -39,6 +39,21 @@ public sealed class HonuaProcessesException : Honua.Sdk.Abstractions.HonuaExcept
     /// </summary>
     public HttpStatusCode StatusCode { get; }
 
+    /// <inheritdoc />
+    public override int? HttpStatus => (int)StatusCode;
+
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
+        ProblemType is null && ProblemTitle is null && ProblemDetail is null
+            ? null
+            : new Honua.Sdk.Abstractions.HonuaProblemDetails
+            {
+                Type = ProblemType,
+                Title = ProblemTitle,
+                Status = (int)StatusCode,
+                Detail = ProblemDetail,
+            };
+
     /// <summary>
     /// Problem type URI, if supplied by the server.
     /// </summary>
