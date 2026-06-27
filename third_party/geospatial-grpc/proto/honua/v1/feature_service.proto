@@ -3,9 +3,12 @@
 
 syntax = "proto3";
 
-package honua.v1;
+// Mirrors the published geospatial-grpc wire contract that this SDK actually compiles
+// against via the Geospatial.Grpc package (generated C# namespace Geospatial.V1, service
+// geospatial.v1.FeatureService). Keep package/namespace in sync with the upstream contract.
+package geospatial.v1;
 
-option csharp_namespace = "Honua.Server.Features.Grpc.Proto";
+option csharp_namespace = "Geospatial.V1";
 
 // FeatureService provides typed RPC access to geospatial feature queries.
 service FeatureService {
