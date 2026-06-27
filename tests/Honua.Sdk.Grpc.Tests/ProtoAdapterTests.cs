@@ -454,6 +454,34 @@ public class ProtoAdapterTests
     }
 
     [Fact]
+    public void ConvertAttributeToProto_UnspecifiedDateTime_IsTreatedAsUtcNotLocal()
+    {
+        // A Kind=Unspecified value carrying a UTC wall-clock must serialize to that instant
+        // regardless of the host timezone. Reinterpreting it as local time (the previous
+        // behavior) produced machine-timezone-dependent wire values.
+        var unspecified = DateTime.SpecifyKind(
+            DateTimeOffset.FromUnixTimeMilliseconds(1700000000000L).UtcDateTime,
+            DateTimeKind.Unspecified);
+
+        var proto = ProtoAdapter.ConvertAttributeToProto(unspecified);
+
+        Assert.Equal(Proto.AttributeValue.ValueOneofCase.DatetimeValue, proto.ValueCase);
+        Assert.Equal(1700000000000L, proto.DatetimeValue);
+    }
+
+    [Fact]
+    public void ConvertAttribute_DatetimeValue_RoundTripsAsUtc()
+    {
+        var original = new DateTime(2023, 11, 14, 22, 13, 20, DateTimeKind.Utc);
+
+        var proto = ProtoAdapter.ConvertAttributeToProto(original);
+        var result = Assert.IsType<DateTime>(ProtoAdapter.ConvertAttribute(proto));
+
+        Assert.Equal(DateTimeKind.Utc, result.Kind);
+        Assert.Equal(original, result);
+    }
+
+    [Fact]
     public void ConvertAttribute_NullValue_ReturnsNull()
     {
         var attr = new Proto.AttributeValue { NullValue = Proto.NullValue.NullValue };

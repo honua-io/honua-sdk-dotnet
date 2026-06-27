@@ -62,6 +62,59 @@ var route = await router.GetDirectionsAsync(
     cancellationToken);
 ```
 
+### Raster (ImageServer)
+
+`AddHonuaImageServer` registers the read-only ImageServer client plus the
+provider-neutral `IHonuaRasterDataClient` (raster metadata, coverage statistics,
+and a windowed/subset read). A raster geoprocessing tool can resolve
+`IHonuaRasterDataClient` from DI and read a clipped window of a large raster
+rather than transferring the whole dataset:
+
+```csharp
+using Honua.Sdk.Abstractions.Data;
+using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.GeoServices.Extensions;
+
+services.AddHonuaImageServer(o => o.BaseAddress = new Uri("https://your-honua-server"));
+
+var raster = provider.GetRequiredService<IHonuaRasterDataClient>();
+
+var metadata = await raster.GetRasterMetadataAsync(
+    new RasterMetadataRequest { Source = new SpatialDataSource { ServiceId = "Elevation" } },
+    cancellationToken);
+
+// Read a clipped window (bbox extent sampled to a target pixel size) as GeoTIFF.
+await using var window = await raster.ReadWindowAsync(
+    new RasterWindowReadRequest
+    {
+        Source = new SpatialDataSource { ServiceId = "Elevation" },
+        Extent = new FeatureBoundingBox { MinX = -158, MinY = 21, MaxX = -157, MaxY = 22, Crs = "4326" },
+        Width = 512,
+        Height = 512,
+        Format = RasterWindowFormat.GeoTiff,
+    },
+    cancellationToken);
+
+await using var file = File.Create("window.tif");
+await window.Content.CopyToAsync(file, cancellationToken);
+```
+
+The umbrella `Honua.Sdk` package exposes this via the `UseImageServer` flag on
+`AddHonua(...)`.
+
+#### Raster output (write) stance
+
+`IHonuaRasterDataClient` is **read-only** by design: it covers raster metadata,
+coverage statistics, and windowed reads. The Honua server does expose a raster
+*write* path — the admin multipart raster import endpoint
+(`POST /api/v1/admin/import/raster`, GeoTIFF / world-file upload into PostGIS) —
+but it lives on the privileged Admin surface and is not part of the raster-data
+read contract. A geoprocessing tool that produces a raster should write a GeoTIFF
+locally (for example from a `ReadWindowAsync` window or a computed result) and
+register it through that admin raster import endpoint. A typed SDK wrapper for the
+admin raster import endpoint on the Admin client surface is tracked as a
+follow-up.
+
 ## Documentation
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)

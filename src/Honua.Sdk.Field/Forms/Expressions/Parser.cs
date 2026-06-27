@@ -67,20 +67,32 @@ internal sealed class Parser
 
     private ExpressionNode ParseUnary()
     {
-        if (Current.Type == TokenType.Operator && (Current.Text == "-" || Current.Text == "!"))
+        // Guard unary recursion with the same depth limit used by ParseBinary. A long
+        // chain of prefix operators (e.g. "!!!!...x") recurses through here directly, so
+        // without this guard it overflows the stack at parse time — before the
+        // evaluation-time depth limit can apply — crashing the process uncatchably.
+        EnterDepth();
+        try
         {
-            var op = Advance().Text;
-            return new UnaryNode(op, ParseUnary());
-        }
+            if (Current.Type == TokenType.Operator && (Current.Text == "-" || Current.Text == "!"))
+            {
+                var op = Advance().Text;
+                return new UnaryNode(op, ParseUnary());
+            }
 
-        if (Current.Type == TokenType.Identifier
-            && string.Equals(Current.Text, "not", StringComparison.OrdinalIgnoreCase))
+            if (Current.Type == TokenType.Identifier
+                && string.Equals(Current.Text, "not", StringComparison.OrdinalIgnoreCase))
+            {
+                Advance();
+                return new UnaryNode("not", ParseUnary());
+            }
+
+            return ParsePrimary();
+        }
+        finally
         {
-            Advance();
-            return new UnaryNode("not", ParseUnary());
+            ExitDepth();
         }
-
-        return ParsePrimary();
     }
 
     private ExpressionNode ParsePrimary()

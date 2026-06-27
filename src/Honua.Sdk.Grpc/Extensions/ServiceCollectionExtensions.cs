@@ -15,8 +15,8 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Registers the Honua gRPC client and related services with the DI container.
     /// The supplied <paramref name="configure"/> delegate is invoked exactly once to
-    /// capture options; <see cref="HonuaGrpcClientOptions.BaseAddress"/> and
-    /// <see cref="HonuaGrpcClientOptions.Timeout"/> are validated eagerly so a
+    /// capture options; <see cref="Honua.Sdk.Abstractions.HonuaClientOptionsBase.BaseAddress"/> and
+    /// <see cref="Honua.Sdk.Abstractions.HonuaClientOptionsBase.Timeout"/> are validated eagerly so a
     /// misconfigured client fails at registration time, matching the behavior of every
     /// REST SDK package.
     /// </summary>

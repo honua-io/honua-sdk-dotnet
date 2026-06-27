@@ -103,6 +103,23 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     /// <summary>
     /// Pulls remote feature pages into the local feature store.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is a <strong>full refresh</strong>: every call re-queries each source
+    /// from the beginning and re-stores all matching features. It is
+    /// <em>not</em> an incremental/delta pull. The provider-neutral feature query
+    /// API (<see cref="Honua.Sdk.Abstractions.Features.FeatureQueryResult"/>)
+    /// exposes no server high-water-mark / sync token, so there is nothing to
+    /// advance between runs; the persisted checkpoint therefore tracks only the
+    /// number of features pulled and does not record an advancing
+    /// <see cref="OfflineSyncCheckpoint.SyncToken"/>.
+    /// </para>
+    /// <para>
+    /// Callers that need server-driven delta sync (a <c>serverGen</c> high-water
+    /// mark) should use <see cref="ReplicaSyncClient"/> instead, which threads the
+    /// server generation through extract-changes requests.
+    /// </para>
+    /// </remarks>
     /// <param name="manifest">Offline package manifest.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Pull result.</returns>
@@ -162,7 +179,11 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                 {
                     PackageId = manifest.PackageId,
                     SourceId = source.SourceId,
-                    SyncToken = request.LastSyncToken,
+                    // Full-refresh pull: the query API surfaces no server-advanced
+                    // sync token, so there is no high-water mark to persist. Leave
+                    // SyncToken null rather than re-storing the (unchanged) request
+                    // token, which would falsely imply incremental progress.
+                    SyncToken = null,
                     PulledFeatureCount = sourceFeatureCount,
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -201,6 +222,19 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     /// <summary>
     /// Pushes pending local edits to the provider.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Pending operations are uploaded with <b>at-least-once</b> delivery: a retryable
+    /// failure (transport error or timeout) re-uploads the same operation on the next
+    /// push. For <see cref="OfflineEditOperationKind.Add"/> operations this means a
+    /// response lost <i>after</i> the server has already committed the insert results in
+    /// the feature being re-added, creating a duplicate, because the request carries no
+    /// server-honored idempotency key. Callers that require exactly-once add semantics
+    /// must reconcile duplicates out of band (e.g. by querying a stable client-assigned
+    /// GlobalId after sync). Durable idempotency requires honua-server to treat a
+    /// client-supplied operation key as a no-op on replay; see the SDK release notes.
+    /// </para>
+    /// </remarks>
     /// <param name="packageId">Offline package identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Push result.</returns>

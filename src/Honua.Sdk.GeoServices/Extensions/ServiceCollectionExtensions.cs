@@ -122,6 +122,12 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
 
+        // Provider-neutral raster data client (metadata, coverage statistics, windowed
+        // reads) so a raster geoprocessing tool can resolve IHonuaRasterDataClient from DI.
+        services.AddTransient<HonuaImageServerRasterDataClient>();
+        services.AddTransient<Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient>(
+            sp => sp.GetRequiredService<HonuaImageServerRasterDataClient>());
+
         ApplyHandlerAndResilience(httpBuilder, snapshot);
         return services;
     }
@@ -180,6 +186,7 @@ public static class ServiceCollectionExtensions
             {
                 options.TotalRequestTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.TotalRequestTimeout(snapshot.Timeout);
                 options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
+                options.CircuitBreaker.SamplingDuration = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.SamplingDuration(snapshot.Timeout);
                 options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
                 options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
                 options.Retry.DisableForUnsafeHttpMethods();

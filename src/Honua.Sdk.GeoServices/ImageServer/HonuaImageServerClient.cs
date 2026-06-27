@@ -145,6 +145,27 @@ public sealed class HonuaImageServerClient
     }
 
     /// <summary>
+    /// Computes raster statistics and histograms over an optional area of interest
+    /// (<c>POST .../ImageServer/computeStatisticsHistograms</c> with <c>f=json</c>).
+    /// Returns the raw GeoServices statistics/histograms JSON payload.
+    /// </summary>
+    /// <param name="serviceId">The ImageServer service id.</param>
+    /// <param name="parameters">Form parameters (geometry, mosaicRule, pixelSize, etc.).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Parsed statistics/histograms JSON document; the caller owns and disposes it.</returns>
+    public async Task<JsonDocument> ComputeStatisticsHistogramsAsync(
+        string serviceId,
+        IEnumerable<(string Key, string? Value)> parameters,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        var resolved = RequireServiceId(serviceId);
+        var path = $"{ServicePath(resolved)}/computeStatisticsHistograms";
+        var body = await GeoServicesHttp.PostFormAsync(_http, path, parameters, cancellationToken).ConfigureAwait(false);
+        return JsonDocument.Parse(body);
+    }
+
+    /// <summary>
     /// Identifies the pixel value at a point (<c>GET .../ImageServer/identify</c>).
     /// </summary>
     /// <param name="request">Identify parameters.</param>

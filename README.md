@@ -74,7 +74,7 @@ dotnet add package Honua.Sdk.Catalogs
 
 </details>
 
-Pre-1.0 / dry-run builds are also available from
+Prerelease / dry-run builds are also available from
 [GitHub Packages](INSTALL.md#install-from-github-packages).
 
 ## Quick usage

@@ -214,6 +214,48 @@ public static class HonuaAuthenticationSupport
         => string.IsNullOrEmpty(value) ? string.Empty : "[redacted]";
 
     /// <summary>
+    /// Determines whether credentials must only be sent over HTTPS for the given
+    /// request URI. This is the single source of truth for the SDK's plain-HTTP
+    /// credential guard: credentials are permitted over plain HTTP only for local
+    /// development loopback targets (see <see cref="IsLocalDevelopmentHttp(Uri?)"/>),
+    /// and a <c>null</c> URI is treated as requiring HTTPS (fail-closed).
+    /// </summary>
+    /// <param name="uri">The request (or token endpoint) URI.</param>
+    /// <returns><c>true</c> when credentials must not be sent unless the transport is HTTPS.</returns>
+    public static bool RequiresHttpsForAuthentication(Uri? uri)
+    {
+        if (uri is null)
+        {
+            return true;
+        }
+
+        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return !IsLocalDevelopmentHttp(uri);
+    }
+
+    /// <summary>
+    /// Determines whether the URI is a local-development plain-HTTP endpoint
+    /// (loopback or <c>localhost</c> over <c>http</c>) for which the SDK permits
+    /// credentials to be sent without HTTPS.
+    /// </summary>
+    /// <param name="uri">The request (or token endpoint) URI.</param>
+    /// <returns><c>true</c> for loopback/localhost HTTP endpoints; otherwise <c>false</c>.</returns>
+    public static bool IsLocalDevelopmentHttp(Uri? uri)
+    {
+        if (uri is null || !string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return uri.IsLoopback ||
+               string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Normalizes a scope sequence by trimming empty values.
     /// </summary>
     /// <param name="scopes">Scope sequence.</param>
