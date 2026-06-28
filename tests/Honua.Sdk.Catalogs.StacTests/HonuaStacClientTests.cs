@@ -402,6 +402,60 @@ public sealed class HonuaStacClientTests
     }
 
     [Fact]
+    public async Task GetItemsPagesAsync_EmptyIntermediatePageWithNextLink_KeepsFollowing()
+    {
+        // A STAC API can legitimately emit an empty intermediate page that still advertises a
+        // rel=next link to a populated page (sparse/filtered result sets). The pager must follow
+        // the empty page's own next link rather than terminating, otherwise the remaining items
+        // are silently dropped.
+        var calls = 0;
+        var client = TestHelpers.CreateStacClient(req =>
+        {
+            calls++;
+            var json = calls switch
+            {
+                1 => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "scene-001", "properties": {} }],
+                         "links": [
+                             { "href": "https://honua.example.test/stac/collections/imagery/items?offset=1&limit=1", "rel": "next" }
+                         ]
+                     }
+                     """,
+                2 => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [],
+                         "links": [
+                             { "href": "https://honua.example.test/stac/collections/imagery/items?offset=2&limit=1", "rel": "next" }
+                         ]
+                     }
+                     """,
+                _ => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "scene-003", "properties": {} }]
+                     }
+                     """
+            };
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.GetItemsPagesAsync("imagery", new StacItemsQuery { Limit = 1 }))
+        {
+            pages.Add(page);
+        }
+
+        // The empty page is not yielded, but its next link is followed to the populated page.
+        Assert.Equal(2, pages.Count);
+        Assert.Equal("scene-001", pages[0].Features?[0].Id);
+        Assert.Equal("scene-003", pages[1].Features?[0].Id);
+        Assert.Equal(3, calls);
+    }
+
+    [Fact]
     public async Task SearchPagesAsync_PostThenFollowsNextLinkWithGet()
     {
         var calls = 0;
