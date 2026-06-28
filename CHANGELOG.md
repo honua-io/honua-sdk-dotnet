@@ -2,6 +2,15 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.4.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.2...dotnet-sdk-v1.4.3) (2026-06-28)
+
+
+### Bug Fixes
+
+* **catalogs:** keep following next-links across empty intermediate pages ([#242](https://github.com/honua-io/honua-sdk-dotnet/issues/242)) ([d522688](https://github.com/honua-io/honua-sdk-dotnet/commit/d5226883ac38a5abaec2067dcf15e95c8cdf6dc1))
+* **example:** drain pending sync ops into a snapshot to honor retry backoff ([#244](https://github.com/honua-io/honua-sdk-dotnet/issues/244)) ([1bd0e2a](https://github.com/honua-io/honua-sdk-dotnet/commit/1bd0e2a93932ba056cb0a16e31218e24c845598b))
+* **ogcfeatures:** map vector extension fallback failures to HonuaException ([#243](https://github.com/honua-io/honua-sdk-dotnet/issues/243)) ([a6fffce](https://github.com/honua-io/honua-sdk-dotnet/commit/a6fffced1eee30e0848e499bb2c9fe5568768f99))
+
 ## [1.4.2](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.1...dotnet-sdk-v1.4.2) (2026-06-28)
 
 
