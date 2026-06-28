@@ -398,13 +398,20 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
             return boolean ? JsonElementFromLiteral("true") : JsonElementFromLiteral("false");
         }
 
-        if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+        // Only re-emit the raw text as a JSON number literal when it is a STRICT JSON
+        // number (RFC 8259). .NET's long/double parsers accept forms JSON forbids —
+        // leading zeros (01234), a leading plus (+5), and bare-fraction values (.5) —
+        // which are pervasive in geospatial attributes (ZIP/FIPS/GEOID codes). Feeding
+        // those to JsonDocument.Parse throws and aborts the whole feature-collection read,
+        // so anything that is not a strict JSON number is preserved verbatim as a string.
+        if (IsStrictJsonNumber(value) &&
+            long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
         {
             return JsonElementFromLiteral(value);
         }
 
-        if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out _) &&
-            value.Any(char.IsDigit))
+        if (IsStrictJsonNumber(value) &&
+            double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
         {
             return JsonElementFromLiteral(value);
         }
@@ -416,6 +423,88 @@ public sealed class GmlVectorPayloadReader : IVectorPayloadReader
         }
 
         return JsonElementFromBytes(stream.ToArray());
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="value"/> is a strict JSON number
+    /// per RFC 8259 (<c>-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?</c>). Rejects the
+    /// number-like forms .NET parses but JSON forbids: leading zeros, a leading plus, and
+    /// bare-fraction values such as <c>.5</c>.
+    /// </summary>
+    private static bool IsStrictJsonNumber(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
+        var i = 0;
+        var n = value.Length;
+
+        if (value[i] == '-')
+        {
+            i++;
+        }
+
+        // Integer part: a single 0, or a non-zero digit followed by digits (no leading zeros).
+        if (i >= n)
+        {
+            return false;
+        }
+
+        if (value[i] == '0')
+        {
+            i++;
+        }
+        else if (value[i] is >= '1' and <= '9')
+        {
+            i++;
+            while (i < n && value[i] is >= '0' and <= '9')
+            {
+                i++;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        // Optional fraction.
+        if (i < n && value[i] == '.')
+        {
+            i++;
+            if (i >= n || value[i] is < '0' or > '9')
+            {
+                return false;
+            }
+
+            while (i < n && value[i] is >= '0' and <= '9')
+            {
+                i++;
+            }
+        }
+
+        // Optional exponent.
+        if (i < n && (value[i] == 'e' || value[i] == 'E'))
+        {
+            i++;
+            if (i < n && (value[i] == '+' || value[i] == '-'))
+            {
+                i++;
+            }
+
+            if (i >= n || value[i] is < '0' or > '9')
+            {
+                return false;
+            }
+
+            while (i < n && value[i] is >= '0' and <= '9')
+            {
+                i++;
+            }
+        }
+
+        return i == n;
     }
 
     private static JsonElement JsonElementFromLiteral(string literal)

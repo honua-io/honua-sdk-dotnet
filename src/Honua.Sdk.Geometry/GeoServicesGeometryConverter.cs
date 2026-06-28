@@ -465,14 +465,41 @@ public static class GeoServicesGeometryConverter
         writer.WriteStartArray();
         foreach (var polygon in polygonList)
         {
-            WriteCoordinateSequence(writer, polygon.ExteriorRing.CoordinateSequence, hasZ, hasM);
+            // Esri JSON requires clockwise exterior rings and counter-clockwise holes,
+            // and the orientation-aware reader (ReadRings) classifies rings strictly by
+            // orientation. NTS geometry decoded from GeoJSON (RFC 7946) carries a CCW
+            // exterior, so emit each ring in the orientation Esri expects rather than
+            // whatever the source carried; otherwise a strict Esri consumer (or this
+            // SDK's own reader) would mis-demote the exterior ring of a multi-ring
+            // polygon to a hole.
+            WriteRingInEsriOrientation(writer, polygon.ExteriorRing, wantClockwise: true, hasZ, hasM);
             for (var index = 0; index < polygon.NumInteriorRings; index++)
             {
-                WriteCoordinateSequence(writer, polygon.GetInteriorRingN(index).CoordinateSequence, hasZ, hasM);
+                WriteRingInEsriOrientation(writer, polygon.GetInteriorRingN(index), wantClockwise: false, hasZ, hasM);
             }
         }
 
         writer.WriteEndArray();
+    }
+
+    private static void WriteRingInEsriOrientation(
+        Utf8JsonWriter writer,
+        LineString ring,
+        bool wantClockwise,
+        bool hasZ,
+        bool hasM)
+    {
+        var sequence = ring.CoordinateSequence;
+        var isCcw = Orientation.IsCCW(sequence);
+
+        // Reverse only when the current orientation does not match the Esri requirement:
+        // an exterior ring must be clockwise (not CCW); a hole must be counter-clockwise.
+        if (wantClockwise == isCcw)
+        {
+            sequence = sequence.Reversed();
+        }
+
+        WriteCoordinateSequence(writer, sequence, hasZ, hasM);
     }
 
     private static void WriteCoordinateSequence(

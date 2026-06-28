@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Text;
+using System.Text.Json;
 using Honua.Sdk.Geometry.Vector;
 using NetTopologySuite.Geometries;
 
@@ -119,6 +120,50 @@ public sealed class VectorPayloadReaderTests
         Assert.Equal(4326, point.SRID);
         Assert.Equal(-157.819, point.X, 3);
         Assert.Equal(21.267, point.Y, 3);
+    }
+
+    [Fact]
+    public async Task GmlReader_LeadingZeroAndPlusNumericAttributes_PreservedAsStringsWithoutCrashing()
+    {
+        // ZIP/FIPS/GEOID-style codes parse as .NET numbers but are NOT strict JSON numbers.
+        // Re-emitting them as JSON number literals previously threw JsonReaderException and
+        // aborted the whole feature-collection read. They must round-trip as strings, while
+        // genuine numbers stay numeric.
+        const string gml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <wfs:FeatureCollection
+                xmlns:wfs="http://www.opengis.net/wfs/2.0"
+                xmlns:gml="http://www.opengis.net/gml/3.2"
+                xmlns:honua="https://honua.io/schemas/test"
+                numberMatched="1"
+                numberReturned="1">
+              <wfs:member>
+                <honua:place gml:id="places.1">
+                  <honua:zip>01234</honua:zip>
+                  <honua:fips>+5</honua:fips>
+                  <honua:pop>5000</honua:pop>
+                  <honua:area>12.5</honua:area>
+                  <honua:shape>
+                    <gml:Point srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                      <gml:pos>-157.819 21.267</gml:pos>
+                    </gml:Point>
+                  </honua:shape>
+                </honua:place>
+              </wfs:member>
+            </wfs:FeatureCollection>
+            """;
+
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(gml), VectorPayloadFormat.Gml);
+
+        var feature = Assert.Single(result.Features);
+        Assert.Equal(JsonValueKind.String, feature.Attributes["zip"].ValueKind);
+        Assert.Equal("01234", feature.Attributes["zip"].GetString());
+        Assert.Equal(JsonValueKind.String, feature.Attributes["fips"].ValueKind);
+        Assert.Equal("+5", feature.Attributes["fips"].GetString());
+        Assert.Equal(JsonValueKind.Number, feature.Attributes["pop"].ValueKind);
+        Assert.Equal(5000, feature.Attributes["pop"].GetInt32());
+        Assert.Equal(JsonValueKind.Number, feature.Attributes["area"].ValueKind);
+        Assert.Equal(12.5, feature.Attributes["area"].GetDouble(), 3);
     }
 
     [Fact]
