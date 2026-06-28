@@ -2,6 +2,15 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.4.2](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.1...dotnet-sdk-v1.4.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* correct GML numeric typing and Esri polygon ring orientation ([#239](https://github.com/honua-io/honua-sdk-dotnet/issues/239)) ([96bd16d](https://github.com/honua-io/honua-sdk-dotnet/commit/96bd16d6913951bf81b818ed0989a32785ddcdb5))
+* correct vendored proto license header to Apache-2.0 ([#240](https://github.com/honua-io/honua-sdk-dotnet/issues/240)) ([2308379](https://github.com/honua-io/honua-sdk-dotnet/commit/23083799d4ccb7dc4b56703e19855f18702376ee))
+* harden auto-pagination handling and GeoServices error-code mapping ([#238](https://github.com/honua-io/honua-sdk-dotnet/issues/238)) ([6c34152](https://github.com/honua-io/honua-sdk-dotnet/commit/6c3415230eb58a6819963824c783ade7fae63135))
+
 ## [1.4.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.0...dotnet-sdk-v1.4.1) (2026-06-27)
 
 
