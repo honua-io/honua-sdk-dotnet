@@ -496,7 +496,7 @@ public static class GeoServicesGeometryConverter
         // an exterior ring must be clockwise (not CCW); a hole must be counter-clockwise.
         if (wantClockwise == isCcw)
         {
-            sequence = ((LineString)ring.Reverse()).CoordinateSequence;
+            sequence = sequence.Reversed();
         }
 
         WriteCoordinateSequence(writer, sequence, hasZ, hasM);
