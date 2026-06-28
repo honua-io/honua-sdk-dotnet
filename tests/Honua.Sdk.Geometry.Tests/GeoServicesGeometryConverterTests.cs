@@ -1,8 +1,10 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Linq;
 using System.Text.Json;
 using Honua.Sdk.Geometry;
+using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
 
 namespace Honua.Sdk.Geometry.Tests;
@@ -142,4 +144,53 @@ public class GeoServicesGeometryConverterTests
         Assert.Equal(3, firstCoordinate.GetArrayLength());
         Assert.Equal(1, firstCoordinate[2].GetDouble());
     }
+
+    [Fact]
+    public void WriteGeometry_NormalizesPolygonRingOrientationToEsriConvention()
+    {
+        var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+
+        // Exterior wound CCW and hole wound CW: the GeoJSON (RFC 7946) convention, which
+        // is the OPPOSITE of Esri's clockwise-exterior / counter-clockwise-hole rule. The
+        // writer must normalize so a strict Esri consumer (and this SDK's orientation-aware
+        // reader) does not mis-demote the exterior ring of a multi-ring polygon to a hole.
+        var shell = factory.CreateLinearRing(
+        [
+            new Coordinate(0, 0),
+            new Coordinate(10, 0),
+            new Coordinate(10, 10),
+            new Coordinate(0, 10),
+            new Coordinate(0, 0),
+        ]);
+        var hole = factory.CreateLinearRing(
+        [
+            new Coordinate(2, 2),
+            new Coordinate(2, 8),
+            new Coordinate(8, 8),
+            new Coordinate(8, 2),
+            new Coordinate(2, 2),
+        ]);
+        Assert.True(Orientation.IsCCW(shell.CoordinateSequence));
+        Assert.False(Orientation.IsCCW(hole.CoordinateSequence));
+
+        var polygon = factory.CreatePolygon(shell, [hole]);
+
+        var json = GeoServicesGeometryConverter.WriteGeometry(polygon);
+
+        var rings = json.GetProperty("rings");
+        Assert.Equal(2, rings.GetArrayLength());
+
+        // Esri convention: clockwise exterior (not CCW), counter-clockwise hole.
+        Assert.False(Orientation.IsCCW(ReadRing(rings[0])));
+        Assert.True(Orientation.IsCCW(ReadRing(rings[1])));
+
+        // The normalized geometry round-trips back to a polygon with its hole intact.
+        var roundTripped = Assert.IsType<Polygon>(GeoServicesGeometryConverter.ReadGeometry(json));
+        Assert.Equal(1, roundTripped.NumInteriorRings);
+    }
+
+    private static Coordinate[] ReadRing(JsonElement ring)
+        => ring.EnumerateArray()
+            .Select(coordinate => new Coordinate(coordinate[0].GetDouble(), coordinate[1].GetDouble()))
+            .ToArray();
 }
