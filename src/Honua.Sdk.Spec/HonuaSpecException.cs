@@ -56,11 +56,20 @@ public sealed class HonuaSpecException : Honua.Sdk.Abstractions.HonuaException
 
     /// <inheritdoc />
     public override Honua.Sdk.Abstractions.HonuaProblemDetails? ProblemDetails =>
-        new Honua.Sdk.Abstractions.HonuaProblemDetails
-        {
-            Status = (int)StatusCode,
-            Detail = Message,
-        };
+        Problem is { } problem
+            ? new Honua.Sdk.Abstractions.HonuaProblemDetails
+            {
+                Type = problem.Type,
+                Title = problem.Title,
+                Status = problem.Status,
+                Detail = problem.Detail,
+                Instance = problem.NodeId,
+            }
+            : new Honua.Sdk.Abstractions.HonuaProblemDetails
+            {
+                Status = (int)StatusCode,
+                Detail = Message,
+            };
 
     /// <summary>Raw response body when available.</summary>
     public string? ResponseBody { get; }

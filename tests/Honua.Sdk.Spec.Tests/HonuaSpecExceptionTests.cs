@@ -3,6 +3,7 @@
 
 using System.Net;
 using Honua.Sdk.Abstractions;
+using Honua.Sdk.Spec.Models;
 
 namespace Honua.Sdk.Spec.Tests;
 
@@ -39,5 +40,39 @@ public sealed class HonuaSpecExceptionTests
         Assert.Equal("raw", ex.ResponseBody);
         Assert.Null(ex.Problem);
         Assert.Equal("missing", ex.Message);
+    }
+
+    [Fact]
+    public void ProblemDetails_WithoutProblem_FallsBackToStatusAndMessage()
+    {
+        var ex = new HonuaSpecException(HttpStatusCode.BadGateway, "upstream down", "raw");
+
+        var problem = ex.ProblemDetails;
+        Assert.NotNull(problem);
+        Assert.Equal((int)HttpStatusCode.BadGateway, problem!.Status);
+        Assert.Equal("upstream down", problem.Detail);
+    }
+
+    [Fact]
+    public void ProblemDetails_WithProblem_SurfacesStructuredFields()
+    {
+        var specProblem = new SpecProblem
+        {
+            Type = "https://honua.io/problems/spec-invalid",
+            Title = "Spec invalid",
+            Status = (int)HttpStatusCode.UnprocessableEntity,
+            Detail = "node 'foo' is malformed",
+            Code = "SPEC_INVALID",
+            NodeId = "foo",
+        };
+        var ex = new HonuaSpecException(HttpStatusCode.UnprocessableEntity, "Spec invalid", "raw", specProblem);
+
+        var problem = ex.ProblemDetails;
+        Assert.NotNull(problem);
+        Assert.Equal("https://honua.io/problems/spec-invalid", problem!.Type);
+        Assert.Equal("Spec invalid", problem.Title);
+        Assert.Equal((int)HttpStatusCode.UnprocessableEntity, problem.Status);
+        Assert.Equal("node 'foo' is malformed", problem.Detail);
+        Assert.Equal("foo", problem.Instance);
     }
 }

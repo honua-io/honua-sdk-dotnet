@@ -95,7 +95,16 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         var features = await _fixture.WfsClient.GetFeaturesAsync(
             new GetFeaturesRequest { TypeNames = typeName, Count = 1 },
             timeout.Token).ConfigureAwait(false);
-        Assert.InRange(features.Features.Count, 0, 1);
+
+        // The conformance contract is the FeatureCollection shape surviving the WFS GeoJSON
+        // wire + SDK conversion round-trip. An empty result must fail the drift gate (a
+        // no-features regression would otherwise pass silently), so require exactly one
+        // feature and assert its content survived — mirroring the gRPC and OGC cases above.
+        var feature = Assert.Single(features.Features);
+        Assert.NotNull(feature.Geometry);
+        Assert.False(string.IsNullOrWhiteSpace(feature.Geometry!.Type),
+            "WFS feature geometry dropped its GeoJSON type.");
+        Assert.NotEmpty(feature.Properties);
     }
 
     // honua-server#1238: a server-side JSONB attribute-projection change alters
