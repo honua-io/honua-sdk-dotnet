@@ -298,7 +298,19 @@ public class OfflineSyncManager : IOfflineSyncManager, IDisposable
     {
         var processedOps = 0;
 
-        while (_pendingOperations.TryDequeue(out var operation))
+        // Snapshot the operations queued at the start of this pass before processing any of them.
+        // Draining the queue inline and re-enqueuing failures back into the same loop would cause a
+        // just-failed operation to be dequeued and retried immediately within this same sync pass —
+        // burning through MaxRetries back-to-back with no delay and flooding result.Errors. By taking
+        // a fixed snapshot, a re-queued operation waits for the next ProcessPendingOperationsAsync
+        // invocation (i.e. the next sync interval) before it is retried, honoring the intended backoff.
+        var batch = new List<SyncOperation>();
+        while (_pendingOperations.TryDequeue(out var queued))
+        {
+            batch.Add(queued);
+        }
+
+        foreach (var operation in batch)
         {
             try
             {
@@ -311,7 +323,8 @@ public class OfflineSyncManager : IOfflineSyncManager, IDisposable
                 _logger.LogWarning(ex, "Failed to process operation {OperationId}", operation.Id);
                 result.Errors.Add($"Operation {operation.Id} failed: {ex.Message}");
 
-                // Re-queue operation for retry if within retry limit
+                // Re-queue operation for retry if within retry limit. Because it is enqueued onto the
+                // shared queue (not this pass's snapshot), it is not retried again until the next sync.
                 if (operation.RetryCount < _options.MaxRetries)
                 {
                     operation.RetryCount++;

@@ -185,13 +185,19 @@ public sealed class HonuaStacClient : IHonuaStacClient
             var body = await GetNextPageStringAsync(nextLink, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC items response.");
 
-            if (page.Features is null or { Count: 0 })
-            {
-                yield break;
-            }
-
-            yield return page;
             pageCount++;
+
+            // Do NOT terminate just because this page returned zero features: a STAC API
+            // server may emit an empty intermediate page that still advertises a rel=next
+            // link, and stopping here would silently drop the remaining items. Continuation
+            // is governed solely by the next link (its absence ends paging at the top of the
+            // loop), the visited-href set, and the MaxAutoPages guard. This matches the OGC
+            // Features client, which evaluates the continuation signal before its empty-page
+            // check.
+            if (page.Features is not (null or { Count: 0 }))
+            {
+                yield return page;
+            }
         }
 
         throw new InvalidOperationException(
@@ -225,13 +231,19 @@ public sealed class HonuaStacClient : IHonuaStacClient
             var body = await GetNextPageStringAsync(nextLink, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC search response.");
 
-            if (page.Features is null or { Count: 0 })
-            {
-                yield break;
-            }
-
-            yield return page;
             pageCount++;
+
+            // Do NOT terminate just because this page returned zero features: a STAC API
+            // server may emit an empty intermediate page that still advertises a rel=next
+            // link, and stopping here would silently drop the remaining items. Continuation
+            // is governed solely by the next link (its absence ends paging at the top of the
+            // loop), the visited-href set, and the MaxAutoPages guard. This matches the OGC
+            // Features client, which evaluates the continuation signal before its empty-page
+            // check.
+            if (page.Features is not (null or { Count: 0 }))
+            {
+                yield return page;
+            }
         }
 
         throw new InvalidOperationException(
@@ -271,13 +283,19 @@ public sealed class HonuaStacClient : IHonuaStacClient
             var body = await FollowNextLinkAsync(nextLink, requestBody, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC search response.");
 
-            if (page.Features is null or { Count: 0 })
-            {
-                yield break;
-            }
-
-            yield return page;
             pageCount++;
+
+            // Do NOT terminate just because this page returned zero features: a STAC API
+            // server may emit an empty intermediate page that still advertises a rel=next
+            // link, and stopping here would silently drop the remaining items. Continuation
+            // is governed solely by the next link (its absence ends paging at the top of the
+            // loop), the visited-href set, and the MaxAutoPages guard. This matches the OGC
+            // Features client, which evaluates the continuation signal before its empty-page
+            // check.
+            if (page.Features is not (null or { Count: 0 }))
+            {
+                yield return page;
+            }
         }
 
         throw new InvalidOperationException(
