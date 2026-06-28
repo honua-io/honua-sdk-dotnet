@@ -102,7 +102,7 @@ public sealed class OgcFeaturesVectorPayloadTests
               "status": 404
             }
             """;
-        var client = new FakeOgcFeaturesClient(new HttpResponseMessage(HttpStatusCode.NotFound)
+        using var client = new FakeOgcFeaturesClient(new HttpResponseMessage(HttpStatusCode.NotFound)
         {
             Content = new StringContent(problem, System.Text.Encoding.UTF8, "application/problem+json")
         });
@@ -120,8 +120,10 @@ public sealed class OgcFeaturesVectorPayloadTests
     /// Minimal non-<see cref="HonuaOgcFeaturesClient"/> implementation that exercises the
     /// extension method's fallback branch. Only <see cref="GetItemsRawAsync"/> is meaningful.
     /// </summary>
-    private sealed class FakeOgcFeaturesClient(HttpResponseMessage rawResponse) : IHonuaOgcFeaturesClient
+    private sealed class FakeOgcFeaturesClient(HttpResponseMessage rawResponse) : IHonuaOgcFeaturesClient, IDisposable
     {
+        public void Dispose() => rawResponse.Dispose();
+
         public Task<HttpResponseMessage> GetItemsRawAsync(
             string collectionId, OgcItemsParams? query = null, CancellationToken cancellationToken = default)
             => Task.FromResult(rawResponse);
