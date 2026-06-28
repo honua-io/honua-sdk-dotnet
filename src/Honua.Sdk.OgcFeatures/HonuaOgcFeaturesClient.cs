@@ -479,7 +479,11 @@ public sealed class HonuaOgcFeaturesClient :
         return new StringContent(json, Encoding.UTF8, "application/merge-patch+json");
     }
 
-    private static void EnsureSuccess(HttpResponseMessage response, string body)
+    // Internal so package extension methods (e.g. OgcFeaturesVectorClientExtensions) can map a
+    // failed response through the same RFC 7807 Problem Details path and throw the package's
+    // HonuaOgcFeaturesException, rather than a generic HttpRequestException that escapes
+    // catch(HonuaException).
+    internal static void EnsureSuccess(HttpResponseMessage response, string body)
     {
         if (response.IsSuccessStatusCode)
         {

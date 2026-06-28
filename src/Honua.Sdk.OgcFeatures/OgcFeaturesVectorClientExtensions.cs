@@ -42,7 +42,15 @@ public static class OgcFeaturesVectorClientExtensions
             (query ?? new OgcItemsParams()) with { Format = protocolFormat },
             cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        // Route failures through the package error mapper so a non-Honua client surfaces the same
+        // HonuaOgcFeaturesException (with RFC 7807 Problem Details) as the concrete client, instead
+        // of a generic HttpRequestException that would escape a catch(HonuaException) handler.
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            HonuaOgcFeaturesClient.EnsureSuccess(response, errorBody);
+        }
+
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
