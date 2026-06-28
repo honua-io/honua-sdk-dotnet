@@ -618,7 +618,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
                 codeProp.TryGetInt32(out var errorCode))
             {
                 geoServicesCode = errorCode;
-                httpCode = (HttpStatusCode)errorCode;
+                httpCode = GeoServicesHttp.MapErrorCodeToStatus(errorCode, fallbackStatus);
             }
 
             if (errorElement.TryGetProperty("details", out var detailsProp) &&

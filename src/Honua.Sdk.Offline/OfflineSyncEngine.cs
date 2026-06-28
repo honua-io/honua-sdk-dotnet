@@ -98,6 +98,15 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
             throw;
         }
+        catch (Exception ex)
+        {
+            // Any unexpected failure (for example a provider-side auto-pagination
+            // safety-limit InvalidOperationException) must still drive the sync to a
+            // terminal Failed state, otherwise operators are left with state stuck at
+            // an in-progress phase with no record of why the run died.
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
+            throw;
+        }
     }
 
     /// <summary>
@@ -204,6 +213,21 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                     PackageId = manifest.PackageId,
                     SourceId = source.SourceId,
                     Retryable = true,
+                    Reason = ex.Message,
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // A large layer can trip the provider's auto-pagination safety limit
+                // (QueryPagesAsync throws InvalidOperationException once MaxAutoPages is
+                // exceeded). Record it as a non-retryable failure for this source rather
+                // than letting it escape and abort every remaining source in the pull.
+                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
+                failures.Add(new OfflineSyncFailure
+                {
+                    PackageId = manifest.PackageId,
+                    SourceId = source.SourceId,
+                    Retryable = false,
                     Reason = ex.Message,
                 });
             }

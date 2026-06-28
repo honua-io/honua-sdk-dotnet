@@ -343,13 +343,19 @@ public sealed class HonuaOgcFeaturesClient :
             page = JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeatureCollection)
                 ?? throw new HonuaOgcFeaturesException(HttpStatusCode.OK, "Failed to deserialize paged items.", body);
 
-            if (page.Features is null or { Count: 0 })
-            {
-                yield break;
-            }
-
-            yield return page;
             pageCount++;
+
+            // Do NOT terminate just because this page returned zero features: an OGC API
+            // Features server may emit an empty intermediate page that still advertises a
+            // rel=next link, and stopping here would silently drop the remaining features.
+            // Continuation is governed solely by the next link (its absence ends paging at
+            // the top of the loop), the visited-href set, and the MaxAutoPages guard. This
+            // matches the FeatureServer client, which evaluates the continuation signal
+            // before its empty-page check.
+            if (page.Features is not (null or { Count: 0 }))
+            {
+                yield return page;
+            }
         }
 
         throw new InvalidOperationException(

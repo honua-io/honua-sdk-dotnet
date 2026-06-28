@@ -168,6 +168,32 @@ public sealed class HonuaGeocodingClientTests
     }
 
     [Fact]
+    public async Task ForwardGeocode_EsriErrorCode_DoesNotLeakIntoHttpStatus()
+    {
+        // GeoServices returns HTTP 200 with an Esri error.code (4001) that is NOT a valid
+        // HTTP status. The status must stay at the 200 transport value rather than being
+        // cast to (HttpStatusCode)4001, which would corrupt the HttpStatus contract that
+        // consumers branch on for retry/auth.
+        var responseJson = """
+        {
+            "error": {
+                "code": 4001,
+                "message": "Geocode token expired"
+            }
+        }
+        """;
+
+        var client = CreateGeocodingClient(_ =>
+            Task.FromResult(CreateGeoJsonResponse(responseJson)));
+
+        var ex = await Assert.ThrowsAsync<HonuaAdminApiException>(
+            () => client.ForwardGeocodeAsync("123 Main St"));
+
+        Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
+        Assert.Equal("Geocode token expired", ex.Message);
+    }
+
+    [Fact]
     public async Task ForwardGeocode_NullAddress_ThrowsArgumentNullException()
     {
         var client = CreateGeocodingClient(_ =>

@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Routing;
 using Honua.Sdk.GeoServices.Extensions;
+using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Honua.Sdk.GeoServices.Routing;
 using Honua.Sdk.GeoServices.Tests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
@@ -289,6 +290,27 @@ public sealed class HonuaRoutingClientTests
         Assert.True(routingClient.Capabilities.SupportsRouteOptimization);
         Assert.True(routingClient.Capabilities.SupportsServiceAreas);
         Assert.True(routingClient.Capabilities.SupportsClosestFacility);
+    }
+
+    [Fact]
+    public async Task GetDirectionsAsync_GeoServicesErrorCode_DoesNotLeakIntoHttpStatus()
+    {
+        // GeoServices returns HTTP 200 with an error payload whose code is an Esri code
+        // (1000), NOT an HTTP status. The error must keep the 200 transport status and
+        // expose 1000 via GeoServicesErrorCode rather than casting 1000 into HttpStatus,
+        // which would break consumers branching on status for retry/auth.
+        var client = CreateClient((_, _) =>
+            Task.FromResult(JsonResponse("""
+            { "error": { "code": 1000, "message": "Unable to complete operation." } }
+            """)));
+
+        var ex = await Assert.ThrowsAsync<HonuaFeatureServerException>(() =>
+            client.GetDirectionsAsync(
+                RoutingLocation.FromLongitudeLatitude(-157.8583, 21.3069, "Start"),
+                RoutingLocation.FromLongitudeLatitude(-157.8037, 21.2810, "Finish")));
+
+        Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
+        Assert.Equal(1000, ex.GeoServicesErrorCode);
     }
 
     private static HonuaRoutingClient CreateClient(

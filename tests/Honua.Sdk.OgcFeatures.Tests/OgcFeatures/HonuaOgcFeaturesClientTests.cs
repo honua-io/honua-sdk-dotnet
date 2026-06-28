@@ -854,6 +854,57 @@ public class HonuaOgcFeaturesClientTests
     }
 
     [Fact]
+    public async Task GetItemsPagesAsync_EmptyIntermediatePageWithNextLink_ContinuesPaging()
+    {
+        // A server may return an empty intermediate page that still advertises a rel=next
+        // link. Pagination must follow the link rather than stopping on the empty page,
+        // otherwise the trailing features are silently dropped.
+        var callCount = 0;
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            callCount++;
+            var json = callCount switch
+            {
+                1 => """
+                {
+                    "type": "FeatureCollection",
+                    "features": [{ "type": "Feature", "id": "1", "properties": {} }],
+                    "links": [{ "href": "http://localhost:5000/ogc/features/collections/test/items?offset=1", "rel": "next" }]
+                }
+                """,
+                2 => """
+                {
+                    "type": "FeatureCollection",
+                    "features": [],
+                    "links": [{ "href": "http://localhost:5000/ogc/features/collections/test/items?offset=2", "rel": "next" }]
+                }
+                """,
+                3 => """
+                {
+                    "type": "FeatureCollection",
+                    "features": [{ "type": "Feature", "id": "3", "properties": {} }],
+                    "links": []
+                }
+                """,
+                _ => """{ "type": "FeatureCollection", "features": [] }"""
+            };
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<OgcFeatureCollection>();
+        await foreach (var page in client.GetItemsPagesAsync("test"))
+        {
+            pages.Add(page);
+        }
+
+        // The empty page is not yielded but its next link is followed to reach page 3.
+        Assert.Equal(3, callCount);
+        Assert.Equal(2, pages.Count);
+        Assert.Equal("1", pages[0].Features![0].Id!.Value.GetString());
+        Assert.Equal("3", pages[1].Features![0].Id!.Value.GetString());
+    }
+
+    [Fact]
     public async Task GetItemsPagesAsync_StopsWhenNoNextLink()
     {
         var json = """

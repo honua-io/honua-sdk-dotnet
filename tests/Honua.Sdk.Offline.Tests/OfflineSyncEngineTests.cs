@@ -192,6 +192,60 @@ public sealed class OfflineSyncEngineTests
             state => Assert.Equal(OfflineSyncPhase.Completed, state.Phase));
     }
 
+    [Fact]
+    public async Task PullAsync_AutoPaginationCap_RecordsNonRetryableFailureAndFailedState()
+    {
+        // The provider QueryPagesAsync throws InvalidOperationException once its
+        // auto-pagination safety limit is hit. The pull must capture this as a
+        // non-retryable per-source failure (and a terminal Failed state) instead of
+        // letting it escape and abort every remaining source.
+        var queryClient = new FakeQueryClient
+        {
+            PagesError = new InvalidOperationException(
+                "Auto-pagination safety limit reached (100 pages)."),
+        };
+        var store = new FakeOfflineStore();
+        var engine = CreateEngine(
+            queryClient,
+            new FakeEditClient(),
+            store,
+            new FakeChangeJournal(),
+            stateStore: store);
+
+        var result = await engine.PullAsync(CreateManifest());
+
+        var failure = Assert.Single(result.Failures);
+        Assert.Equal("parks", failure.SourceId);
+        Assert.False(failure.Retryable);
+        Assert.Contains("safety limit", failure.Reason, StringComparison.Ordinal);
+        Assert.Contains(store.States, state =>
+            state.SourceId == "parks" && state.Phase == OfflineSyncPhase.Failed);
+    }
+
+    [Fact]
+    public async Task SyncAsync_AutoPaginationCap_EndsInTerminalFailedState()
+    {
+        // A pagination-cap failure during pull must not leave sync stuck at an
+        // in-progress phase: the run completes with failures and a terminal Failed state.
+        var queryClient = new FakeQueryClient
+        {
+            PagesError = new InvalidOperationException(
+                "Auto-pagination safety limit reached (100 pages)."),
+        };
+        var store = new FakeOfflineStore();
+        var engine = CreateEngine(
+            queryClient,
+            new FakeEditClient(),
+            store,
+            new FakeChangeJournal(),
+            stateStore: store);
+
+        var result = await engine.SyncAsync(CreateManifest());
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(OfflineSyncPhase.Failed, store.States[^1].Phase);
+    }
+
     private static OfflineSyncEngine CreateEngine(
         FakeQueryClient queryClient,
         FakeEditClient editClient,
@@ -284,6 +338,12 @@ public sealed class OfflineSyncEngineTests
 
         public List<FeatureQueryRequest> Requests { get; } = [];
 
+        /// <summary>
+        /// When set, thrown after all queued pages are drained, simulating the provider's
+        /// auto-pagination safety-limit <see cref="InvalidOperationException"/>.
+        /// </summary>
+        public Exception? PagesError { get; set; }
+
         public Task<FeatureQueryResult> QueryAsync(FeatureQueryRequest request, CancellationToken cancellationToken = default)
         {
             Requests.Add(request);
@@ -300,6 +360,11 @@ public sealed class OfflineSyncEngineTests
                 cancellationToken.ThrowIfCancellationRequested();
                 yield return Pages.Dequeue();
                 await Task.Yield();
+            }
+
+            if (PagesError is not null)
+            {
+                throw PagesError;
             }
         }
     }

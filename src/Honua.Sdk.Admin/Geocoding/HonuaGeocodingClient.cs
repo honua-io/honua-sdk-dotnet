@@ -311,7 +311,15 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
                         if (errorElement.TryGetProperty("code", out var codeProp) &&
                             codeProp.TryGetInt32(out var errorCode))
                         {
-                            code = (System.Net.HttpStatusCode)errorCode;
+                            // GeoServices error.code is an independent Esri code space (e.g. 400 is a
+                            // real status but 1000/4001 are not). Only adopt it as the HTTP status when
+                            // it is a valid HTTP status (100-599); otherwise keep the transport status,
+                            // mirroring GeoServicesHttp.MapErrorCodeToStatus. Blindly casting an Esri
+                            // code yields a nonsensical HttpStatus that breaks retry/auth branching.
+                            if (errorCode is >= 100 and <= 599)
+                            {
+                                code = (System.Net.HttpStatusCode)errorCode;
+                            }
                         }
 
                         throw new HonuaAdminApiException(code, message, body);
