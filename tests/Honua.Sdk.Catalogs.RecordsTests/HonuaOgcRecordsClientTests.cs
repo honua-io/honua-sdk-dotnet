@@ -270,6 +270,60 @@ public sealed class HonuaOgcRecordsClientTests
     }
 
     [Fact]
+    public async Task GetRecordsPagesAsync_EmptyIntermediatePageWithNextLink_KeepsFollowing()
+    {
+        // An OGC API Records server can legitimately emit an empty intermediate items page that
+        // still advertises a rel=next link to a populated page. The pager must follow the empty
+        // page's own next link rather than terminating, otherwise the remaining records are
+        // silently dropped.
+        var calls = 0;
+        var client = TestHelpers.CreateOgcRecordsClient(req =>
+        {
+            calls++;
+            var json = calls switch
+            {
+                1 => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "first", "properties": { "title": "First" } }],
+                         "links": [
+                             { "href": "https://honua.example.test/ogc/records/collections/default/items?offset=1&f=json", "rel": "next" }
+                         ]
+                     }
+                     """,
+                2 => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [],
+                         "links": [
+                             { "href": "https://honua.example.test/ogc/records/collections/default/items?offset=2&f=json", "rel": "next" }
+                         ]
+                     }
+                     """,
+                _ => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "third", "properties": { "title": "Third" } }]
+                     }
+                     """
+            };
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<OgcRecordCollection>();
+        await foreach (var page in client.GetRecordsPagesAsync("default", new OgcRecordsQuery { Limit = 1 }))
+        {
+            pages.Add(page);
+        }
+
+        // The empty page is not yielded, but its next link is followed to the populated page.
+        Assert.Equal(2, pages.Count);
+        Assert.Equal("first", pages[0].Records?[0].Id?.GetString());
+        Assert.Equal("third", pages[1].Records?[0].Id?.GetString());
+        Assert.Equal(3, calls);
+    }
+
+    [Fact]
     public async Task GetRecordsPagesAsync_RejectsCrossOriginNextLink()
     {
         var json = """

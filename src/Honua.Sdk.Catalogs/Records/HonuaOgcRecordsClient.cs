@@ -143,13 +143,19 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
             page = JsonSerializer.Deserialize(body, OgcRecordsJsonContext.Default.OgcRecordCollection)
                 ?? throw new HonuaOgcRecordsException(HttpStatusCode.OK, "Failed to deserialize paged Records response.", body);
 
-            if (page.Records is null or { Count: 0 })
-            {
-                yield break;
-            }
-
-            yield return page;
             pageCount++;
+
+            // Do NOT terminate just because this page returned zero records: an OGC API
+            // Records server may emit an empty intermediate page that still advertises a
+            // rel=next link, and stopping here would silently drop the remaining records.
+            // Continuation is governed solely by the next link (its absence ends paging at the
+            // top of the loop), the visited-href set, and the MaxAutoPages guard. This matches
+            // the OGC Features client, which evaluates the continuation signal before its
+            // empty-page check.
+            if (page.Records is not (null or { Count: 0 }))
+            {
+                yield return page;
+            }
         }
 
         throw new InvalidOperationException(
