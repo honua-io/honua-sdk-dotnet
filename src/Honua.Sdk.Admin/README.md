@@ -109,6 +109,29 @@ var candidates = await geocoder.ForwardGeocodeAsync(
     cancellationToken);
 ```
 
+### Raster import (write/output)
+
+`IHonuaAdminRasterImportClient` (part of `IHonuaAdminClient`) uploads a raster into
+PostGIS via the admin import endpoint. This is the write half of the raster
+geoprocessing round-trip; the read half is the read-only `IHonuaRasterDataClient`
+(`ReadWindowAsync`) in `Honua.Sdk.GeoServices`.
+
+```csharp
+var admin = provider.GetRequiredService<IHonuaAdminClient>();
+
+await using var tiff = File.OpenRead("output.tif");
+var result = await admin.ImportRasterAsync(new RasterImportRequest
+{
+    Content = tiff,
+    FileName = "output.tif",
+    LayerId = 7,
+    Name = "GP result",
+    Srid = 4326,
+}, cancellationToken);
+
+var formats = await admin.GetSupportedRasterFormatsAsync(cancellationToken);
+```
+
 ## Server compatibility
 
 `IHonuaAdminClient.CheckCompatibilityAsync` reports whether the connected Honua

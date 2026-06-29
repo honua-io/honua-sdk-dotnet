@@ -37,6 +37,7 @@ public interface IHonuaAdminClient :
     IHonuaAdminAlertsClient,
     IHonuaAdminFeatureEventsClient,
     IHonuaAdminStreamingOperationsClient,
-    IHonuaAdminDeployClient
+    IHonuaAdminDeployClient,
+    IHonuaAdminRasterImportClient
 {
 }

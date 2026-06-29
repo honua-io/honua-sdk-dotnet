@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
@@ -815,6 +816,86 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseLicenseStatusResponse);
         return envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null license status.", "UploadLicense");
+    }
+
+    // ── Raster import (write/output) ──────────────────────────────────────
+
+    /// <inheritdoc />
+    [SuppressMessage(
+        "Reliability",
+        "CA2000:Dispose objects before losing scope",
+        Justification = "MultipartFormDataContent owns and disposes child HttpContent instances.")]
+    public async Task<RasterImportResult> ImportRasterAsync(RasterImportRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Content);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.FileName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Name);
+
+        using var form = new MultipartFormDataContent();
+
+        // The caller retains ownership of the content stream; wrap it so disposing the multipart
+        // form (and its StreamContent child) does not dispose the caller's stream.
+        var rasterContent = new StreamContent(new Honua.Sdk.Abstractions.Http.NonDisposingStream(request.Content));
+        rasterContent.Headers.ContentType = new MediaTypeHeaderValue(
+            string.IsNullOrWhiteSpace(request.ContentType) ? "application/octet-stream" : request.ContentType);
+        form.Add(rasterContent, "file", request.FileName);
+
+        form.Add(new StringContent(request.LayerId.ToString(CultureInfo.InvariantCulture)), "layerId");
+        form.Add(new StringContent(request.Name), "name");
+
+        if (!string.IsNullOrWhiteSpace(request.Description))
+        {
+            form.Add(new StringContent(request.Description), "description");
+        }
+
+        if (request.Srid is { } srid)
+        {
+            form.Add(new StringContent(srid.ToString(CultureInfo.InvariantCulture)), "srid");
+        }
+
+        if (request.AcquisitionDate is { } acquisitionDate)
+        {
+            form.Add(new StringContent(acquisitionDate.ToString("O", CultureInfo.InvariantCulture)), "acquisitionDate");
+        }
+
+        if (request.TileZoomLevels is { Count: > 0 } zoomLevels)
+        {
+            form.Add(
+                new StringContent(string.Join(",", zoomLevels.Select(z => z.ToString(CultureInfo.InvariantCulture)))),
+                "tileZoomLevels");
+        }
+
+        // World-file and projection sidecars are uploaded as file parts; the server routes them by
+        // extension (.wld/.pgw/.jgw/.tfw for world files, .prj for projections).
+        var stem = Path.GetFileNameWithoutExtension(request.FileName);
+        if (!string.IsNullOrEmpty(request.WorldFileContent))
+        {
+            form.Add(new StringContent(request.WorldFileContent), "worldFile", $"{stem}.wld");
+        }
+
+        if (!string.IsNullOrEmpty(request.ProjectionContent))
+        {
+            form.Add(new StringContent(request.ProjectionContent), "projection", $"{stem}.prj");
+        }
+
+        using var response = await _http.PostAsync(
+            CreateRequestUri($"{ApiPrefix}/import/raster/"), form, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+
+        return JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.RasterImportResult)
+            ?? throw new HonuaAdminOperationException("Server returned null raster import result.", "ImportRaster");
+    }
+
+    /// <inheritdoc />
+    public async Task<RasterFormatsResponse> GetSupportedRasterFormatsAsync(CancellationToken cancellationToken = default)
+    {
+        var data = await GetRawAsync<RasterFormatsResponse>(
+            $"{ApiPrefix}/import/raster/formats",
+            HonuaAdminJsonContext.Default.RasterFormatsResponse,
+            cancellationToken).ConfigureAwait(false);
+        return data ?? throw new HonuaAdminOperationException("Server returned null raster formats response.", "GetSupportedRasterFormats");
     }
 
     // ── Observability ────────────────────────────────────────────────────
