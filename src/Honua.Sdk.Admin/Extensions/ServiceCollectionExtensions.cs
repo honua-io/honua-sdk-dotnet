@@ -70,6 +70,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaAdminFeatureEventsClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminStreamingOperationsClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminDeployClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
+        services.AddTransient<IHonuaAdminRasterImportClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
 
         ApplyHandlerAndResilience(httpBuilder, snapshot);
         return services;

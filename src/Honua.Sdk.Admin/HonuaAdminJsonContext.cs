@@ -128,6 +128,8 @@ namespace Honua.Sdk.Admin;
 [JsonSerializable(typeof(LicenseStatusResponse))]
 [JsonSerializable(typeof(LicenseEntitlement))]
 [JsonSerializable(typeof(LicenseEntitlement[]))]
+[JsonSerializable(typeof(RasterImportResult))]
+[JsonSerializable(typeof(RasterFormatsResponse))]
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class HonuaAdminJsonContext : JsonSerializerContext
 {
