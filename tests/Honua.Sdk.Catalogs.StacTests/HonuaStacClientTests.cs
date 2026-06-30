@@ -360,6 +360,78 @@ public sealed class HonuaStacClientTests
     }
 
     [Fact]
+    public async Task SearchJsonAsync_WithIntersects_RoutesToPostBecauseItIsPostOnly()
+    {
+        // `intersects` is only honored on POST /search per the STAC API spec; the JSON GET search
+        // must route to POST rather than emit a non-conformant (silently-ignored) query param.
+        HttpMethod? capturedMethod = null;
+        string? capturedBody = null;
+        var json = """{ "type": "FeatureCollection", "features": [] }""";
+        using var intersects = JsonDocument.Parse("""{ "type": "Point", "coordinates": [-158, 21] }""");
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            capturedMethod = req.Method;
+            capturedBody = req.Content is null ? null : await req.Content.ReadAsStringAsync();
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        using var document = await client.SearchJsonAsync(new StacSearchQuery
+        {
+            Collections = ["imagery"],
+            Intersects = intersects.RootElement,
+        });
+
+        Assert.Equal(HttpMethod.Post, capturedMethod);
+        Assert.NotNull(capturedBody);
+        using var sent = JsonDocument.Parse(capturedBody!);
+        Assert.Equal("Point", sent.RootElement.GetProperty("intersects").GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task SearchRawAsync_WithIntersects_RoutesToPostBecauseItIsPostOnly()
+    {
+        // `intersects` is only honored on POST /search per the STAC API spec; the raw GET search
+        // must route to POST rather than emit a non-conformant (silently-ignored) query param.
+        HttpMethod? capturedMethod = null;
+        string? capturedBody = null;
+        var json = """{ "type": "FeatureCollection", "features": [] }""";
+        using var intersects = JsonDocument.Parse("""{ "type": "Point", "coordinates": [-158, 21] }""");
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            capturedMethod = req.Method;
+            capturedBody = req.Content is null ? null : await req.Content.ReadAsStringAsync();
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        using var response = await client.SearchRawAsync(new StacSearchQuery
+        {
+            Collections = ["imagery"],
+            Intersects = intersects.RootElement,
+        });
+
+        Assert.Equal(HttpMethod.Post, capturedMethod);
+        Assert.NotNull(capturedBody);
+        using var sent = JsonDocument.Parse(capturedBody!);
+        Assert.Equal("Point", sent.RootElement.GetProperty("intersects").GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task SearchRawAsync_WithoutIntersects_UsesGet()
+    {
+        HttpMethod? capturedMethod = null;
+        var json = """{ "type": "FeatureCollection", "features": [] }""";
+        var client = TestHelpers.CreateStacClient(req =>
+        {
+            capturedMethod = req.Method;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        using var response = await client.SearchRawAsync(new StacSearchQuery { Collections = ["imagery"] });
+
+        Assert.Equal(HttpMethod.Get, capturedMethod);
+    }
+
+    [Fact]
     public async Task GetItemsPagesAsync_FollowsSameOriginNextLinks()
     {
         var calls = 0;

@@ -333,6 +333,14 @@ public sealed class HonuaStacClient : IHonuaStacClient
         StacSearchQuery? query = null,
         CancellationToken cancellationToken = default)
     {
+        // `intersects` is only valid on POST /search per the STAC API spec; a conformant server
+        // may ignore it on a GET and silently return unfiltered results. Route such searches to
+        // the POST path so the geometry filter is actually honored (mirrors SearchAsync).
+        if (query?.Intersects is not null)
+        {
+            return await PostSearchJsonAsync(ToSearchRequest(query), cancellationToken).ConfigureAwait(false);
+        }
+
         var body = await GetStringAsync($"{BasePath}/search{BuildQueryString(query)}", cancellationToken).ConfigureAwait(false);
         return JsonDocument.Parse(body);
     }
@@ -362,8 +370,29 @@ public sealed class HonuaStacClient : IHonuaStacClient
     public async Task<HttpResponseMessage> SearchRawAsync(
         StacSearchQuery? query = null,
         CancellationToken cancellationToken = default)
-        => await _http.GetAsync(CreateRequestUri($"{BasePath}/search{BuildQueryString(query)}"), cancellationToken)
+    {
+        // `intersects` is only valid on POST /search per the STAC API spec; a conformant server
+        // may ignore it on a GET and silently return unfiltered results. Route such searches to
+        // the POST path so the geometry filter is actually honored (mirrors SearchAsync).
+        if (query?.Intersects is not null)
+        {
+            return await PostSearchRawAsync(ToSearchRequest(query), cancellationToken).ConfigureAwait(false);
+        }
+
+        return await _http.GetAsync(CreateRequestUri($"{BasePath}/search{BuildQueryString(query)}"), cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    private async Task<HttpResponseMessage> PostSearchRawAsync(
+        StacSearchRequest request,
+        CancellationToken cancellationToken)
+    {
+        var body = JsonSerializer.SerializeToUtf8Bytes(request, StacJsonContext.Default.StacSearchRequest);
+        using var content = new ByteArrayContent(body);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        return await _http.PostAsync(CreateRequestUri($"{BasePath}/search"), content, cancellationToken)
+            .ConfigureAwait(false);
+    }
 
     private async Task<string> GetStringAsync(string url, CancellationToken cancellationToken)
     {
@@ -546,7 +575,11 @@ public sealed class HonuaStacClient : IHonuaStacClient
         var parameters = CreateCommonParameters(query.Limit, query.Offset, query.Next, query.Bbox, query.Datetime);
         AddList(parameters, "ids", query.Ids);
         AddList(parameters, "collections", query.Collections);
-        AddValue(parameters, "intersects", FormatJsonElement(query.Intersects));
+
+        // `intersects` is deliberately NOT emitted here: STAC API allows it only on POST /search,
+        // and a conformant server may silently ignore it on a GET. The public GET search entry
+        // points (SearchAsync/SearchJsonAsync/SearchRawAsync) detect Intersects and route to the
+        // POST path, so the GET query string must never carry it.
         AddValue(parameters, "query", FormatJsonElement(query.Query));
         AddValue(parameters, "filter", query.Filter);
         AddValue(parameters, "filter-lang", query.FilterLang);

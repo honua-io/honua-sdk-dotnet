@@ -108,6 +108,24 @@ also implement `IHonuaFeatureQueryClient.QueryPagesAsync` from
 | gRPC | `QueryFeaturesStreamAsync` returns server-streamed pages until `IsLastPage`; `QueryPagesAsync` maps those pages to the shared abstraction. |
 | OGC API Processes | `ListJobsAsync` accepts an optional server-side `limit`. The client does not auto-page jobs because the current OGC Processes job list contract does not expose a shared continuation token. |
 
+## Observability
+
+SDK telemetry is intentionally delegated to the standard .NET HTTP and gRPC
+instrumentation rather than re-implemented per client. Every REST client is a
+typed `HttpClient`, so enabling `AddHttpClientInstrumentation()` (OpenTelemetry)
+or `IHttpClientFactory` logging captures request/response spans, status codes,
+retries, and timings uniformly across all packages; gRPC clients are likewise
+covered by `AddGrpcClientInstrumentation()`. Configure these once on the host and
+they apply to every Honua client without SDK-specific wiring.
+
+The WFS client (`Honua.Sdk.OgcFeatures.Wfs`) additionally emits a bespoke
+`ActivitySource` (`Honua.Sdk.OgcFeatures.Wfs`) for protocol-level operations
+(`GetCapabilities`, `DescribeFeatureType`, `GetFeature`) because WFS multiplexes
+several logical operations over one POST endpoint, which the transport span alone
+cannot disambiguate. A uniform SDK-wide `ActivitySource` is tracked separately
+(Related to #227); for now, transport instrumentation is the supported and
+sufficient path for the other clients.
+
 ## Endpoint coverage
 
 Current typed endpoint coverage is:
