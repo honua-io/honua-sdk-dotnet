@@ -21,6 +21,15 @@ public static class HonuaAuthenticationSupport
     public const string InsecureTransportRejectedEvent = "honua.auth.insecure_transport_rejected";
 
     /// <summary>
+    /// Canonical exception message thrown when the SDK refuses to send credentials over a
+    /// remote plain-HTTP connection. Centralized here so every HTTP auth handler raises the
+    /// same message (the per-service name is captured separately in auth diagnostics).
+    /// </summary>
+    public const string InsecureTransportRejectedMessage =
+        "Refusing to send credentials over an insecure connection. Use HTTPS, " +
+        "or use loopback HTTP only for local development.";
+
+    /// <summary>
     /// Determines whether any credential source is configured.
     /// </summary>
     /// <param name="options">Authentication options.</param>

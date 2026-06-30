@@ -9,41 +9,14 @@ namespace Honua.Sdk.Studio;
 /// <summary>
 /// Delegating handler that adds authentication headers to Console Studio requests.
 /// </summary>
-internal sealed class HonuaStudioAuthHandler : DelegatingHandler
+internal sealed class HonuaStudioAuthHandler : HonuaAuthHandler<HonuaStudioClientOptions>
 {
-    private readonly HonuaStudioClientOptions _options;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaStudioAuthHandler"/> class.
     /// </summary>
+    /// <param name="options">The Console Studio client options containing authentication credentials.</param>
     public HonuaStudioAuthHandler(IOptions<HonuaStudioClientOptions> options)
+        : base(options.Value, "studio", HonuaStudioClientOptions.ValidateBaseAddress)
     {
-        _options = options.Value;
-        HonuaStudioClientOptions.ValidateBaseAddress(_options.BaseAddress);
-    }
-
-    /// <inheritdoc />
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        if (HonuaAuthenticationSupport.HasCredentialSource(_options) &&
-            HonuaStudioClientOptions.RequiresHttpsForAuthentication(request.RequestUri))
-        {
-            var context = HonuaAuthenticationSupport.CreateHttpRequest(request, _options, "studio");
-            await HonuaAuthenticationSupport.EmitInsecureTransportRejectedDiagnosticAsync(
-                _options,
-                context,
-                cancellationToken).ConfigureAwait(false);
-            throw new InvalidOperationException(
-                "Refusing to send credentials over an insecure connection. Use HTTPS, " +
-                "or use loopback HTTP only for local development.");
-        }
-
-        await HonuaAuthenticationSupport.ApplyHttpCredentialsAsync(
-            request,
-            _options,
-            "studio",
-            cancellationToken).ConfigureAwait(false);
-
-        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }
