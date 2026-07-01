@@ -1,8 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using Honua.Sdk.Internal.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 
 namespace Honua.Sdk.Spec.Extensions;
@@ -43,31 +43,7 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaSpecAuthHandler>();
 
-        if (snapshot.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
-        {
-            httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
-        }
-        else
-        {
-            // Disable auto-redirect by default so the custom X-API-Key header is
-            // never forwarded to an attacker-controlled 30x redirect target.
-            httpBuilder.ConfigurePrimaryHttpMessageHandler(
-                Honua.Sdk.Abstractions.HonuaHttpHandlerDefaults.CreateNoRedirectPrimaryHandler);
-        }
-
-        if (snapshot.EnableRetry)
-        {
-            httpBuilder.AddStandardResilienceHandler(options =>
-            {
-                options.TotalRequestTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.TotalRequestTimeout(snapshot.Timeout);
-                options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
-                options.CircuitBreaker.SamplingDuration = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.SamplingDuration(snapshot.Timeout);
-                options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
-                options.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
-                options.Retry.DisableForUnsafeHttpMethods();
-                options.Retry.UseJitter = true;
-            });
-        }
+        httpBuilder.ConfigureHonuaRestHttpClient(snapshot);
 
         return services;
     }

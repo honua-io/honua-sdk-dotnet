@@ -1,7 +1,6 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
@@ -30,7 +29,6 @@ public sealed class HonuaWfsClient :
     IHonuaFeatureDescriptorClient,
     IHonuaFeatureAttachmentClient
 {
-    private static readonly ActivitySource ActivitySource = new("Honua.Sdk.OgcFeatures.Wfs");
     private static readonly GeoJsonFeatureCollectionHandler DefaultGeoJsonHandler = new();
     private const string UnsupportedEditReason = "Honua.Sdk.OgcFeatures.Wfs does not currently implement WFS-T transactions.";
     private const string UnsupportedAttachmentReason = "WFS does not expose attachment operations.";
@@ -88,9 +86,6 @@ public sealed class HonuaWfsClient :
     /// <inheritdoc />
     public async Task<WfsCapabilities> GetCapabilitiesAsync(CancellationToken cancellationToken = default)
     {
-        using var activity = ActivitySource.StartActivity("WFS GetCapabilities");
-        activity?.SetTag("wfs.operation", "GetCapabilities");
-
         var url = BuildWfsUrl("GetCapabilities");
         using var response = await _httpClient.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -104,10 +99,6 @@ public sealed class HonuaWfsClient :
     public async Task<WfsFeatureTypeSchema> DescribeFeatureTypeAsync(string typeName, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(typeName);
-
-        using var activity = ActivitySource.StartActivity("WFS DescribeFeatureType");
-        activity?.SetTag("wfs.operation", "DescribeFeatureType");
-        activity?.SetTag("wfs.type_name", typeName);
 
         var url = BuildWfsUrl("DescribeFeatureType", ("TYPENAMES", typeName));
         using var response = await _httpClient.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
@@ -147,11 +138,6 @@ public sealed class HonuaWfsClient :
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        using var activity = ActivitySource.StartActivity("WFS GetFeature");
-        activity?.SetTag("wfs.operation", "GetFeature");
-        activity?.SetTag("wfs.type_name", request.TypeNames);
-        activity?.SetTag("wfs.output_format", "application/geo+json");
-
         var url = BuildGetFeatureUrl(request, DefaultGeoJsonHandler.MediaType);
         using var response = await _httpClient.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
@@ -160,7 +146,6 @@ public sealed class HonuaWfsClient :
         var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         var result = await DefaultGeoJsonHandler.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        activity?.SetTag("wfs.number_returned", result.NumberReturned);
         return result;
     }
 
@@ -261,11 +246,6 @@ public sealed class HonuaWfsClient :
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(handler);
 
-        using var activity = ActivitySource.StartActivity("WFS GetFeature");
-        activity?.SetTag("wfs.operation", "GetFeature");
-        activity?.SetTag("wfs.type_name", request.TypeNames);
-        activity?.SetTag("wfs.output_format", handler.MediaType);
-
         var url = BuildGetFeatureUrl(request, handler.MediaType);
         var response = await _httpClient.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         try
@@ -312,10 +292,6 @@ public sealed class HonuaWfsClient :
     {
         ArgumentNullException.ThrowIfNull(typeName);
 
-        using var activity = ActivitySource.StartActivity("WFS GetFeature (hits)");
-        activity?.SetTag("wfs.operation", "GetFeature");
-        activity?.SetTag("wfs.type_name", typeName);
-
         // Server returns XML wfs:FeatureCollection for RESULTTYPE=hits regardless of OUTPUTFORMAT.
         var parameters = new List<(string, string)>
         {
@@ -343,10 +319,6 @@ public sealed class HonuaWfsClient :
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
-        using var activity = ActivitySource.StartActivity("WFS GetFeaturesAsyncEnumerable");
-        activity?.SetTag("wfs.operation", "GetFeature");
-        activity?.SetTag("wfs.type_name", request.TypeNames);
 
         var startIndex = request.StartIndex ?? 0;
         var pageCount = 0;

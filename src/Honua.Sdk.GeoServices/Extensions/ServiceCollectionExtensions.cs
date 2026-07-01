@@ -7,6 +7,7 @@ using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.GeoServices.GeometryServer;
 using Honua.Sdk.GeoServices.ImageServer;
 using Honua.Sdk.GeoServices.Routing;
+using Honua.Sdk.Internal.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
@@ -55,7 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaFeatureEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureAttachmentClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
 
-        ApplyHandlerAndResilience(httpBuilder, snapshot);
+        httpBuilder.ConfigureHonuaRestHttpClient(snapshot, ConfigureGeoServicesRetry);
         return services;
     }
 
@@ -91,7 +92,7 @@ public static class ServiceCollectionExtensions
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
         services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
 
-        ApplyHandlerAndResilience(httpBuilder, snapshot);
+        httpBuilder.ConfigureHonuaRestHttpClient(snapshot, ConfigureGeoServicesRetry);
         return services;
     }
 
@@ -129,7 +130,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient>(
             sp => sp.GetRequiredService<HonuaImageServerRasterDataClient>());
 
-        ApplyHandlerAndResilience(httpBuilder, snapshot);
+        httpBuilder.ConfigureHonuaRestHttpClient(snapshot, ConfigureGeoServicesRetry);
         return services;
     }
 
@@ -161,49 +162,24 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
 
-        ApplyHandlerAndResilience(httpBuilder, snapshot);
+        httpBuilder.ConfigureHonuaRestHttpClient(snapshot, ConfigureGeoServicesRetry);
         return services;
     }
 
-    private static void ApplyHandlerAndResilience(
-        IHttpClientBuilder httpBuilder,
-        HonuaGeoServicesClientOptions snapshot)
+    private static void ConfigureGeoServicesRetry(HttpRetryStrategyOptions retry)
     {
-        if (snapshot.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
+        retry.ShouldHandle = args =>
         {
-            httpBuilder.ConfigurePrimaryHttpMessageHandler(primaryHandlerFactory);
-        }
-        else
-        {
-            // Disable auto-redirect by default so the custom X-API-Key header is
-            // never forwarded to an attacker-controlled 30x redirect target.
-            httpBuilder.ConfigurePrimaryHttpMessageHandler(
-                Honua.Sdk.Abstractions.HonuaHttpHandlerDefaults.CreateNoRedirectPrimaryHandler);
-        }
-
-        if (snapshot.EnableRetry)
-        {
-            httpBuilder.AddStandardResilienceHandler(options =>
+            if (!HttpClientResiliencePredicates.IsTransient(args.Outcome))
             {
-                options.TotalRequestTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.TotalRequestTimeout(snapshot.Timeout);
-                options.AttemptTimeout.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.AttemptTimeout(snapshot.Timeout);
-                options.CircuitBreaker.SamplingDuration = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.SamplingDuration(snapshot.Timeout);
-                options.Retry.MaxRetryAttempts = snapshot.MaxRetryAttempts;
-                options.Retry.ShouldHandle = args =>
-                {
-                    if (!HttpClientResiliencePredicates.IsTransient(args.Outcome))
-                    {
-                        return ValueTask.FromResult(false);
-                    }
+                return ValueTask.FromResult(false);
+            }
 
-                    // Retry idempotent methods plus the idempotent /query POST fallback, so that a
-                    // long filter string (which forces GET->POST) does not silently lose retry.
-                    // Genuine mutations (applyEdits, attachment edits) remain excluded. Replaces
-                    // DisableForUnsafeHttpMethods(), which would drop the /query POST.
-                    return ValueTask.FromResult(GeoServicesRetryPolicy.IsRetryableRequest(args.Context.GetRequestMessage()));
-                };
-                options.Retry.UseJitter = true;
-            });
-        }
+            // Retry idempotent methods plus the idempotent /query POST fallback, so that a
+            // long filter string (which forces GET->POST) does not silently lose retry.
+            // Genuine mutations (applyEdits, attachment edits) remain excluded. Replaces
+            // DisableForUnsafeHttpMethods(), which would drop the /query POST.
+            return ValueTask.FromResult(GeoServicesRetryPolicy.IsRetryableRequest(args.Context.GetRequestMessage()));
+        };
     }
 }

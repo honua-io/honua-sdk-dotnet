@@ -118,13 +118,14 @@ retries, and timings uniformly across all packages; gRPC clients are likewise
 covered by `AddGrpcClientInstrumentation()`. Configure these once on the host and
 they apply to every Honua client without SDK-specific wiring.
 
-The WFS client (`Honua.Sdk.OgcFeatures.Wfs`) additionally emits a bespoke
-`ActivitySource` (`Honua.Sdk.OgcFeatures.Wfs`) for protocol-level operations
-(`GetCapabilities`, `DescribeFeatureType`, `GetFeature`) because WFS multiplexes
-several logical operations over one POST endpoint, which the transport span alone
-cannot disambiguate. A uniform SDK-wide `ActivitySource` is tracked separately
-(Related to #227); for now, transport instrumentation is the supported and
-sufficient path for the other clients.
+This delegation is uniform: no client emits its own bespoke `ActivitySource` or
+`ILogger` telemetry. Where a protocol multiplexes several logical operations over
+one endpoint (for example WFS `GetCapabilities` / `DescribeFeatureType` /
+`GetFeature` over a single POST), disambiguate operations from the request URL and
+parameters on the transport span rather than a per-client span. Introducing a
+uniform SDK-wide `ActivitySource` across every client remains a possible future
+enhancement, but the SDK deliberately does not ship one-client-special
+instrumentation in the meantime.
 
 ## Endpoint coverage
 
