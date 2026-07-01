@@ -39,4 +39,8 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Shared\Http\HonuaRestHttpClientRegistration.cs" Link="Http\HonuaRestHttpClientRegistration.cs" />
+  </ItemGroup>
+
 </Project>
