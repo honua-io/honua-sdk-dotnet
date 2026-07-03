@@ -212,8 +212,14 @@ public sealed class CapabilityManifestClientTests
         => new(new MockHttpHandler(handler)) { BaseAddress = new Uri("https://server.example") };
 
     private static Task<HttpResponseMessage> JsonResponse(string json, HttpStatusCode statusCode = HttpStatusCode.OK)
-        => Task.FromResult(new HttpResponseMessage(statusCode)
+        => Task.FromResult(CreateJsonResponse(json, statusCode));
+
+    private static HttpResponseMessage CreateJsonResponse(string json, HttpStatusCode statusCode)
+    {
+        var response = new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json"),
-        });
+        };
+        return response;
+    }
 }
