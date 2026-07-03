@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <HonuaSdkVersion>1.4.3</HonuaSdkVersion> <!-- x-release-please-version -->
+    <HonuaSdkVersion>1.5.0</HonuaSdkVersion> <!-- x-release-please-version -->
     <GeospatialGrpcVersion>0.1.0-alpha.1</GeospatialGrpcVersion>
     <Version>$(HonuaSdkVersion)</Version>
     <PackageVersion>$(HonuaSdkVersion)</PackageVersion>

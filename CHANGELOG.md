@@ -2,6 +2,19 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.5.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.3...dotnet-sdk-v1.5.0) (2026-07-03)
+
+
+### Features
+
+* **admin,geoservices:** raster import client and vector error-envelope guard ([#249](https://github.com/honua-io/honua-sdk-dotnet/issues/249)) ([ad35d40](https://github.com/honua-io/honua-sdk-dotnet/commit/ad35d4022b08e2593751469dbef892ec2eeaf65b))
+* **studio:** capability-manifest + Studio package-family clients (C1 remainder) ([#253](https://github.com/honua-io/honua-sdk-dotnet/issues/253)) ([52b1d4d](https://github.com/honua-io/honua-sdk-dotnet/commit/52b1d4dae5ab878d54dc7d28e060b0f91d8870b0))
+
+
+### Bug Fixes
+
+* **sdk:** close pagination open-redirect bypass and tighten error-model fidelity ([#246](https://github.com/honua-io/honua-sdk-dotnet/issues/246)) ([e243114](https://github.com/honua-io/honua-sdk-dotnet/commit/e2431146a1a628da553a40fc6516b9ce3a474a76))
+
 ## [1.4.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.2...dotnet-sdk-v1.4.3) (2026-06-28)
 
 
