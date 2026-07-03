@@ -1,9 +1,24 @@
 # Honua.Sdk.Studio
 
-Browser-safe Console Studio read client and shared analysis-report contracts for
-Honua Console hosts (Blazor Web and optional .NET MAUI Blazor Hybrid).
+Browser-safe Console Studio clients and shared contracts for Honua Console hosts
+(Blazor Web and optional .NET MAUI Blazor Hybrid). The package ships three typed
+clients registered by a single `AddHonuaStudio` call:
 
-Install directly when a host only needs to retrieve and render analysis reports:
+- `IHonuaStudioReportsClient` — retrieve/render analysis reports.
+- `IHonuaCapabilityManifestClient` — fetch the server capability manifest
+  (`GET /api/v1/capabilities/manifest`, schema `honua.capability_manifest.v1`) to
+  gate authoring UI and tool exposure on what the connected server supports.
+- `IHonuaStudioPackageClient` — the Studio package lifecycle
+  (`/api/v1/studio/*`): family capabilities, draft CRUD, validate, preview-plan,
+  content-version, publish-request, reopen, and rollback across every in-scope
+  package family (query, map, analysis, dashboard, report, form, app, workflow,
+  gp, etl).
+
+The projected shapes mirror the honua-sdk-js Studio contract
+(`src/studio/{types,validation,capability-manifest}.ts`) so the .NET and JS
+projections do not diverge.
+
+Install:
 
 ```bash
 dotnet add package Honua.Sdk.Studio
@@ -88,12 +103,57 @@ Non-success HTTP statuses throw `HonuaStudioApiException` (preserving
 responses whose body does not satisfy the report contract throw
 `HonuaStudioContractException`.
 
+## Capability manifest
+
+`IHonuaCapabilityManifestClient.GetManifestAsync` fetches the frozen
+`honua.capability_manifest.v1` document into a `CapabilityManifest`. Query
+helpers mirror the JS `getCapability`/`hasCapability` helpers:
+
+```csharp
+var manifest = await capabilities.GetManifestAsync(cancellationToken: ct);
+
+if (manifest.IsAvailable("studio.map")) { /* enable the map builder */ }
+if (!manifest.IsAvailable("studio.ai.generate"))
+{
+    var reason = manifest.GetReasonCode("studio.ai.generate"); // e.g. "entitlement-inactive"
+}
+if (manifest.HasPackageFamily("dashboard")) { /* show the dashboard family */ }
+```
+
+`GetCapability(id)` returns the full `CapabilityEntry` (`Supported`, `Available`,
+`ReasonCode`, `EntitlementKey`, `MinimumEdition`, …). The manifest also carries
+scope, server/environment info, transports, limits, and entitlement policy.
+
+## Studio package lifecycle
+
+`IHonuaStudioPackageClient` covers the family-agnostic lifecycle; the family
+discriminant travels on `StudioPackageEnvelope`. The envelope's `Bindings`,
+`Dependencies`, and `Provenance` collections always serialize as arrays (the
+server rejects null for any of them).
+
+```csharp
+var draft = await packages.CreateDraftAsync(new CreateStudioPackageDraftRequest
+{
+    PackageKey = "my-map",
+    Envelope = new StudioPackageEnvelope
+    {
+        Family = StudioPackageFamily.Map,
+        SchemaVersion = "honua_map_package.v1",
+    },
+}, ct);
+
+var validation = await packages.ValidateDraftAsync(draft.DraftId, ct);
+var plan = await packages.PreviewPlanAsync(draft.DraftId, ct);
+var version = await packages.CreateContentVersionAsync(
+    draft.DraftId, new SaveStudioContentVersionRequest { ChangeNote = "v1" }, ct);
+var publish = await packages.CreatePublishRequestAsync(
+    version.ItemId, version.VersionId, new CreateStudioPublicationRequest(), ct);
+```
+
 ## Scope
 
-This package wraps the analysis-report read path that the server exposes today.
-Map/App package bodies, publication/share/embed, and discrete
-query/dashboard/form/workflow/ETL package clients are gated on server contracts
-that do not yet exist and are tracked as separate, server-paired tickets.
+AI generate endpoints (`/api/v1/studio/{map,app}-packages/generate`) return
+AI-specific result shapes and are tracked separately.
 
 ## Documentation
 
