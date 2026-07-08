@@ -218,7 +218,7 @@ public sealed class CatalogClientTests
     }
 
     [Fact]
-    public async Task SearchAsync_LayerOnlyLimitedQueryFetchesOnlyRequestedLayerDetails()
+    public async Task SearchAsync_LayerOnlyLimitedQuerySkipsMissingLayerDetailsBeforePaging()
     {
         var requests = new Dictionary<string, int>(StringComparer.Ordinal);
         var client = CreateCatalogClient(req =>
@@ -263,10 +263,14 @@ public sealed class CatalogClientTests
                     geometryType = "esriGeometryPoint",
                     capabilities = "Query"
                 })),
-                _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)
+                "/rest/services/beta/FeatureServer/0?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
                 {
-                    Content = new StringContent("""{"message":"not found"}""")
-                })
+                    id = 0,
+                    name = "Beta zero",
+                    geometryType = "esriGeometryPoint",
+                    capabilities = "Query"
+                })),
+                _ => Task.FromResult(TestHelpers.CreateRawJsonResponse(new { message = "not found" }, HttpStatusCode.NotFound))
             };
         });
 
@@ -274,20 +278,29 @@ public sealed class CatalogClientTests
         {
             Kinds = [CatalogItemKind.Layer],
             SortBy = CatalogSortBy.ServiceName,
-            Limit = 1
+            Limit = 2
         });
 
-        var item = Assert.Single(result.Items);
-        Assert.Equal("alpha", item.ServiceName);
-        Assert.Equal(0, item.LayerId);
-        Assert.Equal(4, result.TotalCount);
-        Assert.Equal(1, result.NextOffset);
+        Assert.Collection(
+            result.Items,
+            item =>
+            {
+                Assert.Equal("alpha", item.ServiceName);
+                Assert.Equal(0, item.LayerId);
+            },
+            item =>
+            {
+                Assert.Equal("beta", item.ServiceName);
+                Assert.Equal(0, item.LayerId);
+            });
+        Assert.Equal(2, result.TotalCount);
+        Assert.Null(result.NextOffset);
         Assert.Equal(1, requests["/rest/services/alpha/FeatureServer?f=json"]);
         Assert.Equal(1, requests["/rest/services/beta/FeatureServer?f=json"]);
         Assert.Equal(1, requests["/rest/services/alpha/FeatureServer/0?f=json"]);
-        Assert.DoesNotContain("/rest/services/alpha/FeatureServer/1?f=json", requests.Keys);
-        Assert.DoesNotContain("/rest/services/beta/FeatureServer/0?f=json", requests.Keys);
-        Assert.DoesNotContain("/rest/services/beta/FeatureServer/1?f=json", requests.Keys);
+        Assert.Equal(1, requests["/rest/services/alpha/FeatureServer/1?f=json"]);
+        Assert.Equal(1, requests["/rest/services/beta/FeatureServer/0?f=json"]);
+        Assert.Equal(1, requests["/rest/services/beta/FeatureServer/1?f=json"]);
     }
 
     [Fact]

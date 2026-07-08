@@ -4,6 +4,7 @@
 using System.Reflection;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -79,6 +80,35 @@ public sealed class ClientOptionsTests
     }
 
     [Fact]
+    public void GeoServicesClientRegistrations_PreservePerClientSnapshots()
+    {
+        var featureBaseAddress = new Uri("https://feature.example");
+        var routingBaseAddress = new Uri("https://routing.example");
+        var routingTimeout = TimeSpan.FromSeconds(44);
+        var services = new ServiceCollection();
+        services.AddHonuaFeatureServer(options =>
+        {
+            options.BaseAddress = featureBaseAddress;
+            options.EnableRetry = false;
+            options.RoutingServiceId = "FeatureRouting";
+        });
+        services.AddHonuaRouting(options =>
+        {
+            options.BaseAddress = routingBaseAddress;
+            options.EnableRetry = false;
+            options.Timeout = routingTimeout;
+            options.RoutingServiceId = "Network";
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var routingClient = provider.GetRequiredService<HonuaRoutingClient>();
+
+        Assert.Equal(routingBaseAddress, GetHttpClient(routingClient).BaseAddress);
+        Assert.Equal(routingTimeout, GetHttpClient(routingClient).Timeout);
+        Assert.Equal("Network", GetRoutingOptions(routingClient).RoutingServiceId);
+    }
+
+    [Fact]
     public void AddHonuaFeatureServer_InvalidTimeout_Throws()
     {
         var services = new ServiceCollection();
@@ -89,12 +119,21 @@ public sealed class ClientOptionsTests
         Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static HttpClient GetHttpClient(HonuaFeatureServerClient client)
+    private static HttpClient GetHttpClient(object client)
     {
-        var field = typeof(HonuaFeatureServerClient).GetField("_http", BindingFlags.Instance | BindingFlags.NonPublic);
+        var field = client.GetType().GetField("_http", BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(field);
 
         var value = field!.GetValue(client);
         return Assert.IsType<HttpClient>(value);
+    }
+
+    private static HonuaGeoServicesClientOptions GetRoutingOptions(HonuaRoutingClient client)
+    {
+        var field = typeof(HonuaRoutingClient).GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+
+        var value = field!.GetValue(client);
+        return Assert.IsType<HonuaGeoServicesClientOptions>(value);
     }
 }

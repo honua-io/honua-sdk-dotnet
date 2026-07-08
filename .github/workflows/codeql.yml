@@ -25,12 +25,12 @@ jobs:
     name: Analyze (csharp)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           fetch-depth: 0
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -38,7 +38,7 @@ jobs:
             ${{ github.repository }}-${{ runner.os }}-nuget-
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -46,7 +46,7 @@ jobs:
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9
         with:
           languages: csharp
           queries: security-and-quality
@@ -55,6 +55,6 @@ jobs:
         run: dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9
         with:
           category: "/language:csharp"

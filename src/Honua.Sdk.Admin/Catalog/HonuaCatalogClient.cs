@@ -240,7 +240,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         var offset = options.Offset.GetValueOrDefault();
         var limit = options.Limit.GetValueOrDefault();
-        var selected = new List<(CatalogService Service, CatalogFeatureServerLayerSummary Layer)>(limit);
+        var items = new List<CatalogItem>(limit);
         var totalCount = 0;
 
         foreach (var service in EnumerateServicesForLayerSummaryPage(serviceLoad, options))
@@ -258,23 +258,19 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
 
             foreach (var layerSummary in serviceInfo.Layers)
             {
-                if (totalCount >= offset && selected.Count < limit)
+                var layer = await GetFeatureServerLayerInfoOrNullAsync(service.Name, layerSummary.Id, cancellationToken)
+                    .ConfigureAwait(false);
+                if (layer is null)
                 {
-                    selected.Add((service, layerSummary));
+                    continue;
+                }
+
+                if (totalCount >= offset && items.Count < limit)
+                {
+                    items.Add(ToItem(BuildCatalogLayer(service, layer, metadata)));
                 }
 
                 totalCount++;
-            }
-        }
-
-        var items = new List<CatalogItem>(selected.Count);
-        foreach (var (service, layerSummary) in selected)
-        {
-            var layer = await GetFeatureServerLayerInfoOrNullAsync(service.Name, layerSummary.Id, cancellationToken)
-                .ConfigureAwait(false);
-            if (layer is not null)
-            {
-                items.Add(ToItem(BuildCatalogLayer(service, layer, metadata)));
             }
         }
 

@@ -21,6 +21,11 @@ namespace Honua.Sdk.GeoServices.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    private const string FeatureServerHttpClientName = "Honua.Sdk.GeoServices.FeatureServer";
+    private const string RoutingHttpClientName = "Honua.Sdk.GeoServices.Routing";
+    private const string ImageServerHttpClientName = "Honua.Sdk.GeoServices.ImageServer";
+    private const string GeometryServerHttpClientName = "Honua.Sdk.GeoServices.GeometryServer";
+
     /// <summary>
     /// Registers the Honua FeatureServer client and related services with the DI container.
     /// The supplied <paramref name="configure"/> delegate is invoked exactly once to capture
@@ -40,13 +45,9 @@ public static class ServiceCollectionExtensions
         var snapshot = CaptureSnapshot(configure);
 
         TryAddGeoServicesOptions(services, snapshot);
-        var httpBuilder = services.AddHttpClient<HonuaFeatureServerClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
-        })
-        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = AddGeoServicesHttpClient(services, FeatureServerHttpClientName, snapshot);
+        services.AddTransient(sp =>
+            new HonuaFeatureServerClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(FeatureServerHttpClientName)));
         services.AddTransient<IHonuaFeatureServerClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureServerEditClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
         services.AddTransient<IHonuaFeatureQueryClient>(sp => sp.GetRequiredService<HonuaFeatureServerClient>());
@@ -76,13 +77,9 @@ public static class ServiceCollectionExtensions
         var snapshot = CaptureSnapshot(configure);
 
         TryAddGeoServicesOptions(services, snapshot);
-        var httpBuilder = services.AddHttpClient<HonuaRoutingClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
-        })
-        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = AddGeoServicesHttpClient(services, RoutingHttpClientName, snapshot);
+        services.AddTransient(sp =>
+            new HonuaRoutingClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(RoutingHttpClientName), snapshot));
         services.AddTransient<IHonuaRoutingClient>(sp => sp.GetRequiredService<HonuaRoutingClient>());
 
         httpBuilder.ConfigureHonuaRestHttpClient(snapshot, ConfigureGeoServicesRetry);
@@ -105,13 +102,9 @@ public static class ServiceCollectionExtensions
         var snapshot = CaptureSnapshot(configure);
 
         TryAddGeoServicesOptions(services, snapshot);
-        var httpBuilder = services.AddHttpClient<HonuaImageServerClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
-        })
-        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = AddGeoServicesHttpClient(services, ImageServerHttpClientName, snapshot);
+        services.AddTransient(sp =>
+            new HonuaImageServerClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(ImageServerHttpClientName)));
 
         // Provider-neutral raster data client (metadata, coverage statistics, windowed
         // reads) so a raster geoprocessing tool can resolve IHonuaRasterDataClient from DI.
@@ -139,13 +132,11 @@ public static class ServiceCollectionExtensions
         var snapshot = CaptureSnapshot(configure);
 
         TryAddGeoServicesOptions(services, snapshot);
-        var httpBuilder = services.AddHttpClient<HonuaGeometryServerClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
-        })
-        .AddHttpMessageHandler<HonuaGeoServicesAuthHandler>();
+        var httpBuilder = AddGeoServicesHttpClient(services, GeometryServerHttpClientName, snapshot);
+        services.AddTransient(sp =>
+            new HonuaGeometryServerClient(
+                sp.GetRequiredService<IHttpClientFactory>().CreateClient(GeometryServerHttpClientName),
+                snapshot));
 
         httpBuilder.ConfigureHonuaRestHttpClient(snapshot, ConfigureGeoServicesRetry);
         return services;
@@ -179,12 +170,22 @@ public static class ServiceCollectionExtensions
 
     private static void TryAddGeoServicesOptions(IServiceCollection services, HonuaGeoServicesClientOptions snapshot)
     {
-        // TryAdd: if a sibling GeoServices extension (FeatureServer, Routing,
-        // ImageServer, or GeometryServer) already registered shared GeoServices
-        // options, share that snapshot rather than silently overwriting it.
-        // The first AddHonua* wins; subsequent registrations must use compatible
-        // BaseAddress / auth configuration.
+        // Keep a first-registration IOptions<T> fallback for consumers that resolve
+        // options directly; typed GeoServices clients use their own captured snapshot.
         services.TryAddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
         services.TryAddTransient<HonuaGeoServicesAuthHandler>();
     }
+
+    private static IHttpClientBuilder AddGeoServicesHttpClient(
+        IServiceCollection services,
+        string name,
+        HonuaGeoServicesClientOptions snapshot)
+        => services.AddHttpClient(name, client =>
+        {
+            client.BaseAddress = snapshot.BaseAddress;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(
+                snapshot.Timeout,
+                snapshot.EnableRetry);
+        })
+        .AddHttpMessageHandler(_ => new HonuaGeoServicesAuthHandler(snapshot));
 }

@@ -31,12 +31,12 @@ jobs:
       packages: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           fetch-depth: 0
 
       - name: Cache NuGet packages
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: ~/.nuget/packages
           key: ${{ github.repository }}-${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -44,7 +44,7 @@ jobs:
             ${{ github.repository }}-${{ runner.os }}-nuget-
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -296,7 +296,7 @@ jobs:
           done
 
       - name: Upload SBOM artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-sboms
           path: ./sboms/**/*.cdx.json
@@ -631,7 +631,7 @@ jobs:
           popd >/dev/null
 
       - name: Upload package artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs/*.nupkg
@@ -672,13 +672,13 @@ jobs:
       packages: write
     steps:
       - name: Download package artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
