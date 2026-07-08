@@ -17,6 +17,21 @@ permissions:
   packages: read
 
 jobs:
+  workflow-validation:
+    name: GitHub Workflow Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate workflow syntax
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "${PWD}:/repo" \
+            -w /repo \
+            docker.io/rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            -no-color -shellcheck= -pyflakes=
+
   security-audit:
     name: Security Audit (NuGet)
     runs-on: ubuntu-latest
