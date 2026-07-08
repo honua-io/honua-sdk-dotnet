@@ -15,10 +15,12 @@ permissions:
   actions: read
 
 jobs:
+  # Pin shared security workflows to an immutable commit so this repo is not
+  # exposed to parser or behavior drift on honua-io/.github@main.
   trivy:
-    uses: honua-io/.github/.github/workflows/reusable-trivy.yml@main
+    uses: honua-io/.github/.github/workflows/reusable-trivy.yml@aebfacd3f3c6b551fa9bf703501c0a12a050faf3
     with:
       scan-type: fs
 
   scorecard:
-    uses: honua-io/.github/.github/workflows/reusable-scorecard.yml@main
+    uses: honua-io/.github/.github/workflows/reusable-scorecard.yml@aebfacd3f3c6b551fa9bf703501c0a12a050faf3
