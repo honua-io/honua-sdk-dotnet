@@ -24,9 +24,11 @@ public sealed class CatalogClientTests
     [Fact]
     public async Task SearchAsync_ReturnsServicesLayersGroupsAndSavedSourceDescriptors()
     {
+        var requests = new Dictionary<string, int>(StringComparer.Ordinal);
         var client = CreateCatalogClient(req =>
         {
             var pathAndQuery = req.RequestUri!.PathAndQuery;
+            requests[pathAndQuery] = requests.GetValueOrDefault(pathAndQuery) + 1;
             return pathAndQuery switch
             {
                 "/api/v1/admin/metadata/resources?kind=Service" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
@@ -145,6 +147,7 @@ public sealed class CatalogClientTests
 
         var descriptor = Assert.Single(result.Items, item => item.Kind == CatalogItemKind.SourceDescriptor);
         Assert.Equal("parks-source", descriptor.SourceDescriptor!.Descriptor.Id);
+        Assert.Equal(1, requests["/rest/services/parks/FeatureServer?f=json"]);
     }
 
     [Fact]
@@ -212,6 +215,79 @@ public sealed class CatalogClientTests
         Assert.Equal(CatalogItemKind.Layer, item.Kind);
         Assert.Equal(1, result.TotalCount);
         Assert.Null(result.NextOffset);
+    }
+
+    [Fact]
+    public async Task SearchAsync_LayerOnlyLimitedQueryFetchesOnlyRequestedLayerDetails()
+    {
+        var requests = new Dictionary<string, int>(StringComparer.Ordinal);
+        var client = CreateCatalogClient(req =>
+        {
+            var pathAndQuery = req.RequestUri!.PathAndQuery;
+            requests[pathAndQuery] = requests.GetValueOrDefault(pathAndQuery) + 1;
+            return pathAndQuery switch
+            {
+                "/api/v1/admin/metadata/resources?kind=Service" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
+                "/api/v1/admin/metadata/resources?kind=Layer" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
+                "/api/v1/admin/metadata/resources?kind=Group" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
+                "/api/v1/admin/metadata/resources?kind=SourceDescriptor" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
+                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
+                {
+                    new
+                    {
+                        serviceName = "alpha",
+                        layerCount = 2,
+                        enabledProtocols = new[] { "FeatureServer" }
+                    },
+                    new
+                    {
+                        serviceName = "beta",
+                        layerCount = 2,
+                        enabledProtocols = new[] { "FeatureServer" }
+                    }
+                })),
+                "/rest/services/alpha/FeatureServer?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
+                {
+                    capabilities = "Query",
+                    layers = new[] { new { id = 0, name = "Alpha zero" }, new { id = 1, name = "Alpha one" } }
+                })),
+                "/rest/services/beta/FeatureServer?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
+                {
+                    capabilities = "Query",
+                    layers = new[] { new { id = 0, name = "Beta zero" }, new { id = 1, name = "Beta one" } }
+                })),
+                "/rest/services/alpha/FeatureServer/0?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
+                {
+                    id = 0,
+                    name = "Alpha zero",
+                    geometryType = "esriGeometryPoint",
+                    capabilities = "Query"
+                })),
+                _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent("""{"message":"not found"}""")
+                })
+            };
+        });
+
+        var result = await client.SearchAsync(new CatalogQueryOptions
+        {
+            Kinds = [CatalogItemKind.Layer],
+            SortBy = CatalogSortBy.ServiceName,
+            Limit = 1
+        });
+
+        var item = Assert.Single(result.Items);
+        Assert.Equal("alpha", item.ServiceName);
+        Assert.Equal(0, item.LayerId);
+        Assert.Equal(4, result.TotalCount);
+        Assert.Equal(1, result.NextOffset);
+        Assert.Equal(1, requests["/rest/services/alpha/FeatureServer?f=json"]);
+        Assert.Equal(1, requests["/rest/services/beta/FeatureServer?f=json"]);
+        Assert.Equal(1, requests["/rest/services/alpha/FeatureServer/0?f=json"]);
+        Assert.DoesNotContain("/rest/services/alpha/FeatureServer/1?f=json", requests.Keys);
+        Assert.DoesNotContain("/rest/services/beta/FeatureServer/0?f=json", requests.Keys);
+        Assert.DoesNotContain("/rest/services/beta/FeatureServer/1?f=json", requests.Keys);
     }
 
     [Fact]

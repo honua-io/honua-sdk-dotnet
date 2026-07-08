@@ -4,7 +4,6 @@
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using Honua.Sdk.Admin.Exceptions;
 
 namespace Honua.Sdk.Admin.Geocoding;
 
@@ -83,7 +82,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Geocoding request failed", inspectGeoServicesErrorEnvelope: true).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesFindAddressCandidatesResponse);
         if (result?.Candidates is null or { Count: 0 })
@@ -128,7 +127,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Geocoding request failed", inspectGeoServicesErrorEnvelope: true).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesReverseGeocodeResponse);
         if (result?.Address is null || result.Location is null)
@@ -197,7 +196,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Geocoding request failed", inspectGeoServicesErrorEnvelope: true).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesSuggestResponse);
         if (result?.Suggestions is null or { Count: 0 })
@@ -279,99 +278,13 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
 
         using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Geocoding request failed", inspectGeoServicesErrorEnvelope: true).ConfigureAwait(false);
 
         var result = JsonSerializer.Deserialize(body, GeocodingJsonContext.Default.GeoServicesBatchGeocodeResponse);
         return MapBatchResults(addresses, result);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
-
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response, string body)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            // GeoServices may return 200 with an error payload; check for "error" in body
-            if (!string.IsNullOrWhiteSpace(body))
-            {
-                try
-                {
-                    using var doc = JsonDocument.Parse(body);
-                    if (doc.RootElement.TryGetProperty("error", out var errorElement) &&
-                        errorElement.ValueKind == JsonValueKind.Object)
-                    {
-                        var message = "Geocoding service returned an error.";
-                        if (errorElement.TryGetProperty("message", out var msgProp) &&
-                            msgProp.ValueKind == JsonValueKind.String)
-                        {
-                            message = msgProp.GetString() ?? message;
-                        }
-
-                        var code = response.StatusCode;
-                        if (errorElement.TryGetProperty("code", out var codeProp) &&
-                            codeProp.TryGetInt32(out var errorCode))
-                        {
-                            // GeoServices error.code is an independent Esri code space (e.g. 400 is a
-                            // real status but 1000/4001 are not). Only adopt it as the HTTP status when
-                            // it is a valid HTTP status (100-599); otherwise keep the transport status,
-                            // mirroring GeoServicesHttp.MapErrorCodeToStatus. Blindly casting an Esri
-                            // code yields a nonsensical HttpStatus that breaks retry/auth branching.
-                            if (errorCode is >= 100 and <= 599)
-                            {
-                                code = (System.Net.HttpStatusCode)errorCode;
-                            }
-                        }
-
-                        throw new HonuaAdminApiException(code, message, body);
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Not JSON, ignore
-                }
-            }
-
-            return;
-        }
-
-        var errorMessage = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "Geocoding request failed";
-        throw new HonuaAdminApiException(response.StatusCode, errorMessage, body);
-    }
-
-    private static string? TryExtractErrorMessage(string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-
-            // GeoServices error format: { "error": { "message": "..." } }
-            if (doc.RootElement.TryGetProperty("error", out var errorElement) &&
-                errorElement.ValueKind == JsonValueKind.Object &&
-                errorElement.TryGetProperty("message", out var msg) &&
-                msg.ValueKind == JsonValueKind.String)
-            {
-                return msg.GetString();
-            }
-
-            // Fallback: top-level message
-            if (doc.RootElement.TryGetProperty("message", out var topMsg) &&
-                topMsg.ValueKind == JsonValueKind.String)
-            {
-                return topMsg.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            // Not JSON
-        }
-
-        return null;
-    }
 
     private static Dictionary<string, string?> FlattenAttributes(Dictionary<string, object?>? attributes)
     {

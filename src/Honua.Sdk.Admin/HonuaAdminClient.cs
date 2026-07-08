@@ -134,8 +134,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         var resource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null metadata resource.", "GetMetadataResource");
@@ -184,8 +184,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
     private async Task<MetadataResourceResponse> SendMetadataResourceAsync(
@@ -206,8 +206,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         var responseResource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null response.", operation);
@@ -349,8 +349,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.DeleteAsync(
             CreateRequestUri($"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}"), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
     /// <inheritdoc />
@@ -441,7 +441,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var url = $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/tables";
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
         // Table discovery returns TableDiscoveryResponse directly (not wrapped in ApiResponse)
         var result = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.TableDiscoveryResponse);
@@ -506,7 +506,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         using var response = await _http.GetAsync(CreateRequestUri($"{ApiPrefix}/config"), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<JsonElement>(body);
     }
@@ -534,8 +534,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             return null;
         }
 
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseOidcProviderResponse);
         return envelope?.Data;
@@ -571,8 +571,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.DeleteAsync(
             CreateRequestUri($"{ApiPrefix}/oidc/providers/{providerId:D}"), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
     /// <inheritdoc />
@@ -634,8 +634,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             return null;
         }
 
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseRoleResponse);
         return envelope?.Data;
@@ -725,8 +725,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             return null;
         }
 
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseUserResponse);
         return envelope?.Data;
@@ -811,8 +811,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseLicenseStatusResponse);
         return envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null license status.", "UploadLicense");
@@ -882,7 +882,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.PostAsync(
             CreateRequestUri($"{ApiPrefix}/import/raster/"), form, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.RasterImportResult)
             ?? throw new HonuaAdminOperationException("Server returned null raster import result.", "ImportRaster");
@@ -1140,8 +1140,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, typeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -1154,7 +1154,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, typeInfo);
     }
@@ -1182,8 +1182,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         {
             using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-            EnsureEnvelopeSucceeded(response, body);
+            await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+            AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
             var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
             return envelope is not null ? envelope.Data : default;
@@ -1200,8 +1200,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
         using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -1230,7 +1230,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         {
             using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
             var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+            await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
             return JsonSerializer.Deserialize(body, responseTypeInfo);
         }
@@ -1246,7 +1246,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
         using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, responseTypeInfo);
     }
@@ -1261,8 +1261,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var content = JsonContent.Create(requestBody, requestTypeInfo);
         using var response = await _http.PutAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -1273,76 +1273,8 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         using var response = await _http.DeleteAsync(
             CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
-    }
-
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response, string body)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            return;
-        }
-
-        var message = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "Request failed";
-        throw new HonuaAdminApiException(response.StatusCode, message, body);
-    }
-
-    private static void EnsureEnvelopeSucceeded(HttpResponseMessage response, string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.ValueKind != JsonValueKind.Object)
-            {
-                return;
-            }
-
-            if (doc.RootElement.TryGetProperty("success", out var success) &&
-                success.ValueKind == JsonValueKind.False)
-            {
-                var message = TryExtractErrorMessage(body) ?? "API response indicated failure.";
-                throw new HonuaAdminApiException(response.StatusCode, message, body);
-            }
-        }
-        catch (JsonException)
-        {
-            // Not JSON or invalid JSON envelope, ignore.
-        }
-    }
-
-    private static string? TryExtractErrorMessage(string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.ValueKind == JsonValueKind.Object &&
-                doc.RootElement.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String)
-            {
-                // Admin envelope shape: { "message": "..." }.
-                return msg.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            // Not JSON, that's fine.
-            return null;
-        }
-
-        // RFC 7807 problem details via the shared Abstractions parser (detail, then title).
-        return Honua.Sdk.Abstractions.HonuaProblemDetailsParser.TryParse(body, out var problem)
-            ? problem?.Detail ?? problem?.Title
-            : null;
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
