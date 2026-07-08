@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Converters;
@@ -12,7 +13,8 @@ namespace Honua.Sdk.Geometry;
 /// </summary>
 public static class GeoJsonGeometryConverter
 {
-    private static readonly JsonSerializerOptions DefaultSerializerOptions = CreateSerializerOptions(null);
+    private static readonly JsonSerializerOptions DefaultSerializerOptions = CreateDefaultSerializerOptions();
+    private static readonly ConditionalWeakTable<GeometryFactory, JsonSerializerOptions> SerializerOptionsByGeometryFactory = new();
 
     /// <summary>
     /// Reads a GeoJSON geometry from a JSON element.
@@ -39,9 +41,7 @@ public static class GeoJsonGeometryConverter
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(geoJson);
 
-        var options = geometryFactory is null
-            ? DefaultSerializerOptions
-            : CreateSerializerOptions(geometryFactory);
+        var options = GetSerializerOptions(geometryFactory);
         return JsonSerializer.Deserialize<NetTopologySuite.Geometries.Geometry>(geoJson, options)
             ?? throw new JsonException("GeoJSON did not contain a geometry object.");
     }
@@ -70,12 +70,22 @@ public static class GeoJsonGeometryConverter
         return JsonSerializer.Serialize(geometry, DefaultSerializerOptions);
     }
 
-    private static JsonSerializerOptions CreateSerializerOptions(GeometryFactory? geometryFactory)
+    private static JsonSerializerOptions GetSerializerOptions(GeometryFactory? geometryFactory)
+        => geometryFactory is null
+            ? DefaultSerializerOptions
+            : SerializerOptionsByGeometryFactory.GetValue(geometryFactory, CreateSerializerOptions);
+
+    private static JsonSerializerOptions CreateDefaultSerializerOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-        options.Converters.Add(geometryFactory is null
-            ? new GeoJsonConverterFactory()
-            : new GeoJsonConverterFactory(geometryFactory));
+        options.Converters.Add(new GeoJsonConverterFactory());
+        return options;
+    }
+
+    private static JsonSerializerOptions CreateSerializerOptions(GeometryFactory geometryFactory)
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new GeoJsonConverterFactory(geometryFactory));
         return options;
     }
 }
