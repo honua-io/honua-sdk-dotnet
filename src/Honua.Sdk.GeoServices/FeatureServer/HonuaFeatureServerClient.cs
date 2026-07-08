@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
@@ -62,6 +63,7 @@ public sealed class HonuaFeatureServerClient :
     };
 
     private readonly HttpClient _http;
+    private readonly ConcurrentDictionary<(string ServiceId, int LayerId), string> _objectIdFieldCache = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaFeatureServerClient"/> class.
@@ -318,12 +320,12 @@ public sealed class HonuaFeatureServerClient :
         if (!response.IsSuccessStatusCode)
         {
             // Read the body and run the status check while the response is still alive,
-            // then dispose. EnsureSuccess reads response.StatusCode, so it must run before
+            // then dispose. GeoServicesHttp.EnsureSuccess reads response.StatusCode, so it must run before
             // Dispose to remain correct under refactoring.
             var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                EnsureSuccess(response, body);
+                GeoServicesHttp.EnsureSuccess(response, body);
             }
             finally
             {
@@ -611,7 +613,7 @@ public sealed class HonuaFeatureServerClient :
 
     /// <summary>
     /// Validates an unbuffered streaming response without consuming the body on success. On a
-    /// non-success status the (small) error body is read and routed through <see cref="EnsureSuccess"/>
+    /// non-success status the (small) error body is read and routed through <see cref="GeoServicesHttp.EnsureSuccess"/>
     /// so callers still observe the normal <see cref="HonuaFeatureServerException"/>.
     /// </summary>
     private static async Task EnsureSuccessStreamingAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -622,7 +624,7 @@ public sealed class HonuaFeatureServerClient :
         }
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        EnsureSuccess(response, body);
+        GeoServicesHttp.EnsureSuccess(response, body);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
@@ -631,7 +633,7 @@ public sealed class HonuaFeatureServerClient :
     {
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        EnsureSuccess(response, body);
+        GeoServicesHttp.EnsureSuccess(response, body);
         return body;
     }
 
@@ -658,7 +660,7 @@ public sealed class HonuaFeatureServerClient :
 
         using var response = await _http.PostAsync(CreateRequestUri(path), content, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        EnsureSuccess(response, body);
+        GeoServicesHttp.EnsureSuccess(response, body);
         return body;
     }
 
@@ -699,103 +701,9 @@ public sealed class HonuaFeatureServerClient :
 
         using var response = await _http.PostAsync(CreateRequestUri(path), form, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        EnsureSuccess(response, body);
+        GeoServicesHttp.EnsureSuccess(response, body);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentEditResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize attachment edit response.", body);
-    }
-
-    private static void EnsureSuccess(HttpResponseMessage response, string body)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            // GeoServices may return 200 with an error payload
-            if (!string.IsNullOrWhiteSpace(body))
-            {
-                try
-                {
-                    using var doc = JsonDocument.Parse(body);
-                    if (doc.RootElement.TryGetProperty("error", out var errorElement) &&
-                        errorElement.ValueKind == JsonValueKind.Object)
-                    {
-                        var message = "FeatureServer returned an error.";
-                        int? geoServicesCode = null;
-                        IReadOnlyList<string>? details = null;
-
-                        if (errorElement.TryGetProperty("message", out var msgProp) &&
-                            msgProp.ValueKind == JsonValueKind.String)
-                        {
-                            message = msgProp.GetString() ?? message;
-                        }
-
-                        var httpCode = response.StatusCode;
-                        if (errorElement.TryGetProperty("code", out var codeProp) &&
-                            codeProp.TryGetInt32(out var errorCode))
-                        {
-                            geoServicesCode = errorCode;
-                            httpCode = GeoServicesHttp.MapErrorCodeToStatus(errorCode, response.StatusCode);
-                        }
-
-                        if (errorElement.TryGetProperty("details", out var detailsProp) &&
-                            detailsProp.ValueKind == JsonValueKind.Array)
-                        {
-                            var detailList = new List<string>();
-                            foreach (var item in detailsProp.EnumerateArray())
-                            {
-                                if (item.ValueKind == JsonValueKind.String)
-                                {
-                                    detailList.Add(item.GetString()!);
-                                }
-                            }
-                            details = detailList;
-                        }
-
-                        throw new HonuaFeatureServerException(httpCode, message, body, geoServicesCode, details);
-                    }
-                }
-                catch (JsonException)
-                {
-                    // Not JSON, ignore
-                }
-            }
-
-            return;
-        }
-
-        var errorMessage = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "FeatureServer request failed";
-        throw new HonuaFeatureServerException(response.StatusCode, errorMessage, body);
-    }
-
-    private static string? TryExtractErrorMessage(string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-
-            if (doc.RootElement.TryGetProperty("error", out var errorElement) &&
-                errorElement.ValueKind == JsonValueKind.Object &&
-                errorElement.TryGetProperty("message", out var msg) &&
-                msg.ValueKind == JsonValueKind.String)
-            {
-                return msg.GetString();
-            }
-
-            if (doc.RootElement.TryGetProperty("message", out var topMsg) &&
-                topMsg.ValueKind == JsonValueKind.String)
-            {
-                return topMsg.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            // Not JSON
-        }
-
-        return null;
     }
 
     private static FeatureServerQueryResponse DeserializeQueryResponse(string body)
@@ -1238,6 +1146,12 @@ public sealed class HonuaFeatureServerClient :
             return null;
         }
 
+        var key = (serviceId, layerId);
+        if (_objectIdFieldCache.TryGetValue(key, out var cachedObjectIdField))
+        {
+            return cachedObjectIdField;
+        }
+
         var layer = await GetLayerInfoAsync(serviceId, layerId, cancellationToken).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(layer.ObjectIdField))
         {
@@ -1245,6 +1159,7 @@ public sealed class HonuaFeatureServerClient :
                 "FeatureServer layer metadata does not expose an object ID field required for shared updates.");
         }
 
+        _objectIdFieldCache.TryAdd(key, layer.ObjectIdField);
         return layer.ObjectIdField;
     }
 
@@ -1335,10 +1250,10 @@ public sealed class HonuaFeatureServerClient :
 
     private static FeatureEditCapabilities BuildEditCapabilities(string? capabilities)
     {
-        var tokens = ParseCapabilities(capabilities);
-        var supportsAdds = tokens.Contains("CREATE") || tokens.Contains("EDITING");
-        var supportsUpdates = tokens.Contains("UPDATE") || tokens.Contains("EDITING");
-        var supportsDeletes = tokens.Contains("DELETE") || tokens.Contains("EDITING");
+        var tokens = SplitCapabilities(capabilities);
+        var supportsAdds = tokens.Contains("Create") || tokens.Contains("Editing");
+        var supportsUpdates = tokens.Contains("Update") || tokens.Contains("Editing");
+        var supportsDeletes = tokens.Contains("Delete") || tokens.Contains("Editing");
 
         return new FeatureEditCapabilities
         {
@@ -1348,15 +1263,6 @@ public sealed class HonuaFeatureServerClient :
             SupportsRollbackOnFailure = supportsAdds || supportsUpdates || supportsDeletes,
             NativeSurface = "GeoServices FeatureServer applyEdits"
         };
-    }
-
-    private static HashSet<string> ParseCapabilities(string? capabilities)
-    {
-        return string.IsNullOrWhiteSpace(capabilities)
-            ? []
-            : capabilities.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(capability => capability.ToUpperInvariant())
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);

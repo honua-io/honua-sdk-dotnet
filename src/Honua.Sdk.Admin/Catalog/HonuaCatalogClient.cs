@@ -37,7 +37,14 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         var normalizedOptions = NormalizeOptions(options);
         var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
-        var services = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
+        var serviceLoad = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
+        var services = serviceLoad.Services;
+
+        if (CanPageLayersFromSummaries(normalizedOptions))
+        {
+            return await SearchLayerPageFromSummariesAsync(serviceLoad, metadata, normalizedOptions, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         var items = new List<CatalogItem>();
         if (IncludesKind(normalizedOptions, CatalogItemKind.Service))
@@ -47,7 +54,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
 
         if (IncludesKind(normalizedOptions, CatalogItemKind.Layer))
         {
-            var layers = await LoadLayersAsync(services, metadata, cancellationToken).ConfigureAwait(false);
+            var layers = await LoadLayersAsync(serviceLoad, metadata, cancellationToken).ConfigureAwait(false);
             items.AddRange(layers.Select(ToItem));
         }
 
@@ -71,7 +78,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         var normalizedOptions = NormalizeOptions(options);
         var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
-        var services = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
+        var services = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services;
         return ApplyDetailQuery(services, WithoutKindFilter(normalizedOptions), ToItem, static item => item.Service!);
     }
 
@@ -81,7 +88,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
         var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
-        var services = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
+        var services = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services;
         return services.FirstOrDefault(service => string.Equals(service.Name, serviceName, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -92,8 +99,8 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         var normalizedOptions = NormalizeOptions(options);
         var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
-        var services = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
-        var layers = await LoadLayersAsync(services, metadata, cancellationToken).ConfigureAwait(false);
+        var serviceLoad = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
+        var layers = await LoadLayersAsync(serviceLoad, metadata, cancellationToken).ConfigureAwait(false);
         return ApplyDetailQuery(layers, WithoutKindFilter(normalizedOptions), ToItem, static item => item.Layer!);
     }
 
@@ -103,7 +110,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
         var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
-        var service = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false))
+        var service = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services
             .FirstOrDefault(candidate => string.Equals(candidate.Name, serviceName, StringComparison.OrdinalIgnoreCase));
         if (service is null)
         {
@@ -163,7 +170,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         return resource is null ? null : TryBuildSourceDescriptor(resource);
     }
 
-    private async Task<IReadOnlyList<CatalogService>> LoadServicesAsync(
+    private async Task<CatalogServiceLoadResult> LoadServicesAsync(
         CatalogMetadataIndex metadata,
         CancellationToken cancellationToken)
     {
@@ -173,33 +180,40 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
             cancellationToken).ConfigureAwait(false) ?? [];
 
         var services = new List<CatalogService>(summaries.Length);
+        var featureServerInfo = new Dictionary<string, CatalogFeatureServerServiceInfo?>(StringComparer.OrdinalIgnoreCase);
         foreach (var summary in summaries.OrderBy(static service => service.ServiceName, StringComparer.OrdinalIgnoreCase))
         {
             var serviceMetadata = metadata.FindService(summary.ServiceName);
-            var serviceInfo = HasServiceType(summary.EnabledProtocols, FeatureServerProtocol)
+            var isFeatureServer = HasServiceType(summary.EnabledProtocols, FeatureServerProtocol);
+            var serviceInfo = isFeatureServer
                 ? await GetFeatureServerServiceInfoOrNullAsync(summary.ServiceName, cancellationToken).ConfigureAwait(false)
                 : null;
+
+            if (isFeatureServer)
+            {
+                featureServerInfo[summary.ServiceName] = serviceInfo;
+            }
 
             services.Add(BuildCatalogService(summary, serviceInfo, serviceMetadata));
         }
 
-        return services.AsReadOnly();
+        return new CatalogServiceLoadResult(services.AsReadOnly(), featureServerInfo);
     }
 
     private async Task<IReadOnlyList<CatalogLayer>> LoadLayersAsync(
-        IReadOnlyList<CatalogService> services,
+        CatalogServiceLoadResult serviceLoad,
         CatalogMetadataIndex metadata,
         CancellationToken cancellationToken)
     {
         var layers = new List<CatalogLayer>();
-        foreach (var service in services)
+        foreach (var service in serviceLoad.Services)
         {
             if (!HasServiceType(service.ServiceTypes, FeatureServerProtocol))
             {
                 continue;
             }
 
-            var serviceInfo = await GetFeatureServerServiceInfoOrNullAsync(service.Name, cancellationToken).ConfigureAwait(false);
+            var serviceInfo = serviceLoad.GetFeatureServerInfo(service);
             if (serviceInfo?.Layers is not { Count: > 0 })
             {
                 continue;
@@ -216,6 +230,57 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         }
 
         return layers.AsReadOnly();
+    }
+
+    private async Task<CatalogSearchResult> SearchLayerPageFromSummariesAsync(
+        CatalogServiceLoadResult serviceLoad,
+        CatalogMetadataIndex metadata,
+        CatalogQueryOptions options,
+        CancellationToken cancellationToken)
+    {
+        var offset = options.Offset.GetValueOrDefault();
+        var limit = options.Limit.GetValueOrDefault();
+        var items = new List<CatalogItem>(limit);
+        var totalCount = 0;
+
+        foreach (var service in EnumerateServicesForLayerSummaryPage(serviceLoad, options))
+        {
+            if (!MatchesAny(service.ServiceTypes, options.ServiceTypes))
+            {
+                continue;
+            }
+
+            var serviceInfo = serviceLoad.GetFeatureServerInfo(service);
+            if (serviceInfo?.Layers is not { Count: > 0 })
+            {
+                continue;
+            }
+
+            foreach (var layerSummary in serviceInfo.Layers)
+            {
+                var layer = await GetFeatureServerLayerInfoOrNullAsync(service.Name, layerSummary.Id, cancellationToken)
+                    .ConfigureAwait(false);
+                if (layer is null)
+                {
+                    continue;
+                }
+
+                if (totalCount >= offset && items.Count < limit)
+                {
+                    items.Add(ToItem(BuildCatalogLayer(service, layer, metadata)));
+                }
+
+                totalCount++;
+            }
+        }
+
+        return new CatalogSearchResult
+        {
+            Items = items.AsReadOnly(),
+            TotalCount = totalCount,
+            Offset = offset,
+            NextOffset = limit + offset < totalCount ? limit + offset : null
+        };
     }
 
     private async Task<CatalogMetadataIndex> LoadMetadataIndexAsync(CancellationToken cancellationToken)
@@ -632,6 +697,29 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     private static bool IncludesKind(CatalogQueryOptions options, CatalogItemKind kind)
         => options.Kinds is null or { Count: 0 } || options.Kinds.Contains(kind);
 
+    private static bool CanPageLayersFromSummaries(CatalogQueryOptions options)
+        => options.Limit.HasValue &&
+           HasOnlyKind(options, CatalogItemKind.Layer) &&
+           string.IsNullOrWhiteSpace(options.Query) &&
+           IsEmpty(options.Tags) &&
+           string.IsNullOrWhiteSpace(options.Owner) &&
+           string.IsNullOrWhiteSpace(options.Namespace) &&
+           IsEmpty(options.GeometryTypes) &&
+           IsEmpty(options.Capabilities) &&
+           options.SortBy is CatalogSortBy.Kind or CatalogSortBy.ServiceName;
+
+    private static bool HasOnlyKind(CatalogQueryOptions options, CatalogItemKind kind)
+        => options.Kinds is { Count: 1 } && options.Kinds[0] == kind;
+
+    private static bool IsEmpty<T>(IReadOnlyList<T>? values) => values is null or { Count: 0 };
+
+    private static IEnumerable<CatalogService> EnumerateServicesForLayerSummaryPage(
+        CatalogServiceLoadResult serviceLoad,
+        CatalogQueryOptions options)
+        => options is { SortBy: CatalogSortBy.ServiceName, SortDirection: CatalogSortDirection.Descending }
+            ? serviceLoad.Services.Reverse()
+            : serviceLoad.Services;
+
     private static CatalogQueryOptions NormalizeOptions(CatalogQueryOptions? options)
     {
         var normalized = options ?? new CatalogQueryOptions();
@@ -658,8 +746,8 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
-        EnsureEnvelopeSucceeded(response, body);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Catalog request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
         var envelope = JsonSerializer.Deserialize(body, typeInfo);
         return envelope is not null ? envelope.Data : default;
@@ -672,85 +760,9 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessAsync(response, body).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Catalog request failed").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, typeInfo);
-    }
-
-    private static async Task EnsureSuccessAsync(HttpResponseMessage response, string body)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            return;
-        }
-
-        var message = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "Catalog request failed";
-        throw new HonuaAdminApiException(response.StatusCode, message, body);
-    }
-
-    private static void EnsureEnvelopeSucceeded(HttpResponseMessage response, string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.ValueKind == JsonValueKind.Object &&
-                doc.RootElement.TryGetProperty("success", out var success) &&
-                success.ValueKind == JsonValueKind.False)
-            {
-                var message = TryExtractErrorMessage(body) ?? "API response indicated failure.";
-                throw new HonuaAdminApiException(response.StatusCode, message, body);
-            }
-        }
-        catch (JsonException)
-        {
-            // Not JSON or invalid JSON envelope, ignore.
-        }
-    }
-
-    private static string? TryExtractErrorMessage(string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String)
-            {
-                return msg.GetString();
-            }
-
-            if (doc.RootElement.TryGetProperty("error", out var error) &&
-                error.ValueKind == JsonValueKind.Object &&
-                error.TryGetProperty("message", out var errorMessage) &&
-                errorMessage.ValueKind == JsonValueKind.String)
-            {
-                return errorMessage.GetString();
-            }
-
-            if (doc.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String)
-            {
-                return detail.GetString();
-            }
-
-            if (doc.RootElement.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String)
-            {
-                return title.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            // Not JSON, that's fine.
-        }
-
-        return null;
     }
 
     private static bool TryReadSourceDescriptor(JsonElement spec, out SourceDescriptor descriptor)
@@ -988,6 +1000,24 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     }
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+
+    private sealed class CatalogServiceLoadResult
+    {
+        public CatalogServiceLoadResult(
+            IReadOnlyList<CatalogService> services,
+            IReadOnlyDictionary<string, CatalogFeatureServerServiceInfo?> featureServerInfoByServiceName)
+        {
+            Services = services;
+            FeatureServerInfoByServiceName = featureServerInfoByServiceName;
+        }
+
+        public IReadOnlyList<CatalogService> Services { get; }
+
+        private IReadOnlyDictionary<string, CatalogFeatureServerServiceInfo?> FeatureServerInfoByServiceName { get; }
+
+        public CatalogFeatureServerServiceInfo? GetFeatureServerInfo(CatalogService service)
+            => FeatureServerInfoByServiceName.TryGetValue(service.Name, out var serviceInfo) ? serviceInfo : null;
+    }
 
     private sealed class CatalogMetadataIndex
     {

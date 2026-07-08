@@ -16,7 +16,16 @@ internal sealed class HonuaGeoServicesAuthHandler : HonuaAuthHandler<HonuaGeoSer
     /// </summary>
     /// <param name="options">The GeoServices client options containing authentication credentials.</param>
     public HonuaGeoServicesAuthHandler(IOptions<HonuaGeoServicesClientOptions> options)
-        : base(options.Value, "geoservices", HonuaGeoServicesClientOptions.ValidateBaseAddress)
+        : this(options.Value)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaGeoServicesAuthHandler"/> class.
+    /// </summary>
+    /// <param name="options">The GeoServices client options containing authentication credentials.</param>
+    public HonuaGeoServicesAuthHandler(HonuaGeoServicesClientOptions options)
+        : base(options, "geoservices", HonuaGeoServicesClientOptions.ValidateBaseAddress)
     {
     }
 }

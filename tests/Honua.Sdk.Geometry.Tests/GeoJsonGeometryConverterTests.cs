@@ -1,6 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Honua.Sdk.Geometry;
 using NetTopologySuite.Geometries;
@@ -20,6 +22,32 @@ public class GeoJsonGeometryConverterTests
         var point = Assert.IsType<Point>(geometry);
         Assert.Equal(-157.8583, point.X, precision: 4);
         Assert.Equal(21.3069, point.Y, precision: 4);
+    }
+
+    [Fact]
+    public void ReadGeometry_CachesSerializerOptionsForGeometryFactoryReference()
+    {
+        var cacheField = typeof(GeoJsonGeometryConverter).GetField(
+            "SerializerOptionsByGeometryFactory",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(cacheField);
+        var cache = Assert.IsType<ConditionalWeakTable<GeometryFactory, JsonSerializerOptions>>(cacheField.GetValue(null));
+        var factory = new GeometryFactory(new PrecisionModel(), 3857);
+
+        Assert.False(cache.TryGetValue(factory, out _));
+
+        var firstGeometry = GeoJsonGeometryConverter.ReadGeometry(
+            """{"type":"Point","coordinates":[1,2]}""",
+            factory);
+        Assert.Equal(3857, firstGeometry.SRID);
+        Assert.True(cache.TryGetValue(factory, out var firstOptions));
+
+        _ = GeoJsonGeometryConverter.ReadGeometry(
+            """{"type":"Point","coordinates":[3,4]}""",
+            factory);
+
+        Assert.True(cache.TryGetValue(factory, out var secondOptions));
+        Assert.Same(firstOptions, secondOptions);
     }
 
     [Fact]
