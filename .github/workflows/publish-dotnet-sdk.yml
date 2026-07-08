@@ -330,9 +330,10 @@ jobs:
           # not trusted by default — `dotnet nuget verify` would reject it (NU3018). Register
           # the author signer (allowing the untrusted self-signed root) JUST for verification;
           # the EXIT trap removes it again immediately after.
-          first_pkg="$(ls ./nupkgs/*.nupkg | head -n1)"
+          nupkg_files=(./nupkgs/*.nupkg)
+          first_pkg="${nupkg_files[0]}"
           dotnet nuget trust author honua-sdk-self "${first_pkg}" --allow-untrusted-root
-          for nupkg in ./nupkgs/*.nupkg; do
+          for nupkg in "${nupkg_files[@]}"; do
             dotnet nuget verify "${nupkg}"
           done
 
