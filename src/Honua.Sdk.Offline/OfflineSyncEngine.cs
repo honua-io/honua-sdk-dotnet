@@ -3,13 +3,15 @@
 
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Offline.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Honua.Sdk.Offline;
 
 /// <summary>
 /// Provider-neutral offline sync engine for pushing local edits and pulling feature pages.
 /// </summary>
-public sealed class OfflineSyncEngine : IOfflineSyncRunner
+public sealed partial class OfflineSyncEngine : IOfflineSyncRunner
 {
     private const string MaxAttemptsReason = "max attempts reached";
 
@@ -21,6 +23,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     private readonly IOfflineSyncStateStore? _stateStore;
     private readonly IOfflineConflictStore? _conflictStore;
     private readonly OfflineSyncEngineOptions _options;
+    private readonly ILogger<OfflineSyncEngine> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OfflineSyncEngine"/> class.
@@ -42,6 +45,41 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         OfflineSyncEngineOptions? options = null,
         IOfflineSyncStateStore? stateStore = null,
         IOfflineConflictStore? conflictStore = null)
+        : this(
+            queryClient,
+            editClient,
+            featureStore,
+            changeJournal,
+            checkpointStore,
+            options,
+            stateStore,
+            conflictStore,
+            null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OfflineSyncEngine"/> class.
+    /// </summary>
+    /// <param name="queryClient">Provider-neutral query client.</param>
+    /// <param name="editClient">Provider-neutral edit client.</param>
+    /// <param name="featureStore">Local feature store.</param>
+    /// <param name="changeJournal">Local change journal.</param>
+    /// <param name="checkpointStore">Sync checkpoint store.</param>
+    /// <param name="options">Sync engine options.</param>
+    /// <param name="stateStore">Optional sync state store.</param>
+    /// <param name="conflictStore">Optional conflict store.</param>
+    /// <param name="logger">Optional logger for sync phases and failure diagnostics.</param>
+    public OfflineSyncEngine(
+        IHonuaFeatureQueryClient queryClient,
+        IHonuaFeatureEditClient editClient,
+        IOfflineFeatureStore featureStore,
+        IOfflineChangeJournal changeJournal,
+        IOfflineSyncCheckpointStore checkpointStore,
+        OfflineSyncEngineOptions? options,
+        IOfflineSyncStateStore? stateStore,
+        IOfflineConflictStore? conflictStore,
+        ILogger<OfflineSyncEngine>? logger)
     {
         _queryClient = queryClient ?? throw new ArgumentNullException(nameof(queryClient));
         _editClient = editClient ?? throw new ArgumentNullException(nameof(editClient));
@@ -50,6 +88,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         _checkpointStore = checkpointStore ?? throw new ArgumentNullException(nameof(checkpointStore));
         _stateStore = stateStore;
         _conflictStore = conflictStore;
+        _logger = logger ?? NullLogger<OfflineSyncEngine>.Instance;
         _options = options ?? new OfflineSyncEngineOptions();
         _options.Validate();
     }
@@ -60,11 +99,17 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifest.PackageId);
 
+        var currentPhase = OfflineSyncPhase.Pushing;
+        LogSyncStarted(_logger, manifest.PackageId);
+
         try
         {
+            LogPackagePhase(_logger, manifest.PackageId, OfflineSyncPhase.Pushing);
             await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Pushing, null, cancellationToken).ConfigureAwait(false);
             var push = await PushAsync(manifest.PackageId, cancellationToken).ConfigureAwait(false);
 
+            currentPhase = OfflineSyncPhase.Pulling;
+            LogPackagePhase(_logger, manifest.PackageId, OfflineSyncPhase.Pulling);
             await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Pulling, null, cancellationToken).ConfigureAwait(false);
             var pull = await PullAsync(manifest, cancellationToken).ConfigureAwait(false);
 
@@ -82,20 +127,38 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                 result.Succeeded ? null : "sync completed with failures",
                 cancellationToken).ConfigureAwait(false);
 
+            if (result.Succeeded)
+            {
+                LogSyncCompleted(_logger, manifest.PackageId, push.Succeeded, pull.StoredFeatureCount);
+            }
+            else
+            {
+                LogSyncCompletedWithFailures(
+                    _logger,
+                    manifest.PackageId,
+                    push.Failures.Count,
+                    pull.Failures.Count);
+            }
+
             return result;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            LogSyncCanceled(_logger, manifest.PackageId, currentPhase);
             throw;
         }
         catch (HttpRequestException ex)
         {
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
+            var diagnostic = FormatException(ex);
+            LogSyncFailed(_logger, ex, manifest.PackageId, currentPhase);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, diagnostic, cancellationToken).ConfigureAwait(false);
             throw;
         }
         catch (TimeoutException ex)
         {
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
+            var diagnostic = FormatException(ex);
+            LogSyncFailed(_logger, ex, manifest.PackageId, currentPhase);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, diagnostic, cancellationToken).ConfigureAwait(false);
             throw;
         }
         catch (Exception ex)
@@ -104,7 +167,9 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             // safety-limit InvalidOperationException) must still drive the sync to a
             // terminal Failed state, otherwise operators are left with state stuck at
             // an in-progress phase with no record of why the run died.
-            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
+            var diagnostic = FormatException(ex);
+            LogSyncFailed(_logger, ex, manifest.PackageId, currentPhase);
+            await SaveStateAsync(manifest.PackageId, null, OfflineSyncPhase.Failed, diagnostic, cancellationToken).ConfigureAwait(false);
             throw;
         }
     }
@@ -141,6 +206,8 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         var storedPageCount = 0;
         var storedFeatureCount = 0;
 
+        LogPullStarted(_logger, manifest.PackageId, manifest.Sources.Count);
+
         foreach (var source in manifest.Sources)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(source.SourceId);
@@ -148,6 +215,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
 
             try
             {
+                LogSourcePhase(_logger, manifest.PackageId, source.SourceId, OfflineSyncPhase.Pulling);
                 await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Pulling, null, cancellationToken).ConfigureAwait(false);
                 var checkpoint = await _checkpointStore.GetCheckpointAsync(manifest.PackageId, source.SourceId, cancellationToken).ConfigureAwait(false);
                 var request = OfflineDownloadPlanner.CreateRequest(manifest, source, checkpoint);
@@ -195,25 +263,33 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                     SyncToken = null,
                     PulledFeatureCount = sourceFeatureCount,
                 }, cancellationToken).ConfigureAwait(false);
+
+                LogPullSourceCompleted(_logger, manifest.PackageId, source.SourceId, sourceFeatureCount);
             }
             catch (HttpRequestException ex)
             {
+                var diagnostic = FormatException(ex);
+                LogPullSourceRetryableFailure(_logger, ex, manifest.PackageId, source.SourceId);
+                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Failed, diagnostic, cancellationToken).ConfigureAwait(false);
                 failures.Add(new OfflineSyncFailure
                 {
                     PackageId = manifest.PackageId,
                     SourceId = source.SourceId,
                     Retryable = true,
-                    Reason = ex.Message,
+                    Reason = diagnostic,
                 });
             }
             catch (TimeoutException ex)
             {
+                var diagnostic = FormatException(ex);
+                LogPullSourceRetryableFailure(_logger, ex, manifest.PackageId, source.SourceId);
+                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Failed, diagnostic, cancellationToken).ConfigureAwait(false);
                 failures.Add(new OfflineSyncFailure
                 {
                     PackageId = manifest.PackageId,
                     SourceId = source.SourceId,
                     Retryable = true,
-                    Reason = ex.Message,
+                    Reason = diagnostic,
                 });
             }
             catch (InvalidOperationException ex)
@@ -222,13 +298,15 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
                 // (QueryPagesAsync throws InvalidOperationException once MaxAutoPages is
                 // exceeded). Record it as a non-retryable failure for this source rather
                 // than letting it escape and abort every remaining source in the pull.
-                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Failed, ex.Message, cancellationToken).ConfigureAwait(false);
+                var diagnostic = FormatException(ex);
+                LogPullSourceFatalFailure(_logger, ex, manifest.PackageId, source.SourceId);
+                await SaveStateAsync(manifest.PackageId, source.SourceId, OfflineSyncPhase.Failed, diagnostic, cancellationToken).ConfigureAwait(false);
                 failures.Add(new OfflineSyncFailure
                 {
                     PackageId = manifest.PackageId,
                     SourceId = source.SourceId,
                     Retryable = false,
-                    Reason = ex.Message,
+                    Reason = diagnostic,
                 });
             }
         }
@@ -273,6 +351,8 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         var retryableFailures = 0;
         var fatalFailures = 0;
 
+        LogPushStarted(_logger, packageId, pending.Count);
+
         for (var index = 0; index < pending.Count; index++)
         {
             var operation = pending[index];
@@ -280,6 +360,13 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
 
             if (operation.AttemptCount >= _options.MaxAttempts)
             {
+                LogPushOperationMaxAttempts(
+                    _logger,
+                    operation.PackageId,
+                    operation.SourceId,
+                    operation.OperationId,
+                    operation.AttemptCount,
+                    _options.MaxAttempts);
                 await _changeJournal.MarkFailedAsync(operation.OperationId, MaxAttemptsReason, cancellationToken).ConfigureAwait(false);
                 failures.Add(ToFailure(operation, MaxAttemptsReason, retryable: false));
                 fatalFailures++;
@@ -298,19 +385,24 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
+                LogPushCanceled(_logger, packageId, operation.OperationId);
                 await ReleasePendingOperationsAsync(pending, index).ConfigureAwait(false);
                 throw;
             }
             catch (HttpRequestException ex)
             {
-                await MarkRetryAsync(operation, ex.Message, cancellationToken).ConfigureAwait(false);
-                failures.Add(ToFailure(operation, ex.Message, retryable: true));
+                var diagnostic = FormatException(ex);
+                LogPushOperationRetryableException(_logger, ex, operation.PackageId, operation.SourceId, operation.OperationId);
+                await MarkRetryAsync(operation, diagnostic, cancellationToken).ConfigureAwait(false);
+                failures.Add(ToFailure(operation, diagnostic, retryable: true));
                 retryableFailures++;
             }
             catch (TimeoutException ex)
             {
-                await MarkRetryAsync(operation, ex.Message, cancellationToken).ConfigureAwait(false);
-                failures.Add(ToFailure(operation, ex.Message, retryable: true));
+                var diagnostic = FormatException(ex);
+                LogPushOperationRetryableException(_logger, ex, operation.PackageId, operation.SourceId, operation.OperationId);
+                await MarkRetryAsync(operation, diagnostic, cancellationToken).ConfigureAwait(false);
+                failures.Add(ToFailure(operation, diagnostic, retryable: true));
                 retryableFailures++;
             }
         }
@@ -335,6 +427,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         if (upload.Outcome == UploadEvaluationOutcome.Success)
         {
             await _changeJournal.MarkSucceededAsync(operation.OperationId, cancellationToken).ConfigureAwait(false);
+            LogPushOperationSucceeded(_logger, operation.PackageId, operation.SourceId, operation.OperationId);
             return UploadApplicationResult.Success;
         }
 
@@ -346,11 +439,13 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         if (upload.Outcome == UploadEvaluationOutcome.RetryableFailure)
         {
             var reason = upload.Reason ?? "retryable upload failure";
+            LogPushOperationRetryableProviderFailure(_logger, operation.PackageId, operation.SourceId, operation.OperationId, reason);
             await MarkRetryAsync(operation, reason, cancellationToken).ConfigureAwait(false);
             return UploadApplicationResult.RetryableFailure(ToFailure(operation, reason, retryable: true));
         }
 
         var fatalReason = upload.Reason ?? "fatal upload failure";
+        LogPushOperationFatalProviderFailure(_logger, operation.PackageId, operation.SourceId, operation.OperationId, fatalReason);
         await _changeJournal.MarkFailedAsync(operation.OperationId, fatalReason, cancellationToken).ConfigureAwait(false);
         return UploadApplicationResult.FatalFailure(ToFailure(operation, fatalReason, retryable: false));
     }
@@ -376,6 +471,7 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
         }
 
         var reason = upload.Reason ?? "conflict requires review";
+        LogPushOperationConflict(_logger, operation.PackageId, operation.SourceId, operation.OperationId, reason);
         var conflict = new OfflineConflictEnvelope
         {
             OperationId = operation.OperationId,
@@ -534,6 +630,9 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
     private static bool IsRetryable(FeatureEditError? error)
         => error?.Code is 408 or 429 or 500 or 502 or 503 or 504;
 
+    private static string FormatException(Exception exception)
+        => exception.ToString();
+
     private static OfflineSyncFailure ToFailure(OfflineChangeJournalEntry operation, string reason, bool retryable)
         => new()
         {
@@ -543,6 +642,160 @@ public sealed class OfflineSyncEngine : IOfflineSyncRunner
             Retryable = retryable,
             Reason = reason,
         };
+
+    [LoggerMessage(EventId = 1000, Level = LogLevel.Information, Message = "Starting offline sync for package {PackageId}.")]
+    private static partial void LogSyncStarted(ILogger logger, string packageId);
+
+    [LoggerMessage(EventId = 1001, Level = LogLevel.Information, Message = "Offline sync package {PackageId} entered {Phase} phase.")]
+    private static partial void LogPackagePhase(ILogger logger, string packageId, OfflineSyncPhase phase);
+
+    [LoggerMessage(
+        EventId = 1002,
+        Level = LogLevel.Information,
+        Message = "Offline sync package {PackageId} source {SourceId} entered {Phase} phase.")]
+    private static partial void LogSourcePhase(ILogger logger, string packageId, string sourceId, OfflineSyncPhase phase);
+
+    [LoggerMessage(
+        EventId = 1003,
+        Level = LogLevel.Information,
+        Message = "Offline sync completed for package {PackageId}; pushed {SucceededOperations} operations and stored {StoredFeatureCount} features.")]
+    private static partial void LogSyncCompleted(
+        ILogger logger,
+        string packageId,
+        int succeededOperations,
+        int storedFeatureCount);
+
+    [LoggerMessage(
+        EventId = 1004,
+        Level = LogLevel.Warning,
+        Message = "Offline sync completed with failures for package {PackageId}; push failures: {PushFailureCount}; pull failures: {PullFailureCount}.")]
+    private static partial void LogSyncCompletedWithFailures(
+        ILogger logger,
+        string packageId,
+        int pushFailureCount,
+        int pullFailureCount);
+
+    [LoggerMessage(
+        EventId = 1005,
+        Level = LogLevel.Information,
+        Message = "Offline sync canceled for package {PackageId} during {Phase} phase.")]
+    private static partial void LogSyncCanceled(ILogger logger, string packageId, OfflineSyncPhase phase);
+
+    [LoggerMessage(
+        EventId = 1006,
+        Level = LogLevel.Error,
+        Message = "Offline sync failed for package {PackageId} during {Phase} phase.")]
+    private static partial void LogSyncFailed(ILogger logger, Exception exception, string packageId, OfflineSyncPhase phase);
+
+    [LoggerMessage(
+        EventId = 1010,
+        Level = LogLevel.Information,
+        Message = "Starting offline pull for package {PackageId} across {SourceCount} sources.")]
+    private static partial void LogPullStarted(ILogger logger, string packageId, int sourceCount);
+
+    [LoggerMessage(
+        EventId = 1011,
+        Level = LogLevel.Information,
+        Message = "Offline pull stored {StoredFeatureCount} features for package {PackageId} source {SourceId}.")]
+    private static partial void LogPullSourceCompleted(
+        ILogger logger,
+        string packageId,
+        string sourceId,
+        int storedFeatureCount);
+
+    [LoggerMessage(
+        EventId = 1012,
+        Level = LogLevel.Warning,
+        Message = "Offline pull source failed with a retryable exception for package {PackageId} source {SourceId}.")]
+    private static partial void LogPullSourceRetryableFailure(
+        ILogger logger,
+        Exception exception,
+        string packageId,
+        string sourceId);
+
+    [LoggerMessage(
+        EventId = 1013,
+        Level = LogLevel.Error,
+        Message = "Offline pull source failed with a non-retryable exception for package {PackageId} source {SourceId}.")]
+    private static partial void LogPullSourceFatalFailure(
+        ILogger logger,
+        Exception exception,
+        string packageId,
+        string sourceId);
+
+    [LoggerMessage(
+        EventId = 1020,
+        Level = LogLevel.Information,
+        Message = "Starting offline push for package {PackageId} with {PendingOperationCount} pending operations.")]
+    private static partial void LogPushStarted(ILogger logger, string packageId, int pendingOperationCount);
+
+    [LoggerMessage(
+        EventId = 1021,
+        Level = LogLevel.Warning,
+        Message = "Offline push canceled for package {PackageId} while operation {OperationId} was active.")]
+    private static partial void LogPushCanceled(ILogger logger, string packageId, string operationId);
+
+    [LoggerMessage(
+        EventId = 1022,
+        Level = LogLevel.Error,
+        Message = "Offline push operation {OperationId} for package {PackageId} source {SourceId} exceeded max attempts: {AttemptCount}/{MaxAttempts}.")]
+    private static partial void LogPushOperationMaxAttempts(
+        ILogger logger,
+        string packageId,
+        string sourceId,
+        string operationId,
+        int attemptCount,
+        int maxAttempts);
+
+    [LoggerMessage(
+        EventId = 1023,
+        Level = LogLevel.Debug,
+        Message = "Offline push operation {OperationId} succeeded for package {PackageId} source {SourceId}.")]
+    private static partial void LogPushOperationSucceeded(ILogger logger, string packageId, string sourceId, string operationId);
+
+    [LoggerMessage(
+        EventId = 1024,
+        Level = LogLevel.Warning,
+        Message = "Offline push operation {OperationId} for package {PackageId} source {SourceId} failed with a retryable exception.")]
+    private static partial void LogPushOperationRetryableException(
+        ILogger logger,
+        Exception exception,
+        string packageId,
+        string sourceId,
+        string operationId);
+
+    [LoggerMessage(
+        EventId = 1025,
+        Level = LogLevel.Warning,
+        Message = "Offline push operation {OperationId} for package {PackageId} source {SourceId} reported retryable provider failure: {Reason}.")]
+    private static partial void LogPushOperationRetryableProviderFailure(
+        ILogger logger,
+        string packageId,
+        string sourceId,
+        string operationId,
+        string reason);
+
+    [LoggerMessage(
+        EventId = 1026,
+        Level = LogLevel.Error,
+        Message = "Offline push operation {OperationId} for package {PackageId} source {SourceId} reported fatal provider failure: {Reason}.")]
+    private static partial void LogPushOperationFatalProviderFailure(
+        ILogger logger,
+        string packageId,
+        string sourceId,
+        string operationId,
+        string reason);
+
+    [LoggerMessage(
+        EventId = 1027,
+        Level = LogLevel.Warning,
+        Message = "Offline push operation {OperationId} for package {PackageId} source {SourceId} reported a conflict: {Reason}.")]
+    private static partial void LogPushOperationConflict(
+        ILogger logger,
+        string packageId,
+        string sourceId,
+        string operationId,
+        string reason);
 
     private sealed record EditRequestBuildResult
     {

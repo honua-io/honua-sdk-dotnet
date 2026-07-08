@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Offline.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Honua.Sdk.Offline.Tests;
 
@@ -199,18 +200,21 @@ public sealed class OfflineSyncEngineTests
         // auto-pagination safety limit is hit. The pull must capture this as a
         // non-retryable per-source failure (and a terminal Failed state) instead of
         // letting it escape and abort every remaining source.
+        var error = new InvalidOperationException(
+            "Auto-pagination safety limit reached (100 pages).");
         var queryClient = new FakeQueryClient
         {
-            PagesError = new InvalidOperationException(
-                "Auto-pagination safety limit reached (100 pages)."),
+            PagesError = error,
         };
         var store = new FakeOfflineStore();
+        var logger = new FakeLogger<OfflineSyncEngine>();
         var engine = CreateEngine(
             queryClient,
             new FakeEditClient(),
             store,
             new FakeChangeJournal(),
-            stateStore: store);
+            stateStore: store,
+            logger: logger);
 
         var result = await engine.PullAsync(CreateManifest());
 
@@ -218,8 +222,19 @@ public sealed class OfflineSyncEngineTests
         Assert.Equal("parks", failure.SourceId);
         Assert.False(failure.Retryable);
         Assert.Contains("safety limit", failure.Reason, StringComparison.Ordinal);
-        Assert.Contains(store.States, state =>
-            state.SourceId == "parks" && state.Phase == OfflineSyncPhase.Failed);
+        Assert.Contains("System.InvalidOperationException", failure.Reason, StringComparison.Ordinal);
+        Assert.Contains(nameof(FakeQueryClient.QueryPagesAsync), failure.Reason, StringComparison.Ordinal);
+
+        var failedState = Assert.Single(
+            store.States,
+            state => state.SourceId == "parks" && state.Phase == OfflineSyncPhase.Failed);
+        Assert.Equal(failure.Reason, failedState.LastError);
+
+        var logEntry = Assert.Single(logger.Entries, entry => entry.EventId.Id == 1013);
+        Assert.Equal(LogLevel.Error, logEntry.Level);
+        Assert.Same(error, logEntry.Exception);
+        Assert.Contains("field-area-1", logEntry.Message, StringComparison.Ordinal);
+        Assert.Contains("parks", logEntry.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -246,6 +261,40 @@ public sealed class OfflineSyncEngineTests
         Assert.Equal(OfflineSyncPhase.Failed, store.States[^1].Phase);
     }
 
+    [Fact]
+    public async Task SyncAsync_UnhandledPushException_LogsAndStoresExceptionDiagnostics()
+    {
+        var error = new InvalidOperationException("edit service failed unexpectedly");
+        var editClient = new FakeEditClient
+        {
+            ApplyError = error,
+        };
+        var store = new FakeOfflineStore();
+        var logger = new FakeLogger<OfflineSyncEngine>();
+        var engine = CreateEngine(
+            new FakeQueryClient(),
+            editClient,
+            store,
+            new FakeChangeJournal([CreateOperation(OfflineEditOperationKind.Add)]),
+            stateStore: store,
+            logger: logger);
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => engine.SyncAsync(CreateManifest()));
+
+        Assert.Same(error, thrown);
+        var failedState = Assert.Single(
+            store.States,
+            state => state.SourceId is null && state.Phase == OfflineSyncPhase.Failed);
+        Assert.Contains("System.InvalidOperationException", failedState.LastError, StringComparison.Ordinal);
+        Assert.Contains(nameof(FakeEditClient.ApplyEditsAsync), failedState.LastError, StringComparison.Ordinal);
+
+        var logEntry = Assert.Single(logger.Entries, entry => entry.EventId.Id == 1006);
+        Assert.Equal(LogLevel.Error, logEntry.Level);
+        Assert.Same(error, logEntry.Exception);
+        Assert.Contains("field-area-1", logEntry.Message, StringComparison.Ordinal);
+        Assert.Contains(nameof(OfflineSyncPhase.Pushing), logEntry.Message, StringComparison.Ordinal);
+    }
+
     private static OfflineSyncEngine CreateEngine(
         FakeQueryClient queryClient,
         FakeEditClient editClient,
@@ -253,7 +302,8 @@ public sealed class OfflineSyncEngineTests
         FakeChangeJournal journal,
         FakeConflictStore? conflictStore = null,
         OfflineSyncEngineOptions? options = null,
-        IOfflineSyncStateStore? stateStore = null)
+        IOfflineSyncStateStore? stateStore = null,
+        ILogger<OfflineSyncEngine>? logger = null)
         => new(
             queryClient,
             editClient,
@@ -262,7 +312,8 @@ public sealed class OfflineSyncEngineTests
             store,
             options,
             stateStore,
-            conflictStore);
+            conflictStore,
+            logger);
 
     private static OfflinePackageManifest CreateManifest()
         => new()
@@ -385,8 +436,15 @@ public sealed class OfflineSyncEngineTests
 
         public List<FeatureEditRequest> Requests { get; } = [];
 
+        public Exception? ApplyError { get; init; }
+
         public Task<FeatureEditResponse> ApplyEditsAsync(FeatureEditRequest request, CancellationToken cancellationToken = default)
         {
+            if (ApplyError is not null)
+            {
+                throw ApplyError;
+            }
+
             Requests.Add(request);
             return Task.FromResult(Responses.Dequeue());
         }
@@ -522,4 +580,29 @@ public sealed class OfflineSyncEngineTests
         public Task ResolveConflictAsync(string operationId, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }
+
+    private sealed class FakeLogger<T> : ILogger<T>
+    {
+        public List<FakeLogEntry> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
+            => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            ArgumentNullException.ThrowIfNull(formatter);
+
+            Entries.Add(new FakeLogEntry(logLevel, eventId, formatter(state, exception), exception));
+        }
+    }
+
+    private sealed record FakeLogEntry(LogLevel Level, EventId EventId, string Message, Exception? Exception);
 }
