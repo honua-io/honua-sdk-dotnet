@@ -613,6 +613,68 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_CachesObjectIdFieldPerLayer()
+    {
+        var metadataRequests = 0;
+        var editRequests = 0;
+        var capturedForms = new List<Dictionary<string, string?>>();
+        var client = TestHelpers.CreateFeatureServerClient(async req =>
+        {
+            var path = req.RequestUri?.AbsolutePath;
+            if (req.Method == HttpMethod.Get && path == "/rest/services/svc/FeatureServer/0")
+            {
+                metadataRequests++;
+                return TestHelpers.CreateRawJsonResponse(
+                    """{ "id": 0, "objectIdField": "OBJECTID", "capabilities": "Query,Create,Update,Delete" }""");
+            }
+
+            if (req.Method == HttpMethod.Post && path == "/rest/services/svc/FeatureServer/0/applyEdits")
+            {
+                editRequests++;
+                capturedForms.Add(await ParseFormAsync(req).ConfigureAwait(false));
+                return TestHelpers.CreateRawJsonResponse("""
+                {
+                    "addResults": [],
+                    "updateResults": [{ "objectId": 1, "success": true }],
+                    "deleteResults": []
+                }
+                """);
+            }
+
+            throw new InvalidOperationException($"Unexpected request: {req.Method} {req.RequestUri}");
+        });
+
+        var edits = (IHonuaFeatureEditClient)client;
+
+        await edits.ApplyEditsAsync(BuildUpdateRequest(1));
+        await edits.ApplyEditsAsync(BuildUpdateRequest(2));
+
+        Assert.Equal(1, metadataRequests);
+        Assert.Equal(2, editRequests);
+        Assert.Equal(2, capturedForms.Count);
+        using var firstUpdates = JsonDocument.Parse(capturedForms[0]["updates"]!);
+        using var secondUpdates = JsonDocument.Parse(capturedForms[1]["updates"]!);
+        Assert.Equal(1, firstUpdates.RootElement[0].GetProperty("attributes").GetProperty("OBJECTID").GetInt64());
+        Assert.Equal(2, secondUpdates.RootElement[0].GetProperty("attributes").GetProperty("OBJECTID").GetInt64());
+
+        static FeatureEditRequest BuildUpdateRequest(long objectId) => new()
+        {
+            Source = new FeatureSource { ServiceId = "svc", LayerId = 0 },
+            Updates =
+            [
+                new FeatureEditFeature
+                {
+                    ObjectId = objectId,
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["NAME"] = JsonValue($"Feature {objectId}"),
+                    },
+                }
+            ],
+        };
+    }
+
+    [Fact]
     public async Task ApplyEditsAsync_SharedAbstraction_NonNumericDeleteId_Throws()
     {
         var client = TestHelpers.CreateFeatureServerClient(_ =>
@@ -820,7 +882,7 @@ public class HonuaFeatureServerClientTests
     {
         var client = TestHelpers.CreateFeatureServerClient(_ =>
             Task.FromResult(TestHelpers.CreateRawJsonResponse("""
-            { "id": 0, "objectIdField": "OBJECTID", "capabilities": "Query,Create,Update,Delete" }
+            { "id": 0, "objectIdField": "OBJECTID", "capabilities": "Query, create, UPDATE, delete" }
             """)));
 
         var capabilities = await client.GetEditCapabilitiesAsync("svc", 0);

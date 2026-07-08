@@ -5,6 +5,7 @@ using System.Reflection;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.GeoServices.FeatureServer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Honua.Sdk.GeoServices.Tests;
 
@@ -34,6 +35,47 @@ public sealed class ClientOptionsTests
         var client = provider.GetRequiredService<HonuaFeatureServerClient>();
 
         Assert.Equal(timeout, GetHttpClient(client).Timeout);
+    }
+
+    [Fact]
+    public void GeoServicesClientRegistrations_DoNotOverwriteSharedOptions()
+    {
+        var firstBaseAddress = new Uri("https://first.example");
+        var firstTimeout = TimeSpan.FromSeconds(33);
+        var services = new ServiceCollection();
+        services.AddHonuaFeatureServer(options =>
+        {
+            options.BaseAddress = firstBaseAddress;
+            options.EnableRetry = false;
+            options.Timeout = firstTimeout;
+        });
+        services.AddHonuaRouting(options =>
+        {
+            options.BaseAddress = new Uri("https://routing.example");
+            options.EnableRetry = false;
+            options.Timeout = TimeSpan.FromSeconds(44);
+        });
+        services.AddHonuaImageServer(options =>
+        {
+            options.BaseAddress = new Uri("https://image.example");
+            options.EnableRetry = false;
+            options.Timeout = TimeSpan.FromSeconds(55);
+        });
+        services.AddHonuaGeometryServer(options =>
+        {
+            options.BaseAddress = new Uri("https://geometry.example");
+            options.EnableRetry = false;
+            options.Timeout = TimeSpan.FromSeconds(66);
+        });
+
+        Assert.Single(services, descriptor =>
+            descriptor.ServiceType == typeof(IOptions<HonuaGeoServicesClientOptions>));
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
+
+        Assert.Equal(firstBaseAddress, options.BaseAddress);
+        Assert.Equal(firstTimeout, options.Timeout);
     }
 
     [Fact]

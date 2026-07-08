@@ -3,11 +3,9 @@
 
 using System.Buffers;
 using System.Globalization;
-using System.Net;
 using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Routing;
-using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -326,7 +324,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     {
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        EnsureSuccess(response, body);
+        GeoServicesHttp.EnsureSuccess(response, body);
         return body;
     }
 
@@ -342,7 +340,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
 
         using var response = await _http.PostAsync(CreateRequestUri(path), content, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        EnsureSuccess(response, body);
+        GeoServicesHttp.EnsureSuccess(response, body);
         return body;
     }
 
@@ -576,105 +574,6 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
         => startTime?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
-
-    private static void EnsureSuccess(HttpResponseMessage response, string body)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            if (!string.IsNullOrWhiteSpace(body) && TryExtractGeoServicesError(body, response.StatusCode) is { } error)
-            {
-                throw error;
-            }
-
-            return;
-        }
-
-        var errorMessage = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "GeoServices routing request failed";
-        throw new HonuaFeatureServerException(response.StatusCode, errorMessage, body);
-    }
-
-    private static HonuaFeatureServerException? TryExtractGeoServicesError(string body, HttpStatusCode fallbackStatus)
-    {
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (!doc.RootElement.TryGetProperty("error", out var errorElement) ||
-                errorElement.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            var message = "GeoServices routing returned an error.";
-            int? geoServicesCode = null;
-            IReadOnlyList<string>? details = null;
-            var httpCode = fallbackStatus;
-            if (errorElement.TryGetProperty("message", out var msgProp) &&
-                msgProp.ValueKind == JsonValueKind.String)
-            {
-                message = msgProp.GetString() ?? message;
-            }
-
-            if (errorElement.TryGetProperty("code", out var codeProp) &&
-                codeProp.TryGetInt32(out var errorCode))
-            {
-                geoServicesCode = errorCode;
-                httpCode = GeoServicesHttp.MapErrorCodeToStatus(errorCode, fallbackStatus);
-            }
-
-            if (errorElement.TryGetProperty("details", out var detailsProp) &&
-                detailsProp.ValueKind == JsonValueKind.Array)
-            {
-                var detailList = new List<string>();
-                foreach (var item in detailsProp.EnumerateArray())
-                {
-                    if (item.ValueKind == JsonValueKind.String)
-                    {
-                        detailList.Add(item.GetString()!);
-                    }
-                }
-
-                details = detailList;
-            }
-
-            return new HonuaFeatureServerException(httpCode, message, body, geoServicesCode, details);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-    }
-
-    private static string? TryExtractErrorMessage(string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("error", out var errorElement) &&
-                errorElement.ValueKind == JsonValueKind.Object &&
-                errorElement.TryGetProperty("message", out var msg) &&
-                msg.ValueKind == JsonValueKind.String)
-            {
-                return msg.GetString();
-            }
-
-            if (doc.RootElement.TryGetProperty("message", out var topMsg) &&
-                topMsg.ValueKind == JsonValueKind.String)
-            {
-                return topMsg.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-
-        return null;
-    }
 
     private static List<RouteTravelMode> ParseTravelModes(JsonElement root)
     {
