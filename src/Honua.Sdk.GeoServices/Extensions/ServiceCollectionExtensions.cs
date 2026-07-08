@@ -9,6 +9,7 @@ using Honua.Sdk.GeoServices.ImageServer;
 using Honua.Sdk.GeoServices.Routing;
 using Honua.Sdk.Internal.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -36,13 +37,9 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var snapshot = new HonuaGeoServicesClientOptions();
-        configure(snapshot);
-        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
-        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+        var snapshot = CaptureSnapshot(configure);
 
-        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        TryAddGeoServicesOptions(services, snapshot);
         var httpBuilder = services.AddHttpClient<HonuaFeatureServerClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
@@ -76,13 +73,9 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var snapshot = new HonuaGeoServicesClientOptions();
-        configure(snapshot);
-        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
-        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+        var snapshot = CaptureSnapshot(configure);
 
-        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        TryAddGeoServicesOptions(services, snapshot);
         var httpBuilder = services.AddHttpClient<HonuaRoutingClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
@@ -109,13 +102,9 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var snapshot = new HonuaGeoServicesClientOptions();
-        configure(snapshot);
-        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
-        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+        var snapshot = CaptureSnapshot(configure);
 
-        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        TryAddGeoServicesOptions(services, snapshot);
         var httpBuilder = services.AddHttpClient<HonuaImageServerClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
@@ -147,13 +136,9 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var snapshot = new HonuaGeoServicesClientOptions();
-        configure(snapshot);
-        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
-        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+        var snapshot = CaptureSnapshot(configure);
 
-        services.AddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaGeoServicesAuthHandler>();
+        TryAddGeoServicesOptions(services, snapshot);
         var httpBuilder = services.AddHttpClient<HonuaGeometryServerClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaGeoServicesClientOptions>>().Value;
@@ -181,5 +166,25 @@ public static class ServiceCollectionExtensions
             // DisableForUnsafeHttpMethods(), which would drop the /query POST.
             return ValueTask.FromResult(GeoServicesRetryPolicy.IsRetryableRequest(args.Context.GetRequestMessage()));
         };
+    }
+
+    private static HonuaGeoServicesClientOptions CaptureSnapshot(Action<HonuaGeoServicesClientOptions> configure)
+    {
+        var snapshot = new HonuaGeoServicesClientOptions();
+        configure(snapshot);
+        HonuaGeoServicesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaGeoServicesClientOptions.ValidateTimeout(snapshot.Timeout);
+        return snapshot;
+    }
+
+    private static void TryAddGeoServicesOptions(IServiceCollection services, HonuaGeoServicesClientOptions snapshot)
+    {
+        // TryAdd: if a sibling GeoServices extension (FeatureServer, Routing,
+        // ImageServer, or GeometryServer) already registered shared GeoServices
+        // options, share that snapshot rather than silently overwriting it.
+        // The first AddHonua* wins; subsequent registrations must use compatible
+        // BaseAddress / auth configuration.
+        services.TryAddSingleton<IOptions<HonuaGeoServicesClientOptions>>(Options.Create(snapshot));
+        services.TryAddTransient<HonuaGeoServicesAuthHandler>();
     }
 }
