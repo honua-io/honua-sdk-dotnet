@@ -34,4 +34,16 @@ public class HonuaCoordinateTransformerTests
         Assert.Equal(3857, result.SRID);
         Assert.NotEqual(point.Coordinate.X, result.Coordinate.X);
     }
+
+    [Fact]
+    public void CreateMathTransform_UnsupportedDefaultEpsgReportsCatalogMiss()
+    {
+        var transformer = new HonuaCoordinateTransformer();
+
+        var exception = Assert.Throws<InvalidOperationException>(() => transformer.CreateMathTransform(
+            HonuaSpatialReference.Wgs84,
+            HonuaSpatialReference.FromWkid(32604)));
+
+        Assert.Equal("EPSG:32604 is not available in the ProjNET catalog.", exception.Message);
+    }
 }

@@ -95,7 +95,7 @@ CONFORMANCE_IMAGE=image.binpb conformance/.fixtures/run.sh
 ## Bumping the pins
 
 - **Fixtures / schema:** update `conformance/FIXTURE_VERSION` and the
-  `Geospatial.Grpc` `<GeospatialGrpcVersion>` in `Directory.Build.props`
+  `Geospatial.Grpc` package version in `Directory.Packages.props`
   together; `check-version.sh` rejects a mismatch.
 - **Server image:** update the digest in `PINS.md` and
   `.github/workflows/conformance.yml`.

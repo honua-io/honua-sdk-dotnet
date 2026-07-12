@@ -24,8 +24,9 @@ public sealed class HonuaCoordinateTransformer
     public HonuaCoordinateTransformer(CoordinateSystemServices? coordinateSystemServices = null)
     {
         // ProjNET's default catalog blocks on background initialization during lookup, which
-        // deadlocks single-threaded browser runtimes. The built-in systems are resolved below.
-        this.coordinateSystemServices = coordinateSystemServices;
+        // deadlocks single-threaded browser runtimes. Native runtimes retain the normal catalog.
+        this.coordinateSystemServices = coordinateSystemServices ??
+            (OperatingSystem.IsBrowser() ? null : new CoordinateSystemServices());
     }
 
     /// <summary>
@@ -113,10 +114,7 @@ public sealed class HonuaCoordinateTransformer
                 return coordinateSystem;
             }
 
-            if (wkid is 4326 or 3857)
-            {
-                return ResolveKnownEpsg(wkid);
-            }
+            return ResolveKnownEpsg(wkid);
         }
 
         if (spatialReference is { Authority: not null, Code: int code })
@@ -127,8 +125,7 @@ public sealed class HonuaCoordinateTransformer
                 return coordinateSystem;
             }
 
-            if (spatialReference.Authority.Equals("EPSG", StringComparison.OrdinalIgnoreCase) &&
-                code is 4326 or 3857)
+            if (spatialReference.Authority.Equals("EPSG", StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveKnownEpsg(code);
             }

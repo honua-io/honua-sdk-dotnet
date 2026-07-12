@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Honua / generated">
-    <PackageVersion Include="Geospatial.Grpc" Version="$(GeospatialGrpcVersion)" />
+    <PackageVersion Include="Geospatial.Grpc" Version="0.1.0-alpha.2" />
   </ItemGroup>
 
   <ItemGroup Label="Microsoft.Extensions">

@@ -15,7 +15,7 @@ geospatial-grpc#19 (`conformance/fetch-fixtures.sh`), never copied/forked here.
 | Pin | Value | Source |
 |-----|-------|--------|
 | Conformance fixtures | `0.1.0-alpha.2` | `conformance/FIXTURE_VERSION` |
-| `Geospatial.Grpc` package | `0.1.0-alpha.2` | `Directory.Build.props` (`<GeospatialGrpcVersion>`) |
+| `Geospatial.Grpc` package | `0.1.0-alpha.2` | `Directory.Packages.props` (central `PackageVersion`) |
 
 These two **must stay equal** — a fixture set maps 1:1 to a `geospatial.v1`
 schema release, and the SDK's generated gRPC client is built against the same

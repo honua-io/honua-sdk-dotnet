@@ -124,11 +124,11 @@ jobs:
           fi
 
           protocol_version="$(
-            sed -n 's:.*<GeospatialGrpcVersion>\([^<]*\)</GeospatialGrpcVersion>.*:\1:p' \
-              Directory.Build.props
+            sed -n 's:.*<PackageVersion Include="Geospatial\.Grpc" Version="\([^"]*\)".*:\1:p' \
+              Directory.Packages.props
           )"
           if [[ -z "${protocol_version}" ]]; then
-            echo "::error::Could not resolve GeospatialGrpcVersion from Directory.Build.props."
+            echo "::error::Could not resolve the centrally managed Geospatial.Grpc package version."
             exit 1
           fi
 
