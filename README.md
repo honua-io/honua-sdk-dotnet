@@ -1,14 +1,17 @@
 # Honua .NET SDK
 
+[![.NET SDK CI](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml)
+[![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://honua-io.github.io/honua-sdk-dotnet/)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
 
-Official .NET client libraries for [Honua](https://github.com/honua-io/honua-server) --
-an open-source geospatial feature server. The SDK provides typed clients for
-querying and editing features over gRPC, querying via OGC WFS 2.0, managing
-services through the Admin REST API, geocoding addresses, and reading features
-through GeoServices FeatureServer, OGC API Features, OGC API Processes, scene
-metadata endpoints, OGC API Records and STAC catalog endpoints, and shared
-real-time feature stream contracts.
+Official .NET client libraries for [Honua](https://github.com/honua-io/honua-server),
+a cloud-native geospatial server that exposes one shared capability set through
+many protocol adapters. The SDK gives .NET applications typed, DI-friendly
+clients for that surface: feature query/edit/streaming over gRPC, OGC API
+Features, OGC WFS 2.0, GeoServices FeatureServer, OGC API Processes jobs, OGC
+API Records + STAC catalogs, scene metadata, geocoding and routing, the Admin
+REST API, NTS/ProjNet-backed geometry, and provider-neutral offline sync — all
+sharing one options/auth/resilience pattern.
 
 > **New here? Pick your path:**
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
@@ -16,6 +19,16 @@ real-time feature stream contracts.
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
 > - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
+
+## Status
+
+| | |
+|---|---|
+| Current version | 1.5.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) |
+| Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
+| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)). nuget.org publishing is wired into the release workflow but gated until the `Geospatial.Grpc` protocol dependency has a stable public release. |
+| API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
+| License | [Apache 2.0](LICENSE) |
 
 Current SDK capabilities are summarized in [docs/features/README.md](docs/features/README.md).
 
@@ -34,7 +47,7 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk.ConsoleShare** | Console Share clients -- read share detail, update access, validate dependency closure, manage public-link / embed-token lifecycle, drive scheduled exports and traffic, and publish open-data (DCAT / STAC) |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
-| **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics |
+| **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics -- plus NAServer routing |
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
 | **Honua.Sdk.OgcFeatures** | OGC API Features and WFS 2.0 read/query client -- landing page, conformance, collections, queryables, items, plus WFS GetCapabilities / GetFeature (GeoJSON) / DescribeFeatureType |
 | **Honua.Sdk.Catalogs** | OGC API Records + STAC catalog client -- landing pages, conformance, collections, item / record pages, GET/POST search with paging, raw JSON |
@@ -43,17 +56,16 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 
 Browser and WebAssembly consumers should start with
 [docs/browser-wasm-support.md](docs/browser-wasm-support.md). The browser-safe
-surface is contracts plus REST clients over browser `HttpClient`; native gRPC,
-local storage engines, background schedulers, and display renderers stay out of
-SDK core.
+surface is contracts plus REST clients over browser `HttpClient` (validated by
+a trim-safety CI workflow); native gRPC, local storage engines, background
+schedulers, and display renderers stay out of SDK core.
 
 ## Install
 
-Stable release tags publish to
-[nuget.org](https://www.nuget.org/) once all public dependencies
-are available there. Until the first public-feed release, and for preview
-packages, use the authenticated GitHub Packages feed described in
-[INSTALL.md](INSTALL.md).
+Packages are not yet on nuget.org: stable release tags will publish there once
+the `Geospatial.Grpc` protocol dependency has a stable public release. Until
+then, all packages (stable and preview) install from the authenticated GitHub
+Packages feed — follow [INSTALL.md](INSTALL.md) to configure the source, then:
 
 ```bash
 # Easiest: install the umbrella to get every Honua.Sdk.* package at once.
@@ -91,10 +103,6 @@ honua doctor --help
 
 See [Sanitized diagnostic bundles](docs/diagnostic-bundles.md) for capture,
 consent, privacy, and replay guidance.
-
-Prerelease packages are available from
-[GitHub Packages](INSTALL.md#install-from-github-packages). Dry runs do not
-publish; their package artifacts remain attached to the workflow run.
 
 ## Quick usage
 
@@ -172,18 +180,16 @@ The deeper capabilities each have their own guide:
 |---|---|
 | Authentication, providers, token refresh, mTLS | [docs/authentication.md](docs/authentication.md) |
 | Apply edits over gRPC / OGC / GeoServices | [docs/feature-edits.md](docs/feature-edits.md) |
-| Streaming + paging via `IAsyncEnumerable<T>` | [docs/client-behavior.md](docs/client-behavior.md) |
+| Streaming + paging via `IAsyncEnumerable<T>`, retry / timeout / resilience defaults | [docs/client-behavior.md](docs/client-behavior.md) |
 | Shared `IHonuaFeatureQueryClient` abstraction | [docs/source-facade.md](docs/source-facade.md) |
 | Catalog / OGC Records / STAC discovery | [docs/metadata-catalog-parity.md](docs/metadata-catalog-parity.md) |
 | Plugin contracts (manifests, permissions) | [docs/plugin-contracts.md](docs/plugin-contracts.md) |
 | Console shell / route guards / environment profiles / Studio reports | [docs/console-client-contracts.md](docs/console-client-contracts.md) |
 | Offline sync (planner, conflicts, manifests) | [docs/offline-sync-core.md](docs/offline-sync-core.md) |
 | Field form / validation / record workflow | [Honua.Sdk.Field README](src/Honua.Sdk.Field/README.md) |
-| Retry / timeout / resilience defaults | [docs/client-behavior.md](docs/client-behavior.md) |
 | WFS 2.0 query surface | [Honua.Sdk.OgcFeatures README](src/Honua.Sdk.OgcFeatures/README.md) |
 | Admin compatibility gate | [docs/compatibility.md](docs/compatibility.md) |
 | Spec workspace validate / plan / apply / artifact retrieval | [docs/spec-workspace-contracts.md](docs/spec-workspace-contracts.md) |
-| Admin bootstrap end-to-end sample | [examples/AdminBootstrapConsole](examples/AdminBootstrapConsole/) |
 | Geometry, CRS, geofence evaluation | [docs/geometry-analysis.md](docs/geometry-analysis.md) + [docs/geofencing.md](docs/geofencing.md) |
 | Scene metadata + offline scene packages | [docs/scenes.md](docs/scenes.md) |
 | Browser / WASM hosting | [docs/browser-wasm-support.md](docs/browser-wasm-support.md) |
@@ -192,10 +198,37 @@ For an overview diagram of the package layering, see
 [docs/architecture.md](docs/architecture.md). For the full doc index, see
 [docs/README.md](docs/README.md).
 
+## Samples
+
+Runnable console/worker samples live in [examples/](examples/README.md):
+
+- **[AdminBootstrapConsole](examples/AdminBootstrapConsole/)** -- the canonical
+  sample: bootstrap a PostGIS table with `Honua.Sdk.Admin`, enable `Grpc`
+  while preserving existing protocols, verify with a bounded `Honua.Sdk.Grpc`
+  query
+- **[SpecPlanApplyConsole](examples/SpecPlanApplyConsole/)** -- spec validate /
+  plan / apply SSE stream consumption
+- **[StudioAnalysisReportConsole](examples/StudioAnalysisReportConsole/)** --
+  retrieve a structured Studio analysis report and render Markdown
+- **[RealtimeWorker](examples/RealtimeWorker/)** -- real-time feature stream
+  worker with buffering and resume tokens
+- **[RoutingGeofenceConsole](examples/RoutingGeofenceConsole/)** -- route solve
+  plus geofence enter/exit/approach/depart transitions
+- **[OfflineConflictConsole](examples/OfflineConflictConsole/)** -- offline
+  sync conflict production, detection, and resolution strategies
+- **[FieldFormConsole](examples/FieldFormConsole/)** -- field form validation
+  and calculated-field evaluation
+- **[FieldDataCollection](examples/FieldDataCollection/)** -- archived MAUI
+  reference assets for offline sync and map views
+
+The deterministic end-to-end demo workflows used in CI are documented in
+[docs/demo-suite.md](docs/demo-suite.md).
+
 ## Repository layout
 
 ```
 src/
+  Honua.Sdk/                     Umbrella meta-package: AddHonua(...) fan-out registration
   Honua.Sdk.Abstractions/        Shared feature query/edit/stream contracts + offline sync contracts (manifests, sync state, checkpoints, conflicts)
   Honua.Sdk.Offline/             Offline push/pull planner and sync engine
   Honua.Sdk.Grpc/                gRPC FeatureService + native ProcessService clients
@@ -209,20 +242,15 @@ src/
   Honua.Sdk.Field/               Field form, validation, and workflow contracts
   Honua.Sdk.GeoServices/         GeoServices FeatureServer + routing client package
   Honua.Sdk.Scenes/              Scene metadata and offline package contract client
-  Honua.Sdk.OgcFeatures/         OGC API Features + WFS 2.0 read/query/edit client package
+  Honua.Sdk.OgcFeatures/         OGC API Features + WFS 2.0 read/query client package
   Honua.Sdk.Catalogs/            OGC API Records + STAC catalog client package
 tests/
   Honua.Sdk.*.Tests/             Unit tests per package
   Honua.Sdk.IntegrationTests/    Staging-gated read-only protocol coverage
+  Honua.Sdk.Conformance.Tests/   Shared geospatial-grpc conformance fixture gate
   Honua.Sdk.BrowserSmoke[.Tests]/ Browser WASM runtime smoke harness
   DemoSuite.Tests/               Deterministic end-to-end demo workflow tests
-examples/
-  AdminBootstrapConsole/         Canonical operator/bootstrap sample (admin + gRPC verify)
-  SpecPlanApplyConsole/          Spec validate/plan/apply stream sample
-  StudioAnalysisReportConsole/   Studio analysis report retrieve/render sample
-  RealtimeWorker/                Real-time feature stream worker sample
-  RoutingGeofenceConsole/        Routing + geofence evaluation sample
-  FieldDataCollection/           Archived MAUI reference assets for offline / forms
+examples/                        Runnable samples (see Samples above)
 docs/                            Per-topic guides (see Documentation below)
 contracts/                       Golden JSON/protobuf fixtures shared with consuming repos
 third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc source of truth
@@ -230,74 +258,48 @@ third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc s
 
 ## Documentation
 
-- **[Hosted API reference](https://honua-io.github.io/honua-sdk-dotnet/)** -- full DocFX-generated reference for every public type and member, deployed from `trunk`.
+- **[Hosted API reference](https://honua-io.github.io/honua-sdk-dotnet/)** --
+  full DocFX-generated reference for every public type and member, deployed
+  from `trunk`
+- **[Documentation index](docs/README.md)** -- every getting-started,
+  capability, and operations guide in one place
+- **[Quickstart](docs/quickstart.md)** -- 60-second hello-features, then a
+  five-step guided tour
+- **[INSTALL.md](INSTALL.md)** -- feed setup, version policy, and the server
+  compatibility baseline
+- **[Troubleshooting](docs/troubleshooting.md)** -- concrete failure modes and
+  fixes for configuration, auth, retry, browser, and compatibility issues
 
-### Getting started
+Operations docs: [release and NuGet publishing](docs/release.md),
+[server/API compatibility gates](docs/compatibility.md),
+[staging integration](docs/staging-integration.md), and
+[Testcontainers-backed protocol integration tests](docs/protocol-integration-tests.md).
 
-- **[Quickstart](docs/quickstart.md)** -- build a console app that queries
-  features through native clients and the shared abstraction, lists services,
-  and geocodes an address in 5 minutes
-- **[INSTALL.md](INSTALL.md)** -- NuGet and GitHub Packages setup, version
-  policy and server compatibility baseline
-- **[Authentication](docs/authentication.md)** -- credential providers,
-  refresh, HTTPS-only transport, and diagnostics
-- **[Console client contracts](docs/console-client-contracts.md)** -- Blazor
-  Web and MAUI contract map, route guards, environment profiles, native mTLS
-  state, and fixtures
-- **[Troubleshooting](docs/troubleshooting.md)** -- common errors and fixes
-  for configuration, auth, retry, browser, and compatibility issues
-- **[Browser / WASM support](docs/browser-wasm-support.md)** -- supported
-  surface, gRPC-Web, and known browser-host constraints
+## Related Honua projects
 
-### Samples
+| Repo | What it is |
+|---|---|
+| [honua-server](https://github.com/honua-io/honua-server) | Flagship multi-protocol geospatial server this SDK talks to |
+| [honua-console](https://github.com/honua-io/honua-console) | Unified web console (Studio, Catalog, Operate, Share) |
+| [honua-sdk-js](https://github.com/honua-io/honua-sdk-js) | JavaScript/TypeScript SDKs + MCP server |
+| [honua-sdk-python](https://github.com/honua-io/honua-sdk-python) | Python SDK |
+| [honua-mobile](https://github.com/honua-io/honua-mobile) | .NET MAUI mobile SDK building on these packages |
+| [geospatial-grpc](https://github.com/honua-io/geospatial-grpc) | Vendor-neutral gRPC protocol standard the `Honua.Sdk.Grpc` client implements |
 
-- **[Admin Bootstrap Console](examples/AdminBootstrapConsole/)** -- the
-  canonical sample app for this repo; bootstrap a PostGIS table with
-  `Honua.Sdk.Admin`, preserve existing protocols while enabling `Grpc`, verify
-  it with a bounded `Honua.Sdk.Grpc` query, and troubleshoot the exact error
-  surfaces returned by the sample
-- **[Studio Analysis Report Console](examples/StudioAnalysisReportConsole/)** --
-  retrieve a structured Studio analysis report and render Markdown through
-  `IHonuaStudioReportsClient`
-- **[Field Data Collection](examples/FieldDataCollection/)** -- archived MAUI
-  reference assets for offline sync and map views
-- **[Demo Suite](docs/demo-suite.md)** -- deterministic end-to-end demo
-  workflows used in CI
+Hosted product docs live at [honua.gitbook.io/honuaio](https://honua.gitbook.io/honuaio/).
 
-### Capability guides
+## Contributing
 
-- **[Feature Edits](docs/feature-edits.md)** -- shared edit abstraction,
-  current gRPC support, and provider-specific write backlog boundaries
-- **[Geometry analysis](docs/geometry-analysis.md)** -- NTS/ProjNet-backed
-  geometry, CRS transforms, planar predicates, and spatial indexes
-- **[Geofencing](docs/geofencing.md)** -- evaluation contracts, dwell logic,
-  and geofence sources
-- **[Scene metadata and packages](docs/scenes.md)** -- scene discovery,
-  render endpoint resolution, and offline scene package validation
-- **[Offline sync core](docs/offline-sync-core.md)** -- planner, checkpoints,
-  conflict envelopes, change journals, and storage contracts
-- **[Spec workspace contracts](docs/spec-workspace-contracts.md)** -- package
-  ownership, repo boundaries, and JSON fixtures for spec plan/apply/artifact
-  contracts
-- **[Source facade](docs/source-facade.md)** -- source descriptors, protocol
-  aliases, capabilities, and native protocol escape hatches
-- **[Plugin contracts](docs/plugin-contracts.md)** -- host-neutral plugin
-  manifests, permissions, edition gates, and compatibility requirements
-- **[Client behavior](docs/client-behavior.md)** -- timeout, retry, error,
-  pagination, and typed endpoint coverage behavior across packages
-- **[Metadata catalog parity](docs/metadata-catalog-parity.md)** -- discovery,
-  Catalog, Records, and STAC surface comparisons
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, house rules, the public-API
+approval workflow, and the pull-request checklist. The build is strict
+(warnings as errors, XML docs required on public members), commits follow
+Conventional Commits, and the default branch is `trunk`.
 
-### Operations
+## Security
 
-- **[Release and NuGet publishing](docs/release.md)** -- package versioning,
-  release tags, dry runs, nuget.org, and GitHub Packages publishing
-- **[Compatibility](docs/compatibility.md)** -- server matrix and CI API
-  compatibility gate used before publish
-- **[Staging integration guide](docs/staging-integration.md)** -- staging
-  environment inputs, CI evidence artifacts, and bounded follow-on tickets
-- **[Protocol integration tests](docs/protocol-integration-tests.md)** --
-  Testcontainers-backed local protocol coverage and fixture contract
+Report vulnerabilities privately to <security@honua.io> — see the
+[organization security policy](https://github.com/honua-io/.github/blob/main/SECURITY.md).
+Please do not open public issues for security reports.
 
 ## License
 
