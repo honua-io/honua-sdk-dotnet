@@ -67,6 +67,11 @@ for entry in "${projects[@]}"; do
     continue
   fi
 
+  if grep -Fq '<PackAsTool>true</PackAsTool>' "${ROOT}/${project}"; then
+    echo "::notice::Skipping ${package_id} API compatibility; tool packages ship an executable, not a referenceable library API."
+    continue
+  fi
+
   mkdir -p "${baseline_output}" "${current_output}"
 
   echo "Packing ${package_id} baseline from ${BASE_REF}..."

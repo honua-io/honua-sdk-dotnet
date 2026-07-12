@@ -12,6 +12,8 @@
       href: console-client-contracts.md
     - name: Troubleshooting
       href: troubleshooting.md
+    - name: Sanitized diagnostic bundles
+      href: diagnostic-bundles.md
     - name: Browser / WASM
       href: browser-wasm-support.md
 - name: API reference

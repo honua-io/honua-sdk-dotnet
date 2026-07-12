@@ -5,9 +5,11 @@
     set IsPackable=false. PublicApiAnalyzers reads the checked-in shipped/unshipped
     approval files and reports any unapproved addition, removal, or nullability
     change as a warning; the repository-wide warnings-as-errors policy makes that
-    a build failure in local and CI builds.
+    a build failure in local and CI builds. Tool packages (PackAsTool=true, e.g.
+    Honua.Sdk.Cli) ship an executable rather than a referenceable library API,
+    so they are excluded from public API approval tracking.
   -->
-  <PropertyGroup Condition="'$(IsPackable)' != 'false' and '$(PackageId)' != ''">
+  <PropertyGroup Condition="'$(IsPackable)' != 'false' and '$(PackageId)' != '' and '$(PackAsTool)' != 'true'">
     <_HonuaTrackPublicApi>true</_HonuaTrackPublicApi>
   </PropertyGroup>
 

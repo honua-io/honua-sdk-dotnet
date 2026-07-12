@@ -3,7 +3,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="${ROOT}/eng/shipped-packages.txt"
-EXPECTED_PACKAGE_COUNT=15
+# 15 library packages (Honua.Sdk meta plus 14 sub-packages) plus the
+# Honua.Sdk.Cli .NET tool package.
+EXPECTED_LIBRARY_PACKAGE_COUNT=15
+EXPECTED_TOOL_PACKAGE_COUNT=1
 errors=0
 
 fail() {
@@ -17,11 +20,10 @@ if [[ ! -f "${MANIFEST}" ]]; then
 fi
 
 mapfile -t entries < <(grep -Ev '^[[:space:]]*(#|$)' "${MANIFEST}")
-if [[ ${#entries[@]} -ne ${EXPECTED_PACKAGE_COUNT} ]]; then
-  fail "Expected ${EXPECTED_PACKAGE_COUNT} shipped packages, found ${#entries[@]} in eng/shipped-packages.txt."
-fi
 
 manifest_projects=()
+library_count=0
+tool_count=0
 for entry in "${entries[@]}"; do
   IFS="|" read -r project package_id extra <<< "${entry}"
   if [[ -z "${project}" || -z "${package_id}" || -n "${extra:-}" ]]; then
@@ -41,28 +43,53 @@ for entry in "${entries[@]}"; do
     fail "${project} declares PackageId '${declared_id}', expected '${package_id}'."
   fi
 
+  is_tool=false
+  if grep -Fq '<PackAsTool>true</PackAsTool>' "${project_path}"; then
+    is_tool=true
+    tool_count=$((tool_count + 1))
+  else
+    library_count=$((library_count + 1))
+  fi
+
   package_dir="$(dirname "${project_path}")"
   if [[ ! -f "${package_dir}/README.md" ]]; then
     fail "${package_id} is missing its package README."
   fi
-  if [[ ! -f "${package_dir}/PublicAPI.Shipped.txt" ]]; then
-    fail "${package_id} is missing PublicAPI.Shipped.txt."
-  fi
-  if [[ ! -f "${package_dir}/PublicAPI.Unshipped.txt" ]]; then
-    fail "${package_id} is missing PublicAPI.Unshipped.txt."
+
+  if [[ "${is_tool}" == "true" ]]; then
+    # Tool packages ship an executable, not a referenceable library API, so
+    # they carry no PublicAPI approval files and install via `dotnet tool`.
+    grep -Fxq "dotnet tool install --global ${package_id}" "${ROOT}/README.md" \
+      || fail "README.md tool install command is missing ${package_id}."
+    grep -Fxq "dotnet tool install --global ${package_id}" "${ROOT}/INSTALL.md" \
+      || fail "INSTALL.md tool install command is missing ${package_id}."
+  else
+    if [[ ! -f "${package_dir}/PublicAPI.Shipped.txt" ]]; then
+      fail "${package_id} is missing PublicAPI.Shipped.txt."
+    fi
+    if [[ ! -f "${package_dir}/PublicAPI.Unshipped.txt" ]]; then
+      fail "${package_id} is missing PublicAPI.Unshipped.txt."
+    fi
+    grep -Fxq "dotnet add package ${package_id}" "${ROOT}/README.md" \
+      || fail "README.md install commands are missing ${package_id}."
+    grep -Fxq "dotnet add package ${package_id}" "${ROOT}/INSTALL.md" \
+      || fail "INSTALL.md install commands are missing ${package_id}."
   fi
 
   grep -Fq "| **${package_id}** |" "${ROOT}/README.md" \
     || fail "README.md package table is missing ${package_id}."
   grep -Fq "| \`${package_id}\` |" "${ROOT}/INSTALL.md" \
     || fail "INSTALL.md package table is missing ${package_id}."
-  grep -Fxq "dotnet add package ${package_id}" "${ROOT}/README.md" \
-    || fail "README.md install commands are missing ${package_id}."
-  grep -Fxq "dotnet add package ${package_id}" "${ROOT}/INSTALL.md" \
-    || fail "INSTALL.md install commands are missing ${package_id}."
   grep -Fq "${project}" "${ROOT}/.github/workflows/ci.yml" \
     || fail "CI package matrix is missing ${project}."
 done
+
+if [[ ${library_count} -ne ${EXPECTED_LIBRARY_PACKAGE_COUNT} ]]; then
+  fail "Expected ${EXPECTED_LIBRARY_PACKAGE_COUNT} shipped library packages, found ${library_count} in eng/shipped-packages.txt."
+fi
+if [[ ${tool_count} -ne ${EXPECTED_TOOL_PACKAGE_COUNT} ]]; then
+  fail "Expected ${EXPECTED_TOOL_PACKAGE_COUNT} shipped tool packages, found ${tool_count} in eng/shipped-packages.txt."
+fi
 
 grep -Fq 'eng/shipped-packages.txt' "${ROOT}/scripts/validate-api-compat.sh" \
   || fail "API compatibility validation must consume eng/shipped-packages.txt."

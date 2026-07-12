@@ -7,6 +7,7 @@ src/Honua.Sdk/Honua.Sdk.csproj|Honua.Sdk
 src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj|Honua.Sdk.Abstractions
 src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj|Honua.Sdk.Admin
 src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj|Honua.Sdk.Catalogs
+src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj|Honua.Sdk.Cli
 src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj|Honua.Sdk.ConsoleShare
 src/Honua.Sdk.Field/Honua.Sdk.Field.csproj|Honua.Sdk.Field
 src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj|Honua.Sdk.GeoServices

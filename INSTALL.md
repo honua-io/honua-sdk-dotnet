@@ -19,6 +19,7 @@
 | `Honua.Sdk.Scenes` | Scene metadata, endpoint resolution, and offline scene package contracts |
 | `Honua.Sdk.OgcFeatures` | OGC API Features read/query client plus WFS 2.0 read surface (GetCapabilities, GetFeature, DescribeFeatureType) |
 | `Honua.Sdk.Catalogs` | OGC API Records + STAC catalog client (landing pages, conformance, collections, item / record search and paging) |
+| `Honua.Sdk.Cli` | Global .NET tool providing the support-safe, schema-pinned `honua doctor` diagnostic emitter and read-only replay |
 
 ## Prerequisites
 
@@ -78,6 +79,13 @@ dotnet add package Honua.Sdk.OgcFeatures
 # Metadata / catalog clients
 dotnet add package Honua.Sdk.Scenes
 dotnet add package Honua.Sdk.Catalogs
+```
+
+Install the CLI as a .NET tool rather than an application dependency:
+
+```bash
+dotnet tool install --global Honua.Sdk.Cli
+honua doctor --help
 ```
 
 All SDK packages share one package version from `Directory.Build.props`.

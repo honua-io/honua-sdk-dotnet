@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Honua.Sdk.Cli</PackageId>
+    <Description>Support-safe Honua command-line diagnostics and schema-pinned read-only replay.</Description>
+    <RootNamespace>Honua.Sdk.Cli</RootNamespace>
+    <Authors>Honua</Authors>
+    <Copyright>Copyright (c) Honua</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/honua-io/honua-sdk-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>honua;diagnostics;support;cli;dotnet-tool</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>honua</ToolCommandName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\schemas\diagnostic-bundle.v1.json">
+      <Link>Schemas\diagnostic-bundle.v1.json</Link>
+      <LogicalName>Honua.Sdk.Cli.Schemas.diagnostic-bundle.v1.json</LogicalName>
+    </EmbeddedResource>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Honua.Sdk.Cli.Tests" />
+  </ItemGroup>
+
+</Project>
