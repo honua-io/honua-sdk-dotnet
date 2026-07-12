@@ -24,6 +24,23 @@ namespace Honua.Sdk.GeoServices.FeatureServer;
 [JsonSerializable(typeof(FeatureServerValidateSqlResponse))]
 [JsonSerializable(typeof(GeoServicesErrorResponse))]
 [JsonSerializable(typeof(JsonElement))]
+[JsonSerializable(typeof(long))]
+[JsonSerializable(typeof(FeatureServerEnvelope))]
 internal sealed partial class FeatureServerJsonContext : JsonSerializerContext
 {
+}
+
+internal sealed class FeatureServerEnvelope
+{
+    [JsonPropertyName("xmin")]
+    public double MinX { get; init; }
+
+    [JsonPropertyName("ymin")]
+    public double MinY { get; init; }
+
+    [JsonPropertyName("xmax")]
+    public double MaxX { get; init; }
+
+    [JsonPropertyName("ymax")]
+    public double MaxY { get; init; }
 }

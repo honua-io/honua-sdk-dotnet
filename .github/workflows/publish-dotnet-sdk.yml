@@ -26,6 +26,8 @@ jobs:
   release-smoke:
     name: Release Smoke
     runs-on: ubuntu-latest
+    outputs:
+      package-version: ${{ steps.package-version.outputs.value }}
     permissions:
       contents: read
       packages: read
@@ -34,6 +36,9 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           fetch-depth: 0
+
+      - name: Validate shipped package inventory
+        run: scripts/validate-package-inventory.sh
 
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -52,24 +57,14 @@ jobs:
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Validate package versions
+        id: package-version
+        env:
+          REQUESTED_DRY_RUN: ${{ github.event.inputs.dry_run }}
         shell: bash
         run: |
-          projects=(
-            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
-            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
-            "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj"
-            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
-            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
-            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
-            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
-            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
-            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
-            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
-            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
-            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
-            "src/Honua.Sdk/Honua.Sdk.csproj"
+          mapfile -t projects < <(
+            awk -F'|' '!/^[[:space:]]*(#|$)/ { print $1 }' \
+              eng/shipped-packages.txt
           )
 
           errors=0
@@ -95,12 +90,15 @@ jobs:
             fi
           done
 
-          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+          if [[ "${GITHUB_REF}" == refs/tags/dotnet-sdk-v* ]]; then
             tag_version="${GITHUB_REF_NAME#dotnet-sdk-v}"
             if [[ "${tag_version}" != "${package_version}" ]]; then
               echo "Tag version (${tag_version}) does not match package version (${package_version})."
               errors=1
             fi
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && "${REQUESTED_DRY_RUN}" != "true" ]]; then
+            echo "Non-dry publication is restricted to a dotnet-sdk-v<PackageVersion> tag. Select the matching tag when manually rerunning a release."
+            errors=1
           fi
 
           if [[ ${errors} -ne 0 ]]; then
@@ -108,26 +106,46 @@ jobs:
           fi
 
           echo "PACKAGE_VERSION=${package_version}" >> "${GITHUB_ENV}"
+          echo "value=${package_version}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate stable feed prerequisites
+        if: >-
+          ${{
+            !contains(steps.package-version.outputs.value, '-') &&
+            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
+          }}
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "${NUGET_API_KEY}" ]]; then
+            echo "::error::Stable releases require the NUGET_API_KEY repository secret for nuget.org publishing."
+            exit 1
+          fi
+
+          protocol_version="$(
+            sed -n 's:.*<GeospatialGrpcVersion>\([^<]*\)</GeospatialGrpcVersion>.*:\1:p' \
+              Directory.Build.props
+          )"
+          if [[ -z "${protocol_version}" ]]; then
+            echo "::error::Could not resolve GeospatialGrpcVersion from Directory.Build.props."
+            exit 1
+          fi
+
+          protocol_index="https://api.nuget.org/v3-flatcontainer/geospatial.grpc/index.json"
+          if ! curl --fail --silent --show-error "${protocol_index}" \
+            | grep -Fq "\"${protocol_version}\""; then
+            echo "::error::Geospatial.Grpc ${protocol_version} is not available from nuget.org. Publishing a stable Honua SDK now would produce packages that cannot restore from the public feed."
+            echo "::error::Publish a stable public protocol dependency first; tracked by honua-sdk-dotnet#264."
+            exit 1
+          fi
 
       - name: Build SDK packages
         shell: bash
         run: |
-          projects=(
-            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
-            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
-            "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj"
-            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
-            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
-            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
-            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
-            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
-            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
-            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
-            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
-            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
-            "src/Honua.Sdk/Honua.Sdk.csproj"
+          mapfile -t projects < <(
+            awk -F'|' '!/^[[:space:]]*(#|$)/ { print $1 }' \
+              eng/shipped-packages.txt
           )
 
           for project in "${projects[@]}"; do
@@ -138,6 +156,7 @@ jobs:
         shell: bash
         run: |
           projects=(
+            "tests/Honua.Sdk.Abstractions.Tests/Honua.Sdk.Abstractions.Tests.csproj"
             "tests/Honua.Sdk.Admin.Tests/Honua.Sdk.Admin.Tests.csproj"
             "tests/Honua.Sdk.Processes.Tests/Honua.Sdk.Processes.Tests.csproj"
             "tests/Honua.Sdk.Geometry.Tests/Honua.Sdk.Geometry.Tests.csproj"
@@ -201,22 +220,9 @@ jobs:
       - name: Security audit (NuGet dependencies)
         shell: bash
         run: |
-          projects=(
-            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
-            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
-            "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj"
-            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
-            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
-            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
-            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
-            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
-            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
-            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
-            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
-            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
-            "src/Honua.Sdk/Honua.Sdk.csproj"
+          mapfile -t projects < <(
+            awk -F'|' '!/^[[:space:]]*(#|$)/ { print $1 }' \
+              eng/shipped-packages.txt
           )
 
           errors=0
@@ -239,27 +245,27 @@ jobs:
         shell: bash
         run: |
           mkdir -p ./nupkgs
-          projects=(
-            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
-            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
-            "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj"
-            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
-            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
-            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
-            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
-            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
-            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
-            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
-            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
-            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
-            "src/Honua.Sdk/Honua.Sdk.csproj"
+          mapfile -t projects < <(
+            awk -F'|' '!/^[[:space:]]*(#|$)/ { print $1 }' \
+              eng/shipped-packages.txt
           )
 
           for project in "${projects[@]}"; do
             dotnet pack "${project}" --configuration Release --no-build -o ./nupkgs
           done
+
+          shopt -s nullglob
+          primary_packages=(./nupkgs/*.nupkg)
+          symbol_packages=(./nupkgs/*.snupkg)
+          expected_count="${#projects[@]}"
+          if [[ ${#primary_packages[@]} -ne ${expected_count} ]]; then
+            echo "::error::Expected ${expected_count} primary packages, found ${#primary_packages[@]}."
+            exit 1
+          fi
+          if [[ ${#symbol_packages[@]} -ne ${expected_count} ]]; then
+            echo "::error::Expected ${expected_count} symbol packages, found ${#symbol_packages[@]}."
+            exit 1
+          fi
 
       - name: Generate CycloneDX SBOM per package
         shell: bash
@@ -269,22 +275,9 @@ jobs:
           dotnet tool update --global CycloneDX --version 4.* >/dev/null
           export PATH="$PATH:$HOME/.dotnet/tools"
 
-          projects=(
-            "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj"
-            "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj"
-            "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj"
-            "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj"
-            "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj"
-            "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj"
-            "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj"
-            "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj"
-            "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj"
-            "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj"
-            "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj"
-            "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
-            "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
-            "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
-            "src/Honua.Sdk/Honua.Sdk.csproj"
+          mapfile -t projects < <(
+            awk -F'|' '!/^[[:space:]]*(#|$)/ { print $1 }' \
+              eng/shipped-packages.txt
           )
 
           for project in "${projects[@]}"; do
@@ -302,8 +295,21 @@ jobs:
           path: ./sboms/**/*.cdx.json
           if-no-files-found: error
 
+      - name: Detect package signing credentials
+        id: signing-config
+        env:
+          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
+          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+        shell: bash
+        run: |
+          if [[ -n "${NUGET_SIGNING_CERTIFICATE_BASE64}" && -n "${NUGET_SIGNING_PASSWORD}" ]]; then
+            echo "configured=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "configured=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Sign NuGet packages
-        if: env.NUGET_SIGNING_CERTIFICATE_BASE64 != '' && env.NUGET_SIGNING_PASSWORD != ''
+        if: ${{ steps.signing-config.outputs.configured == 'true' }}
         env:
           NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
           NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
@@ -318,41 +324,53 @@ jobs:
           trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"; dotnet nuget trust remove honua-sdk-self >/dev/null 2>&1 || true' EXIT
           echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
 
-          # Sign every package.
-          for nupkg in ./nupkgs/*.nupkg; do
-            dotnet nuget sign "${nupkg}" \
+          # Sign both primary and symbol packages. NuGet's signing command
+          # accepts .snupkg files, and nuget.org symbol packages permit the
+          # resulting signature (.p7s) payload.
+          package_files=(./nupkgs/*.nupkg ./nupkgs/*.snupkg)
+          for package_file in "${package_files[@]}"; do
+            dotnet nuget sign "${package_file}" \
               --certificate-path "${cert_path}" \
               --certificate-password "${NUGET_SIGNING_PASSWORD}" \
               --timestamper "${NUGET_SIGNING_TIMESTAMP_URL}"
           done
 
-          # The signing cert is self-signed (private GitHub Packages feed), so its root is
-          # not trusted by default — `dotnet nuget verify` would reject it (NU3018). Register
-          # the author signer (allowing the untrusted self-signed root) JUST for verification;
-          # the EXIT trap removes it again immediately after.
+          # The private-feed certificate may be self-signed, so its root is not
+          # trusted by default and `dotnet nuget verify` would reject it (NU3018).
+          # Register the author signer (allowing an untrusted root) JUST for this
+          # integrity verification; the EXIT trap removes it immediately after.
           nupkg_files=(./nupkgs/*.nupkg)
           first_pkg="${nupkg_files[0]}"
           dotnet nuget trust author honua-sdk-self "${first_pkg}" --allow-untrusted-root
-          for nupkg in "${nupkg_files[@]}"; do
-            dotnet nuget verify "${nupkg}"
+          for package_file in "${package_files[@]}"; do
+            dotnet nuget verify --all "${package_file}"
           done
 
       - name: Package signing required on release tags
-        if: (env.NUGET_SIGNING_CERTIFICATE_BASE64 == '' || env.NUGET_SIGNING_PASSWORD == '') && startsWith(github.ref, 'refs/tags/dotnet-sdk-v')
-        env:
-          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
-          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+        if: ${{ steps.signing-config.outputs.configured != 'true' && startsWith(github.ref, 'refs/tags/dotnet-sdk-v') }}
         run: |
           echo "::error::Release-tag publish requires NUGET_SIGNING_CERTIFICATE_BASE64 and NUGET_SIGNING_PASSWORD secrets to sign packages. Failing the build."
           exit 1
 
       - name: Package signing notice (dry-run / non-tag)
-        if: (env.NUGET_SIGNING_CERTIFICATE_BASE64 == '' || env.NUGET_SIGNING_PASSWORD == '') && !startsWith(github.ref, 'refs/tags/dotnet-sdk-v')
-        env:
-          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
-          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+        if: ${{ steps.signing-config.outputs.configured != 'true' && !startsWith(github.ref, 'refs/tags/dotnet-sdk-v') }}
         run: |
-          echo "::warning::NUGET_SIGNING_CERTIFICATE_BASE64 / NUGET_SIGNING_PASSWORD not configured — packages will be published UNSIGNED. This is allowed for dry-runs and non-tag builds; release tags require signing."
+          echo "::warning::NUGET_SIGNING_CERTIFICATE_BASE64 / NUGET_SIGNING_PASSWORD not configured — dry-run packages will remain unsigned. Release tags require signing."
+
+      - name: Validate public package signing chain
+        if: >-
+          ${{
+            !contains(steps.package-version.outputs.value, '-') &&
+            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
+          }}
+        shell: bash
+        run: |
+          for package_file in ./nupkgs/*.nupkg ./nupkgs/*.snupkg; do
+            if ! dotnet nuget verify --all "${package_file}"; then
+              echo "::error::Stable nuget.org packages require an author-signing certificate that chains to a publicly trusted root. Replace the private-feed self-signed certificate and register the public certificate with nuget.org before releasing."
+              exit 1
+            fi
+          done
 
       - name: Package install smoke
         shell: bash
@@ -395,21 +413,12 @@ jobs:
           EOF
 
           dotnet add package Microsoft.Extensions.Hosting --version 10.0.0
-          dotnet add package Honua.Sdk.Abstractions --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Admin --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Processes --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Geometry --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Spec --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Grpc --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.GeoServices --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Scenes --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Field --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.OgcFeatures --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Catalogs --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Offline --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.Studio --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk.ConsoleShare --version "${PACKAGE_VERSION}"
-          dotnet add package Honua.Sdk --version "${PACKAGE_VERSION}"
+          while IFS='|' read -r _ package_id; do
+            dotnet add package "${package_id}" --version "${PACKAGE_VERSION}"
+          done < <(
+            grep -Ev '^[[:space:]]*(#|$)' \
+              "${GITHUB_WORKSPACE}/eng/shipped-packages.txt"
+          )
 
           cat <<'EOF' > Program.cs
           using Honua.Sdk;
@@ -634,7 +643,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
-          path: ./nupkgs/*.nupkg
+          path: |
+            ./nupkgs/*.nupkg
+            ./nupkgs/*.snupkg
           if-no-files-found: error
           retention-days: 90
 
@@ -643,7 +654,7 @@ jobs:
         shell: bash
         run: |
           echo "Dry run complete. Built packages:" >> "${GITHUB_STEP_SUMMARY}"
-          ls -1 ./nupkgs/*.nupkg >> "${GITHUB_STEP_SUMMARY}"
+          ls -1 ./nupkgs/*.nupkg ./nupkgs/*.snupkg >> "${GITHUB_STEP_SUMMARY}"
 
   release-staging-integration:
     name: Release Staging Integration
@@ -662,11 +673,14 @@ jobs:
     if: >-
       ${{
         always() &&
+        startsWith(github.ref, 'refs/tags/dotnet-sdk-v') &&
         needs.release-smoke.result == 'success' &&
         (needs.release-staging-integration.result == 'success' || needs.release-staging-integration.result == 'skipped') &&
         !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
       }}
     runs-on: ubuntu-latest
+    env:
+      PACKAGE_VERSION: ${{ needs.release-smoke.outputs.package-version }}
     permissions:
       contents: read
       packages: write
@@ -682,9 +696,65 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Validate nuget.org credential
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "${NUGET_API_KEY}" ]]; then
+            echo "::error::Stable releases require the NUGET_API_KEY repository secret."
+            exit 1
+          fi
+
+      - name: Publish stable packages to nuget.org
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push ./nupkgs/*.nupkg \
+            --source "https://api.nuget.org/v3/index.json" \
+            --api-key "${NUGET_API_KEY}" \
+            --skip-duplicate
+
       - name: Publish to GitHub Packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg \
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --no-symbols \
             --skip-duplicate
+
+      - name: Verify stable package from nuget.org
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        shell: bash
+        run: |
+          smoke_dir="$(mktemp -d)"
+          trap 'rm -rf "${smoke_dir}"' EXIT
+
+          dotnet new console --framework net10.0 --output "${smoke_dir}" --no-restore
+          pushd "${smoke_dir}" >/dev/null
+          dotnet add package Honua.Sdk --version "${PACKAGE_VERSION}" --no-restore
+
+          restored=false
+          for attempt in $(seq 1 30); do
+            if dotnet restore \
+              --source "https://api.nuget.org/v3/index.json" \
+              --no-cache \
+              --force-evaluate; then
+              restored=true
+              break
+            fi
+
+            echo "nuget.org has not indexed Honua.Sdk ${PACKAGE_VERSION} yet (attempt ${attempt}/30)."
+            if [[ ${attempt} -lt 30 ]]; then
+              sleep 30
+            fi
+          done
+
+          if [[ "${restored}" != "true" ]]; then
+            echo "::error::Honua.Sdk ${PACKAGE_VERSION} could not be restored using only nuget.org."
+            exit 1
+          fi
+
+          dotnet build --configuration Release --no-restore
+          echo "Restored and built Honua.Sdk ${PACKAGE_VERSION} using only nuget.org." >> "${GITHUB_STEP_SUMMARY}"

@@ -44,6 +44,10 @@
   items:
     - name: Release
       href: release.md
+    - name: Public API approval
+      href: public-api-approval.md
+    - name: Planned 2.0 API cleanup
+      href: migration-2.0.md
     - name: Compatibility
       href: compatibility.md
     - name: Staging integration

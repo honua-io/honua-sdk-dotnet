@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Diagnostics.CodeAnalysis;
 using Honua.Sdk.Internal.Http;
 using Honua.Sdk.Studio.Capabilities;
 using Honua.Sdk.Studio.Packages;
@@ -44,7 +45,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static void RegisterClient<TClient, TImplementation>(
+    private static void RegisterClient<
+        TClient,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         IServiceCollection services,
         HonuaStudioClientOptions snapshot)
         where TClient : class

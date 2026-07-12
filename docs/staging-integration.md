@@ -40,6 +40,16 @@ lane stays low-overhead and does not mutate shared staging state.
 
 Configure the GitHub `staging` environment with these values.
 
+Ownership is split deliberately:
+
+- Honua SDK maintainers own this workflow, the integration suite, and its
+  evidence format.
+- Honua Server/platform maintainers own the deployed staging fixture, its
+  durable identifiers, and credential rotation.
+- Repository administrators manage variables and secrets in **Settings →
+  Environments → staging**. Environment values should not be stored in the
+  repository or copied into workflow YAML.
+
 Repository or environment variables:
 
 - `HONUA_STAGING_BASE_URL`
@@ -114,9 +124,11 @@ The JSON evidence includes:
 
 ## Troubleshooting
 
-- Missing environment configuration fails the workflow before `dotnet test`
-  starts. Fix the missing `HONUA_STAGING_*` variable or auth secret in the
-  GitHub `staging` environment first.
+- A scheduled run with missing environment configuration records an actionable
+  preflight notice and skips the integration job. Explicit manual and release
+  (`workflow_call`) runs fail closed before `dotnet test`, because they are
+  expected to provide a staging signal. Fix the listed `HONUA_STAGING_*`
+  variable or auth secret in the GitHub `staging` environment first.
 - `HonuaAdminApiException` usually means auth, routing, or status-code failures
   on the admin REST surface. Re-check the base URL, credentials, and that the
   target service exists.

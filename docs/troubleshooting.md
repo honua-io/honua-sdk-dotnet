@@ -190,10 +190,13 @@ conflicts.
 
 ### `error NU1101: Unable to find package Honua.Sdk.*`
 
-Stable `1.0.0+` packages are published to nuget.org. Pre-1.0 / dry-run packages live on
-GitHub Packages -- add the GitHub Packages source documented in
+Public stable releases are published to nuget.org once their public dependencies
+are available there. Stable versions that predate public-feed publishing and
+prerelease packages remain on GitHub Packages -- add the source documented in
 [INSTALL.md](../INSTALL.md) if you need one of those builds, and confirm your
-`NuGet.config` lists a source that hosts the packages you are asking for.
+`NuGet.config` lists a source that hosts the packages you are asking for. Dry
+runs are not published to either feed; their artifacts are attached to the
+corresponding GitHub Actions run.
 
 ### Build fails with `TreatWarningsAsErrors`
 

@@ -8,6 +8,7 @@ namespace Honua.Sdk.Abstractions.Authentication;
 /// <summary>
 /// Shared helpers for applying SDK authentication without exposing raw secrets to diagnostics.
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class HonuaAuthenticationSupport
 {
     /// <summary>

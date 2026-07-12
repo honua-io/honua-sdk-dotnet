@@ -1,0 +1,79 @@
+name: Browser WASM Trim Safety
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [trunk]
+  pull_request:
+    branches: [trunk]
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  browser-wasm-trim:
+    name: Trimmed Browser WASM Runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Setup .NET + NuGet
+        uses: ./.github/actions/setup-dotnet-and-nuget
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ github.repository }}-${{ runner.os }}-playwright-${{ hashFiles('tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj') }}
+          restore-keys: |
+            ${{ github.repository }}-${{ runner.os }}-playwright-
+
+      - name: Restore browser trim projects
+        run: dotnet restore tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj
+
+      - name: Publish trimmed browser smoke app
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet publish tests/Honua.Sdk.BrowserSmoke/Honua.Sdk.BrowserSmoke.csproj \
+            --configuration Release \
+            --no-restore \
+            --output artifacts/browser-trim \
+            /p:PublishTrimmed=true \
+            /p:SuppressTrimAnalysisWarnings=false \
+            /p:TrimmerSingleWarn=false \
+            /p:TreatWarningsAsErrors=true 2>&1 | tee artifacts/browser-trim.log
+
+      - name: Verify trim warning ownership
+        run: python3 scripts/validate-browser-trim-warnings.py artifacts/browser-trim.log
+
+      - name: Build browser runtime tests
+        run: >-
+          dotnet build tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj
+          --configuration Release
+          --no-restore
+          /p:TreatWarningsAsErrors=true
+          /p:EnforceCodeStyleInBuild=true
+
+      - name: Install Playwright Chromium
+        run: pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Validate trimmed browser runtime
+        env:
+          HONUA_BROWSER_RUNTIME_SMOKE: "true"
+          HONUA_BROWSER_SMOKE_WEBROOT: ${{ github.workspace }}/artifacts/browser-trim/wwwroot
+        run: >-
+          dotnet test tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "console;verbosity=minimal"

@@ -1,0 +1,20 @@
+# Project path|NuGet package ID
+#
+# This is the authoritative inventory of independently shipped SDK packages.
+# Keep entries sorted by package ID. CI verifies that every packable project is
+# represented here and that both CI and release workflows reference every path.
+src/Honua.Sdk/Honua.Sdk.csproj|Honua.Sdk
+src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj|Honua.Sdk.Abstractions
+src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj|Honua.Sdk.Admin
+src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj|Honua.Sdk.Catalogs
+src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj|Honua.Sdk.ConsoleShare
+src/Honua.Sdk.Field/Honua.Sdk.Field.csproj|Honua.Sdk.Field
+src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj|Honua.Sdk.GeoServices
+src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj|Honua.Sdk.Geometry
+src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj|Honua.Sdk.Grpc
+src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj|Honua.Sdk.Offline
+src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures
+src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj|Honua.Sdk.Processes
+src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj|Honua.Sdk.Scenes
+src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj|Honua.Sdk.Spec
+src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj|Honua.Sdk.Studio

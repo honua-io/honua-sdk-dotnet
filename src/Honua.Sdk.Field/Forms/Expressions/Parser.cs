@@ -21,7 +21,7 @@ internal sealed class Parser
     {
         if (Current.Type != TokenType.End)
         {
-            throw new ExpressionException($"Unexpected token '{Current.Text}' after expression.");
+            throw new ExpressionEvaluationException($"Unexpected token '{Current.Text}' after expression.");
         }
     }
 
@@ -119,7 +119,7 @@ internal sealed class Parser
                 return ParseIdentifier(token);
 
             default:
-                throw new ExpressionException($"Unexpected token '{token.Text}'.");
+                throw new ExpressionEvaluationException($"Unexpected token '{token.Text}'.");
         }
     }
 
@@ -221,7 +221,7 @@ internal sealed class Parser
     {
         if (Current.Type != type)
         {
-            throw new ExpressionException($"Expected '{text}' but found '{Current.Text}'.");
+            throw new ExpressionEvaluationException($"Expected '{text}' but found '{Current.Text}'.");
         }
 
         Advance();
@@ -231,7 +231,7 @@ internal sealed class Parser
     {
         if (++_depth > ExpressionEvaluator.MaxDepth)
         {
-            throw new ExpressionException("Expression nesting is too deep.");
+            throw new ExpressionEvaluationException("Expression nesting is too deep.");
         }
     }
 

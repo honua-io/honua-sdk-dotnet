@@ -38,6 +38,34 @@ public sealed class HonuaRestHttpClientRegistrationTests
     }
 
     [Fact]
+    public async Task ConfigureHonuaRestHttpClient_WhenRetriesAreExhausted_UsesConfiguredTotalAttempts()
+    {
+        var handler = new CountingHandler(failuresBeforeSuccess: int.MaxValue);
+        var options = new TestClientOptions
+        {
+            MaxRetryAttempts = 3,
+            PrimaryHttpMessageHandlerFactory = () => handler,
+        };
+
+        using var provider = BuildProvider(
+            options,
+            configureRetry: retry =>
+            {
+                retry.Delay = TimeSpan.Zero;
+                retry.UseJitter = false;
+                retry.ShouldHandle = args =>
+                    ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+            });
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        using var response = await client.GetAsync(
+            new Uri("https://example.test/collections"), CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(options.MaxRetryAttempts, handler.Attempts);
+    }
+
+    [Fact]
     public async Task ConfigureHonuaRestHttpClient_WithDefaultRetry_DoesNotRetryUnsafePost()
     {
         var handler = new CountingHandler(failuresBeforeSuccess: int.MaxValue);

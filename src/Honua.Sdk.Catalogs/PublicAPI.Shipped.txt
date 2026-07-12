@@ -1,0 +1,524 @@
+#nullable enable
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.HonuaOgcRecordsException() -> void
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.HonuaOgcRecordsException(string! message) -> void
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.HonuaOgcRecordsException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.HonuaOgcRecordsException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, string? problemType = null, string? problemTitle = null, string? problemDetail = null) -> void
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.HonuaOgcRecordsException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, System.Exception! innerException) -> void
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.ProblemDetail.get -> string?
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.ProblemTitle.get -> string?
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.ProblemType.get -> string?
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.ResponseBody.get -> string?
+Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.Catalogs.Records.Extensions.ServiceCollectionExtensions
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetCollectionAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetConformanceAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordsConformance!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetRecordAsync(string! collectionId, string! recordId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecord!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetRecordJsonAsync(string! collectionId, string! recordId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetRecordsAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetRecordsJsonAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetRecordsPagesAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.GetRecordsRawAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.HonuaOgcRecordsClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.ListCollectionsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection!>!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient.SearchAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.ApiKey.get -> string?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.ApiKey.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.BearerToken.get -> string?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.BearerToken.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions.HonuaOgcRecordsClientOptions() -> void
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetCollectionAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetConformanceAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordsConformance!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordAsync(string! collectionId, string! recordId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecord!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordJsonAsync(string! collectionId, string! recordId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsJsonAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsPagesAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsRawAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.ListCollectionsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection!>!>!
+Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.SearchAsync(string! collectionId, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection!>!
+Honua.Sdk.Catalogs.Records.Models.OgcRecord
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Geometry.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Geometry.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Id.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Id.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Links.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.OgcRecord() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Properties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Properties.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Type.get -> string!
+Honua.Sdk.Catalogs.Records.Models.OgcRecord.Type.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.Links.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.NumberMatched.get -> long?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.NumberMatched.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.NumberReturned.get -> int?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.NumberReturned.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.OgcRecordCollection() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.Records.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecord!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.Records.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.Type.get -> string!
+Honua.Sdk.Catalogs.Records.Models.OgcRecordCollection.Type.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Description.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Description.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Extent.get -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Extent.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Id.get -> string!
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Id.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.ItemType.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.ItemType.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Links.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.OgcRecordsCollection() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.RecordType.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.RecordType.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Title.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsCollection.Title.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsConformance
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsConformance.ConformsTo.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsConformance.ConformsTo.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsConformance.OgcRecordsConformance() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent.OgcRecordsExtent() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent.Spatial.get -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent.Spatial.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent.Temporal.get -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsExtent.Temporal.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat.GeoJson = 1 -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat.Html = 2 -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat.Json = 0 -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.Description.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.Description.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.Links.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.OgcRecordsLandingPage() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.Title.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLandingPage.Title.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Href.get -> string!
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Href.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.HrefLang.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.HrefLang.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.OgcRecordsLink() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Rel.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Rel.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Title.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Title.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Type.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsLink.Type.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.<Clone>$() -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery!
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.AdditionalParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.AdditionalParameters.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Bbox.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Bbox.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Datetime.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Datetime.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Equals(Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? other) -> bool
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.ExternalIds.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.ExternalIds.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Filter.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Filter.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.FilterLang.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.FilterLang.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Format.get -> Honua.Sdk.Catalogs.Records.Models.OgcRecordsFormat?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Format.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Ids.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Ids.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Limit.get -> int?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Limit.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Offset.get -> int?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Offset.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.OgcRecordsQuery() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Query.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Query.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.SortBy.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.SortBy.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Types.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Types.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent.Bbox.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<double>!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent.Bbox.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent.Crs.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent.Crs.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsSpatialExtent.OgcRecordsSpatialExtent() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent.Interval.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string?>!>?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent.Interval.init -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent.OgcRecordsTemporalExtent() -> void
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent.Trs.get -> string?
+Honua.Sdk.Catalogs.Records.Models.OgcRecordsTemporalExtent.Trs.init -> void
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.HonuaStacException() -> void
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.HonuaStacException(string! message) -> void
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.HonuaStacException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.HonuaStacException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, string? problemType = null, string? problemTitle = null, string? problemDetail = null) -> void
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.HonuaStacException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, System.Exception! innerException) -> void
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.ProblemDetail.get -> string?
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.ProblemTitle.get -> string?
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.ProblemType.get -> string?
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.ResponseBody.get -> string?
+Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.Catalogs.Stac.Extensions.ServiceCollectionExtensions
+Honua.Sdk.Catalogs.Stac.HonuaStacClient
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetCatalogAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacLandingPage!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetCollectionAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetItemAsync(string! collectionId, string! itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItem!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetItemJsonAsync(string! collectionId, string! itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetItemsAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetItemsJsonAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetItemsPagesAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetItemsRawAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacLandingPage!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.HonuaStacClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.ListCollectionsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacCollection!>!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.PostSearchAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.PostSearchJsonAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.PostSearchPagesAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.SearchAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.SearchJsonAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.SearchPagesAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClient.SearchRawAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.ApiKey.get -> string?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.ApiKey.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.BearerToken.get -> string?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.BearerToken.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions.HonuaStacClientOptions() -> void
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetCatalogAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacLandingPage!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetCollectionAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetItemAsync(string! collectionId, string! itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItem!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetItemsAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetItemsPagesAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacLandingPage!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.ListCollectionsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacCollection!>!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.PostSearchAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.PostSearchPagesAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.SearchAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacClient.SearchPagesAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Catalogs.Stac.Models.StacItemCollection!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.GetItemJsonAsync(string! collectionId, string! itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.GetItemsJsonAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.GetItemsRawAsync(string! collectionId, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.PostSearchJsonAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.SearchJsonAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.SearchRawAsync(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.Catalogs.Stac.Models.StacAsset
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Description.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Description.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Href.get -> string!
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Href.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Roles.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Roles.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.StacAsset() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Title.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Title.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Type.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacAsset.Type.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Assets.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Honua.Sdk.Catalogs.Stac.Models.StacAsset!>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Assets.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Description.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Description.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Extent.get -> Honua.Sdk.Catalogs.Stac.Models.StacExtent?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Extent.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Id.get -> string!
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Id.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.ItemAssets.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Honua.Sdk.Catalogs.Stac.Models.StacAsset!>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.ItemAssets.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Keywords.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Keywords.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.License.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.License.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacLink!>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Links.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Providers.get -> System.Collections.Generic.IReadOnlyList<System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Providers.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.StacCollection() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.StacExtensions.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.StacExtensions.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.StacVersion.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.StacVersion.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Summaries.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Summaries.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Title.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Title.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Type.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacCollection.Type.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacExtent
+Honua.Sdk.Catalogs.Stac.Models.StacExtent.Spatial.get -> Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent?
+Honua.Sdk.Catalogs.Stac.Models.StacExtent.Spatial.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacExtent.StacExtent() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacExtent.Temporal.get -> Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent?
+Honua.Sdk.Catalogs.Stac.Models.StacExtent.Temporal.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacFields
+Honua.Sdk.Catalogs.Stac.Models.StacFields.<Clone>$() -> Honua.Sdk.Catalogs.Stac.Models.StacFields!
+Honua.Sdk.Catalogs.Stac.Models.StacFields.Equals(Honua.Sdk.Catalogs.Stac.Models.StacFields? other) -> bool
+Honua.Sdk.Catalogs.Stac.Models.StacFields.Exclude.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacFields.Exclude.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacFields.Include.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacFields.Include.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacFields.StacFields() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem
+Honua.Sdk.Catalogs.Stac.Models.StacItem.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Assets.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Honua.Sdk.Catalogs.Stac.Models.StacAsset!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Assets.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Bbox.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Bbox.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Collection.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Collection.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Geometry.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Geometry.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Id.get -> string!
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Id.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacLink!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Links.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Properties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Properties.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.StacExtensions.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.StacExtensions.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.StacItem() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.StacVersion.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItem.StacVersion.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Type.get -> string!
+Honua.Sdk.Catalogs.Stac.Models.StacItem.Type.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Context.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Context.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacItem!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Features.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Items.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacItem!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacLink!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Links.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.NumberMatched.get -> long?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.NumberMatched.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.NumberReturned.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.NumberReturned.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.StacItemCollection() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Type.get -> string!
+Honua.Sdk.Catalogs.Stac.Models.StacItemCollection.Type.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.<Clone>$() -> Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery!
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.AdditionalParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.AdditionalParameters.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Bbox.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Bbox.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Datetime.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Datetime.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Equals(Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? other) -> bool
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Fields.get -> Honua.Sdk.Catalogs.Stac.Models.StacFields?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Fields.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Filter.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Filter.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.FilterLang.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.FilterLang.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Ids.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Ids.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Limit.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Limit.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Next.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Next.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Offset.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Offset.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.SortBy.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.SortBy.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.StacItemsQuery() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.ConformsTo.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.ConformsTo.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Description.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Description.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Id.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Id.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Catalogs.Stac.Models.StacLink!>?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Links.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.StacExtensions.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.StacExtensions.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.StacLandingPage() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.StacVersion.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.StacVersion.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Title.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Title.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Type.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLandingPage.Type.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink
+Honua.Sdk.Catalogs.Stac.Models.StacLink.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Body.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Body.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Headers.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Headers.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Href.get -> string!
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Href.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.HrefLang.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.HrefLang.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Merge.get -> bool?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Merge.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Method.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Method.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Rel.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Rel.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.StacLink() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Title.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Title.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Type.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacLink.Type.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.<Clone>$() -> Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery!
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.AdditionalParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.AdditionalParameters.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Bbox.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Bbox.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Collections.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Collections.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Datetime.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Datetime.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Equals(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? other) -> bool
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Fields.get -> Honua.Sdk.Catalogs.Stac.Models.StacFields?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Fields.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Filter.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Filter.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.FilterLang.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.FilterLang.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Ids.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Ids.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Intersects.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Intersects.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Limit.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Limit.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Next.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Next.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Offset.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Offset.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Query.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Query.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.SortBy.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.SortBy.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.StacSearchQuery() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.<Clone>$() -> Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest!
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.AdditionalProperties.set -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Bbox.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Bbox.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Collections.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Collections.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Datetime.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Datetime.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Equals(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? other) -> bool
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Fields.get -> Honua.Sdk.Catalogs.Stac.Models.StacFields?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Fields.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Filter.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Filter.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.FilterLang.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.FilterLang.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Ids.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Ids.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Intersects.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Intersects.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Limit.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Limit.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Next.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Next.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Offset.get -> int?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Offset.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Query.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Query.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.SortBy.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.SortBy.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.StacSearchRequest() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent
+Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent.Bbox.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<double>!>?
+Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent.Bbox.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent.Crs.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent.Crs.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacSpatialExtent.StacSpatialExtent() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent
+Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent.Interval.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string?>!>?
+Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent.Interval.init -> void
+Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent.StacTemporalExtent() -> void
+Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent.Trs.get -> string?
+Honua.Sdk.Catalogs.Stac.Models.StacTemporalExtent.Trs.init -> void
+override Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.HttpStatus.get -> int?
+override Honua.Sdk.Catalogs.Records.Exceptions.HonuaOgcRecordsException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.Equals(object? obj) -> bool
+override Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.GetHashCode() -> int
+override Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.ToString() -> string!
+override Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.HttpStatus.get -> int?
+override Honua.Sdk.Catalogs.Stac.Exceptions.HonuaStacException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.Catalogs.Stac.Models.StacFields.Equals(object? obj) -> bool
+override Honua.Sdk.Catalogs.Stac.Models.StacFields.GetHashCode() -> int
+override Honua.Sdk.Catalogs.Stac.Models.StacFields.ToString() -> string!
+override Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.Equals(object? obj) -> bool
+override Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.GetHashCode() -> int
+override Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.ToString() -> string!
+override Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.Equals(object? obj) -> bool
+override Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.GetHashCode() -> int
+override Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.ToString() -> string!
+override Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.GetHashCode() -> int
+override Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.ToString() -> string!
+static Honua.Sdk.Catalogs.Records.Extensions.ServiceCollectionExtensions.AddHonuaOgcRecords(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.operator !=(Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? left, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? right) -> bool
+static Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery.operator ==(Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? left, Honua.Sdk.Catalogs.Records.Models.OgcRecordsQuery? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Extensions.ServiceCollectionExtensions.AddHonuaStac(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.Catalogs.Stac.HonuaStacClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.Catalogs.Stac.Models.StacFields.operator !=(Honua.Sdk.Catalogs.Stac.Models.StacFields? left, Honua.Sdk.Catalogs.Stac.Models.StacFields? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacFields.operator ==(Honua.Sdk.Catalogs.Stac.Models.StacFields? left, Honua.Sdk.Catalogs.Stac.Models.StacFields? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.operator !=(Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? left, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery.operator ==(Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? left, Honua.Sdk.Catalogs.Stac.Models.StacItemsQuery? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.operator !=(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? left, Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery.operator ==(Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? left, Honua.Sdk.Catalogs.Stac.Models.StacSearchQuery? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.operator !=(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? left, Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? right) -> bool
+static Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest.operator ==(Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? left, Honua.Sdk.Catalogs.Stac.Models.StacSearchRequest? right) -> bool

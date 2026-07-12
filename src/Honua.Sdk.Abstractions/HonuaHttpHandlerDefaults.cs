@@ -36,6 +36,7 @@ namespace Honua.Sdk.Abstractions;
 /// browser-backed handler unchanged.
 /// </para>
 /// </remarks>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class HonuaHttpHandlerDefaults
 {
     /// <summary>

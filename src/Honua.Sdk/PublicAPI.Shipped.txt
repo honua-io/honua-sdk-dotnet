@@ -1,0 +1,63 @@
+#nullable enable
+Honua.Sdk.HonuaSdkOptions
+Honua.Sdk.HonuaSdkOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.HonuaSdkOptions.AccessTokenProvider.set -> void
+Honua.Sdk.HonuaSdkOptions.ApiKey.get -> string?
+Honua.Sdk.HonuaSdkOptions.ApiKey.set -> void
+Honua.Sdk.HonuaSdkOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.HonuaSdkOptions.ApiKeyProvider.set -> void
+Honua.Sdk.HonuaSdkOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.HonuaSdkOptions.AuthenticationAudience.set -> void
+Honua.Sdk.HonuaSdkOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.HonuaSdkOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.HonuaSdkOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.HonuaSdkOptions.AuthenticationScopes.set -> void
+Honua.Sdk.HonuaSdkOptions.BaseAddress.get -> System.Uri?
+Honua.Sdk.HonuaSdkOptions.BaseAddress.set -> void
+Honua.Sdk.HonuaSdkOptions.BearerToken.get -> string?
+Honua.Sdk.HonuaSdkOptions.BearerToken.set -> void
+Honua.Sdk.HonuaSdkOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.HonuaSdkOptions.BearerTokenProvider.set -> void
+Honua.Sdk.HonuaSdkOptions.EnableRetry.get -> bool
+Honua.Sdk.HonuaSdkOptions.EnableRetry.set -> void
+Honua.Sdk.HonuaSdkOptions.HonuaSdkOptions() -> void
+Honua.Sdk.HonuaSdkOptions.MaxRetryAttempts.get -> int
+Honua.Sdk.HonuaSdkOptions.MaxRetryAttempts.set -> void
+Honua.Sdk.HonuaSdkOptions.PrimaryHttpMessageHandlerFactory.get -> System.Func<System.Net.Http.HttpMessageHandler!>?
+Honua.Sdk.HonuaSdkOptions.PrimaryHttpMessageHandlerFactory.set -> void
+Honua.Sdk.HonuaSdkOptions.Timeout.get -> System.TimeSpan
+Honua.Sdk.HonuaSdkOptions.Timeout.set -> void
+Honua.Sdk.HonuaSdkOptions.UseAdmin.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseAdmin.set -> void
+Honua.Sdk.HonuaSdkOptions.UseConsoleShare.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseConsoleShare.set -> void
+Honua.Sdk.HonuaSdkOptions.UseGeocoding.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseGeocoding.set -> void
+Honua.Sdk.HonuaSdkOptions.UseGeoprocessingProfile.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseGeoprocessingProfile.set -> void
+Honua.Sdk.HonuaSdkOptions.UseGeoServices.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseGeoServices.set -> void
+Honua.Sdk.HonuaSdkOptions.UseGrpc.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseGrpc.set -> void
+Honua.Sdk.HonuaSdkOptions.UseImageServer.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseImageServer.set -> void
+Honua.Sdk.HonuaSdkOptions.UseOgcFeatures.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseOgcFeatures.set -> void
+Honua.Sdk.HonuaSdkOptions.UseOgcRecords.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseOgcRecords.set -> void
+Honua.Sdk.HonuaSdkOptions.UseProcesses.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseProcesses.set -> void
+Honua.Sdk.HonuaSdkOptions.UseRouting.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseRouting.set -> void
+Honua.Sdk.HonuaSdkOptions.UseScenes.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseScenes.set -> void
+Honua.Sdk.HonuaSdkOptions.UseSpec.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseSpec.set -> void
+Honua.Sdk.HonuaSdkOptions.UseStac.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseStac.set -> void
+Honua.Sdk.HonuaSdkOptions.UseStudio.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseStudio.set -> void
+Honua.Sdk.HonuaSdkOptions.UseWfs.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseWfs.set -> void
+Honua.Sdk.ServiceCollectionExtensions
+static Honua.Sdk.ServiceCollectionExtensions.AddHonua(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.HonuaSdkOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

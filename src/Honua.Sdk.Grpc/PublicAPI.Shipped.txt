@@ -1,0 +1,338 @@
+#nullable enable
+Honua.Sdk.Grpc.Conversion.HonuaGrpcProtoConverter
+Honua.Sdk.Grpc.Conversion.MobileRequestConverters
+Honua.Sdk.Grpc.Extensions.ServiceCollectionExtensions
+Honua.Sdk.Grpc.HonuaGrpcClient
+Honua.Sdk.Grpc.HonuaGrpcClient.AddAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentAddRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.ApplyEditsAsync(Honua.Sdk.Abstractions.Features.FeatureEditRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureEditResponse!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.ApplyEditsAsync(Honua.Sdk.Grpc.Models.ApplyEditsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Grpc.Models.ApplyEditsResponse!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.AttachmentCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureAttachmentCapabilities!
+Honua.Sdk.Grpc.HonuaGrpcClient.DeleteAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDeleteRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.Dispose() -> void
+Honua.Sdk.Grpc.HonuaGrpcClient.DownloadAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDownloadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentContent!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.EditCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureEditCapabilities!
+Honua.Sdk.Grpc.HonuaGrpcClient.GetDescriptorAsync(Honua.Sdk.Abstractions.Features.SourceDescriptor! descriptor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.SourceDescriptor!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.HonuaGrpcClient(Grpc.Net.Client.GrpcChannel! channel, Honua.Sdk.Grpc.HonuaGrpcClientOptions? options = null) -> void
+Honua.Sdk.Grpc.HonuaGrpcClient.HonuaGrpcClient(Microsoft.Extensions.Options.IOptions<Honua.Sdk.Grpc.HonuaGrpcClientOptions!>! options) -> void
+Honua.Sdk.Grpc.HonuaGrpcClient.ListAttachmentsAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentListRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureAttachmentInfo!>!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.ProviderName.get -> string!
+Honua.Sdk.Grpc.HonuaGrpcClient.QueryAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.QueryCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureQueryCapabilities!
+Honua.Sdk.Grpc.HonuaGrpcClient.QueryFeaturesAsync(Honua.Sdk.Grpc.Models.QueryFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Grpc.Models.QueryFeaturesResponse!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.QueryFeaturesStreamAsync(Honua.Sdk.Grpc.Models.QueryFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Grpc.Models.FeaturePage!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.QueryPagesAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.Grpc.HonuaGrpcClient.UpdateAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentUpdateRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.Grpc.HonuaGrpcClientOptions
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AcceptedCompressionEncodings.get -> string!
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AcceptedCompressionEncodings.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.ApiKey.get -> string?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.ApiKey.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.BearerToken.get -> string?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.BearerToken.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.EnableCompressionNegotiation.get -> bool
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.EnableCompressionNegotiation.set -> void
+Honua.Sdk.Grpc.HonuaGrpcClientOptions.HonuaGrpcClientOptions() -> void
+Honua.Sdk.Grpc.HonuaGrpcException
+Honua.Sdk.Grpc.HonuaGrpcException.HonuaGrpcException() -> void
+Honua.Sdk.Grpc.HonuaGrpcException.HonuaGrpcException(Grpc.Core.StatusCode statusCode, string! message, System.Exception? innerException = null) -> void
+Honua.Sdk.Grpc.HonuaGrpcException.HonuaGrpcException(string! message) -> void
+Honua.Sdk.Grpc.HonuaGrpcException.HonuaGrpcException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Grpc.HonuaGrpcException.StatusCode.get -> Grpc.Core.StatusCode
+Honua.Sdk.Grpc.HonuaProcessGrpcClient
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.CancelJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.Dispose() -> void
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.DryRunPlanAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessDryRunResult!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.ExecutePlanAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.ExecutePlanStreamAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.GetJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.GetJobResultAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.HonuaProcessGrpcClient(Grpc.Net.Client.GrpcChannel! channel, Honua.Sdk.Grpc.HonuaGrpcClientOptions? options = null) -> void
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.HonuaProcessGrpcClient(Microsoft.Extensions.Options.IOptions<Honua.Sdk.Grpc.HonuaGrpcClientOptions!>! options) -> void
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.SubmitJobAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Grpc.HonuaProcessGrpcClient.ValidatePlanAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult!>!
+Honua.Sdk.Grpc.IHonuaGrpcClient
+Honua.Sdk.Grpc.IHonuaGrpcClient.ApplyEditsAsync(Honua.Sdk.Grpc.Models.ApplyEditsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Grpc.Models.ApplyEditsResponse!>!
+Honua.Sdk.Grpc.IHonuaGrpcClient.QueryFeaturesAsync(Honua.Sdk.Grpc.Models.QueryFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Grpc.Models.QueryFeaturesResponse!>!
+Honua.Sdk.Grpc.IHonuaGrpcClient.QueryFeaturesStreamAsync(Honua.Sdk.Grpc.Models.QueryFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Grpc.Models.FeaturePage!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.CancelJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.DryRunPlanAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessDryRunResult!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.ExecutePlanAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.ExecutePlanStreamAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.GetJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.GetJobResultAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.SubmitJobAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Grpc.IHonuaProcessGrpcClient.ValidatePlanAsync(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult!>!
+Honua.Sdk.Grpc.Models.ApplyEditsRequest
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.<Clone>$() -> Honua.Sdk.Grpc.Models.ApplyEditsRequest!
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Adds.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.Feature!>?
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Adds.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.ApplyEditsRequest() -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Deletes.get -> System.Collections.Generic.IReadOnlyList<long>?
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Deletes.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Equals(Honua.Sdk.Grpc.Models.ApplyEditsRequest? other) -> bool
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.ForceWrite.get -> bool
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.ForceWrite.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.LayerId.get -> int
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.LayerId.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.RollbackOnFailure.get -> bool
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.RollbackOnFailure.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.ServiceId.get -> string!
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.ServiceId.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Updates.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.Feature!>?
+Honua.Sdk.Grpc.Models.ApplyEditsRequest.Updates.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsResponse
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.AddResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.EditResult!>!
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.AddResults.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.ApplyEditsResponse() -> void
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.DeleteResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.EditResult!>!
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.DeleteResults.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.Error.get -> Honua.Sdk.Grpc.Models.EditError?
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.Error.init -> void
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.UpdateResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.EditResult!>!
+Honua.Sdk.Grpc.Models.ApplyEditsResponse.UpdateResults.init -> void
+Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.DistanceUnit.Feet = 2 -> Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.DistanceUnit.Kilometers = 3 -> Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.DistanceUnit.Meters = 1 -> Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.DistanceUnit.Miles = 4 -> Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.DistanceUnit.Unspecified = 0 -> Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.EditError
+Honua.Sdk.Grpc.Models.EditError.Code.get -> int
+Honua.Sdk.Grpc.Models.EditError.Code.init -> void
+Honua.Sdk.Grpc.Models.EditError.EditError() -> void
+Honua.Sdk.Grpc.Models.EditError.Message.get -> string!
+Honua.Sdk.Grpc.Models.EditError.Message.init -> void
+Honua.Sdk.Grpc.Models.EditResult
+Honua.Sdk.Grpc.Models.EditResult.EditResult() -> void
+Honua.Sdk.Grpc.Models.EditResult.Error.get -> Honua.Sdk.Grpc.Models.EditError?
+Honua.Sdk.Grpc.Models.EditResult.Error.init -> void
+Honua.Sdk.Grpc.Models.EditResult.ObjectId.get -> long
+Honua.Sdk.Grpc.Models.EditResult.ObjectId.init -> void
+Honua.Sdk.Grpc.Models.EditResult.Success.get -> bool
+Honua.Sdk.Grpc.Models.EditResult.Success.init -> void
+Honua.Sdk.Grpc.Models.Extent
+Honua.Sdk.Grpc.Models.Extent.Extent() -> void
+Honua.Sdk.Grpc.Models.Extent.SpatialReference.get -> Honua.Sdk.Grpc.Models.SpatialReference?
+Honua.Sdk.Grpc.Models.Extent.SpatialReference.init -> void
+Honua.Sdk.Grpc.Models.Extent.Xmax.get -> double
+Honua.Sdk.Grpc.Models.Extent.Xmax.init -> void
+Honua.Sdk.Grpc.Models.Extent.Xmin.get -> double
+Honua.Sdk.Grpc.Models.Extent.Xmin.init -> void
+Honua.Sdk.Grpc.Models.Extent.Ymax.get -> double
+Honua.Sdk.Grpc.Models.Extent.Ymax.init -> void
+Honua.Sdk.Grpc.Models.Extent.Ymin.get -> double
+Honua.Sdk.Grpc.Models.Extent.Ymin.init -> void
+Honua.Sdk.Grpc.Models.Feature
+Honua.Sdk.Grpc.Models.Feature.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+Honua.Sdk.Grpc.Models.Feature.Attributes.init -> void
+Honua.Sdk.Grpc.Models.Feature.Feature() -> void
+Honua.Sdk.Grpc.Models.Feature.Geometry.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>?
+Honua.Sdk.Grpc.Models.Feature.Geometry.init -> void
+Honua.Sdk.Grpc.Models.Feature.Id.get -> long
+Honua.Sdk.Grpc.Models.Feature.Id.init -> void
+Honua.Sdk.Grpc.Models.Feature.NtsGeometry.get -> NetTopologySuite.Geometries.Geometry?
+Honua.Sdk.Grpc.Models.Feature.NtsGeometry.init -> void
+Honua.Sdk.Grpc.Models.Feature.ToGeometry() -> NetTopologySuite.Geometries.Geometry?
+Honua.Sdk.Grpc.Models.FeaturePage
+Honua.Sdk.Grpc.Models.FeaturePage.FeaturePage() -> void
+Honua.Sdk.Grpc.Models.FeaturePage.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.Feature!>!
+Honua.Sdk.Grpc.Models.FeaturePage.Features.init -> void
+Honua.Sdk.Grpc.Models.FeaturePage.Fields.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.FieldDefinition!>!
+Honua.Sdk.Grpc.Models.FeaturePage.Fields.init -> void
+Honua.Sdk.Grpc.Models.FeaturePage.GeometryType.get -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.FeaturePage.GeometryType.init -> void
+Honua.Sdk.Grpc.Models.FeaturePage.IsLastPage.get -> bool
+Honua.Sdk.Grpc.Models.FeaturePage.IsLastPage.init -> void
+Honua.Sdk.Grpc.Models.FeaturePage.ObjectIdFieldName.get -> string!
+Honua.Sdk.Grpc.Models.FeaturePage.ObjectIdFieldName.init -> void
+Honua.Sdk.Grpc.Models.FeaturePage.SpatialReference.get -> Honua.Sdk.Grpc.Models.SpatialReference?
+Honua.Sdk.Grpc.Models.FeaturePage.SpatialReference.init -> void
+Honua.Sdk.Grpc.Models.FieldDefinition
+Honua.Sdk.Grpc.Models.FieldDefinition.FieldDefinition() -> void
+Honua.Sdk.Grpc.Models.FieldDefinition.FieldType.get -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldDefinition.FieldType.init -> void
+Honua.Sdk.Grpc.Models.FieldDefinition.Length.get -> int
+Honua.Sdk.Grpc.Models.FieldDefinition.Length.init -> void
+Honua.Sdk.Grpc.Models.FieldDefinition.Name.get -> string!
+Honua.Sdk.Grpc.Models.FieldDefinition.Name.init -> void
+Honua.Sdk.Grpc.Models.FieldDefinition.Nullable.get -> bool
+Honua.Sdk.Grpc.Models.FieldDefinition.Nullable.init -> void
+Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.BigInteger = 3 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Binary = 12 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Boolean = 6 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Date = 8 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.DateTime = 7 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Double = 4 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Float = 5 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Geometry = 10 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Integer = 2 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Json = 11 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.String = 1 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Time = 9 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Unspecified = 0 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.FieldType.Uuid = 13 -> Honua.Sdk.Grpc.Models.FieldType
+Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.GeometryCollection = 7 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.LineString = 3 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.MultiLineString = 4 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.MultiPoint = 2 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.MultiPolygon = 6 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.None = 8 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.Point = 1 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.Polygon = 5 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.GeometryType.Unspecified = 0 -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.<Clone>$() -> Honua.Sdk.Grpc.Models.QueryFeaturesRequest!
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.Equals(Honua.Sdk.Grpc.Models.QueryFeaturesRequest? other) -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.GeometryPrecision.get -> int
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.GeometryPrecision.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.GroupBy.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.GroupBy.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.LayerId.get -> int
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.LayerId.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.MaxAllowableOffset.get -> double
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.MaxAllowableOffset.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ObjectIds.get -> System.Collections.Generic.IReadOnlyList<long>?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ObjectIds.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OrderBy.get -> string?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OrderBy.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OutFields.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OutFields.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OutSr.get -> Honua.Sdk.Grpc.Models.SpatialReference?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OutSr.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OutStatistics.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.StatisticDefinition!>?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.OutStatistics.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.QueryFeaturesRequest() -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ResultOffset.get -> int
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ResultOffset.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ResultRecordCount.get -> int?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ResultRecordCount.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnCountOnly.get -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnCountOnly.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnDistinct.get -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnDistinct.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnExtentOnly.get -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnExtentOnly.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnGeometry.get -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnGeometry.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnIdsOnly.get -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ReturnIdsOnly.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ServiceId.get -> string!
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ServiceId.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.SpatialFilter.get -> Honua.Sdk.Grpc.Models.SpatialFilter?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.SpatialFilter.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.Where.get -> string?
+Honua.Sdk.Grpc.Models.QueryFeaturesRequest.Where.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Count.get -> long
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Count.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.ExceededTransferLimit.get -> bool
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.ExceededTransferLimit.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Extent.get -> Honua.Sdk.Grpc.Models.Extent?
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Extent.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.Feature!>!
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Features.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Fields.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Grpc.Models.FieldDefinition!>!
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.Fields.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.GeometryType.get -> Honua.Sdk.Grpc.Models.GeometryType
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.GeometryType.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.ObjectIdFieldName.get -> string!
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.ObjectIdFieldName.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.ObjectIds.get -> System.Collections.Generic.IReadOnlyList<long>!
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.ObjectIds.init -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.QueryFeaturesResponse() -> void
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.SpatialReference.get -> Honua.Sdk.Grpc.Models.SpatialReference?
+Honua.Sdk.Grpc.Models.QueryFeaturesResponse.SpatialReference.init -> void
+Honua.Sdk.Grpc.Models.SpatialFilter
+Honua.Sdk.Grpc.Models.SpatialFilter.Distance.get -> double
+Honua.Sdk.Grpc.Models.SpatialFilter.Distance.set -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.DistanceUnit.get -> Honua.Sdk.Grpc.Models.DistanceUnit
+Honua.Sdk.Grpc.Models.SpatialFilter.DistanceUnit.set -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.Geometry.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>?
+Honua.Sdk.Grpc.Models.SpatialFilter.Geometry.set -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.NearestCount.get -> int
+Honua.Sdk.Grpc.Models.SpatialFilter.NearestCount.set -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.ReturnDistance.get -> bool
+Honua.Sdk.Grpc.Models.SpatialFilter.ReturnDistance.set -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.SpatialFilter() -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.SpatialReference.get -> Honua.Sdk.Grpc.Models.SpatialReference?
+Honua.Sdk.Grpc.Models.SpatialFilter.SpatialReference.set -> void
+Honua.Sdk.Grpc.Models.SpatialFilter.SpatialRelationship.get -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialFilter.SpatialRelationship.set -> void
+Honua.Sdk.Grpc.Models.SpatialReference
+Honua.Sdk.Grpc.Models.SpatialReference.LatestWkid.get -> int
+Honua.Sdk.Grpc.Models.SpatialReference.LatestWkid.init -> void
+Honua.Sdk.Grpc.Models.SpatialReference.SpatialReference() -> void
+Honua.Sdk.Grpc.Models.SpatialReference.Wkid.get -> int
+Honua.Sdk.Grpc.Models.SpatialReference.Wkid.init -> void
+Honua.Sdk.Grpc.Models.SpatialReference.Wkt.get -> string!
+Honua.Sdk.Grpc.Models.SpatialReference.Wkt.init -> void
+Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.BeyondDistance = 11 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Contains = 3 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Crosses = 5 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Disjoint = 8 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.EnvelopeIntersects = 4 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Equals = 9 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Intersects = 1 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.NearestNeighbor = 12 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Overlaps = 7 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Touches = 6 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Unspecified = 0 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.Within = 2 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.SpatialRelationship.WithinDistance = 10 -> Honua.Sdk.Grpc.Models.SpatialRelationship
+Honua.Sdk.Grpc.Models.StatisticDefinition
+Honua.Sdk.Grpc.Models.StatisticDefinition.OnStatisticField.get -> string!
+Honua.Sdk.Grpc.Models.StatisticDefinition.OnStatisticField.init -> void
+Honua.Sdk.Grpc.Models.StatisticDefinition.OutStatisticFieldName.get -> string!
+Honua.Sdk.Grpc.Models.StatisticDefinition.OutStatisticFieldName.init -> void
+Honua.Sdk.Grpc.Models.StatisticDefinition.StatisticDefinition() -> void
+Honua.Sdk.Grpc.Models.StatisticDefinition.StatisticType.get -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticDefinition.StatisticType.init -> void
+Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Avg = 5 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Count = 1 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Max = 4 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Min = 3 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Stddev = 6 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Sum = 2 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Unspecified = 0 -> Honua.Sdk.Grpc.Models.StatisticType
+Honua.Sdk.Grpc.Models.StatisticType.Var = 7 -> Honua.Sdk.Grpc.Models.StatisticType
+override Honua.Sdk.Grpc.HonuaGrpcException.HttpStatus.get -> int?
+override Honua.Sdk.Grpc.HonuaGrpcException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.Grpc.Models.ApplyEditsRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Grpc.Models.ApplyEditsRequest.GetHashCode() -> int
+override Honua.Sdk.Grpc.Models.ApplyEditsRequest.ToString() -> string!
+override Honua.Sdk.Grpc.Models.QueryFeaturesRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Grpc.Models.QueryFeaturesRequest.GetHashCode() -> int
+override Honua.Sdk.Grpc.Models.QueryFeaturesRequest.ToString() -> string!
+static Honua.Sdk.Grpc.Conversion.HonuaGrpcProtoConverter.FromProto(Geospatial.V1.ApplyEditsResponse! response) -> Honua.Sdk.Grpc.Models.ApplyEditsResponse!
+static Honua.Sdk.Grpc.Conversion.HonuaGrpcProtoConverter.FromProto(Geospatial.V1.FeaturePage! page) -> Honua.Sdk.Grpc.Models.FeaturePage!
+static Honua.Sdk.Grpc.Conversion.HonuaGrpcProtoConverter.FromProto(Geospatial.V1.QueryFeaturesResponse! response) -> Honua.Sdk.Grpc.Models.QueryFeaturesResponse!
+static Honua.Sdk.Grpc.Conversion.HonuaGrpcProtoConverter.ToProto(Honua.Sdk.Grpc.Models.ApplyEditsRequest! request) -> Geospatial.V1.ApplyEditsRequest!
+static Honua.Sdk.Grpc.Conversion.HonuaGrpcProtoConverter.ToProto(Honua.Sdk.Grpc.Models.QueryFeaturesRequest! request) -> Geospatial.V1.QueryFeaturesRequest!
+static Honua.Sdk.Grpc.Conversion.MobileRequestConverters.ToGrpcApplyEditsRequest(Honua.Sdk.Abstractions.Features.ApplyEditsRequest! request) -> Honua.Sdk.Grpc.Models.ApplyEditsRequest!
+static Honua.Sdk.Grpc.Conversion.MobileRequestConverters.ToGrpcQueryRequest(Honua.Sdk.Abstractions.Features.QueryFeaturesRequest! request) -> Honua.Sdk.Grpc.Models.QueryFeaturesRequest!
+static Honua.Sdk.Grpc.Conversion.MobileRequestConverters.ToJsonDocument(Honua.Sdk.Grpc.Models.ApplyEditsResponse! response) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.Grpc.Conversion.MobileRequestConverters.ToJsonDocument(Honua.Sdk.Grpc.Models.FeaturePage! page) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.Grpc.Conversion.MobileRequestConverters.ToJsonDocument(Honua.Sdk.Grpc.Models.QueryFeaturesResponse! response) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.Grpc.Extensions.ServiceCollectionExtensions.AddHonuaGrpc(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.Grpc.HonuaGrpcClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.Grpc.Models.ApplyEditsRequest.operator !=(Honua.Sdk.Grpc.Models.ApplyEditsRequest? left, Honua.Sdk.Grpc.Models.ApplyEditsRequest? right) -> bool
+static Honua.Sdk.Grpc.Models.ApplyEditsRequest.operator ==(Honua.Sdk.Grpc.Models.ApplyEditsRequest? left, Honua.Sdk.Grpc.Models.ApplyEditsRequest? right) -> bool
+static Honua.Sdk.Grpc.Models.Feature.WithGeometry(NetTopologySuite.Geometries.Geometry! geometry, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? attributes = null, long id = 0, Honua.Sdk.Geometry.HonuaSpatialReference? spatialReference = null) -> Honua.Sdk.Grpc.Models.Feature!
+static Honua.Sdk.Grpc.Models.QueryFeaturesRequest.operator !=(Honua.Sdk.Grpc.Models.QueryFeaturesRequest? left, Honua.Sdk.Grpc.Models.QueryFeaturesRequest? right) -> bool
+static Honua.Sdk.Grpc.Models.QueryFeaturesRequest.operator ==(Honua.Sdk.Grpc.Models.QueryFeaturesRequest? left, Honua.Sdk.Grpc.Models.QueryFeaturesRequest? right) -> bool

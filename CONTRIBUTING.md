@@ -44,6 +44,17 @@ The repo boundary, what belongs here, and what doesn't, is documented in
 - Don't ship UI, native, MAUI/WPF/Blazor controls, or display-layer code in
   this repo. The boundary is enforced in [AGENTS.md](AGENTS.md).
 
+## Public API approval
+
+Every shipped package tracks its approved surface with Public API Analyzer
+files. Existing released declarations belong in `PublicAPI.Shipped.txt`;
+intentional additions for the next release belong in
+`PublicAPI.Unshipped.txt`. Review the source and approval-file diffs together.
+Removing a shipped declaration requires the major-release/API-compatibility
+process rather than an analyzer suppression. At release, move reviewed
+unshipped declarations into the shipped file. See
+[docs/public-api-approval.md](docs/public-api-approval.md) for the full workflow.
+
 ## Internal / contributor documentation
 
 Backlog cadence, capability backlog, contract harmonization, and cross-repo
@@ -57,11 +68,11 @@ Before opening a PR, verify:
 - [ ] `dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true` is clean — zero warnings, zero errors.
 - [ ] `dotnet test Honua.Sdk.sln --configuration Release --no-build` is green; integration tests under `tests/Honua.Sdk.IntegrationTests` / `tests/Honua.Sdk.ProtocolIntegration.Tests` may stay skipped (environment-gated) unless your change touches their fixtures.
 - [ ] You added or updated XML doc comments on any new public type or member. Missing-doc warnings fail the build under `TreatWarningsAsErrors`.
-- [ ] You added unit tests for new behavior. Code-coverage floors (80% line / 70% branch, see `.github/workflows/ci.yml`) are enforced solution-wide; new packages should meet or exceed those numbers.
+- [ ] You added unit tests for new behavior. Code-coverage floors (75% line / 60% branch, see `.github/workflows/ci.yml`) are enforced solution-wide against the merged report; new packages should meet or exceed those numbers.
 - [ ] Public-API surface changes pass `scripts/validate-api-compat.sh` (the CI `api-compat` job runs this against the prior `dotnet-sdk-v*` tag).
 - [ ] The change does not break the `Honua.Sdk.Abstractions` provider-neutral contracts unless the change is intentional and version-gated; see [docs/feature-edits.md](docs/feature-edits.md).
 - [ ] You did not introduce a default `BaseAddress`, an unguarded `Address` (string), or a clamping `MaxRetryAttempts` setter; the conventions are documented in [docs/troubleshooting.md](docs/troubleshooting.md).
-- [ ] If you added a new SDK package, you added a `src/Honua.Sdk.<X>/README.md`, a `tests/Honua.Sdk.<X>.Tests/` project, a per-package CI job in `.github/workflows/ci.yml`, an `<None Include="README.md" Pack="true" />` line in the csproj for nuget.org rendering, and a row in `INSTALL.md` + `README.md` + `docs/architecture.md`.
+- [ ] If you added a new SDK package, you added a `src/Honua.Sdk.<X>/README.md`, `PublicAPI.Shipped.txt`, `PublicAPI.Unshipped.txt`, a `tests/Honua.Sdk.<X>.Tests/` project, a per-package CI job in `.github/workflows/ci.yml`, an `<None Include="README.md" Pack="true" />` line in the csproj for nuget.org rendering, and a row in `INSTALL.md` + `README.md` + `docs/architecture.md`.
 
 ## Style and conventions
 

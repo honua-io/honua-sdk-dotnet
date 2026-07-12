@@ -71,7 +71,7 @@ public static class ExpressionEvaluator
             var value = node.Evaluate(context ?? EmptyContext, 0);
             return ExpressionResult.Success(value);
         }
-        catch (ExpressionException ex)
+        catch (ExpressionEvaluationException ex)
         {
             return ExpressionResult.Failure(ex.Message);
         }
@@ -118,8 +118,13 @@ public sealed class ExpressionResult
 }
 
 /// <summary>
-/// Exception used to unwind tokenizer/parser/evaluator errors into a diagnostic.
+/// Legacy expression exception retained for 1.x binary compatibility.
 /// </summary>
+/// <remarks>
+/// The evaluator reports failures through <see cref="ExpressionResult"/> and does not throw
+/// this type. It is hidden from IntelliSense and is scheduled for internalization in 2.0.
+/// </remarks>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public sealed class ExpressionException : Exception
 {
     /// <summary>Initializes a new instance of the <see cref="ExpressionException"/> class.</summary>
@@ -139,6 +144,25 @@ public sealed class ExpressionException : Exception
     /// <param name="innerException">Underlying cause.</param>
     public ExpressionException(string message, Exception innerException)
         : base(message, innerException)
+    {
+    }
+}
+
+/// <summary>
+/// Internal control-flow exception used to turn expression failures into diagnostics.
+/// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1032:Implement standard exception constructors",
+    Justification = "Internal control-flow exception; only a diagnostic message is required.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1064:Exceptions should be public",
+    Justification = "Internal control-flow exception that is always converted to ExpressionResult.")]
+internal sealed class ExpressionEvaluationException : Exception
+{
+    public ExpressionEvaluationException(string message)
+        : base(message)
     {
     }
 }

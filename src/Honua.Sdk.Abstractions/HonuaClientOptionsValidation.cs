@@ -9,6 +9,7 @@ namespace Honua.Sdk.Abstractions;
 /// <c>ValidateBaseAddress</c>/<c>ValidateTimeout</c> check here with a product
 /// label so the rules can never drift between packages.
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class HonuaClientOptionsValidation
 {
     private static readonly TimeSpan MinTimeout = TimeSpan.FromMilliseconds(10);

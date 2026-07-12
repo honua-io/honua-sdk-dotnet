@@ -1,0 +1,691 @@
+#nullable enable
+Honua.Sdk.GeoServices.Extensions.ServiceCollectionExtensions
+Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.Details.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.GeoServicesErrorCode.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.HonuaFeatureServerException() -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.HonuaFeatureServerException(string! message) -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.HonuaFeatureServerException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.HonuaFeatureServerException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, int? geoServicesErrorCode = null, System.Collections.Generic.IReadOnlyList<string!>? details = null) -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.HonuaFeatureServerException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, System.Exception! innerException) -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.ResponseBody.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.GeoServices.FeatureServer.FeatureServerVectorClientExtensions
+Honua.Sdk.GeoServices.FeatureServer.FeatureServerVectorFormats
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.AddAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentAddRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.AddFeaturesAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>! features, bool rollbackOnFailure = true, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.ApplyEditsAsync(Honua.Sdk.Abstractions.Features.FeatureEditRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.ApplyEditsAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.AttachmentCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureAttachmentCapabilities!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.DeleteAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDeleteRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.DeleteFeaturesAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<long>! objectIds, bool rollbackOnFailure = true, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.DownloadAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDownloadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentContent!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.EditCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureEditCapabilities!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetDescriptorAsync(Honua.Sdk.Abstractions.Features.SourceDescriptor! descriptor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.SourceDescriptor!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetEditCapabilitiesAsync(string! serviceId, int layerId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureEditCapabilities!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetFeatureAsync(string! serviceId, int layerId, long objectId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature?>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetLayerInfoAsync(string! serviceId, int layerId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetServiceInfoAsync(string! serviceId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.HonuaFeatureServerClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.ListAttachmentsAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentListRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureAttachmentInfo!>!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.ProviderName.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureQueryCapabilities!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryCountAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<long>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryExtentAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryIdsAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<long>!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryPagesAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryPagesAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryRawAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryStatisticsAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryVectorAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, Honua.Sdk.Geometry.Vector.VectorPayloadFormat? format = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.UpdateAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentUpdateRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.UpdateFeaturesAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>! features, bool rollbackOnFailure = true, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.ValidateSqlAsync(string! serviceId, int layerId, string! where, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetFeatureAsync(string! serviceId, int layerId, long objectId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature?>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetLayerInfoAsync(string! serviceId, int layerId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetServiceInfoAsync(string! serviceId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryCountAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<long>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryExtentAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryIdsAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<long>!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryPagesAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryRawAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryStatisticsAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.ValidateSqlAsync(string! serviceId, int layerId, string! where, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.AddFeaturesAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>! features, bool rollbackOnFailure = true, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.ApplyEditsAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.DeleteFeaturesAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<long>! objectIds, bool rollbackOnFailure = true, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.GetEditCapabilitiesAsync(string! serviceId, int layerId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureEditCapabilities!>!
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.UpdateFeaturesAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>! features, bool rollbackOnFailure = true, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.AddAttachmentResult.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.AddAttachmentResult.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.DeleteAttachmentResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.DeleteAttachmentResults.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.FeatureServerAttachmentEditResponse() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.UpdateAttachmentResult.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResponse.UpdateAttachmentResult.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.Error.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.Error.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.FeatureServerAttachmentEditResult() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.GlobalId.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.GlobalId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.ObjectId.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.ObjectId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.Success.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentEditResult.Success.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.ContentType.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.ContentType.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.FeatureServerAttachmentInfo() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.GlobalId.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.GlobalId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Id.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Id.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Keywords.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Keywords.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Name.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Name.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.ParentObjectId.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.ParentObjectId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Size.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Size.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Url.get -> System.Uri?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo.Url.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentQueryResponse
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentQueryResponse.AttachmentInfos.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentQueryResponse.AttachmentInfos.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentQueryResponse.FeatureServerAttachmentQueryResponse() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.Code.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.Code.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.Description.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.Description.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.FeatureServerEditError() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.Message.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError.Message.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Adds.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Adds.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Deletes.get -> System.Collections.Generic.IReadOnlyList<long>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Deletes.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Equals(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest? other) -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.FeatureServerEditRequest() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.ForceWrite.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.ForceWrite.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.RollbackOnFailure.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.RollbackOnFailure.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Updates.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Updates.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.AddResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.AddResults.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.DeleteResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.DeleteResults.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.EditMoment.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.EditMoment.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.FeatureServerEditResponse() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.UpdateResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse.UpdateResults.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.Error.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditError?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.Error.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.FeatureServerEditResult() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.GlobalId.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.GlobalId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.ObjectId.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.ObjectId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.Success.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResult.Success.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.FeatureServerExtent() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.SpatialReference.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.SpatialReference.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Xmax.get -> double
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Xmax.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Xmin.get -> double
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Xmin.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Ymax.get -> double
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Ymax.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Ymin.get -> double
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent.Ymin.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature.Attributes.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature.Attributes.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature.FeatureServerFeature() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature.Geometry.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature.Geometry.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Alias.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Alias.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.DefaultValue.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.DefaultValue.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Domain.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Domain.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Editable.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Editable.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.FeatureServerField() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Length.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Length.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Name.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Name.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Nullable.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Nullable.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Type.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.Type.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat.FlatGeobuf = 3 -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat.GeoJson = 1 -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat.Json = 0 -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat.Parquet = 4 -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat.Pbf = 2 -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Capabilities.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Capabilities.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Description.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Description.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Extent.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Extent.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.FeatureServerLayerInfo() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Fields.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Fields.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.GeometryType.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.GeometryType.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.GlobalIdField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.GlobalIdField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.HasAttachments.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.HasAttachments.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Id.get -> int
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Id.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.MaxRecordCount.get -> int
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.MaxRecordCount.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Name.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Name.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.ObjectIdField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.ObjectIdField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SpatialReference.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SpatialReference.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SupportsAdvancedQueries.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SupportsAdvancedQueries.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SupportsStatistics.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SupportsStatistics.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.TimeInfo.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.TimeInfo.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.FeatureServerLayerSummary() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.Id.get -> int
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.Id.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.Name.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.Name.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Equals(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? other) -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.FeatureServerQueryParams() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Format.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Format.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.GroupByFieldsForStatistics.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.GroupByFieldsForStatistics.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Having.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Having.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.InSR.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.InSR.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ObjectIds.get -> System.Collections.Generic.IReadOnlyList<long>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ObjectIds.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OrderByFields.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OrderByFields.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OutFields.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OutFields.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OutSR.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OutSR.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OutStatistics.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.OutStatistics.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ResultOffset.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ResultOffset.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ResultRecordCount.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ResultRecordCount.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnCountOnly.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnCountOnly.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnDistinctValues.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnDistinctValues.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnExtentOnly.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnExtentOnly.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnGeometry.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnGeometry.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnIdsOnly.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnIdsOnly.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.SpatialFilter.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.SpatialFilter.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Time.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Time.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.TimeRelation.get -> Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.TimeRelation.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Where.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Where.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Count.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Count.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.ExceededTransferLimit.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.ExceededTransferLimit.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Extent.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Extent.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Features.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.FeatureServerQueryResponse() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Fields.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.Fields.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.ObjectIdFieldName.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.ObjectIdFieldName.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.ObjectIds.get -> System.Collections.Generic.IReadOnlyList<long>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.ObjectIds.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.SpatialReference.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse.SpatialReference.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Capabilities.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Capabilities.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.FeatureServerServiceInfo() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.FullExtent.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.FullExtent.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.HasVersionedData.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.HasVersionedData.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.InitialExtent.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerExtent?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.InitialExtent.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Layers.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Layers.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.MaxRecordCount.get -> int
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.MaxRecordCount.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.ServiceDescription.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.ServiceDescription.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.SpatialReference.get -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.SpatialReference.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.SupportedQueryFormats.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.SupportedQueryFormats.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.Equals(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter? other) -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.FeatureServerSpatialFilter() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.Geometry.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.Geometry.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.GeometryType.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.GeometryType.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.SpatialRel.get -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.SpatialRel.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.FeatureServerSpatialReference() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.LatestWkid.get -> int
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.LatestWkid.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.Wkid.get -> int
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.Wkid.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.Equals(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams? other) -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.FeatureServerStatisticsParams() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.GroupByFieldsForStatistics.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.GroupByFieldsForStatistics.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.Having.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.Having.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.OrderByFields.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.OrderByFields.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.OutStatistics.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.OutStatistics.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.ResultOffset.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.ResultOffset.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.ResultRecordCount.get -> int?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.ResultRecordCount.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.Where.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.Where.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.EndTimeField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.EndTimeField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.FeatureServerTimeInfo() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.StartTimeField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.StartTimeField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.TimeReference.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.TimeReference.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.TrackIdField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.TrackIdField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse.FeatureServerValidateSqlResponse() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse.IsValidSql.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse.IsValidSql.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse.ValidationMessage.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerValidateSqlResponse.ValidationMessage.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.Contains = 1 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.Crosses = 2 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.EnvelopeIntersects = 3 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.IndexIntersects = 4 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.Intersects = 0 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.Overlaps = 5 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.Touches = 6 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship.Within = 7 -> Honua.Sdk.GeoServices.FeatureServer.Models.SpatialRelationship
+Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation
+Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation.AfterStartWithinEnd = 1 -> Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation
+Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation.Overlaps = 0 -> Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation
+Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation.Within = 2 -> Honua.Sdk.GeoServices.FeatureServer.Models.TimeRelation
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.AreasAndLengthsRequest() -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.AreaUnit.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.AreaUnit.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.CalculationType.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.CalculationType.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.LengthUnit.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.LengthUnit.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.Polygons.get -> System.Collections.Generic.IReadOnlyList<System.Text.Json.JsonElement>!
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.Polygons.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.ServiceId.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.ServiceId.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.SpatialReference.get -> int
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest.SpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.Areas.get -> System.Collections.Generic.IReadOnlyList<double>!
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.Areas.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.AreasAndLengthsResult() -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.Lengths.get -> System.Collections.Generic.IReadOnlyList<double>!
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.Lengths.init -> void
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.RawResponse.get -> System.Text.Json.JsonElement
+Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult.RawResponse.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.BufferGeometriesRequest() -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.BufferSpatialReference.get -> int?
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.BufferSpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Distances.get -> System.Collections.Generic.IReadOnlyList<double>!
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Distances.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Geodesic.get -> bool
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Geodesic.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Geometries.get -> System.Collections.Generic.IReadOnlyList<System.Text.Json.JsonElement>!
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Geometries.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.GeometryType.get -> string!
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.GeometryType.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.InSpatialReference.get -> int
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.InSpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.OutSpatialReference.get -> int
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.OutSpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.ServiceId.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.ServiceId.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.UnionResults.get -> bool
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.UnionResults.init -> void
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Unit.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest.Unit.init -> void
+Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult
+Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult.Geometries.get -> System.Collections.Generic.IReadOnlyList<System.Text.Json.JsonElement>!
+Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult.Geometries.init -> void
+Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult.GeometryCollectionResult() -> void
+Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult.RawResponse.get -> System.Text.Json.JsonElement
+Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult.RawResponse.init -> void
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.AreasAndLengthsAsync(Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.GeometryServer.AreasAndLengthsResult!>!
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.BufferAsync(Honua.Sdk.GeoServices.GeometryServer.BufferGeometriesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult!>!
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.HonuaGeometryServerClient(System.Net.Http.HttpClient! httpClient, Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions! options) -> void
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.HonuaGeometryServerClient(System.Net.Http.HttpClient! httpClient, Microsoft.Extensions.Options.IOptions<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! options) -> void
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.LengthsAsync(Honua.Sdk.GeoServices.GeometryServer.LengthsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.GeometryServer.LengthsResult!>!
+Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.ProjectAsync(Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.GeometryServer.GeometryCollectionResult!>!
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.CalculationType.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.CalculationType.init -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.LengthsRequest() -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.LengthUnit.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.LengthUnit.init -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.Polylines.get -> System.Collections.Generic.IReadOnlyList<System.Text.Json.JsonElement>!
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.Polylines.init -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.ServiceId.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.ServiceId.init -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.SpatialReference.get -> int
+Honua.Sdk.GeoServices.GeometryServer.LengthsRequest.SpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsResult
+Honua.Sdk.GeoServices.GeometryServer.LengthsResult.Lengths.get -> System.Collections.Generic.IReadOnlyList<double>!
+Honua.Sdk.GeoServices.GeometryServer.LengthsResult.Lengths.init -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsResult.LengthsResult() -> void
+Honua.Sdk.GeoServices.GeometryServer.LengthsResult.RawResponse.get -> System.Text.Json.JsonElement
+Honua.Sdk.GeoServices.GeometryServer.LengthsResult.RawResponse.init -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.Geometries.get -> System.Collections.Generic.IReadOnlyList<System.Text.Json.JsonElement>!
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.Geometries.init -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.GeometryType.get -> string!
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.GeometryType.init -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.InSpatialReference.get -> int
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.InSpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.OutSpatialReference.get -> int
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.OutSpatialReference.init -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.ProjectGeometriesRequest() -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.ServiceId.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.ServiceId.init -> void
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.Transformation.get -> string?
+Honua.Sdk.GeoServices.GeometryServer.ProjectGeometriesRequest.Transformation.init -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.ApiKey.get -> string?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.ApiKey.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.BearerToken.get -> string?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.BearerToken.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.GeometryServiceId.get -> string!
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.GeometryServiceId.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.HonuaGeoServicesClientOptions() -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingClosestFacilityLayerName.get -> string!
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingClosestFacilityLayerName.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingRouteLayerName.get -> string!
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingRouteLayerName.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingServiceAreaLayerName.get -> string!
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingServiceAreaLayerName.set -> void
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingServiceId.get -> string!
+Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions.RoutingServiceId.set -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.ExportImageMetadata() -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Extent.get -> Honua.Sdk.GeoServices.ImageServer.ImageServerExtent?
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Extent.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Height.get -> int?
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Height.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Href.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Href.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.RawResponse.get -> System.Text.Json.JsonElement
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.RawResponse.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Scale.get -> double?
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Scale.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Width.get -> int?
+Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata.Width.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.AdditionalParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.AdditionalParameters.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.BoundingBox.get -> Honua.Sdk.GeoServices.ImageServer.ImageServerExtent!
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.BoundingBox.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.BoundingBoxSpatialReference.get -> int?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.BoundingBoxSpatialReference.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.ExportImageRequest() -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Format.get -> string!
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Format.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Height.get -> int
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Height.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.ImageSpatialReference.get -> int?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.ImageSpatialReference.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Interpolation.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Interpolation.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.MosaicRule.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.MosaicRule.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.NoData.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.NoData.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.NoDataInterpretation.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.NoDataInterpretation.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.PixelType.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.PixelType.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.RenderingRule.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.RenderingRule.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.ServiceId.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.ServiceId.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Width.get -> int
+Honua.Sdk.GeoServices.ImageServer.ExportImageRequest.Width.init -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult.Content.get -> System.IO.Stream!
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult.ContentLength.get -> long?
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult.ContentType.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult.Dispose() -> void
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Honua.Sdk.GeoServices.ImageServer.ExportImageResult.ExportImageResult(System.IO.Stream! content, string? contentType, long? contentLength) -> void
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ComputeStatisticsHistogramsAsync(string! serviceId, System.Collections.Generic.IEnumerable<(string! Key, string? Value)>! parameters, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ExportImageAsync(Honua.Sdk.GeoServices.ImageServer.ExportImageRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.ImageServer.ExportImageResult!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ExportImageMetadataAsync(Honua.Sdk.GeoServices.ImageServer.ExportImageRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.ImageServer.ExportImageMetadata!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.GetServiceMetadataAsync(string! serviceId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.HonuaImageServerClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.HonuaImageServerClient(System.Net.Http.HttpClient! httpClient, Microsoft.Extensions.Options.IOptions<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! options) -> void
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.IdentifyAsync(Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient.GetCoverageStatisticsAsync(Honua.Sdk.Abstractions.Data.RasterCoverageStatisticsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Data.RasterCoverageStatisticsResponse!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient.GetRasterMetadataAsync(Honua.Sdk.Abstractions.Data.RasterMetadataRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Data.RasterDatasetMetadata!>!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient.HonuaImageServerRasterDataClient(Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient! imageServer) -> void
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient.ProviderName.get -> string!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient.RasterCapabilities.get -> Honua.Sdk.Abstractions.Data.RasterDataCapabilities!
+Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient.ReadWindowAsync(Honua.Sdk.Abstractions.Data.RasterWindowReadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Data.RasterWindowReadResult!>!
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.AdditionalParameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.AdditionalParameters.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.IdentifyImageRequest() -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.MosaicRule.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.MosaicRule.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.PixelSize.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.PixelSize.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.RenderingRule.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.RenderingRule.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.ServiceId.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.ServiceId.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.SpatialReferenceWkid.get -> int?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.SpatialReferenceWkid.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.X.get -> double
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.X.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.Y.get -> double
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageRequest.Y.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.IdentifyImageResult() -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.Location.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.Location.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.Name.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.Name.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.ObjectId.get -> long?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.ObjectId.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.RawResponse.get -> System.Text.Json.JsonElement
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.RawResponse.init -> void
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.Value.get -> string?
+Honua.Sdk.GeoServices.ImageServer.IdentifyImageResult.Value.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.ImageServerExtent() -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.SpatialReferenceWkid.get -> int?
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.SpatialReferenceWkid.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.XMax.get -> double
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.XMax.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.XMin.get -> double
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.XMin.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.YMax.get -> double
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.YMax.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.YMin.get -> double
+Honua.Sdk.GeoServices.ImageServer.ImageServerExtent.YMin.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.AllowedMosaicMethods.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.AllowedMosaicMethods.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.BandCount.get -> int?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.BandCount.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.DefaultMosaicMethod.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.DefaultMosaicMethod.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.Extent.get -> Honua.Sdk.GeoServices.ImageServer.ImageServerExtent?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.Extent.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.HasHistograms.get -> bool?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.HasHistograms.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.HasRasterAttributeTable.get -> bool?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.HasRasterAttributeTable.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.ImageServerMetadata() -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.MaxValues.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.MaxValues.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.MinValues.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.MinValues.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.Name.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.Name.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.PixelType.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.PixelType.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.RawResponse.get -> System.Text.Json.JsonElement
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.RawResponse.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.ServiceDescription.get -> string?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.ServiceDescription.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.ServiceId.get -> string!
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.ServiceId.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.SupportedImageFormatTypes.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.SupportedImageFormatTypes.init -> void
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.SupportedQueryFormats.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.GeoServices.ImageServer.ImageServerMetadata.SupportedQueryFormats.init -> void
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.Capabilities.get -> Honua.Sdk.Abstractions.Routing.RoutingCapabilities!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.FindClosestFacilityAsync(Honua.Sdk.Abstractions.Routing.ClosestFacilityRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.ClosestFacilityResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.FindClosestFacilityAsync(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Routing.RoutingLocation!>! incidents, System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Routing.RoutingLocation!>! facilities, Honua.Sdk.Abstractions.Routing.ClosestFacilityOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.ClosestFacilityResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.GetDirectionsAsync(Honua.Sdk.Abstractions.Routing.RouteDirectionsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.RouteResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.GetDirectionsAsync(Honua.Sdk.Abstractions.Routing.RoutingLocation! origin, Honua.Sdk.Abstractions.Routing.RoutingLocation! destination, System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Routing.RoutingLocation!>? waypoints = null, Honua.Sdk.Abstractions.Routing.RouteSolveOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.RouteResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.GetServiceAreaAsync(Honua.Sdk.Abstractions.Routing.RoutingLocation! center, System.TimeSpan travelTime, Honua.Sdk.Abstractions.Routing.ServiceAreaOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.ServiceAreaResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.GetServiceAreaAsync(Honua.Sdk.Abstractions.Routing.ServiceAreaRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.ServiceAreaResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.GetServiceMetadataAsync(Honua.Sdk.Abstractions.Routing.RouteServiceMetadataRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.RouteServiceMetadata!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.HonuaRoutingClient(System.Net.Http.HttpClient! httpClient, Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions! options) -> void
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.HonuaRoutingClient(System.Net.Http.HttpClient! httpClient, Microsoft.Extensions.Options.IOptions<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! options) -> void
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.OptimizeRouteAsync(Honua.Sdk.Abstractions.Routing.RouteOptimizationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.RouteResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.OptimizeRouteAsync(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Routing.RoutingLocation!>! stops, Honua.Sdk.Abstractions.Routing.RouteOptimizationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.RouteResult!>!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.ProviderName.get -> string!
+Honua.Sdk.GeoServices.Routing.HonuaRoutingClient.Route() -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.AvoidHighways() -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.AvoidTolls() -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.ExecuteAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Routing.RouteResult!>!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.From(Honua.Sdk.Abstractions.Routing.RoutingLocation! origin) -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.To(Honua.Sdk.Abstractions.Routing.RoutingLocation! destination) -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.Via(Honua.Sdk.Abstractions.Routing.RoutingLocation! waypoint) -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.WithOptions(Honua.Sdk.Abstractions.Routing.RouteSolveOptions! options) -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.WithTraffic() -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder.WithTravelMode(string! travelMode) -> Honua.Sdk.GeoServices.Routing.RouteDirectionsBuilder!
+override Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.HttpStatus.get -> int?
+override Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.Equals(object? obj) -> bool
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.GetHashCode() -> int
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.ToString() -> string!
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.Equals(object? obj) -> bool
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.GetHashCode() -> int
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ToString() -> string!
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.Equals(object? obj) -> bool
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.GetHashCode() -> int
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.ToString() -> string!
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.Equals(object? obj) -> bool
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.GetHashCode() -> int
+override Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.ToString() -> string!
+static Honua.Sdk.GeoServices.Extensions.ServiceCollectionExtensions.AddHonuaFeatureServer(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.GeoServices.Extensions.ServiceCollectionExtensions.AddHonuaGeometryServer(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.GeoServices.Extensions.ServiceCollectionExtensions.AddHonuaImageServer(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.GeoServices.Extensions.ServiceCollectionExtensions.AddHonuaRouting(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.GeoServices.HonuaGeoServicesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToFeatureServerDeleteObjectIds(Honua.Sdk.Abstractions.Features.FeatureEditRequest! request) -> System.Collections.Generic.IReadOnlyList<long>?
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToFeatureServerEditFormParameters(Honua.Sdk.Abstractions.Features.ApplyEditsRequest! request) -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToFeatureServerEditRequest(Honua.Sdk.Abstractions.Features.ApplyEditsRequest! request) -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest!
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToFeatureServerFeature(Honua.Sdk.Abstractions.Features.FeatureEditFeature! feature) -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFeature!
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToFeatureServerQueryParams(Honua.Sdk.Abstractions.Features.QueryFeaturesRequest! request) -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams!
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToJsonDocument(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditResponse! response) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.GeoServices.FeatureServer.Conversion.RequestConverters.ToJsonDocument(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse! response) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.GeoServices.FeatureServer.FeatureServerVectorClientExtensions.QueryVectorAsync(this Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient! client, string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, Honua.Sdk.Geometry.Vector.VectorPayloadFormat? format = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+static Honua.Sdk.GeoServices.FeatureServer.FeatureServerVectorFormats.FromFeatureServerFormat(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat? format) -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+static Honua.Sdk.GeoServices.FeatureServer.FeatureServerVectorFormats.SupportedFormats.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.Vector.VectorPayloadFormat>!
+static Honua.Sdk.GeoServices.FeatureServer.FeatureServerVectorFormats.ToFeatureServerFormat(Honua.Sdk.Geometry.Vector.VectorPayloadFormat format) -> Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerFormat
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.operator !=(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.operator ==(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.operator !=(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.operator ==(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.operator !=(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter.operator ==(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialFilter? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.operator !=(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams.operator ==(Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams? left, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerStatisticsParams? right) -> bool

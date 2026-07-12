@@ -21,6 +21,7 @@ public sealed class HonuaScenePackageManifest
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
     };
+    private static readonly HonuaScenePackageJsonContext JsonContext = new(JsonOptions);
 
     /// <summary>
     /// Manifest schema version. Must be <see cref="CurrentSchemaVersion"/>.
@@ -109,7 +110,7 @@ public sealed class HonuaScenePackageManifest
 
         try
         {
-            return JsonSerializer.Deserialize<HonuaScenePackageManifest>(json, JsonOptions)
+            return JsonSerializer.Deserialize(json, JsonContext.HonuaScenePackageManifest)
                 ?? throw new FormatException("Offline scene package manifest JSON did not contain an object.");
         }
         catch (JsonException ex)

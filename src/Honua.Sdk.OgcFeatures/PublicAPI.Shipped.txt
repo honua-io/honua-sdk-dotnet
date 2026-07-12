@@ -1,0 +1,502 @@
+#nullable enable
+const Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncodingExtensions.MapboxStyleEncodingId = "mapbox-style" -> string!
+const Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncodingExtensions.Sld10EncodingId = "sld-1.0.0" -> string!
+const Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncodingExtensions.Sld11EncodingId = "sld-1.1.0" -> string!
+const Honua.Sdk.OgcFeatures.Wfs.WfsVectorFormats.GeoJsonOutputFormat = "application/geo+json" -> string!
+const Honua.Sdk.OgcFeatures.Wfs.WfsVectorFormats.GmlOutputFormat = "application/gml+xml; version=3.2" -> string!
+Honua.Sdk.OgcFeatures.Conversion.RequestConverters
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.HonuaOgcFeaturesException() -> void
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.HonuaOgcFeaturesException(string! message) -> void
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.HonuaOgcFeaturesException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.HonuaOgcFeaturesException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, string? problemType = null, string? problemTitle = null, string? problemDetail = null) -> void
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.HonuaOgcFeaturesException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, System.Exception! innerException) -> void
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.ProblemDetail.get -> string?
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.ProblemTitle.get -> string?
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.ProblemType.get -> string?
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.ResponseBody.get -> string?
+Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.OgcFeatures.Extensions.ServiceCollectionExtensions
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.AddAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentAddRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.ApplyEditsAsync(Honua.Sdk.Abstractions.Features.FeatureEditRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureEditResponse!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.AttachmentCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureAttachmentCapabilities!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.CreateItemAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcFeature! feature, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.DeleteAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDeleteRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.DeleteItemAsync(string! collectionId, string! featureId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.DownloadAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDownloadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentContent!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.EditCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureEditCapabilities!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetCollectionAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcCollection!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetConformanceAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcConformance!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetDescriptorAsync(Honua.Sdk.Abstractions.Features.SourceDescriptor! descriptor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.SourceDescriptor!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetItemAsync(string! collectionId, string! featureId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetItemsAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetItemsPagesAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetItemsRawAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetItemsVectorAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, Honua.Sdk.Geometry.Vector.VectorPayloadFormat? format = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcLandingPage!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.GetQueryablesAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcQueryables!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.HonuaOgcFeaturesClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.ListAttachmentsAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentListRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureAttachmentInfo!>!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.ListCollectionsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcCollection!>!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.PatchItemAsync(string! collectionId, string! featureId, System.Text.Json.JsonElement patch, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.ProviderName.get -> string!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.QueryAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.QueryCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureQueryCapabilities!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.QueryPagesAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.UpdateAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentUpdateRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient.UpdateItemAsync(string! collectionId, string! featureId, Honua.Sdk.OgcFeatures.Models.OgcFeature! feature, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.ApiKey.get -> string?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.ApiKey.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.BearerToken.get -> string?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.BearerToken.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions.HonuaOgcFeaturesClientOptions() -> void
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetCollectionAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcCollection!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetConformanceAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcConformance!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemAsync(string! collectionId, string! featureId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsPagesAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsRawAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcLandingPage!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetQueryablesAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcQueryables!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.ListCollectionsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcCollection!>!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.CreateItemAsync(string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcFeature! feature, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.DeleteItemAsync(string! collectionId, string! featureId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.UpdateItemAsync(string! collectionId, string! featureId, Honua.Sdk.OgcFeatures.Models.OgcFeature! feature, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesPatchClient
+Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesPatchClient.PatchItemAsync(string! collectionId, string! featureId, System.Text.Json.JsonElement patch, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Models.OgcFeature!>!
+Honua.Sdk.OgcFeatures.Models.OgcCollection
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Crs.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Crs.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Description.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Description.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Extent.get -> Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent?
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Extent.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Id.get -> string!
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Id.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>?
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Links.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.OgcCollection() -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.StorageCrs.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcCollection.StorageCrs.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Title.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcCollection.Title.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent
+Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent.OgcCollectionExtent() -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent.Spatial.get -> Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent?
+Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent.Spatial.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent.Temporal.get -> Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent?
+Honua.Sdk.OgcFeatures.Models.OgcCollectionExtent.Temporal.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcConformance
+Honua.Sdk.OgcFeatures.Models.OgcConformance.ConformsTo.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.OgcFeatures.Models.OgcConformance.ConformsTo.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcConformance.OgcConformance() -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeature
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Geometry.get -> System.Text.Json.JsonElement?
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Geometry.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Id.get -> System.Text.Json.JsonElement?
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Id.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>?
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Links.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeature.OgcFeature() -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Properties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Properties.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Type.get -> string!
+Honua.Sdk.OgcFeatures.Models.OgcFeature.Type.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcFeature!>?
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.Features.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>?
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.Links.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.NumberMatched.get -> long?
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.NumberMatched.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.NumberReturned.get -> int?
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.NumberReturned.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.OgcFeatureCollection() -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.Type.get -> string!
+Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection.Type.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.Csv = 4 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.FlatGeobuf = 5 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.GeoJson = 0 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.Gml = 3 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.Html = 2 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.Json = 1 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat.Parquet = 6 -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.<Clone>$() -> Honua.Sdk.OgcFeatures.Models.OgcItemsParams!
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Bbox.get -> System.Collections.Generic.IReadOnlyList<double>?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Bbox.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.BboxCrs.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.BboxCrs.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Crs.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Crs.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Datetime.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Datetime.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Equals(Honua.Sdk.OgcFeatures.Models.OgcItemsParams? other) -> bool
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Filter.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Filter.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.FilterCrs.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.FilterCrs.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.FilterLang.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.FilterLang.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Format.get -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Format.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Ids.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Ids.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Limit.get -> int?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Limit.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Offset.get -> int?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Offset.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.OgcItemsParams() -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Properties.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Properties.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Sortby.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Sortby.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.Description.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.Description.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>?
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.Links.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.OgcLandingPage() -> void
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.Title.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcLandingPage.Title.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLink
+Honua.Sdk.OgcFeatures.Models.OgcLink.Href.get -> string!
+Honua.Sdk.OgcFeatures.Models.OgcLink.Href.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLink.OgcLink() -> void
+Honua.Sdk.OgcFeatures.Models.OgcLink.Rel.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcLink.Rel.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLink.Title.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcLink.Title.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcLink.Type.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcLink.Type.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcQueryables
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Description.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Description.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.OgcQueryables() -> void
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Properties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Properties.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Required.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Required.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Title.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Title.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Type.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcQueryables.Type.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent
+Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent.Bbox.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<double>!>?
+Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent.Bbox.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent.Crs.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent.Crs.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcSpatialExtent.OgcSpatialExtent() -> void
+Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent
+Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent.Interval.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyList<string?>!>?
+Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent.Interval.init -> void
+Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent.OgcTemporalExtent() -> void
+Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent.Trs.get -> string?
+Honua.Sdk.OgcFeatures.Models.OgcTemporalExtent.Trs.init -> void
+Honua.Sdk.OgcFeatures.OgcFeaturesVectorClientExtensions
+Honua.Sdk.OgcFeatures.OgcFeaturesVectorFormats
+Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient
+Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient.GetStyleMetadataAsync(string! styleId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata!>!
+Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient.GetStylesheetAsync(string! styleId, Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding encoding = Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding.MapboxStyle, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet!>!
+Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient.HonuaOgcStylesClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient.ListStylesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList!>!
+Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient.UpdateStyleAsync(string! styleId, string! mapLibreStyleJson, bool strict = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient
+Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.GetStyleMetadataAsync(string! styleId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata!>!
+Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.GetStylesheetAsync(string! styleId, Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding encoding = Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding.MapboxStyle, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet!>!
+Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.ListStylesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList!>!
+Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.UpdateStyleAsync(string! styleId, string! mapLibreStyleJson, bool strict = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding.MapboxStyle = 0 -> Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding.Sld10 = 1 -> Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding.Sld11 = 2 -> Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncodingExtensions
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.Id.get -> string!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.Id.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.Links.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.OgcStyleEntry() -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.Title.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry.Title.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Description.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Description.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Id.get -> string!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Id.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Keywords.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Keywords.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.License.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.License.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Links.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.OgcStyleMetadata() -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Title.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Title.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Version.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleMetadata.Version.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.Content.get -> string!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.Content.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.Encoding.get -> Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.Encoding.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.MediaType.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.MediaType.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.OgcStylesheet() -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.StyleId.get -> string!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesheet.StyleId.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.Default.get -> string?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.Default.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>?
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.Links.init -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.OgcStylesList() -> void
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.Styles.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEntry!>!
+Honua.Sdk.OgcFeatures.Styles.Models.OgcStylesList.Styles.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.ExceptionCode.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.HonuaWfsException() -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.HonuaWfsException(string! message) -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.HonuaWfsException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.HonuaWfsException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, string? exceptionCode = null) -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.HonuaWfsException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, string? exceptionCode, System.Exception! innerException) -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.ResponseBody.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.ExceptionCode.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.ExceptionCode.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.ExceptionText.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.ExceptionText.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.Locator.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.Locator.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Exceptions.WfsExceptionReport.WfsExceptionReport() -> void
+Honua.Sdk.OgcFeatures.Wfs.Extensions.ServiceCollectionExtensions
+Honua.Sdk.OgcFeatures.Wfs.Formats.GeoJsonFeatureCollectionHandler
+Honua.Sdk.OgcFeatures.Wfs.Formats.GeoJsonFeatureCollectionHandler.GeoJsonFeatureCollectionHandler() -> void
+Honua.Sdk.OgcFeatures.Wfs.Formats.GeoJsonFeatureCollectionHandler.MediaType.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Formats.GeoJsonFeatureCollectionHandler.ReadAsync(System.IO.Stream! responseStream, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection!>!
+Honua.Sdk.OgcFeatures.Wfs.Formats.IWfsOutputFormatHandler<TResult>
+Honua.Sdk.OgcFeatures.Wfs.Formats.IWfsOutputFormatHandler<TResult>.MediaType.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Formats.IWfsOutputFormatHandler<TResult>.OwnsResponseStream.get -> bool
+Honua.Sdk.OgcFeatures.Wfs.Formats.IWfsOutputFormatHandler<TResult>.ReadAsync(System.IO.Stream! responseStream, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TResult>!
+Honua.Sdk.OgcFeatures.Wfs.Formats.RawStreamHandler
+Honua.Sdk.OgcFeatures.Wfs.Formats.RawStreamHandler.MediaType.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Formats.RawStreamHandler.OwnsResponseStream.get -> bool
+Honua.Sdk.OgcFeatures.Wfs.Formats.RawStreamHandler.RawStreamHandler(string! mediaType = "application/gml+xml; version=3.2") -> void
+Honua.Sdk.OgcFeatures.Wfs.Formats.RawStreamHandler.ReadAsync(System.IO.Stream! responseStream, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.IO.Stream!>!
+Honua.Sdk.OgcFeatures.Wfs.Formats.VectorPayloadFeatureSetHandler
+Honua.Sdk.OgcFeatures.Wfs.Formats.VectorPayloadFeatureSetHandler.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.OgcFeatures.Wfs.Formats.VectorPayloadFeatureSetHandler.MediaType.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Formats.VectorPayloadFeatureSetHandler.ReadAsync(System.IO.Stream! responseStream, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.OgcFeatures.Wfs.Formats.VectorPayloadFeatureSetHandler.VectorPayloadFeatureSetHandler(Honua.Sdk.Geometry.Vector.VectorPayloadFormat format = Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoJson) -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.AddAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentAddRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.ApplyEditsAsync(Honua.Sdk.Abstractions.Features.FeatureEditRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureEditResponse!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.AttachmentCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureAttachmentCapabilities!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.DeleteAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDeleteRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.DescribeFeatureTypeAsync(string! typeName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.DownloadAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentDownloadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentContent!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.EditCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureEditCapabilities!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetCapabilitiesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetDescriptorAsync(Honua.Sdk.Abstractions.Features.SourceDescriptor! descriptor, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.SourceDescriptor!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetFeatureCountAsync(string! typeName, string? filter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<long?>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetFeaturesAsync(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetFeaturesAsync<TResult>(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, Honua.Sdk.OgcFeatures.Wfs.Formats.IWfsOutputFormatHandler<TResult>! handler, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TResult>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetFeaturesAsyncEnumerable(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetFeaturesVectorAsync(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, Honua.Sdk.Geometry.Vector.VectorPayloadFormat format = Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.HonuaWfsClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.ListAttachmentsAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentListRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureAttachmentInfo!>!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.ProviderName.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.QueryAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.QueryCapabilities.get -> Honua.Sdk.Abstractions.Features.FeatureQueryCapabilities!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.QueryPagesAsync(Honua.Sdk.Abstractions.Features.FeatureQueryRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Abstractions.Features.FeatureQueryResult!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.UpdateAttachmentAsync(Honua.Sdk.Abstractions.Features.FeatureAttachmentUpdateRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Features.FeatureAttachmentResult!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.ApiKey.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.ApiKey.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.BearerToken.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.BearerToken.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions.HonuaWfsClientOptions() -> void
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.DescribeFeatureTypeAsync(string! typeName, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema!>!
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetCapabilitiesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities!>!
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeatureCountAsync(string! typeName, string? filter = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<long?>!
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsync(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection!>!
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsync<TResult>(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, Honua.Sdk.OgcFeatures.Wfs.Formats.IWfsOutputFormatHandler<TResult>! handler, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<TResult>!
+Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsyncEnumerable(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.Coordinates.get -> System.Text.Json.JsonElement?
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.Coordinates.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.GeoJsonGeometry() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.Geometries.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry!>?
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.Geometries.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.Type.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry.Type.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.<Clone>$() -> Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest!
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Bbox.get -> Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Bbox.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Count.get -> int?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Count.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Equals(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest? other) -> bool
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Filter.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Filter.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.GetFeaturesRequest() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.PropertyName.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.PropertyName.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.ResourceId.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.ResourceId.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.SortBy.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.SortBy.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.SrsName.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.SrsName.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.StartIndex.get -> int?
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.StartIndex.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.TypeNames.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.TypeNames.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.Crs.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.Crs.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MaxX.get -> double
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MaxX.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MaxY.get -> double
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MaxY.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MinX.get -> double
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MinX.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MinY.get -> double
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.MinY.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsBoundingBox.WfsBoundingBox() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.Abstract.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.Abstract.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.FeatureTypes.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.FeatureTypes.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.OutputFormats.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.OutputFormats.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.ServiceType.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.ServiceType.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.ServiceTypeVersion.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.ServiceTypeVersion.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.Title.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.Title.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.Version.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.Version.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsCapabilities.WfsCapabilities() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.Geometry.get -> Honua.Sdk.OgcFeatures.Wfs.Models.GeoJsonGeometry?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.Geometry.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.Id.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.Id.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.Properties.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature.WfsFeature() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeature!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.Features.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.HasMoreResults.get -> bool
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.NumberMatched.get -> long?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.NumberMatched.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.NumberReturned.get -> int
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.NumberReturned.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureCollection.WfsFeatureCollection() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.Abstract.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.Abstract.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.DefaultCrs.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.DefaultCrs.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.LowerCorner.get -> (double X, double Y)?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.LowerCorner.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.Name.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.Name.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.OtherCrs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.OtherCrs.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.OutputFormats.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.OutputFormats.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.Title.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.Title.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.UpperCorner.get -> (double X, double Y)?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.UpperCorner.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureType.WfsFeatureType() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.ElementName.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.ElementName.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.Properties.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty!>!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.Properties.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.TargetNamespace.get -> string?
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.TargetNamespace.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsFeatureTypeSchema.WfsFeatureTypeSchema() -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.MaxOccurs.get -> int
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.MaxOccurs.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.MinOccurs.get -> int
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.MinOccurs.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.Name.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.Name.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.Nillable.get -> bool
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.Nillable.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.Type.get -> string!
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.Type.init -> void
+Honua.Sdk.OgcFeatures.Wfs.Models.WfsSchemaProperty.WfsSchemaProperty() -> void
+Honua.Sdk.OgcFeatures.Wfs.WfsVectorClientExtensions
+Honua.Sdk.OgcFeatures.Wfs.WfsVectorFormats
+override Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.HttpStatus.get -> int?
+override Honua.Sdk.OgcFeatures.Exceptions.HonuaOgcFeaturesException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.OgcFeatures.Models.OgcItemsParams.Equals(object? obj) -> bool
+override Honua.Sdk.OgcFeatures.Models.OgcItemsParams.GetHashCode() -> int
+override Honua.Sdk.OgcFeatures.Models.OgcItemsParams.ToString() -> string!
+override Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.HttpStatus.get -> int?
+override Honua.Sdk.OgcFeatures.Wfs.Exceptions.HonuaWfsException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.Equals(object? obj) -> bool
+override Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.GetHashCode() -> int
+override Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.ToString() -> string!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToJsonDocument(Honua.Sdk.OgcFeatures.Models.OgcFeature! response) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToJsonDocument(Honua.Sdk.OgcFeatures.Models.OgcFeatureCollection! response) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToJsonDocument(System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcCollection!>! collections) -> System.Text.Json.JsonDocument!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToJsonElement(object! value) -> System.Text.Json.JsonElement
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToOgcFeature(Honua.Sdk.Abstractions.Features.FeatureEditFeature! feature, string? featureId = null) -> Honua.Sdk.OgcFeatures.Models.OgcFeature!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToOgcFeature(object! feature) -> Honua.Sdk.OgcFeatures.Models.OgcFeature!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToOgcFeatureId(long objectId) -> string!
+static Honua.Sdk.OgcFeatures.Conversion.RequestConverters.ToOgcItemsParams(Honua.Sdk.Abstractions.Features.OgcItemsRequest! request) -> Honua.Sdk.OgcFeatures.Models.OgcItemsParams!
+static Honua.Sdk.OgcFeatures.Extensions.ServiceCollectionExtensions.AddHonuaOgcFeatures(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.OgcFeatures.Models.OgcItemsParams.operator !=(Honua.Sdk.OgcFeatures.Models.OgcItemsParams? left, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? right) -> bool
+static Honua.Sdk.OgcFeatures.Models.OgcItemsParams.operator ==(Honua.Sdk.OgcFeatures.Models.OgcItemsParams? left, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? right) -> bool
+static Honua.Sdk.OgcFeatures.OgcFeaturesVectorClientExtensions.GetItemsVectorAsync(this Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient! client, string! collectionId, Honua.Sdk.OgcFeatures.Models.OgcItemsParams? query = null, Honua.Sdk.Geometry.Vector.VectorPayloadFormat? format = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+static Honua.Sdk.OgcFeatures.OgcFeaturesVectorFormats.FromOgcFeaturesFormat(Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat? format) -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+static Honua.Sdk.OgcFeatures.OgcFeaturesVectorFormats.SupportedFormats.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.Vector.VectorPayloadFormat>!
+static Honua.Sdk.OgcFeatures.OgcFeaturesVectorFormats.ToOgcFeaturesFormat(Honua.Sdk.Geometry.Vector.VectorPayloadFormat format) -> Honua.Sdk.OgcFeatures.Models.OgcFeaturesFormat
+static Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncodingExtensions.ToCanonicalEncodingId(this Honua.Sdk.OgcFeatures.Styles.Models.OgcStyleEncoding encoding) -> string!
+static Honua.Sdk.OgcFeatures.Wfs.Extensions.ServiceCollectionExtensions.AddHonuaWfs(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.operator !=(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest? left, Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest? right) -> bool
+static Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest.operator ==(Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest? left, Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest? right) -> bool
+static Honua.Sdk.OgcFeatures.Wfs.WfsVectorClientExtensions.GetFeaturesVectorAsync(this Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient! client, Honua.Sdk.OgcFeatures.Wfs.Models.GetFeaturesRequest! request, Honua.Sdk.Geometry.Vector.VectorPayloadFormat format = Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+static Honua.Sdk.OgcFeatures.Wfs.WfsVectorFormats.SupportedFormats.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.Vector.VectorPayloadFormat>!
+static Honua.Sdk.OgcFeatures.Wfs.WfsVectorFormats.ToOutputFormat(Honua.Sdk.Geometry.Vector.VectorPayloadFormat format) -> string!

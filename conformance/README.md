@@ -29,7 +29,7 @@ the SDK boundary.
 |------|---------|
 | `fetch-fixtures.sh` | Pull + verify a pinned fixture set from the geospatial-grpc release. |
 | `check-version.sh` | Assert `FIXTURE_VERSION` equals the SDK's `Geospatial.Grpc` pin. |
-| `FIXTURE_VERSION` | The pinned fixture/schema version (currently `0.1.0-alpha.1`). |
+| `FIXTURE_VERSION` | The pinned fixture/schema version (currently `0.1.0-alpha.2`). |
 | `PINS.md` | Recorded pins: fixtures, server image digest, known-expected-failing gaps. |
 
 ## Two-tier conformance suite
@@ -67,7 +67,7 @@ assertion becomes a required check. See
 
 ```bash
 # 1. Pull the pinned fixtures.
-conformance/fetch-fixtures.sh --version 0.1.0-alpha.1 --dest conformance/.fixtures
+conformance/fetch-fixtures.sh --version 0.1.0-alpha.2 --dest conformance/.fixtures
 
 # 2. Schema conformance (no server).
 export HONUA_CONFORMANCE_FIXTURES_DIR="$PWD/conformance/.fixtures"
@@ -99,3 +99,26 @@ CONFORMANCE_IMAGE=image.binpb conformance/.fixtures/run.sh
   together; `check-version.sh` rejects a mismatch.
 - **Server image:** update the digest in `PINS.md` and
   `.github/workflows/conformance.yml`.
+
+## Moving compatibility canary
+
+Pull requests and trunk pushes always use the committed pins above. A weekly
+scheduled lane additionally resolves the newest `geospatial-grpc` release that
+contains conformance fixture assets and the current official
+`honua-server:nightly` digest/revision. It runs the same schema and live suites
+without changing committed pins. The workflow supplies the resolved candidate
+through `HONUA_CONFORMANCE_EXPECTED_FIXTURE_VERSION`; local runs omit that
+override and continue to require the committed pin.
+
+The lane uploads a 90-day `compatibility-canary-evidence-*` artifact containing
+the committed and candidate pins plus per-surface outcomes. Test drift creates
+or updates one GitHub issue with the failing schema/live surface. Fixture and
+package publication are checked independently: for example, alpha.3 fixtures
+may exist before a matching `Geospatial.Grpc` package is published. That is
+reported as distribution drift even if the older SDK can parse the fixtures,
+because the fixture pin cannot be promoted safely yet.
+
+Pin promotion is always explicit. After a successful canary with a matching
+published package, use its evidence artifact to update the fixture/package and
+server pins in a reviewed pull request, then let the deterministic gate certify
+the promoted values. The canary never writes pin changes itself.

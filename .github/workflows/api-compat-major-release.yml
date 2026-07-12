@@ -1,0 +1,59 @@
+name: API Compatibility Major Release Review
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Branch, tag, or commit containing the proposed major release"
+        required: true
+        default: "trunk"
+      baseline_ref:
+        description: "Stable tag or commit to compare against"
+        required: true
+      confirmation:
+        description: "Type 'major-version-release' to acknowledge intentional breaking changes"
+        required: true
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  api-compat-major-release:
+    name: Review intentional breaking API changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require explicit major-release confirmation
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        shell: bash
+        run: |
+          if [[ "${CONFIRMATION}" != "major-version-release" ]]; then
+            echo "::error::Confirmation must exactly match 'major-version-release'."
+            exit 1
+          fi
+
+      - name: Checkout proposed release
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ inputs.target_ref }}
+          fetch-depth: 0
+
+      - name: Setup .NET + NuGet
+        uses: ./.github/actions/setup-dotnet-and-nuget
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report intentional breaking changes
+        env:
+          HONUA_API_COMPAT_BASE_REF: ${{ inputs.baseline_ref }}
+          HONUA_API_COMPAT_ALLOW_BREAKING: "true"
+          HONUA_API_COMPAT_BREAKING_APPROVAL: "major-version-release"
+        run: scripts/validate-api-compat.sh

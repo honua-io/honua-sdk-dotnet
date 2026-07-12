@@ -121,7 +121,7 @@ Honua.Sdk.sln            Solution; Directory.Build.props / Directory.Packages.pr
   rather than rolling your own predicates, WKT/WKB parsing, or transforms.
 - **Protos:** `.proto` changes go in `geospatial-grpc` first; this repo consumes
   generated/vendored code only. `NU5104` is intentionally suppressed because stable
-  1.0 packages depend on the still-prerelease `Geospatial.Grpc 0.1.0-alpha.1`.
+  1.x packages depend on the still-prerelease `Geospatial.Grpc 0.1.0-alpha.2`.
 - **Integration tests** under `tests/Honua.Sdk.IntegrationTests` and
   `tests/Honua.Sdk.ProtocolIntegration.Tests` are environment-gated and skipped by
   default (see `docs/staging-integration.md`, `docs/protocol-integration-tests.md`).

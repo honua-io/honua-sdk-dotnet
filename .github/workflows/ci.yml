@@ -32,6 +32,12 @@ jobs:
             docker.io/rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
             -no-color -shellcheck= -pyflakes=
 
+      - name: Validate shipped package inventory
+        run: scripts/validate-package-inventory.sh
+
+      - name: Test CI enforcement helpers
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+
   security-audit:
     name: Security Audit (NuGet)
     runs-on: ubuntu-latest
@@ -151,34 +157,11 @@ jobs:
           COVERAGE_FLOOR_BRANCHES: "60"
         run: |
           set -euo pipefail
-          report=./coverage/report/Cobertura.xml
-          if [[ ! -f "${report}" ]]; then
-            echo "::warning::Cobertura coverage report not found at ${report}; cannot enforce threshold."
-            exit 0
-          fi
-
-          line_rate=$(python3 -c "import xml.etree.ElementTree as ET; print(float(ET.parse('${report}').getroot().get('line-rate')) * 100)")
-          branch_rate=$(python3 -c "import xml.etree.ElementTree as ET; print(float(ET.parse('${report}').getroot().get('branch-rate')) * 100)")
-          line_int=$(printf '%.0f' "${line_rate}")
-          branch_int=$(printf '%.0f' "${branch_rate}")
-
-          echo "Line coverage: ${line_int}% (floor ${COVERAGE_FLOOR_LINES}%)"
-          echo "Branch coverage: ${branch_int}% (floor ${COVERAGE_FLOOR_BRANCHES}%)"
-          {
-            echo
-            echo "**Coverage gate**: lines ${line_int}% / floor ${COVERAGE_FLOOR_LINES}%, branches ${branch_int}% / floor ${COVERAGE_FLOOR_BRANCHES}%"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          status=0
-          if (( line_int < COVERAGE_FLOOR_LINES )); then
-            echo "::error::Line coverage ${line_int}% is below the floor of ${COVERAGE_FLOOR_LINES}%."
-            status=1
-          fi
-          if (( branch_int < COVERAGE_FLOOR_BRANCHES )); then
-            echo "::error::Branch coverage ${branch_int}% is below the floor of ${COVERAGE_FLOOR_BRANCHES}%."
-            status=1
-          fi
-          exit ${status}
+          python3 scripts/enforce-coverage.py \
+            --report ./coverage/report/Cobertura.xml \
+            --line-floor "${COVERAGE_FLOOR_LINES}" \
+            --branch-floor "${COVERAGE_FLOOR_BRANCHES}" \
+            --summary "${GITHUB_STEP_SUMMARY}"
 
       - name: Upload coverage artifact
         if: always()
@@ -207,16 +190,11 @@ jobs:
       - name: Validate package API compatibility
         env:
           HONUA_API_COMPAT_BASE_REF: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
-          # SemVer-correct downgrade for major-version bumps. Set this to
-          # 'false' (or unset) on PRs that should not introduce breaking
-          # changes. For the 0.1.x-alpha → 1.0.0 cut the breaks are
-          # intentional and accepted; diagnostics still surface as warnings.
-          HONUA_API_COMPAT_ALLOW_BREAKING: "true"
         run: scripts/validate-api-compat.sh
 
   dotnet-sdk:
-    # Matrix replacement for the 13 previously-duplicated dotnet-<package>-sdk
-    # jobs. Each matrix leg builds one shipped SDK package (13 sub-packages plus
+    # Matrix replacement for the 14 previously-duplicated dotnet-<package>-sdk
+    # jobs. Each matrix leg builds one shipped SDK package (14 sub-packages plus
     # the Honua.Sdk meta) under strict release flags and, when present, runs its
     # dedicated test project. The strict flag set
     # (TreatWarningsAsErrors=true / EnforceCodeStyleInBuild=true / Release) is

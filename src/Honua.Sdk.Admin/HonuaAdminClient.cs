@@ -336,7 +336,6 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PostAsync<ConnectionTestResult>(
             $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/test",
-            (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseConnectionTestResult,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null test result.", "TestConnection");
@@ -358,7 +357,6 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var data = await PostAsync<EncryptionValidationResult>(
             $"{ApiPrefix}/connections/encryption/validate",
-            (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseEncryptionValidationResult,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null validation result.", "ValidateEncryption");
@@ -369,7 +367,6 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var data = await PostAsync<KeyRotationResult>(
             $"{ApiPrefix}/connections/encryption/rotate-key",
-            (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseKeyRotationResult,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null rotation result.", "RotateEncryptionKey");
@@ -508,7 +505,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
-        return JsonSerializer.Deserialize<JsonElement>(body);
+        return JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.JsonElement);
     }
 
     // ── Identity ────────────────────────────────────────────────────────
@@ -580,7 +577,6 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var data = await PostAsync<OidcProviderTestResponse>(
             $"{ApiPrefix}/oidc/providers/{providerId:D}/test",
-            (object?)null,
             HonuaAdminJsonContext.Default.ApiResponseOidcProviderTestResponse,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestOidcProvider");
@@ -1161,33 +1157,17 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     private async Task<T?> PostAsync<T>(
         string url,
-        object? requestBody,
         JsonTypeInfo<ApiResponse<T>> responseTypeInfo,
         CancellationToken cancellationToken)
     {
-        HttpContent content;
-        if (requestBody is not null)
-        {
-            content = new StringContent(
-                JsonSerializer.Serialize(requestBody, HonuaAdminJsonContext.Default.Options),
-                Encoding.UTF8,
-                "application/json");
-        }
-        else
-        {
-            content = new StringContent("{}", Encoding.UTF8, "application/json");
-        }
+        using var content = new StringContent("{}", Encoding.UTF8, "application/json");
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
 
-        using (content)
-        {
-            using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
-            AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
-
-            var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
-            return envelope is not null ? envelope.Data : default;
-        }
+        var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
+        return envelope is not null ? envelope.Data : default;
     }
 
     private async Task<TResponse?> PostAsync<TResponse>(
@@ -1205,35 +1185,6 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
         var envelope = JsonSerializer.Deserialize(body, responseTypeInfo);
         return envelope is not null ? envelope.Data : default;
-    }
-
-    private async Task<TResponse?> PostRawAsync<TResponse>(
-        string url,
-        object? requestBody,
-        JsonTypeInfo<TResponse> responseTypeInfo,
-        CancellationToken cancellationToken)
-    {
-        HttpContent content;
-        if (requestBody is not null)
-        {
-            content = new StringContent(
-                JsonSerializer.Serialize(requestBody, HonuaAdminJsonContext.Default.Options),
-                Encoding.UTF8,
-                "application/json");
-        }
-        else
-        {
-            content = new StringContent("{}", Encoding.UTF8, "application/json");
-        }
-
-        using (content)
-        {
-            using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
-            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
-
-            return JsonSerializer.Deserialize(body, responseTypeInfo);
-        }
     }
 
     private async Task<TResponse?> PostRawAsync<TResponse>(

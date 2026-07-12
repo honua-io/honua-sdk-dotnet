@@ -67,14 +67,14 @@ public sealed record FieldProjectPackage
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
-        return JsonSerializer.Deserialize<FieldProjectPackage>(json, FieldProjectPackageJson.Options)
+        return JsonSerializer.Deserialize(json, FieldProjectPackageJsonContext.Default.FieldProjectPackage)
             ?? throw new JsonException("Field project package manifest was empty.");
     }
 
     /// <summary>Serializes this package manifest using the package contract defaults.</summary>
     /// <returns>Manifest JSON.</returns>
     public string ToJson()
-        => JsonSerializer.Serialize(this, FieldProjectPackageJson.Options);
+        => JsonSerializer.Serialize(this, FieldProjectPackageJsonContext.Default.FieldProjectPackage);
 
     /// <summary>Validates this package manifest.</summary>
     /// <returns>Validation result with warnings and blocking errors.</returns>
@@ -771,11 +771,11 @@ public static class FieldProjectPackageValidator
     }
 }
 
-internal static class FieldProjectPackageJson
+[JsonSourceGenerationOptions(
+    JsonSerializerDefaults.Web,
+    WriteIndented = true,
+    UseStringEnumConverter = true)]
+[JsonSerializable(typeof(FieldProjectPackage))]
+internal sealed partial class FieldProjectPackageJsonContext : JsonSerializerContext
 {
-    public static JsonSerializerOptions Options { get; } = new(JsonSerializerDefaults.Web)
-    {
-        Converters = { new JsonStringEnumConverter() },
-        WriteIndented = true
-    };
 }

@@ -7,7 +7,6 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Http;
@@ -50,12 +49,6 @@ public sealed class HonuaWfsClient :
         SupportsHaving = false,
         NativeSurface = "WFS GetFeature",
         UnsupportedReason = "WFS 2.0 GetFeature does not expose time-filter, statistics, group-by, or having facets.",
-    };
-
-    private static readonly JsonSerializerOptions FeatureJsonOptions = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     private const int MaxAutoPages = 100;
@@ -709,7 +702,7 @@ public sealed class HonuaWfsClient :
     private static FeatureRecord ToFeatureRecord(WfsFeature feature)
     {
         JsonElement? geometry = feature.Geometry is not null
-            ? JsonSerializer.SerializeToElement(feature.Geometry, FeatureJsonOptions)
+            ? JsonSerializer.SerializeToElement(feature.Geometry, WfsJsonContext.Default.GeoJsonGeometry)
             : null;
 
         return new FeatureRecord

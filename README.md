@@ -12,7 +12,7 @@ real-time feature stream contracts.
 
 > **New here? Pick your path:**
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
-> - Want a map of the 14 packages before you choose → [docs/architecture.md](docs/architecture.md)
+> - Want a map of the 15 packages before you choose → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
 > - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
@@ -48,6 +48,12 @@ SDK core.
 
 ## Install
 
+Stable release tags publish to
+[nuget.org](https://www.nuget.org/) once all public dependencies
+are available there. Until the first public-feed release, and for preview
+packages, use the authenticated GitHub Packages feed described in
+[INSTALL.md](INSTALL.md).
+
 ```bash
 # Easiest: install the umbrella to get every Honua.Sdk.* package at once.
 dotnet add package Honua.Sdk
@@ -64,6 +70,7 @@ dotnet add package Honua.Sdk.Admin
 dotnet add package Honua.Sdk.Processes
 dotnet add package Honua.Sdk.Spec
 dotnet add package Honua.Sdk.Studio
+dotnet add package Honua.Sdk.ConsoleShare
 dotnet add package Honua.Sdk.Field
 dotnet add package Honua.Sdk.Geometry
 dotnet add package Honua.Sdk.GeoServices
@@ -74,8 +81,9 @@ dotnet add package Honua.Sdk.Catalogs
 
 </details>
 
-Prerelease / dry-run builds are also available from
-[GitHub Packages](INSTALL.md#install-from-github-packages).
+Prerelease packages are available from
+[GitHub Packages](INSTALL.md#install-from-github-packages). Dry runs do not
+publish; their package artifacts remain attached to the workflow run.
 
 ## Quick usage
 
@@ -96,7 +104,7 @@ var serverUri = new Uri("https://localhost:5001");
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
 // Processes, and WFS 2.0 clients. Flip the situational Use* flags to opt in to Scenes,
-// Spec, Studio, Stac, OgcRecords, GeoServices, or Routing.
+// Spec, Studio, ConsoleShare, Stac, OgcRecords, GeoServices, or Routing.
 builder.Services.AddHonua(o =>
 {
     o.BaseAddress = serverUri;
@@ -271,7 +279,7 @@ third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc s
 ### Operations
 
 - **[Release and NuGet publishing](docs/release.md)** -- package versioning,
-  release tags, dry runs, and GitHub Packages publishing
+  release tags, dry runs, nuget.org, and GitHub Packages publishing
 - **[Compatibility](docs/compatibility.md)** -- server matrix and CI API
   compatibility gate used before publish
 - **[Staging integration guide](docs/staging-integration.md)** -- staging

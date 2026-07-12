@@ -448,7 +448,7 @@ public sealed class HonuaOgcFeaturesClient :
         {
             return new OgcFeature
             {
-                Id = JsonSerializer.SerializeToElement(featureId)
+                Id = JsonSerializer.SerializeToElement(featureId, OgcFeaturesJsonContext.Default.String)
             };
         }
 
@@ -958,7 +958,7 @@ public sealed class HonuaOgcFeaturesClient :
 
         return new OgcFeature
         {
-            Id = id is null ? null : JsonSerializer.SerializeToElement(id),
+            Id = id is null ? null : JsonSerializer.SerializeToElement(id, OgcFeaturesJsonContext.Default.String),
             Geometry = feature.Geometry.HasValue ? feature.Geometry.Value.Clone() : null,
             Properties = feature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Clone())
         };

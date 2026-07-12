@@ -13,7 +13,7 @@ contract workflows.
 | Studio analysis reports | `Honua.Sdk.Studio`, `Honua.Sdk.Abstractions` | `examples/StudioAnalysisReportConsole` | Runnable scaffold. Retrieves the structured report envelope, walks polymorphic sections, and renders Markdown with a deterministic in-process fallback. |
 | Realtime worker | `Honua.Sdk.Abstractions` | `examples/RealtimeWorker` | Runnable deterministic worker. Server realtime remains gated; the sample fails fast in server mode and uses `FeatureStreamEvent` buffering with simulated insert/update/delete events by default. |
 | Routing/geofence | `Honua.Sdk.Abstractions`, `Honua.Sdk.GeoServices`, `Honua.Sdk.Geometry` | `examples/RoutingGeofenceConsole` | Runnable deterministic geofence fixture with simulated route output by default. Live routing can target a configured GeoServices/NAServer route layer. |
-| Mobile offline boundary | `Honua.Sdk.Offline.Abstractions`, `Honua.Sdk.Offline` | Docs and contract tests | SDK owns portable offline manifests, journals, checkpoints, conflicts, adapters, planners, and `OfflineSyncEngine`. `honua-mobile` owns native GeoPackage storage and mobile runtime. |
+| Mobile offline boundary | `Honua.Sdk.Abstractions` (`Honua.Sdk.Offline.Abstractions` namespace), `Honua.Sdk.Offline` | Docs and contract tests | SDK owns portable offline manifests, journals, checkpoints, conflicts, adapters, planners, and `OfflineSyncEngine`. `honua-mobile` owns native GeoPackage storage and mobile runtime. |
 
 ## Cloud Configuration
 
@@ -104,7 +104,8 @@ live-configured:
 Offline is not missing from .NET. The SDK owns the portable contract and sync
 engine layer:
 
-- `Honua.Sdk.Offline.Abstractions` owns manifests, source descriptors, sync
+- The `Honua.Sdk.Offline.Abstractions` namespace in `Honua.Sdk.Abstractions`
+  owns manifests, source descriptors, sync
   state, checkpoints, retry cursors, change journal entries, conflict records,
   and storage adapter contracts.
 - `Honua.Sdk.Offline` owns the provider-neutral planner and

@@ -25,7 +25,12 @@
 - .NET 10.0 SDK or later
 - A running Honua Server instance
 
-## Install via NuGet
+## Install stable releases from nuget.org
+
+Stable release tags publish to nuget.org and require no Honua-specific feed
+configuration once all public dependencies are available there. Until the first
+public-feed release, use the GitHub Packages instructions below. Afterward, the
+default NuGet source used by `dotnet` is sufficient.
 
 ```bash
 # Umbrella / meta package -- one install brings in every Honua.Sdk.* package
@@ -59,6 +64,9 @@ dotnet add package Honua.Sdk.Spec
 # Console Studio analysis-report read client
 dotnet add package Honua.Sdk.Studio
 
+# Console Share access, export, traffic, and open-data clients
+dotnet add package Honua.Sdk.ConsoleShare
+
 # Field form and record workflow contracts
 dotnet add package Honua.Sdk.Field
 
@@ -79,6 +87,10 @@ for the publish workflow and versioning rules.
 
 ## Install from GitHub Packages
 
+Use GitHub Packages for prerelease builds that are not published to nuget.org.
+Dry runs publish to neither feed; maintainers can inspect their package
+artifacts on the corresponding GitHub Actions run.
+
 Add the Honua GitHub Packages source:
 
 ```bash
@@ -98,9 +110,11 @@ dotnet nuget update source github-honua \
   --store-password-in-clear-text
 ```
 
-The SDK gRPC package depends on the generated `Geospatial.Grpc` protocol
-package from GitHub Packages; no sibling repo should copy protocol source files
-to satisfy that dependency.
+The SDK gRPC and Geometry packages currently depend on the generated
+`Geospatial.Grpc` protocol package from GitHub Packages; no sibling repo should
+copy protocol source files to satisfy that dependency. The Geometry dependency
+is retained for 1.x compatibility and is scheduled to move to a protocol
+adapter package in the next major release.
 
 Then install -- pick the packages that match your transport / workload:
 
@@ -117,6 +131,7 @@ dotnet add package Honua.Sdk.Admin --source honua
 dotnet add package Honua.Sdk.Processes --source honua
 dotnet add package Honua.Sdk.Spec --source honua
 dotnet add package Honua.Sdk.Studio --source honua
+dotnet add package Honua.Sdk.ConsoleShare --source honua
 dotnet add package Honua.Sdk.Field --source honua
 dotnet add package Honua.Sdk.GeoServices --source honua
 dotnet add package Honua.Sdk.Scenes --source honua

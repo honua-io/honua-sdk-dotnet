@@ -37,6 +37,14 @@ The publish workflow builds and packs:
    `dotnet-sdk-v<PackageVersion>`.
    Example: `dotnet-sdk-v1.0.0`.
 
+Before a stable tag is created, confirm the repository has a `NUGET_API_KEY`
+secret and that the pinned `Geospatial.Grpc` version is available from
+nuget.org. The workflow fails before publishing when either prerequisite is
+missing, because otherwise the public SDK packages would not be restorable
+from the public feed. Also replace the private-feed self-signed signing
+certificate with a publicly trusted code-signing certificate and register it
+with the nuget.org account before the first public release.
+
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects. The workflow fails before publishing if they differ.
 
@@ -58,9 +66,24 @@ previews of a future major.
 
 ## Publishing Targets
 
-All tag releases publish package artifacts and push packages to GitHub Packages.
-The release workflow also restores GitHub-hosted dependencies such as
-`Geospatial.Grpc` from `nuget.pkg.github.com/honua-io` using `GITHUB_TOKEN`.
+- Stable versions publish to both nuget.org and GitHub Packages. A post-publish
+  smoke test restores `Honua.Sdk` in a clean project using only nuget.org.
+- Prerelease versions publish to GitHub Packages only.
+- Dry runs build, inspect, and install the local packages without pushing to
+  either feed. They sign only when signing credentials are configured and keep
+  both primary and symbol packages as workflow artifacts.
+
+The workflow uses `NUGET_API_KEY` for nuget.org and `GITHUB_TOKEN` for GitHub
+Packages. It restores GitHub-hosted dependencies such as `Geospatial.Grpc` from
+`nuget.pkg.github.com/honua-io` during build validation. Stable public publishing
+remains blocked until the same dependency version is available from nuget.org.
+Release signing certificates must satisfy nuget.org's certificate requirements;
+the self-signed certificate used for private-feed dry runs is not sufficient for
+a public signed release. The workflow verifies the public trust chain after its
+temporary private-feed trust exception has been removed; nuget.org certificate
+registration remains an explicit release-owner prerequisite. Release-tag
+signing and verification cover both primary `.nupkg` and symbol `.snupkg`
+artifacts.
 
 ## Local Checks
 

@@ -3,7 +3,8 @@
 Provider-neutral offline sync engine. Pulls feature pages from any
 `IHonuaFeatureQueryClient`, applies queued edits through `IHonuaFeatureEditClient`,
 and tracks conflicts, checkpoints, retries, and state through the storage
-contracts defined in [`Honua.Sdk.Offline.Abstractions`](https://www.nuget.org/packages/Honua.Sdk.Offline.Abstractions).
+contracts in the `Honua.Sdk.Offline.Abstractions` namespace, shipped by
+[`Honua.Sdk.Abstractions`](https://www.nuget.org/packages/Honua.Sdk.Abstractions).
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and

@@ -64,7 +64,10 @@ internal static class HonuaRestHttpClientRegistration
                 resilience.TotalRequestTimeout.Timeout = HonuaResilienceTimeouts.TotalRequestTimeout(options.Timeout);
                 resilience.AttemptTimeout.Timeout = HonuaResilienceTimeouts.AttemptTimeout(options.Timeout);
                 resilience.CircuitBreaker.SamplingDuration = HonuaResilienceTimeouts.SamplingDuration(options.Timeout);
-                resilience.Retry.MaxRetryAttempts = options.MaxRetryAttempts;
+                // The SDK option counts the initial send, while Polly counts only
+                // retries after that send. Convert the public total-attempt contract
+                // to Polly's retry-count contract so REST and gRPC behave alike.
+                resilience.Retry.MaxRetryAttempts = options.MaxRetryAttempts - 1;
                 resilience.Retry.UseJitter = true;
 
                 if (configureRetry is null)

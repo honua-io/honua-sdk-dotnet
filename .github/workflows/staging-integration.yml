@@ -22,8 +22,77 @@ permissions:
   packages: read
 
 jobs:
+  staging-preflight:
+    name: Staging Configuration Preflight
+    runs-on: ubuntu-latest
+    environment: staging
+    outputs:
+      configured: ${{ steps.validate-config.outputs.configured }}
+    env:
+      HONUA_STAGING_BASE_URL: ${{ vars.HONUA_STAGING_BASE_URL }}
+      HONUA_STAGING_API_KEY: ${{ secrets.HONUA_STAGING_API_KEY }}
+      HONUA_STAGING_BEARER_TOKEN: ${{ secrets.HONUA_STAGING_BEARER_TOKEN }}
+      HONUA_STAGING_SERVICE_NAME: ${{ vars.HONUA_STAGING_SERVICE_NAME }}
+      HONUA_STAGING_LAYER_ID: ${{ vars.HONUA_STAGING_LAYER_ID }}
+      HONUA_STAGING_WFS_TYPENAME: ${{ vars.HONUA_STAGING_WFS_TYPENAME }}
+      HONUA_STAGING_OGC_COLLECTION_ID: ${{ vars.HONUA_STAGING_OGC_COLLECTION_ID }}
+      WORKFLOW_EVENT: ${{ github.event_name }}
+    steps:
+      - name: Validate staging configuration
+        id: validate-config
+        shell: bash
+        run: |
+          missing=()
+
+          require_value() {
+            local value="$1"
+            local key="$2"
+            if [[ -z "${value}" ]]; then
+              missing+=("${key}")
+            fi
+          }
+
+          require_value "${HONUA_STAGING_BASE_URL}" "HONUA_STAGING_BASE_URL"
+          require_value "${HONUA_STAGING_SERVICE_NAME}" "HONUA_STAGING_SERVICE_NAME"
+          require_value "${HONUA_STAGING_LAYER_ID}" "HONUA_STAGING_LAYER_ID"
+          require_value "${HONUA_STAGING_WFS_TYPENAME}" "HONUA_STAGING_WFS_TYPENAME"
+          require_value "${HONUA_STAGING_OGC_COLLECTION_ID}" "HONUA_STAGING_OGC_COLLECTION_ID"
+
+          if [[ -z "${HONUA_STAGING_API_KEY}" && -z "${HONUA_STAGING_BEARER_TOKEN}" ]]; then
+            missing+=("HONUA_STAGING_API_KEY or HONUA_STAGING_BEARER_TOKEN")
+          fi
+
+          if (( ${#missing[@]} == 0 )); then
+            echo "configured=true" >> "${GITHUB_OUTPUT}"
+            {
+              echo "## Staging Integration Preflight"
+              echo
+              echo "Configuration is present; the read-only staging suite will run."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          echo "configured=false" >> "${GITHUB_OUTPUT}"
+          {
+            echo "## Staging Integration Preflight"
+            echo
+            echo "The staging suite is not configured. Missing: `${missing[*]}`."
+            echo
+            echo "SDK maintainers own the workflow and tests. Honua Server/platform maintainers own the deployed fixture and the GitHub \`staging\` environment values. See \`docs/staging-integration.md\`."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          if [[ "${WORKFLOW_EVENT}" == "schedule" ]]; then
+            echo "::notice::Skipping the scheduled staging suite because its GitHub environment is not configured. Missing: ${missing[*]}. See docs/staging-integration.md."
+            exit 0
+          fi
+
+          echo "::error::Staging configuration is required for ${WORKFLOW_EVENT} runs. Missing: ${missing[*]}."
+          exit 1
+
   staging-integration:
     name: Staging Read-Only Integration
+    needs: staging-preflight
+    if: ${{ needs.staging-preflight.outputs.configured == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: staging
@@ -66,45 +135,11 @@ jobs:
       - name: Configure GitHub Packages
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
-      - name: Validate staging configuration
-        id: validate-config
-        shell: bash
-        run: |
-          missing=()
-
-          require_value() {
-            local value="$1"
-            local key="$2"
-            if [[ -z "${value}" ]]; then
-              missing+=("${key}")
-            fi
-          }
-
-          require_value "${HONUA_STAGING_BASE_URL}" "HONUA_STAGING_BASE_URL"
-          require_value "${HONUA_STAGING_SERVICE_NAME}" "HONUA_STAGING_SERVICE_NAME"
-          require_value "${HONUA_STAGING_LAYER_ID}" "HONUA_STAGING_LAYER_ID"
-          require_value "${HONUA_STAGING_WFS_TYPENAME}" "HONUA_STAGING_WFS_TYPENAME"
-          require_value "${HONUA_STAGING_OGC_COLLECTION_ID}" "HONUA_STAGING_OGC_COLLECTION_ID"
-
-          if [[ -z "${HONUA_STAGING_API_KEY}" && -z "${HONUA_STAGING_BEARER_TOKEN}" ]]; then
-            missing+=("HONUA_STAGING_API_KEY or HONUA_STAGING_BEARER_TOKEN")
-          fi
-
-          mkdir -p "${TEST_RESULTS_DIR}" "$(dirname "${HONUA_STAGING_EVIDENCE_PATH}")"
-
-          if (( ${#missing[@]} > 0 )); then
-            {
-              echo "## Staging Integration"
-              echo
-              echo "Missing staging configuration: ${missing[*]}"
-            } >> "${GITHUB_STEP_SUMMARY}"
-            exit 1
-          fi
-
       - name: Run staging integration suite
         id: run-tests
         shell: bash
         run: |
+          mkdir -p "${TEST_RESULTS_DIR}" "$(dirname "${HONUA_STAGING_EVIDENCE_PATH}")"
           dotnet test tests/Honua.Sdk.IntegrationTests/Honua.Sdk.IntegrationTests.csproj \
             --configuration Release \
             /p:TreatWarningsAsErrors=true \
@@ -115,7 +150,7 @@ jobs:
       - name: Write staging summary
         if: always()
         env:
-          PRECHECK_OUTCOME: ${{ steps.validate-config.outcome }}
+          PRECHECK_OUTCOME: configured
           TEST_OUTCOME: ${{ steps.run-tests.outcome }}
         shell: bash
         run: |

@@ -40,22 +40,17 @@ mkdir -p "${BASE_PACKAGES}" "${CURRENT_PACKAGES}"
 git -C "${ROOT}" worktree add --detach "${BASE_WORKTREE}" "${BASE_REF}" >/dev/null
 dotnet tool restore --tool-manifest "${ROOT}/.config/dotnet-tools.json" >/dev/null
 
-projects=(
-  "src/Honua.Sdk.Abstractions/Honua.Sdk.Abstractions.csproj|Honua.Sdk.Abstractions"
-  "src/Honua.Sdk.Admin/Honua.Sdk.Admin.csproj|Honua.Sdk.Admin"
-  "src/Honua.Sdk.Processes/Honua.Sdk.Processes.csproj|Honua.Sdk.Processes"
-  "src/Honua.Sdk.Geometry/Honua.Sdk.Geometry.csproj|Honua.Sdk.Geometry"
-  "src/Honua.Sdk.Spec/Honua.Sdk.Spec.csproj|Honua.Sdk.Spec"
-  "src/Honua.Sdk.Grpc/Honua.Sdk.Grpc.csproj|Honua.Sdk.Grpc"
-  "src/Honua.Sdk.GeoServices/Honua.Sdk.GeoServices.csproj|Honua.Sdk.GeoServices"
-  "src/Honua.Sdk.Scenes/Honua.Sdk.Scenes.csproj|Honua.Sdk.Scenes"
-  "src/Honua.Sdk.Field/Honua.Sdk.Field.csproj|Honua.Sdk.Field"
-  "src/Honua.Sdk.OgcFeatures/Honua.Sdk.OgcFeatures.csproj|Honua.Sdk.OgcFeatures"
-  "src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj|Honua.Sdk.Catalogs"
-  "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj|Honua.Sdk.Offline"
-  "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj|Honua.Sdk.Studio"
-  "src/Honua.Sdk/Honua.Sdk.csproj|Honua.Sdk"
-)
+PACKAGE_MANIFEST="${ROOT}/eng/shipped-packages.txt"
+if [[ ! -f "${PACKAGE_MANIFEST}" ]]; then
+  echo "::error::Shipped package manifest not found at ${PACKAGE_MANIFEST}."
+  exit 1
+fi
+
+mapfile -t projects < <(grep -Ev '^[[:space:]]*(#|$)' "${PACKAGE_MANIFEST}")
+if [[ ${#projects[@]} -eq 0 ]]; then
+  echo "::error::Shipped package manifest is empty: ${PACKAGE_MANIFEST}."
+  exit 1
+fi
 
 for entry in "${projects[@]}"; do
   IFS="|" read -r project package_id <<< "${entry}"
@@ -109,22 +104,9 @@ for entry in "${projects[@]}"; do
     api_compat_args+=("--suppression-file" "${suppression_file}")
   fi
 
-  # When HONUA_API_COMPAT_ALLOW_BREAKING=true (used for explicit major-version
-  # bumps such as the 0.1.x-alpha → 1.0.0 cut), still RUN the check so the
-  # diagnostics show up in the workflow log, but downgrade a non-zero exit to
-  # a warning instead of failing the gate. This is the SemVer-correct
-  # behaviour for an intentional breaking-major release.
-  if [[ "${HONUA_API_COMPAT_ALLOW_BREAKING:-false}" == "true" ]]; then
-    (
-      cd "${ROOT}"
-      if ! dotnet tool run apicompat -- "${api_compat_args[@]}"; then
-        echo "::warning::API breaking changes detected in ${package_id} but HONUA_API_COMPAT_ALLOW_BREAKING=true; downgrading to warning."
-      fi
-    )
-  else
-    (
-      cd "${ROOT}"
+  (
+    cd "${ROOT}"
+    bash "${ROOT}/scripts/run-api-compat-check.sh" "${package_id}" -- \
       dotnet tool run apicompat -- "${api_compat_args[@]}"
-    )
-  fi
+  )
 done

@@ -14,7 +14,9 @@ namespace Honua.Sdk.Geometry;
 public static class GeoJsonGeometryConverter
 {
     private static readonly JsonSerializerOptions DefaultSerializerOptions = CreateDefaultSerializerOptions();
+    private static readonly GeoJsonGeometryJsonContext DefaultJsonContext = new(DefaultSerializerOptions);
     private static readonly ConditionalWeakTable<GeometryFactory, JsonSerializerOptions> SerializerOptionsByGeometryFactory = new();
+    private static readonly ConditionalWeakTable<GeometryFactory, GeoJsonGeometryJsonContext> JsonContextsByGeometryFactory = new();
 
     /// <summary>
     /// Reads a GeoJSON geometry from a JSON element.
@@ -41,8 +43,8 @@ public static class GeoJsonGeometryConverter
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(geoJson);
 
-        var options = GetSerializerOptions(geometryFactory);
-        return JsonSerializer.Deserialize<NetTopologySuite.Geometries.Geometry>(geoJson, options)
+        var context = GetJsonContext(geometryFactory);
+        return JsonSerializer.Deserialize(geoJson, context.Geometry)
             ?? throw new JsonException("GeoJSON did not contain a geometry object.");
     }
 
@@ -55,7 +57,7 @@ public static class GeoJsonGeometryConverter
     {
         ArgumentNullException.ThrowIfNull(geometry);
 
-        return JsonSerializer.SerializeToElement(geometry, DefaultSerializerOptions);
+        return JsonSerializer.SerializeToElement(geometry, DefaultJsonContext.Geometry);
     }
 
     /// <summary>
@@ -67,13 +69,19 @@ public static class GeoJsonGeometryConverter
     {
         ArgumentNullException.ThrowIfNull(geometry);
 
-        return JsonSerializer.Serialize(geometry, DefaultSerializerOptions);
+        return JsonSerializer.Serialize(geometry, DefaultJsonContext.Geometry);
     }
 
-    private static JsonSerializerOptions GetSerializerOptions(GeometryFactory? geometryFactory)
+    private static GeoJsonGeometryJsonContext GetJsonContext(GeometryFactory? geometryFactory)
         => geometryFactory is null
-            ? DefaultSerializerOptions
-            : SerializerOptionsByGeometryFactory.GetValue(geometryFactory, CreateSerializerOptions);
+            ? DefaultJsonContext
+            : JsonContextsByGeometryFactory.GetValue(geometryFactory, CreateJsonContext);
+
+    private static GeoJsonGeometryJsonContext CreateJsonContext(GeometryFactory geometryFactory)
+        => new(GetSerializerOptions(geometryFactory));
+
+    private static JsonSerializerOptions GetSerializerOptions(GeometryFactory geometryFactory)
+        => SerializerOptionsByGeometryFactory.GetValue(geometryFactory, CreateSerializerOptions);
 
     private static JsonSerializerOptions CreateDefaultSerializerOptions()
     {

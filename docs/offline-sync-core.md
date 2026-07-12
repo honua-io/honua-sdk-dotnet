@@ -1,7 +1,8 @@
 # Offline sync core
 
-`Honua.Sdk.Offline.Abstractions` and `Honua.Sdk.Offline` provide the reusable,
-platform-neutral offline sync surface for .NET consumers.
+`Honua.Sdk.Abstractions` (through its `Honua.Sdk.Offline.Abstractions`
+namespace) and `Honua.Sdk.Offline` provide the reusable, platform-neutral
+offline sync surface for .NET consumers.
 
 The SDK owns:
 
@@ -23,8 +24,9 @@ sync runs.
 
 ## Package layout
 
-Use `Honua.Sdk.Offline.Abstractions` anywhere contracts must cross an
-application boundary, including browser-safe consumers:
+Use the `Honua.Sdk.Offline.Abstractions` namespace from the
+`Honua.Sdk.Abstractions` package anywhere contracts must cross an application
+boundary, including browser-safe consumers:
 
 ```csharp
 using Honua.Sdk.Abstractions.Features;

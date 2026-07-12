@@ -1,5 +1,10 @@
 # SDK Capability Backlog
 
+> **Historical planning snapshot.** This document is retained for capability
+> research and is not the active backlog. GitHub issues are authoritative for
+> scheduled work; verify every unchecked item against the current SDK before
+> opening or implementing follow-up work.
+
 This backlog maps Honua .NET SDK gaps against the capability areas exposed by
 ArcGIS Maps SDK for .NET 300.x, while deliberately excluding UI, map display,
 scene display, renderer, labeling, and toolkit component work from the core SDK

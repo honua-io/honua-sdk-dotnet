@@ -4,6 +4,7 @@ using System.Xml;
 using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Studio;
 using Honua.Sdk.Admin.Geocoding;
+using Honua.Sdk.Geometry;
 using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Models;
@@ -49,6 +50,12 @@ public sealed class BrowserRuntimeValidationService
         ConfigureHeaders(http, options);
 
         var checks = new List<BrowserRuntimeValidationCheck>();
+        await RunCheckAsync(
+            checks,
+            "trimmed-geometry",
+            RunTrimmedGeometryCheckAsync,
+            cancellationToken).ConfigureAwait(false);
+
         var ogc = new HonuaOgcFeaturesClient(http);
         var geocoding = new HonuaGeocodingClient(http);
         var featureServer = new HonuaFeatureServerClient(http);
@@ -162,6 +169,53 @@ public sealed class BrowserRuntimeValidationService
         return checks.Any(check => check.Status == BrowserRuntimeValidationCheckStatus.Failed)
             ? BrowserRuntimeValidationReport.Failed(checks)
             : BrowserRuntimeValidationReport.Passed(checks);
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Globalization",
+        "CA1303:Do not pass literals as localized parameters",
+        Justification = "Stable, non-user-facing markers identify a hung dependency path in browser trim CI.")]
+    private static Task<string> RunTrimmedGeometryCheckAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        Console.WriteLine(nameof(GeoJsonGeometryConverter.ReadGeometry));
+        var geometry = GeoJsonGeometryConverter.ReadGeometry(
+            """{"type":"Point","coordinates":[-157.8583,21.3069]}""");
+        var point = geometry as NetTopologySuite.Geometries.Point
+            ?? throw new InvalidOperationException("GeoJSON did not produce an NTS point.");
+        var roundTrip = GeoJsonGeometryConverter.WriteGeometry(point);
+
+        Console.WriteLine(nameof(BrowserTrimDependencyValidation.RoundTripGeoJsonFeature));
+        var featurePoint = BrowserTrimDependencyValidation.RoundTripGeoJsonFeature(point);
+
+        Console.WriteLine(nameof(HonuaCoordinateTransformer));
+        var coordinateTransformer = new HonuaCoordinateTransformer();
+        Console.WriteLine(nameof(HonuaCoordinateTransformer.CreateMathTransform));
+        var mathTransform = coordinateTransformer.CreateMathTransform(
+            HonuaSpatialReference.Wgs84,
+            HonuaSpatialReference.WebMercator);
+        Console.WriteLine(nameof(mathTransform.Transform));
+        var (projectedX, projectedY) = mathTransform.Transform(point.X, point.Y);
+        var projected = new NetTopologySuite.Geometries.Coordinate(projectedX, projectedY);
+        if (!double.IsFinite(projected.X) || !double.IsFinite(projected.Y))
+        {
+            throw new InvalidOperationException("ProjNET returned a non-finite transformed coordinate.");
+        }
+
+        var geometryType = roundTrip.GetProperty("type").GetString();
+        if (!string.Equals(geometryType, "Point", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("NTS GeoJSON round-trip did not preserve the point geometry type.");
+        }
+        if (!point.EqualsExact(featurePoint))
+        {
+            throw new InvalidOperationException("NTS GeoJSON feature collection round-trip changed the point geometry.");
+        }
+
+        Console.WriteLine(nameof(RunTrimmedGeometryCheckAsync));
+        return Task.FromResult(
+            "NTS geometry/feature GeoJSON and ProjNET coordinate transformation passed in the trimmed runtime.");
     }
 
     private static void ConfigureHeaders(HttpClient http, BrowserRuntimeValidationOptions options)
