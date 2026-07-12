@@ -16,9 +16,19 @@ public sealed class HonuaPluginManifest
     /// </summary>
     public const string CurrentSchemaVersion = "honua.plugin.v1";
 
-    private static readonly JsonSerializerOptions ReadJsonOptions = CreateJsonOptions(writeIndented: false);
-    private static readonly JsonSerializerOptions WriteJsonOptions = CreateJsonOptions(writeIndented: false);
-    private static readonly JsonSerializerOptions IndentedWriteJsonOptions = CreateJsonOptions(writeIndented: true);
+    private static readonly HonuaPluginJsonContext ReadJsonContext = new(CreateJsonOptions(writeIndented: false));
+    private static readonly HonuaPluginJsonContext WriteJsonContext = new(CreateJsonOptions(writeIndented: false));
+    private static readonly HonuaPluginJsonContext IndentedWriteJsonContext = new(CreateJsonOptions(writeIndented: true));
+
+    // Source-generated deserialization supplies null for absent init-only reference values.
+    // Coalescing setters preserve the models' existing non-null default invariants.
+    private HonuaPluginCompatibility _compatibility = new();
+    private IReadOnlyList<string> _capabilities = Array.Empty<string>();
+    private IReadOnlyList<HonuaPluginPermissionDeclaration> _permissions =
+        Array.Empty<HonuaPluginPermissionDeclaration>();
+    private HonuaPluginConfigurationEnvelope _configuration = new();
+    private IReadOnlyList<HonuaPluginExtensionPoint> _extensions = Array.Empty<HonuaPluginExtensionPoint>();
+    private IReadOnlyDictionary<string, string> _metadata = new Dictionary<string, string>();
 
     /// <summary>
     /// Manifest schema version. Must be <see cref="CurrentSchemaVersion"/>.
@@ -58,34 +68,56 @@ public sealed class HonuaPluginManifest
     /// <summary>
     /// Host, SDK, server, and feature-flag compatibility requirements.
     /// </summary>
-    public HonuaPluginCompatibility Compatibility { get; init; } = new();
+    public HonuaPluginCompatibility Compatibility
+    {
+        get => _compatibility;
+        init => _compatibility = value ?? new HonuaPluginCompatibility();
+    }
 
     /// <summary>
     /// Capability flags advertised by this plugin.
     /// </summary>
-    public IReadOnlyList<string> Capabilities { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Capabilities
+    {
+        get => _capabilities;
+        init => _capabilities = value ?? Array.Empty<string>();
+    }
 
     /// <summary>
     /// Permissions requested by this plugin.
     /// </summary>
-    public IReadOnlyList<HonuaPluginPermissionDeclaration> Permissions { get; init; } =
-        Array.Empty<HonuaPluginPermissionDeclaration>();
+    public IReadOnlyList<HonuaPluginPermissionDeclaration> Permissions
+    {
+        get => _permissions;
+        init => _permissions = value ?? Array.Empty<HonuaPluginPermissionDeclaration>();
+    }
 
     /// <summary>
     /// Safe configuration envelope accepted by host runtimes.
     /// </summary>
-    public HonuaPluginConfigurationEnvelope Configuration { get; init; } = new();
+    public HonuaPluginConfigurationEnvelope Configuration
+    {
+        get => _configuration;
+        init => _configuration = value ?? new HonuaPluginConfigurationEnvelope();
+    }
 
     /// <summary>
     /// Non-UI extension points implemented by this plugin.
     /// </summary>
-    public IReadOnlyList<HonuaPluginExtensionPoint> Extensions { get; init; } =
-        Array.Empty<HonuaPluginExtensionPoint>();
+    public IReadOnlyList<HonuaPluginExtensionPoint> Extensions
+    {
+        get => _extensions;
+        init => _extensions = value ?? Array.Empty<HonuaPluginExtensionPoint>();
+    }
 
     /// <summary>
     /// Optional opaque metadata for catalogs and operators.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Metadata { get; init; } = new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, string> Metadata
+    {
+        get => _metadata;
+        init => _metadata = value ?? new Dictionary<string, string>();
+    }
 
     /// <summary>
     /// Parses a UTF-8 JSON plugin manifest into the shared SDK model.
@@ -102,7 +134,7 @@ public sealed class HonuaPluginManifest
 
         try
         {
-            return JsonSerializer.Deserialize<HonuaPluginManifest>(json, ReadJsonOptions)
+            return JsonSerializer.Deserialize(json, ReadJsonContext.HonuaPluginManifest)
                 ?? throw new FormatException("Plugin manifest JSON did not contain an object.");
         }
         catch (JsonException ex)
@@ -117,7 +149,9 @@ public sealed class HonuaPluginManifest
     /// <param name="writeIndented">Whether to format the JSON with indentation.</param>
     /// <returns>Serialized manifest JSON.</returns>
     public string ToJson(bool writeIndented = false)
-        => JsonSerializer.Serialize(this, writeIndented ? IndentedWriteJsonOptions : WriteJsonOptions);
+        => JsonSerializer.Serialize(
+            this,
+            writeIndented ? IndentedWriteJsonContext.HonuaPluginManifest : WriteJsonContext.HonuaPluginManifest);
 
     /// <summary>
     /// Validates this manifest using SDK-owned host-neutral rules.
@@ -142,10 +176,17 @@ public sealed class HonuaPluginManifest
 /// </summary>
 public sealed class HonuaPluginCompatibility
 {
+    private IReadOnlyList<string> _supportedHosts = Array.Empty<string>();
+    private IReadOnlyList<string> _requiredFeatureFlags = Array.Empty<string>();
+
     /// <summary>
     /// Host kinds allowed to load this plugin.
     /// </summary>
-    public IReadOnlyList<string> SupportedHosts { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> SupportedHosts
+    {
+        get => _supportedHosts;
+        init => _supportedHosts = value ?? Array.Empty<string>();
+    }
 
     /// <summary>
     /// Minimum Honua SDK version required by this plugin.
@@ -170,7 +211,11 @@ public sealed class HonuaPluginCompatibility
     /// <summary>
     /// Required server or host feature flags.
     /// </summary>
-    public IReadOnlyList<string> RequiredFeatureFlags { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> RequiredFeatureFlags
+    {
+        get => _requiredFeatureFlags;
+        init => _requiredFeatureFlags = value ?? Array.Empty<string>();
+    }
 }
 
 /// <summary>
@@ -204,6 +249,10 @@ public sealed class HonuaPluginPermissionDeclaration
 /// </summary>
 public sealed class HonuaPluginConfigurationEnvelope
 {
+    private IReadOnlyList<HonuaPluginConfigurationField> _fields =
+        Array.Empty<HonuaPluginConfigurationField>();
+    private IReadOnlyDictionary<string, JsonElement> _defaults = new Dictionary<string, JsonElement>();
+
     /// <summary>
     /// Maximum serialized configuration size accepted by host runtimes.
     /// </summary>
@@ -212,13 +261,20 @@ public sealed class HonuaPluginConfigurationEnvelope
     /// <summary>
     /// Declared configuration fields.
     /// </summary>
-    public IReadOnlyList<HonuaPluginConfigurationField> Fields { get; init; } =
-        Array.Empty<HonuaPluginConfigurationField>();
+    public IReadOnlyList<HonuaPluginConfigurationField> Fields
+    {
+        get => _fields;
+        init => _fields = value ?? Array.Empty<HonuaPluginConfigurationField>();
+    }
 
     /// <summary>
     /// Non-secret default configuration values keyed by field key.
     /// </summary>
-    public IReadOnlyDictionary<string, JsonElement> Defaults { get; init; } = new Dictionary<string, JsonElement>();
+    public IReadOnlyDictionary<string, JsonElement> Defaults
+    {
+        get => _defaults;
+        init => _defaults = value ?? new Dictionary<string, JsonElement>();
+    }
 }
 
 /// <summary>
@@ -226,6 +282,8 @@ public sealed class HonuaPluginConfigurationEnvelope
 /// </summary>
 public sealed class HonuaPluginConfigurationField
 {
+    private IReadOnlyList<string> _allowedValues = Array.Empty<string>();
+
     /// <summary>
     /// Stable configuration key.
     /// </summary>
@@ -254,7 +312,11 @@ public sealed class HonuaPluginConfigurationField
     /// <summary>
     /// Allowed values for enum-like configuration fields.
     /// </summary>
-    public IReadOnlyList<string> AllowedValues { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> AllowedValues
+    {
+        get => _allowedValues;
+        init => _allowedValues = value ?? Array.Empty<string>();
+    }
 
     /// <summary>
     /// Optional field description for catalogs and operators.
@@ -313,6 +375,8 @@ public sealed class HonuaPluginExtensionPoint
 /// </summary>
 public sealed class HonuaPluginDataContract
 {
+    private IReadOnlyList<string> _tags = Array.Empty<string>();
+
     /// <summary>
     /// JSON Schema, OpenAPI component, Protobuf type, or other stable schema reference.
     /// </summary>
@@ -321,7 +385,11 @@ public sealed class HonuaPluginDataContract
     /// <summary>
     /// Semantic payload tags understood by host runtimes.
     /// </summary>
-    public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Tags
+    {
+        get => _tags;
+        init => _tags = value ?? Array.Empty<string>();
+    }
 }
 
 /// <summary>

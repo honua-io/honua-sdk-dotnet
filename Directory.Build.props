@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <HonuaSdkVersion>1.5.0</HonuaSdkVersion> <!-- x-release-please-version -->
-    <GeospatialGrpcVersion>0.1.0-alpha.1</GeospatialGrpcVersion>
     <Version>$(HonuaSdkVersion)</Version>
     <PackageVersion>$(HonuaSdkVersion)</PackageVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
@@ -14,12 +13,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!--
       NU5104: a stable package should not depend on a prerelease package.
-      We ship stable 1.0 SDK packages that consume `Geospatial.Grpc` from
+      We ship stable 1.x SDK packages that consume `Geospatial.Grpc` from
       the geospatial-grpc repo, which is still on its own prerelease
-      (`0.1.0-alpha.1`). Suppress until that dep stabilizes — tracked in
-      honua-server#tbd. The dependency version range is unchanged; this only
-      silences the pack-time guardrail so the SDK can ship 1.0 without
-      blocking on an upstream cut.
+      (`0.1.0-alpha.2`). Suppress until that dependency stabilizes — tracked in
+      honua-sdk-dotnet#264. The dependency version range is unchanged; this
+      only silences the pack-time guardrail until the protocol package has a
+      stable release.
     -->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
     <DebugType>portable</DebugType>

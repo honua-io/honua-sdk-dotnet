@@ -1,0 +1,69 @@
+#nullable enable
+Honua.Sdk.Offline.OfflineDownloadPlan
+Honua.Sdk.Offline.OfflineDownloadPlan.<Clone>$() -> Honua.Sdk.Offline.OfflineDownloadPlan!
+Honua.Sdk.Offline.OfflineDownloadPlan.Equals(Honua.Sdk.Offline.OfflineDownloadPlan? other) -> bool
+Honua.Sdk.Offline.OfflineDownloadPlan.OfflineDownloadPlan() -> void
+Honua.Sdk.Offline.OfflineDownloadPlan.PackageId.get -> string!
+Honua.Sdk.Offline.OfflineDownloadPlan.PackageId.init -> void
+Honua.Sdk.Offline.OfflineDownloadPlan.Requests.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.OfflineDownloadRequest!>!
+Honua.Sdk.Offline.OfflineDownloadPlan.Requests.init -> void
+Honua.Sdk.Offline.OfflineDownloadPlanner
+Honua.Sdk.Offline.OfflineDownloadRequest
+Honua.Sdk.Offline.OfflineDownloadRequest.<Clone>$() -> Honua.Sdk.Offline.OfflineDownloadRequest!
+Honua.Sdk.Offline.OfflineDownloadRequest.Equals(Honua.Sdk.Offline.OfflineDownloadRequest? other) -> bool
+Honua.Sdk.Offline.OfflineDownloadRequest.LastSyncToken.get -> string?
+Honua.Sdk.Offline.OfflineDownloadRequest.LastSyncToken.init -> void
+Honua.Sdk.Offline.OfflineDownloadRequest.MaxFeatureCount.get -> int?
+Honua.Sdk.Offline.OfflineDownloadRequest.MaxFeatureCount.init -> void
+Honua.Sdk.Offline.OfflineDownloadRequest.OfflineDownloadRequest() -> void
+Honua.Sdk.Offline.OfflineDownloadRequest.PackageId.get -> string!
+Honua.Sdk.Offline.OfflineDownloadRequest.PackageId.init -> void
+Honua.Sdk.Offline.OfflineDownloadRequest.Query.get -> Honua.Sdk.Abstractions.Features.FeatureQueryRequest!
+Honua.Sdk.Offline.OfflineDownloadRequest.Query.init -> void
+Honua.Sdk.Offline.OfflineDownloadRequest.Source.get -> Honua.Sdk.Abstractions.Features.SourceDescriptor!
+Honua.Sdk.Offline.OfflineDownloadRequest.Source.init -> void
+Honua.Sdk.Offline.OfflineDownloadRequest.SourceId.get -> string!
+Honua.Sdk.Offline.OfflineDownloadRequest.SourceId.init -> void
+Honua.Sdk.Offline.OfflineSyncEngine
+Honua.Sdk.Offline.OfflineSyncEngine.OfflineSyncEngine(Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient! queryClient, Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient! editClient, Honua.Sdk.Offline.Abstractions.IOfflineFeatureStore! featureStore, Honua.Sdk.Offline.Abstractions.IOfflineChangeJournal! changeJournal, Honua.Sdk.Offline.Abstractions.IOfflineSyncCheckpointStore! checkpointStore, Honua.Sdk.Offline.OfflineSyncEngineOptions? options = null, Honua.Sdk.Offline.Abstractions.IOfflineSyncStateStore? stateStore = null, Honua.Sdk.Offline.Abstractions.IOfflineConflictStore? conflictStore = null) -> void
+Honua.Sdk.Offline.OfflineSyncEngine.OfflineSyncEngine(Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient! queryClient, Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient! editClient, Honua.Sdk.Offline.Abstractions.IOfflineFeatureStore! featureStore, Honua.Sdk.Offline.Abstractions.IOfflineChangeJournal! changeJournal, Honua.Sdk.Offline.Abstractions.IOfflineSyncCheckpointStore! checkpointStore, Honua.Sdk.Offline.OfflineSyncEngineOptions? options, Honua.Sdk.Offline.Abstractions.IOfflineSyncStateStore? stateStore, Honua.Sdk.Offline.Abstractions.IOfflineConflictStore? conflictStore, Microsoft.Extensions.Logging.ILogger<Honua.Sdk.Offline.OfflineSyncEngine!>? logger) -> void
+Honua.Sdk.Offline.OfflineSyncEngine.PullAsync(Honua.Sdk.Offline.Abstractions.OfflinePackageManifest! manifest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.OfflinePullResult!>!
+Honua.Sdk.Offline.OfflineSyncEngine.PushAsync(string! packageId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.OfflinePushResult!>!
+Honua.Sdk.Offline.OfflineSyncEngine.SyncAsync(Honua.Sdk.Offline.Abstractions.OfflinePackageManifest! manifest, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.OfflineSyncRunResult!>!
+Honua.Sdk.Offline.OfflineSyncEngineOptions
+Honua.Sdk.Offline.OfflineSyncEngineOptions.<Clone>$() -> Honua.Sdk.Offline.OfflineSyncEngineOptions!
+Honua.Sdk.Offline.OfflineSyncEngineOptions.BatchSize.get -> int
+Honua.Sdk.Offline.OfflineSyncEngineOptions.BatchSize.init -> void
+Honua.Sdk.Offline.OfflineSyncEngineOptions.ConflictStrategy.get -> Honua.Sdk.Offline.Abstractions.OfflineConflictStrategy
+Honua.Sdk.Offline.OfflineSyncEngineOptions.ConflictStrategy.init -> void
+Honua.Sdk.Offline.OfflineSyncEngineOptions.Equals(Honua.Sdk.Offline.OfflineSyncEngineOptions? other) -> bool
+Honua.Sdk.Offline.OfflineSyncEngineOptions.MaxAttempts.get -> int
+Honua.Sdk.Offline.OfflineSyncEngineOptions.MaxAttempts.init -> void
+Honua.Sdk.Offline.OfflineSyncEngineOptions.OfflineSyncEngineOptions() -> void
+Honua.Sdk.Offline.OfflineSyncEngineOptions.RetryDelay.get -> System.TimeSpan
+Honua.Sdk.Offline.OfflineSyncEngineOptions.RetryDelay.init -> void
+Honua.Sdk.Offline.OfflineSyncEngineOptions.Validate() -> void
+Honua.Sdk.Offline.ReplicaSyncClient
+Honua.Sdk.Offline.ReplicaSyncClient.CreateReplicaAsync(string! serviceId, string! replicaName, System.Collections.Generic.IReadOnlyList<int>? layerIds = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.CreateReplicaResult!>!
+Honua.Sdk.Offline.ReplicaSyncClient.ExtractChangesAsync(string! serviceId, string! replicaId, string? sinceServerGen, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.ExtractChangesResult!>!
+Honua.Sdk.Offline.ReplicaSyncClient.ExtractChangesAsync(string! serviceId, string! replicaId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.ExtractChangesResult!>!
+Honua.Sdk.Offline.ReplicaSyncClient.ReplicaSyncClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Offline.ReplicaSyncClient.SynchronizeReplicaAsync(string! serviceId, string! replicaId, string! syncDirection = "download", System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.SynchronizeResult!>!
+Honua.Sdk.Offline.ReplicaSyncClient.UnRegisterReplicaAsync(string! serviceId, string! replicaId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+override Honua.Sdk.Offline.OfflineDownloadPlan.Equals(object? obj) -> bool
+override Honua.Sdk.Offline.OfflineDownloadPlan.GetHashCode() -> int
+override Honua.Sdk.Offline.OfflineDownloadPlan.ToString() -> string!
+override Honua.Sdk.Offline.OfflineDownloadRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Offline.OfflineDownloadRequest.GetHashCode() -> int
+override Honua.Sdk.Offline.OfflineDownloadRequest.ToString() -> string!
+override Honua.Sdk.Offline.OfflineSyncEngineOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Offline.OfflineSyncEngineOptions.GetHashCode() -> int
+override Honua.Sdk.Offline.OfflineSyncEngineOptions.ToString() -> string!
+static Honua.Sdk.Offline.OfflineDownloadPlan.operator !=(Honua.Sdk.Offline.OfflineDownloadPlan? left, Honua.Sdk.Offline.OfflineDownloadPlan? right) -> bool
+static Honua.Sdk.Offline.OfflineDownloadPlan.operator ==(Honua.Sdk.Offline.OfflineDownloadPlan? left, Honua.Sdk.Offline.OfflineDownloadPlan? right) -> bool
+static Honua.Sdk.Offline.OfflineDownloadPlanner.CreatePlan(Honua.Sdk.Offline.Abstractions.OfflinePackageManifest! manifest, System.Collections.Generic.IReadOnlyDictionary<string!, Honua.Sdk.Offline.Abstractions.OfflineSyncCheckpoint?>? checkpoints = null) -> Honua.Sdk.Offline.OfflineDownloadPlan!
+static Honua.Sdk.Offline.OfflineDownloadPlanner.CreateRequest(Honua.Sdk.Offline.Abstractions.OfflinePackageManifest! manifest, Honua.Sdk.Offline.Abstractions.OfflineSourceDescriptor! source, Honua.Sdk.Offline.Abstractions.OfflineSyncCheckpoint? checkpoint = null) -> Honua.Sdk.Offline.OfflineDownloadRequest!
+static Honua.Sdk.Offline.OfflineDownloadRequest.operator !=(Honua.Sdk.Offline.OfflineDownloadRequest? left, Honua.Sdk.Offline.OfflineDownloadRequest? right) -> bool
+static Honua.Sdk.Offline.OfflineDownloadRequest.operator ==(Honua.Sdk.Offline.OfflineDownloadRequest? left, Honua.Sdk.Offline.OfflineDownloadRequest? right) -> bool
+static Honua.Sdk.Offline.OfflineSyncEngineOptions.operator !=(Honua.Sdk.Offline.OfflineSyncEngineOptions? left, Honua.Sdk.Offline.OfflineSyncEngineOptions? right) -> bool
+static Honua.Sdk.Offline.OfflineSyncEngineOptions.operator ==(Honua.Sdk.Offline.OfflineSyncEngineOptions? left, Honua.Sdk.Offline.OfflineSyncEngineOptions? right) -> bool

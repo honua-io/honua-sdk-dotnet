@@ -25,7 +25,9 @@ namespace Honua.Sdk.OgcFeatures.Styles.Models;
 //   * No gRPC style surface exists in this SDK yet. There is currently no
 //     gRPC client that exposes StyleRef, so there is nothing in this repo for a
 //     REST DTO to be deduped against; StyleRef is consumed only inside
-//     Honua.Sdk.Grpc (the one package that references Geospatial.Grpc).
+//     Honua.Sdk.Grpc (the transport package that exposes the generated protocol
+//     client). Honua.Sdk.Geometry retains its legacy gRPC converter dependency
+//     through the 1.x line for binary compatibility; see docs/architecture.md.
 //
 // The one concept the two layers genuinely share is the *encoding identifier*
 // vocabulary. To keep that aligned without coupling packages, the

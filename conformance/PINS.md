@@ -14,20 +14,25 @@ geospatial-grpc#19 (`conformance/fetch-fixtures.sh`), never copied/forked here.
 
 | Pin | Value | Source |
 |-----|-------|--------|
-| Conformance fixtures | `0.1.0-alpha.1` | `conformance/FIXTURE_VERSION` |
-| `Geospatial.Grpc` package | `0.1.0-alpha.1` | `Directory.Build.props` (`<GeospatialGrpcVersion>`) |
+| Conformance fixtures | `0.1.0-alpha.2` | `conformance/FIXTURE_VERSION` |
+| `Geospatial.Grpc` package | `0.1.0-alpha.2` | `Directory.Packages.props` (central `PackageVersion`) |
 
 These two **must stay equal** — a fixture set maps 1:1 to a `geospatial.v1`
 schema release, and the SDK's generated gRPC client is built against the same
 schema version. `conformance/check-version.sh` enforces the equality and the
 conformance CI job runs it before anything else.
 
-The fixtures are pulled at build time from the geospatial-grpc `v0.1.0-alpha.1`
+The fixtures are pulled at build time from the geospatial-grpc `v0.1.0-alpha.2`
 GitHub Release:
 
 ```bash
-conformance/fetch-fixtures.sh --version 0.1.0-alpha.1 --dest conformance/.fixtures
+conformance/fetch-fixtures.sh --version 0.1.0-alpha.2 --dest conformance/.fixtures
 ```
+
+The alpha.2 pin is intentional: when selected, it was the newest fixture
+version with a matching `Geospatial.Grpc` package published to GitHub Packages.
+Alpha.3 fixture assets existed without an alpha.3 NuGet package, so promoting
+only the fixtures would have broken the required fixture/package equality.
 
 ## Pinned server image
 
@@ -61,3 +66,22 @@ still fails. When a gap lands server-side, flip its xfail to a required check.
 
 See `HONUA_CONFORMANCE_KNOWN_GAPS` in
 `tests/Honua.Sdk.Conformance.Tests/ConformanceKnownGaps.cs`.
+
+## Moving canary and promotion
+
+The weekly scheduled run of `.github/workflows/conformance.yml` leaves these
+deterministic pins untouched and tests the newest published fixture asset plus
+the current official `honua-server:nightly` image. Its evidence artifact records
+both the values in this file and the moving candidates. A failure creates or
+updates a single drift issue with schema and live-protocol outcomes.
+
+Fixture publication and NuGet publication can move independently. In
+particular, a newer fixture release such as alpha.3 may be available while the
+matching `Geospatial.Grpc` package is not. The canary records that as a distinct
+distribution-drift signal and does not treat the candidate as promotable.
+
+Promote only a successful candidate with a matching published package: review
+the evidence, update `conformance/FIXTURE_VERSION`, `Directory.Build.props`, the
+server digest/ref in this file and `.github/workflows/conformance.yml`, and send
+those changes through the normal pull-request gate. Promotion is never
+automatic.

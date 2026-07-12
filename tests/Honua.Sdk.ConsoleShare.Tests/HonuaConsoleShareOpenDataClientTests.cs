@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using System.Reflection;
 using System.Text;
 using Honua.Sdk.Abstractions.Console.Share;
 using Honua.Sdk.ConsoleShare.Exceptions;
@@ -453,6 +454,23 @@ public sealed class HonuaConsoleShareOpenDataClientTests
         Assert.IsType<HonuaConsoleShareOpenDataClient>(client);
     }
 
+    [Fact]
+    public void AddHonuaConsoleShareOpenData_WithRetryEnabled_LeavesTimeoutToResiliencePipeline()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaConsoleShareOpenData(options =>
+        {
+            options.BaseAddress = new Uri("https://honua.example");
+            options.EnableRetry = true;
+            options.Timeout = TimeSpan.FromSeconds(42);
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var client = provider.GetRequiredService<IHonuaConsoleShareOpenDataClient>();
+
+        Assert.Equal(System.Threading.Timeout.InfiniteTimeSpan, GetHttpClient(client).Timeout);
+    }
+
     private static string MinimalPageEnvelope(string itemId)
         => $$"""
             {
@@ -471,6 +489,14 @@ public sealed class HonuaConsoleShareOpenDataClientTests
         {
             BaseAddress = new Uri("https://honua.example"),
         };
+
+    private static HttpClient GetHttpClient(object client)
+    {
+        var field = client.GetType().GetField("_http", BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+
+        return Assert.IsType<HttpClient>(field!.GetValue(client));
+    }
 
     private static HttpClient CreateHttpClient(Func<HttpRequestMessage, HttpResponseMessage> handler)
         => CreateHttpClient(request => Task.FromResult(handler(request)));

@@ -1,0 +1,315 @@
+#nullable enable
+const Honua.Sdk.Geometry.GeographicBoundingBox.Wgs84CrsIdentifier = "EPSG:4326" -> string!
+Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.FeatureGeometryFormat.Auto = 0 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.FeatureGeometryFormat.EsriJson = 1 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.FeatureGeometryFormat.GeoJson = 2 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.FeatureRecordGeometryExtensions
+Honua.Sdk.Geometry.GeographicBoundingBox
+Honua.Sdk.Geometry.GeographicBoundingBox.<Clone>$() -> Honua.Sdk.Geometry.GeographicBoundingBox!
+Honua.Sdk.Geometry.GeographicBoundingBox.Contains(double longitude, double latitude) -> bool
+Honua.Sdk.Geometry.GeographicBoundingBox.CrossesAntimeridian.get -> bool
+Honua.Sdk.Geometry.GeographicBoundingBox.Equals(Honua.Sdk.Geometry.GeographicBoundingBox? other) -> bool
+Honua.Sdk.Geometry.GeographicBoundingBox.GeographicBoundingBox(double minLongitude, double minLatitude, double maxLongitude, double maxLatitude) -> void
+Honua.Sdk.Geometry.GeographicBoundingBox.Intersects(Honua.Sdk.Geometry.GeographicBoundingBox! other) -> bool
+Honua.Sdk.Geometry.GeographicBoundingBox.LongitudeSpan.get -> double
+Honua.Sdk.Geometry.GeographicBoundingBox.MaxLatitude.get -> double
+Honua.Sdk.Geometry.GeographicBoundingBox.MaxLongitude.get -> double
+Honua.Sdk.Geometry.GeographicBoundingBox.MinLatitude.get -> double
+Honua.Sdk.Geometry.GeographicBoundingBox.MinLongitude.get -> double
+Honua.Sdk.Geometry.GeographicBoundingBox.ToFeatureBoundingBox() -> Honua.Sdk.Abstractions.Features.FeatureBoundingBox!
+Honua.Sdk.Geometry.GeoJsonGeometryConverter
+Honua.Sdk.Geometry.GeometryText
+Honua.Sdk.Geometry.GeoServicesGeometryConverter
+Honua.Sdk.Geometry.GrpcGeometryConverter
+Honua.Sdk.Geometry.HonuaCoordinateTransformer
+Honua.Sdk.Geometry.HonuaCoordinateTransformer.CreateMathTransform(Honua.Sdk.Geometry.HonuaSpatialReference! source, Honua.Sdk.Geometry.HonuaSpatialReference! target) -> ProjNet.CoordinateSystems.Transformations.MathTransform!
+Honua.Sdk.Geometry.HonuaCoordinateTransformer.HonuaCoordinateTransformer(ProjNet.CoordinateSystemServices? coordinateSystemServices = null) -> void
+Honua.Sdk.Geometry.HonuaCoordinateTransformer.Transform(NetTopologySuite.Geometries.Coordinate! coordinate, Honua.Sdk.Geometry.HonuaSpatialReference! source, Honua.Sdk.Geometry.HonuaSpatialReference! target) -> NetTopologySuite.Geometries.Coordinate!
+Honua.Sdk.Geometry.HonuaCoordinateTransformer.Transform(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.HonuaSpatialReference! source, Honua.Sdk.Geometry.HonuaSpatialReference! target) -> NetTopologySuite.Geometries.Geometry!
+Honua.Sdk.Geometry.HonuaFeatureReprojector
+Honua.Sdk.Geometry.HonuaFeatureReprojector.HonuaFeatureReprojector(Honua.Sdk.Geometry.HonuaCoordinateTransformer? transformer = null) -> void
+Honua.Sdk.Geometry.HonuaFeatureReprojector.Reproject(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.HonuaSpatialReference! returnedSpatialReference, Honua.Sdk.Geometry.HonuaSpatialReference! targetSpatialReference) -> NetTopologySuite.Geometries.Geometry!
+Honua.Sdk.Geometry.HonuaFeatureReprojector.Reproject(System.Collections.Generic.IEnumerable<NetTopologySuite.Geometries.Geometry?>! geometries, Honua.Sdk.Geometry.HonuaSpatialReference! returnedSpatialReference, Honua.Sdk.Geometry.HonuaSpatialReference! targetSpatialReference) -> System.Collections.Generic.IReadOnlyList<NetTopologySuite.Geometries.Geometry?>!
+Honua.Sdk.Geometry.HonuaGeofenceDefinition
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.BufferDistance.get -> double
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.BufferDistance.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.GeofenceId.get -> string!
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.GeofenceId.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.Geometry.get -> NetTopologySuite.Geometries.Geometry!
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.Geometry.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.HonuaGeofenceDefinition() -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.Metadata.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.ProximityDistance.get -> double?
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.ProximityDistance.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.Source.get -> Honua.Sdk.Abstractions.Features.SourceDescriptor?
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.Source.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.SourceQuery.get -> Honua.Sdk.Abstractions.Features.SourceQuery?
+Honua.Sdk.Geometry.HonuaGeofenceDefinition.SourceQuery.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Definition.get -> Honua.Sdk.Geometry.HonuaGeofenceDefinition!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Definition.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Distance.get -> double
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Distance.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.GeofenceId.get -> string!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.GeofenceId.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.HonuaGeofenceEvaluation() -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Position.get -> Honua.Sdk.Geometry.HonuaGeofencePosition!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Position.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Status.get -> Honua.Sdk.Geometry.HonuaGeofenceStatus
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Status.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Transition.get -> Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaGeofenceEvaluation.Transition.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluationState
+Honua.Sdk.Geometry.HonuaGeofenceEvaluationState.Clear() -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluationState.Entries.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.HonuaGeofenceStateEntry!>!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluationState.HonuaGeofenceEvaluationState() -> void
+Honua.Sdk.Geometry.HonuaGeofenceEvaluator
+Honua.Sdk.Geometry.HonuaGeofenceEvaluator.Evaluate(Honua.Sdk.Geometry.HonuaGeofencePosition! position, Honua.Sdk.Geometry.HonuaGeofenceEvaluationState? state = null) -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.HonuaGeofenceEvaluation!>!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluator.Evaluate(System.Collections.Generic.IEnumerable<Honua.Sdk.Geometry.HonuaGeofencePosition!>! positions, Honua.Sdk.Geometry.HonuaGeofenceEvaluationState? state = null) -> System.Collections.Generic.IEnumerable<Honua.Sdk.Geometry.HonuaGeofenceEvaluation!>!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluator.EvaluateAsync(System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Geometry.HonuaGeofencePosition!>! positions, Honua.Sdk.Geometry.HonuaGeofenceEvaluationState? state = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Geometry.HonuaGeofenceEvaluation!>!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluator.EvaluateFeatureStreamAsync(System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Abstractions.Features.FeatureStreamEvent!>! featureEvents, System.Func<Honua.Sdk.Abstractions.Features.FeatureStreamEvent!, Honua.Sdk.Geometry.HonuaGeofencePosition?>! positionSelector, Honua.Sdk.Geometry.HonuaGeofenceEvaluationState? state = null, Honua.Sdk.Abstractions.Features.FeatureStreamEventProcessor? sequenceProcessor = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Geometry.HonuaGeofenceEvaluation!>!
+Honua.Sdk.Geometry.HonuaGeofenceEvaluator.HonuaGeofenceEvaluator(System.Collections.Generic.IEnumerable<Honua.Sdk.Geometry.HonuaGeofenceDefinition!>! definitions, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> void
+Honua.Sdk.Geometry.HonuaGeofencePosition
+Honua.Sdk.Geometry.HonuaGeofencePosition.HonuaGeofencePosition() -> void
+Honua.Sdk.Geometry.HonuaGeofencePosition.Location.get -> NetTopologySuite.Geometries.Point!
+Honua.Sdk.Geometry.HonuaGeofencePosition.Location.init -> void
+Honua.Sdk.Geometry.HonuaGeofencePosition.Timestamp.get -> System.DateTimeOffset?
+Honua.Sdk.Geometry.HonuaGeofencePosition.Timestamp.init -> void
+Honua.Sdk.Geometry.HonuaGeofencePosition.TrackId.get -> string?
+Honua.Sdk.Geometry.HonuaGeofencePosition.TrackId.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.GeofenceId.get -> string!
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.GeofenceId.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.HonuaGeofenceStateEntry() -> void
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.Status.get -> Honua.Sdk.Geometry.HonuaGeofenceStatus
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.Status.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.TrackId.get -> string?
+Honua.Sdk.Geometry.HonuaGeofenceStateEntry.TrackId.init -> void
+Honua.Sdk.Geometry.HonuaGeofenceStatus
+Honua.Sdk.Geometry.HonuaGeofenceStatus.Inside = 1 -> Honua.Sdk.Geometry.HonuaGeofenceStatus
+Honua.Sdk.Geometry.HonuaGeofenceStatus.Outside = 0 -> Honua.Sdk.Geometry.HonuaGeofenceStatus
+Honua.Sdk.Geometry.HonuaGeofenceStatus.Proximity = 2 -> Honua.Sdk.Geometry.HonuaGeofenceStatus
+Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaGeofenceTransition.Approached = 3 -> Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaGeofenceTransition.Departed = 4 -> Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaGeofenceTransition.Entered = 1 -> Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaGeofenceTransition.Exited = 2 -> Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaGeofenceTransition.None = 0 -> Honua.Sdk.Geometry.HonuaGeofenceTransition
+Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer
+Honua.Sdk.Geometry.HonuaSpatialReference
+Honua.Sdk.Geometry.HonuaSpatialReference.<Clone>$() -> Honua.Sdk.Geometry.HonuaSpatialReference!
+Honua.Sdk.Geometry.HonuaSpatialReference.Authority.get -> string?
+Honua.Sdk.Geometry.HonuaSpatialReference.Code.get -> int?
+Honua.Sdk.Geometry.HonuaSpatialReference.Equals(Honua.Sdk.Geometry.HonuaSpatialReference? other) -> bool
+Honua.Sdk.Geometry.HonuaSpatialReference.Identifier.get -> string!
+Honua.Sdk.Geometry.HonuaSpatialReference.LatestWkid.get -> int?
+Honua.Sdk.Geometry.HonuaSpatialReference.ToOgcCrsIdentifier() -> string?
+Honua.Sdk.Geometry.HonuaSpatialReference.Wkid.get -> int?
+Honua.Sdk.Geometry.HonuaSpatialReference.Wkt.get -> string?
+Honua.Sdk.Geometry.NearestGeometryPointPair
+Honua.Sdk.Geometry.NearestGeometryPointPair.<Clone>$() -> Honua.Sdk.Geometry.NearestGeometryPointPair!
+Honua.Sdk.Geometry.NearestGeometryPointPair.Distance.get -> double
+Honua.Sdk.Geometry.NearestGeometryPointPair.Distance.init -> void
+Honua.Sdk.Geometry.NearestGeometryPointPair.Equals(Honua.Sdk.Geometry.NearestGeometryPointPair? other) -> bool
+Honua.Sdk.Geometry.NearestGeometryPointPair.FirstPoint.get -> NetTopologySuite.Geometries.Point!
+Honua.Sdk.Geometry.NearestGeometryPointPair.FirstPoint.init -> void
+Honua.Sdk.Geometry.NearestGeometryPointPair.NearestGeometryPointPair() -> void
+Honua.Sdk.Geometry.NearestGeometryPointPair.SecondPoint.get -> NetTopologySuite.Geometries.Point!
+Honua.Sdk.Geometry.NearestGeometryPointPair.SecondPoint.init -> void
+Honua.Sdk.Geometry.NearestGeometryVertex
+Honua.Sdk.Geometry.NearestGeometryVertex.<Clone>$() -> Honua.Sdk.Geometry.NearestGeometryVertex!
+Honua.Sdk.Geometry.NearestGeometryVertex.CoordinateIndex.get -> int
+Honua.Sdk.Geometry.NearestGeometryVertex.CoordinateIndex.init -> void
+Honua.Sdk.Geometry.NearestGeometryVertex.Distance.get -> double
+Honua.Sdk.Geometry.NearestGeometryVertex.Distance.init -> void
+Honua.Sdk.Geometry.NearestGeometryVertex.Equals(Honua.Sdk.Geometry.NearestGeometryVertex? other) -> bool
+Honua.Sdk.Geometry.NearestGeometryVertex.NearestGeometryVertex() -> void
+Honua.Sdk.Geometry.NearestGeometryVertex.Vertex.get -> NetTopologySuite.Geometries.Point!
+Honua.Sdk.Geometry.NearestGeometryVertex.Vertex.init -> void
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.<Clone>$() -> Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions!
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.AllowGeographicMeasurements.get -> bool
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.AllowGeographicMeasurements.init -> void
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.AnalysisSpatialReference.get -> Honua.Sdk.Geometry.HonuaSpatialReference?
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.AnalysisSpatialReference.init -> void
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.CoordinateTransformer.get -> Honua.Sdk.Geometry.HonuaCoordinateTransformer?
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.CoordinateTransformer.init -> void
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.Equals(Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? other) -> bool
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.PlanarGeometryAnalysisOptions() -> void
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.SourceSpatialReference.get -> Honua.Sdk.Geometry.HonuaSpatialReference?
+Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.SourceSpatialReference.init -> void
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.EsriJsonVectorPayloadReader() -> void
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader
+Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.GeoJsonVectorPayloadReader() -> void
+Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader
+Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader.GmlVectorPayloadReader() -> void
+Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader.Read(System.Xml.Linq.XDocument! document, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.Geometry.Vector.IVectorPayloadReader
+Honua.Sdk.Geometry.Vector.IVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.IVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.<Clone>$() -> Honua.Sdk.Geometry.Vector.VectorPayloadFeature!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Attributes.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Crs.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Crs.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Equals(Honua.Sdk.Geometry.Vector.VectorPayloadFeature? other) -> bool
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Geometry.get -> NetTopologySuite.Geometries.Geometry?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Geometry.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.GeometryJson.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.GeometryJson.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Id.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Id.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.NativeTypeName.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.NativeTypeName.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeature.VectorPayloadFeature() -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.<Clone>$() -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Crs.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Crs.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Equals(Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet? other) -> bool
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Extent.get -> NetTopologySuite.Geometries.Envelope?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Extent.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Features.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.Vector.VectorPayloadFeature!>!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Features.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Format.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.HasMoreResults.get -> bool
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.HasMoreResults.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Geometry.Vector.VectorPayloadLink!>!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Links.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.NumberMatched.get -> long?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.NumberMatched.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.NumberReturned.get -> int
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.NumberReturned.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ObjectIdFieldName.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ObjectIdFieldName.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ObjectIds.get -> System.Collections.Generic.IReadOnlyList<long>!
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ObjectIds.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.VectorPayloadFeatureSet() -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat.EsriJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoJson = 2 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat.Gml = 3 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat.Unspecified = 0 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadLink
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.<Clone>$() -> Honua.Sdk.Geometry.Vector.VectorPayloadLink!
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Equals(Honua.Sdk.Geometry.Vector.VectorPayloadLink? other) -> bool
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Href.get -> string!
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Href.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Rel.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Rel.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Title.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Title.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Type.get -> string?
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.Type.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadLink.VectorPayloadLink() -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadReaders
+Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions
+Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.<Clone>$() -> Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions!
+Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.Equals(Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? other) -> bool
+Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.GeometryFactory.get -> NetTopologySuite.Geometries.GeometryFactory?
+Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.GeometryFactory.init -> void
+Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.VectorPayloadReadOptions() -> void
+override Honua.Sdk.Geometry.GeographicBoundingBox.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.GeographicBoundingBox.GetHashCode() -> int
+override Honua.Sdk.Geometry.GeographicBoundingBox.ToString() -> string!
+override Honua.Sdk.Geometry.HonuaSpatialReference.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.HonuaSpatialReference.GetHashCode() -> int
+override Honua.Sdk.Geometry.HonuaSpatialReference.ToString() -> string!
+override Honua.Sdk.Geometry.NearestGeometryPointPair.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.NearestGeometryPointPair.GetHashCode() -> int
+override Honua.Sdk.Geometry.NearestGeometryPointPair.ToString() -> string!
+override Honua.Sdk.Geometry.NearestGeometryVertex.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.NearestGeometryVertex.GetHashCode() -> int
+override Honua.Sdk.Geometry.NearestGeometryVertex.ToString() -> string!
+override Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.GetHashCode() -> int
+override Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.ToString() -> string!
+override Honua.Sdk.Geometry.Vector.VectorPayloadFeature.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.Vector.VectorPayloadFeature.GetHashCode() -> int
+override Honua.Sdk.Geometry.Vector.VectorPayloadFeature.ToString() -> string!
+override Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.GetHashCode() -> int
+override Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ToString() -> string!
+override Honua.Sdk.Geometry.Vector.VectorPayloadLink.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.Vector.VectorPayloadLink.GetHashCode() -> int
+override Honua.Sdk.Geometry.Vector.VectorPayloadLink.ToString() -> string!
+override Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.GetHashCode() -> int
+override Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.ToString() -> string!
+static Honua.Sdk.Geometry.FeatureRecordGeometryExtensions.GetGeometry(this Honua.Sdk.Abstractions.Features.FeatureRecord! record, Honua.Sdk.Geometry.FeatureGeometryFormat format = Honua.Sdk.Geometry.FeatureGeometryFormat.Auto, NetTopologySuite.Geometries.GeometryFactory? geometryFactory = null) -> NetTopologySuite.Geometries.Geometry?
+static Honua.Sdk.Geometry.GeographicBoundingBox.FromFeatureBoundingBox(Honua.Sdk.Abstractions.Features.FeatureBoundingBox! bbox) -> Honua.Sdk.Geometry.GeographicBoundingBox!
+static Honua.Sdk.Geometry.GeographicBoundingBox.operator !=(Honua.Sdk.Geometry.GeographicBoundingBox? left, Honua.Sdk.Geometry.GeographicBoundingBox? right) -> bool
+static Honua.Sdk.Geometry.GeographicBoundingBox.operator ==(Honua.Sdk.Geometry.GeographicBoundingBox? left, Honua.Sdk.Geometry.GeographicBoundingBox? right) -> bool
+static Honua.Sdk.Geometry.GeoJsonGeometryConverter.ReadGeometry(string! geoJson, NetTopologySuite.Geometries.GeometryFactory? geometryFactory = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GeoJsonGeometryConverter.ReadGeometry(System.Text.Json.JsonElement geoJson, NetTopologySuite.Geometries.GeometryFactory? geometryFactory = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GeoJsonGeometryConverter.WriteGeometry(NetTopologySuite.Geometries.Geometry! geometry) -> System.Text.Json.JsonElement
+static Honua.Sdk.Geometry.GeoJsonGeometryConverter.WriteGeometryString(NetTopologySuite.Geometries.Geometry! geometry) -> string!
+static Honua.Sdk.Geometry.GeometryText.ReadWkb(byte[]! wkb) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GeometryText.ReadWkt(string! wkt) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GeometryText.WriteWkb(NetTopologySuite.Geometries.Geometry! geometry, NetTopologySuite.IO.ByteOrder byteOrder = NetTopologySuite.IO.ByteOrder.LittleEndian, bool includeSrid = false) -> byte[]!
+static Honua.Sdk.Geometry.GeometryText.WriteWkt(NetTopologySuite.Geometries.Geometry! geometry) -> string!
+static Honua.Sdk.Geometry.GeoServicesGeometryConverter.ReadGeometry(System.Text.Json.JsonElement geometry, NetTopologySuite.Geometries.GeometryFactory? geometryFactory = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GeoServicesGeometryConverter.WriteGeometry(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.HonuaSpatialReference? spatialReference = null) -> System.Text.Json.JsonElement
+static Honua.Sdk.Geometry.GeoServicesGeometryConverter.WriteGeometryString(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.HonuaSpatialReference? spatialReference = null) -> string!
+static Honua.Sdk.Geometry.GrpcGeometryConverter.ReadGeometry(Geospatial.V1.Geometry! geometry, Honua.Sdk.Geometry.HonuaSpatialReference? spatialReference = null, NetTopologySuite.Geometries.GeometryFactory? geometryFactory = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GrpcGeometryConverter.ReadSpatialReference(Geospatial.V1.SpatialReference? spatialReference) -> Honua.Sdk.Geometry.HonuaSpatialReference?
+static Honua.Sdk.Geometry.GrpcGeometryConverter.WriteGeometry(NetTopologySuite.Geometries.Geometry! geometry) -> Geospatial.V1.Geometry!
+static Honua.Sdk.Geometry.GrpcGeometryConverter.WriteSpatialReference(Honua.Sdk.Geometry.HonuaSpatialReference? spatialReference) -> Geospatial.V1.SpatialReference?
+static Honua.Sdk.Geometry.HonuaFeatureReprojector.AreEquivalent(Honua.Sdk.Geometry.HonuaSpatialReference? returnedSpatialReference, Honua.Sdk.Geometry.HonuaSpatialReference? targetSpatialReference) -> bool
+static Honua.Sdk.Geometry.HonuaGeofenceEvaluator.CreatePositionFromFeatureEvent(Honua.Sdk.Abstractions.Features.FeatureStreamEvent! featureEvent, NetTopologySuite.Geometries.GeometryFactory? geometryFactory = null) -> Honua.Sdk.Geometry.HonuaGeofencePosition?
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Buffer(NetTopologySuite.Geometries.Geometry! geometry, double distance, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Contains(NetTopologySuite.Geometries.Geometry! container, NetTopologySuite.Geometries.Geometry! candidate, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> bool
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Covers(NetTopologySuite.Geometries.Geometry! container, NetTopologySuite.Geometries.Geometry! candidate, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> bool
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.FindNearestPoints(NetTopologySuite.Geometries.Geometry! first, NetTopologySuite.Geometries.Geometry! second, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> Honua.Sdk.Geometry.NearestGeometryPointPair!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.FindNearestVertex(NetTopologySuite.Geometries.Geometry! geometry, NetTopologySuite.Geometries.Geometry! target, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> Honua.Sdk.Geometry.NearestGeometryVertex!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.GetCentroid(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> NetTopologySuite.Geometries.Point!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.GetEnvelope(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> NetTopologySuite.Geometries.Envelope!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.GetEnvelopeGeometry(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Intersect(NetTopologySuite.Geometries.Geometry! first, NetTopologySuite.Geometries.Geometry! second, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Intersects(NetTopologySuite.Geometries.Geometry! first, NetTopologySuite.Geometries.Geometry! second, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> bool
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.MeasureArea(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> double
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.MeasureDistance(NetTopologySuite.Geometries.Geometry! first, NetTopologySuite.Geometries.Geometry! second, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> double
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.MeasureLength(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> double
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Overlaps(NetTopologySuite.Geometries.Geometry! first, NetTopologySuite.Geometries.Geometry! second, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> bool
+static Honua.Sdk.Geometry.HonuaPlanarGeometryAnalyzer.Simplify(NetTopologySuite.Geometries.Geometry! geometry, double distanceTolerance, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? options = null) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.HonuaSpatialReference.FromAuthorityCode(string! authority, int code) -> Honua.Sdk.Geometry.HonuaSpatialReference!
+static Honua.Sdk.Geometry.HonuaSpatialReference.FromWkid(int wkid, int? latestWkid = null) -> Honua.Sdk.Geometry.HonuaSpatialReference!
+static Honua.Sdk.Geometry.HonuaSpatialReference.FromWkt(string! wkt, string? authority = null, int? code = null) -> Honua.Sdk.Geometry.HonuaSpatialReference!
+static Honua.Sdk.Geometry.HonuaSpatialReference.operator !=(Honua.Sdk.Geometry.HonuaSpatialReference? left, Honua.Sdk.Geometry.HonuaSpatialReference? right) -> bool
+static Honua.Sdk.Geometry.HonuaSpatialReference.operator ==(Honua.Sdk.Geometry.HonuaSpatialReference? left, Honua.Sdk.Geometry.HonuaSpatialReference? right) -> bool
+static Honua.Sdk.Geometry.HonuaSpatialReference.Parse(string! value) -> Honua.Sdk.Geometry.HonuaSpatialReference!
+static Honua.Sdk.Geometry.HonuaSpatialReference.TryParse(string? value, out Honua.Sdk.Geometry.HonuaSpatialReference? spatialReference) -> bool
+static Honua.Sdk.Geometry.HonuaSpatialReference.WebMercator.get -> Honua.Sdk.Geometry.HonuaSpatialReference!
+static Honua.Sdk.Geometry.HonuaSpatialReference.Wgs84.get -> Honua.Sdk.Geometry.HonuaSpatialReference!
+static Honua.Sdk.Geometry.NearestGeometryPointPair.operator !=(Honua.Sdk.Geometry.NearestGeometryPointPair? left, Honua.Sdk.Geometry.NearestGeometryPointPair? right) -> bool
+static Honua.Sdk.Geometry.NearestGeometryPointPair.operator ==(Honua.Sdk.Geometry.NearestGeometryPointPair? left, Honua.Sdk.Geometry.NearestGeometryPointPair? right) -> bool
+static Honua.Sdk.Geometry.NearestGeometryVertex.operator !=(Honua.Sdk.Geometry.NearestGeometryVertex? left, Honua.Sdk.Geometry.NearestGeometryVertex? right) -> bool
+static Honua.Sdk.Geometry.NearestGeometryVertex.operator ==(Honua.Sdk.Geometry.NearestGeometryVertex? left, Honua.Sdk.Geometry.NearestGeometryVertex? right) -> bool
+static Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.operator !=(Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? left, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? right) -> bool
+static Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.operator ==(Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? left, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? right) -> bool
+static Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader!
+static Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader!
+static Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader!
+static Honua.Sdk.Geometry.Vector.VectorPayloadFeature.operator !=(Honua.Sdk.Geometry.Vector.VectorPayloadFeature? left, Honua.Sdk.Geometry.Vector.VectorPayloadFeature? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadFeature.operator ==(Honua.Sdk.Geometry.Vector.VectorPayloadFeature? left, Honua.Sdk.Geometry.Vector.VectorPayloadFeature? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.operator !=(Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet? left, Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.operator ==(Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet? left, Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadLink.operator !=(Honua.Sdk.Geometry.Vector.VectorPayloadLink? left, Honua.Sdk.Geometry.Vector.VectorPayloadLink? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadLink.operator ==(Honua.Sdk.Geometry.Vector.VectorPayloadLink? left, Honua.Sdk.Geometry.Vector.VectorPayloadLink? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadReaders.ForFormat(Honua.Sdk.Geometry.Vector.VectorPayloadFormat format) -> Honua.Sdk.Geometry.Vector.IVectorPayloadReader!
+static Honua.Sdk.Geometry.Vector.VectorPayloadReaders.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadFormat format, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+static Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.operator !=(Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? left, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? right) -> bool
+static Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions.operator ==(Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? left, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? right) -> bool

@@ -1,0 +1,45 @@
+<Project>
+
+  <!--
+    Packable projects are shipped SDK packages; tests and examples explicitly
+    set IsPackable=false. PublicApiAnalyzers reads the checked-in shipped/unshipped
+    approval files and reports any unapproved addition, removal, or nullability
+    change as a warning; the repository-wide warnings-as-errors policy makes that
+    a build failure in local and CI builds. Tool packages (PackAsTool=true, e.g.
+    Honua.Sdk.Cli) ship an executable rather than a referenceable library API,
+    so they are excluded from public API approval tracking.
+  -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'false' and '$(PackageId)' != '' and '$(PackAsTool)' != 'true'">
+    <_HonuaTrackPublicApi>true</_HonuaTrackPublicApi>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_HonuaTrackPublicApi)' == 'true'">
+    <!--
+      RS0026/RS0027 are optional-overload design guidance, not API approval
+      diagnostics. The 1.x surface already contains intentional overload sets
+      that trigger them; changing those signatures would itself be breaking.
+      Keep the approval/removal/nullability rules enabled and defer overload
+      redesign to the documented 2.0 compatibility boundary.
+    -->
+    <NoWarn>$(NoWarn);RS0026;RS0027</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_HonuaTrackPublicApi)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <Target
+    Name="ValidatePublicApiApprovalFiles"
+    BeforeTargets="CoreCompile"
+    Condition="'$(_HonuaTrackPublicApi)' == 'true'">
+    <Error
+      Condition="!Exists('$(MSBuildProjectDirectory)/PublicAPI.Shipped.txt')"
+      Text="$(MSBuildProjectName) must provide PublicAPI.Shipped.txt." />
+    <Error
+      Condition="!Exists('$(MSBuildProjectDirectory)/PublicAPI.Unshipped.txt')"
+      Text="$(MSBuildProjectName) must provide PublicAPI.Unshipped.txt." />
+  </Target>
+
+</Project>

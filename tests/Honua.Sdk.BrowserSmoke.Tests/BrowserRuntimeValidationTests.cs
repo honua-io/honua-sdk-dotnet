@@ -30,63 +30,69 @@ public sealed class BrowserRuntimeValidationTests
         await using var apiHost = await StartFakeHonuaApiAsync(apiUri, appUri.GetLeftPart(UriPartial.Authority), observed);
 
         using var playwright = await Playwright.CreateAsync();
-        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
             Headless = true,
         });
-
-        var page = await browser.NewPageAsync();
-        var diagnostics = new ConcurrentQueue<string>();
-        page.Console += (_, message) =>
+        try
         {
-            if (string.Equals(message.Type, "error", StringComparison.OrdinalIgnoreCase))
+            var page = await browser.NewPageAsync();
+            var diagnostics = new ConcurrentQueue<string>();
+            page.Console += (_, message) => diagnostics.Enqueue($"{message.Type}: {message.Text}");
+            page.PageError += (_, error) => diagnostics.Enqueue($"page-error: {error}");
+            browser.Disconnected += (_, _) => diagnostics.Enqueue("browser-disconnected");
+
+            var target = new UriBuilder(appUri)
             {
-                diagnostics.Enqueue(message.Text);
-            }
-        };
-        page.PageError += (_, error) => diagnostics.Enqueue(error);
+                Query = BuildQuery(apiUri)
+            }.Uri;
 
-        var target = new UriBuilder(appUri)
+            await page.GotoAsync(target.ToString(), new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+                Timeout = 60_000,
+            });
+
+            var statusElement = page.Locator("[data-browser-smoke-status]");
+            await WaitForRuntimeValidationAsync(page, diagnostics);
+
+            var status = await statusElement.GetAttributeAsync("data-browser-smoke-status");
+            var text = await statusElement.InnerTextAsync();
+
+            Assert.True(
+                string.Equals("passed", status, StringComparison.Ordinal),
+                $"Browser smoke status was '{status}'. Page text: {text}. Browser diagnostics: {string.Join(" | ", diagnostics)}");
+
+            Assert.Contains(observed, request =>
+                string.Equals(request.Method, HttpMethods.Options, StringComparison.Ordinal) &&
+                string.Equals(request.Origin, appUri.GetLeftPart(UriPartial.Authority), StringComparison.Ordinal) &&
+                request.AccessControlRequestHeaders?.Contains("x-honua-browser-smoke", StringComparison.OrdinalIgnoreCase) == true);
+
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/ogc/features/collections/parks/items", StringComparison.Ordinal) &&
+                string.Equals(request.ProbeHeader, "true", StringComparison.Ordinal));
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/rest/services/World/GeocodeServer/findAddressCandidates", StringComparison.Ordinal));
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/rest/services/sdk-demo/FeatureServer/0", StringComparison.Ordinal));
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/wfs", StringComparison.Ordinal));
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/ogc/processes/processes", StringComparison.Ordinal));
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/api/v1/analysis/reports/job-7f3c", StringComparison.Ordinal));
+            Assert.Contains(observed, request =>
+                string.Equals(request.Path, "/api/v1/analysis/reports/job-7f3c/render", StringComparison.Ordinal));
+
+            var geometryStatus = await page
+                .Locator("[data-browser-smoke-check='trimmed-geometry']")
+                .GetAttributeAsync("data-browser-smoke-check-status");
+            Assert.Equal("passed", geometryStatus);
+        }
+        finally
         {
-            Query = BuildQuery(apiUri)
-        }.Uri;
-
-        await page.GotoAsync(target.ToString(), new PageGotoOptions
-        {
-            WaitUntil = WaitUntilState.NetworkIdle,
-            Timeout = 60_000,
-        });
-
-        var statusElement = page.Locator("[data-browser-smoke-status]");
-        await WaitForRuntimeValidationAsync(page, diagnostics);
-
-        var status = await statusElement.GetAttributeAsync("data-browser-smoke-status");
-        var text = await statusElement.InnerTextAsync();
-
-        Assert.True(
-            string.Equals("passed", status, StringComparison.Ordinal),
-            $"Browser smoke status was '{status}'. Page text: {text}. Browser diagnostics: {string.Join(" | ", diagnostics)}");
-
-        Assert.Contains(observed, request =>
-            string.Equals(request.Method, HttpMethods.Options, StringComparison.Ordinal) &&
-            string.Equals(request.Origin, appUri.GetLeftPart(UriPartial.Authority), StringComparison.Ordinal) &&
-            request.AccessControlRequestHeaders?.Contains("x-honua-browser-smoke", StringComparison.OrdinalIgnoreCase) == true);
-
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/ogc/features/collections/parks/items", StringComparison.Ordinal) &&
-            string.Equals(request.ProbeHeader, "true", StringComparison.Ordinal));
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/rest/services/World/GeocodeServer/findAddressCandidates", StringComparison.Ordinal));
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/rest/services/sdk-demo/FeatureServer/0", StringComparison.Ordinal));
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/wfs", StringComparison.Ordinal));
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/ogc/processes/processes", StringComparison.Ordinal));
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/api/v1/analysis/reports/job-7f3c", StringComparison.Ordinal));
-        Assert.Contains(observed, request =>
-            string.Equals(request.Path, "/api/v1/analysis/reports/job-7f3c/render", StringComparison.Ordinal));
+            await CloseBrowserAsync(browser);
+        }
 
         GC.KeepAlive(appHost);
         GC.KeepAlive(apiHost);
@@ -112,10 +118,42 @@ public sealed class BrowserRuntimeValidationTests
         }
         catch (TimeoutException ex)
         {
-            var content = await page.ContentAsync().ConfigureAwait(false);
+            var content = await TryGetPageContentAsync(page).ConfigureAwait(false);
             throw new TimeoutException(
                 $"Browser runtime validation did not finish. Page content: {content}. Browser diagnostics: {string.Join(" | ", diagnostics)}",
                 ex);
+        }
+    }
+
+    private static async Task<string> TryGetPageContentAsync(IPage page)
+    {
+        try
+        {
+            return await page.ContentAsync().WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            return "<page content request timed out>";
+        }
+        catch (PlaywrightException ex)
+        {
+            return $"<page content unavailable: {ex.Message}>";
+        }
+    }
+
+    private static async Task CloseBrowserAsync(IBrowser browser)
+    {
+        try
+        {
+            await browser.CloseAsync().WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            // Disposing IPlaywright tears down the driver and its browser child.
+        }
+        catch (PlaywrightException)
+        {
+            // The browser may already be disconnected after a runtime failure.
         }
     }
 
@@ -143,20 +181,26 @@ public sealed class BrowserRuntimeValidationTests
     private static async Task<WebApplication> StartBrowserSmokeHostAsync(Uri appUri)
     {
         var repoRoot = GetRepoRoot();
-        var webRoot = Path.Join(repoRoot, "tests", "Honua.Sdk.BrowserSmoke", "wwwroot");
-        var frameworkRoot = Path.Join(
-            repoRoot,
-            "tests",
-            "Honua.Sdk.BrowserSmoke",
-            "bin",
-            "Release",
-            "net10.0",
-            "wwwroot",
-            "_framework");
+        var publishedWebRoot = Environment.GetEnvironmentVariable("HONUA_BROWSER_SMOKE_WEBROOT");
+        var webRoot = string.IsNullOrWhiteSpace(publishedWebRoot)
+            ? Path.Join(repoRoot, "tests", "Honua.Sdk.BrowserSmoke", "wwwroot")
+            : Path.GetFullPath(publishedWebRoot);
+        var frameworkRoot = string.IsNullOrWhiteSpace(publishedWebRoot)
+            ? Path.Join(
+                repoRoot,
+                "tests",
+                "Honua.Sdk.BrowserSmoke",
+                "bin",
+                "Release",
+                "net10.0",
+                "wwwroot",
+                "_framework")
+            : Path.Join(webRoot, "_framework");
         if (!Directory.Exists(frameworkRoot))
         {
             throw new DirectoryNotFoundException(
-                "Could not find the Honua.Sdk.BrowserSmoke Release _framework output. Build the browser smoke app before running this test.");
+                $"Could not find the Honua.Sdk.BrowserSmoke Release _framework output at '{frameworkRoot}'. " +
+                "Build or publish the browser smoke app before running this test.");
         }
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions

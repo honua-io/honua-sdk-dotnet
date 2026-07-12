@@ -15,12 +15,12 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 fixture_version="$(tr -d '[:space:]' < "${SCRIPT_DIR}/FIXTURE_VERSION")"
 
-props="${REPO_ROOT}/Directory.Build.props"
-# Extract <GeospatialGrpcVersion>X</GeospatialGrpcVersion> without an XML parser.
+props="${REPO_ROOT}/Directory.Packages.props"
+# Extract the centrally managed Geospatial.Grpc package version without an XML parser.
 grpc_version="$(
-  grep -oE '<GeospatialGrpcVersion>[^<]+</GeospatialGrpcVersion>' "${props}" \
+  grep -oE '<PackageVersion Include="Geospatial\.Grpc" Version="[^"]+"' "${props}" \
     | head -n1 \
-    | sed -E 's:</?GeospatialGrpcVersion>::g' \
+    | sed -E 's:.* Version="([^"]+)".*:\1:' \
     | tr -d '[:space:]'
 )"
 
@@ -30,7 +30,7 @@ if [[ -z "${fixture_version}" ]]; then
 fi
 
 if [[ -z "${grpc_version}" ]]; then
-  echo "error: could not read <GeospatialGrpcVersion> from ${props}" >&2
+  echo "error: could not read the Geospatial.Grpc PackageVersion from ${props}" >&2
   exit 1
 fi
 
@@ -40,7 +40,7 @@ echo "Geospatial.Grpc package     : ${grpc_version}"
 if [[ "${fixture_version}" != "${grpc_version}" ]]; then
   echo "error: conformance fixture version (${fixture_version}) does not match" >&2
   echo "       the pinned Geospatial.Grpc package version (${grpc_version})." >&2
-  echo "       Update conformance/FIXTURE_VERSION and Directory.Build.props together" >&2
+  echo "       Update conformance/FIXTURE_VERSION and Directory.Packages.props together" >&2
   echo "       so the fixtures and the generated client stay on the same schema." >&2
   exit 1
 fi

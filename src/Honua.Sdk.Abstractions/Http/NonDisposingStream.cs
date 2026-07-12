@@ -11,6 +11,7 @@ namespace Honua.Sdk.Abstractions.Http;
     "Usage",
     "CA2213:Disposable fields should be disposed",
     Justification = "The wrapped stream is caller-owned and must remain open after upload.")]
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public sealed class NonDisposingStream : Stream
 {
     private readonly Stream _inner;

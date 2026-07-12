@@ -27,7 +27,8 @@ After that, the common default clients (`IHonuaGrpcClient`,
 `IHonuaProcessesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus the
 shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
 `IHonuaFeatureAttachmentClient` abstractions) are available for injection.
-Opt-in modules such as Studio are available after enabling their `Use*` flag.
+Opt-in modules such as Studio and ConsoleShare are available after enabling
+their `Use*` flag.
 
 ## Module opt-in flags
 
@@ -50,6 +51,7 @@ situational sub-packages or to opt out of any default module:
 | `UseStac` | `false` | `IHonuaStacClient` |
 | `UseOgcRecords` | `false` | `IHonuaOgcRecordsClient` |
 | `UseStudio` | `false` | `IHonuaStudioReportsClient` (analysis report retrieve / render) |
+| `UseConsoleShare` | `false` | `IHonuaConsoleShareClient` (share detail and access policy) |
 | `UseGeoprocessingProfile` | `false` | `IHonuaFeatureGateway` + the GeoServices FeatureServer client it routes attachments and time/having queries to |
 
 ### Geoprocessing (GP) feature profile
@@ -93,6 +95,7 @@ builder.Services.AddHonua(o =>
     o.UseOgcRecords = true;
     o.UseScenes     = true;
     o.UseStudio     = true;
+    o.UseConsoleShare = true;
 
     // Or trim a default off if the app does not need it:
     o.UseGeocoding  = false;
@@ -114,6 +117,7 @@ dotnet add package Honua.Sdk.Admin
 dotnet add package Honua.Sdk.OgcFeatures
 dotnet add package Honua.Sdk.Processes
 dotnet add package Honua.Sdk.Studio
+dotnet add package Honua.Sdk.ConsoleShare
 ```
 
 ```csharp
@@ -122,6 +126,7 @@ builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
 builder.Services.AddHonuaStudio     (o => o.BaseAddress = serverUri);
+builder.Services.AddHonuaConsoleShare(o => o.BaseAddress = serverUri);
 ```
 
 The umbrella is purely a build-time aggregator. It does not duplicate any of

@@ -160,7 +160,7 @@ its `knownGap` marker so the assertion becomes a required check.
 
 ### Recorded pins
 
-- Fixtures: `0.1.0-alpha.1` (`conformance/FIXTURE_VERSION` = `Geospatial.Grpc`
+- Fixtures: `0.1.0-alpha.2` (`conformance/FIXTURE_VERSION` = `Geospatial.Grpc`
   pin).
 - Server image: `ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865`
   (`nightly-86042bd`, dated `20260530`).

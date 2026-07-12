@@ -9,6 +9,9 @@
     <RootNamespace>Honua.Sdk.BrowserSmoke</RootNamespace>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <WasmEnableHotReload>false</WasmEnableHotReload>
+    <!-- Keep upstream linker diagnostics visible; the dedicated trim workflow
+         validates their exact owners/codes and fails on any SDK-owned warning. -->
+    <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

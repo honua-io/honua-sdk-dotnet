@@ -14,7 +14,8 @@ namespace Honua.Sdk.Geometry;
 /// </summary>
 public sealed class HonuaCoordinateTransformer
 {
-    private readonly CoordinateSystemServices coordinateSystemServices;
+    private readonly CoordinateSystemServices? coordinateSystemServices;
+    private readonly CoordinateTransformationFactory coordinateTransformationFactory = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaCoordinateTransformer"/> class.
@@ -22,7 +23,10 @@ public sealed class HonuaCoordinateTransformer
     /// <param name="coordinateSystemServices">Optional ProjNET coordinate system catalog.</param>
     public HonuaCoordinateTransformer(CoordinateSystemServices? coordinateSystemServices = null)
     {
-        this.coordinateSystemServices = coordinateSystemServices ?? new CoordinateSystemServices();
+        // ProjNET's default catalog blocks on background initialization during lookup, which
+        // deadlocks single-threaded browser runtimes. Native runtimes retain the normal catalog.
+        this.coordinateSystemServices = coordinateSystemServices ??
+            (OperatingSystem.IsBrowser() ? null : new CoordinateSystemServices());
     }
 
     /// <summary>
@@ -86,7 +90,8 @@ public sealed class HonuaCoordinateTransformer
 
         var sourceSystem = ResolveCoordinateSystem(source);
         var targetSystem = ResolveCoordinateSystem(target);
-        var transformation = coordinateSystemServices.CreateTransformation(sourceSystem, targetSystem)
+        var transformation = coordinateSystemServices?.CreateTransformation(sourceSystem, targetSystem)
+            ?? coordinateTransformationFactory.CreateFromCoordinateSystems(sourceSystem, targetSystem)
             ?? throw new InvalidOperationException(
                 $"ProjNET could not create a transformation from {source.Identifier} to {target.Identifier}.");
         return transformation.MathTransform;
@@ -103,12 +108,18 @@ public sealed class HonuaCoordinateTransformer
 
         if (spatialReference.Wkid is int wkid)
         {
-            return coordinateSystemServices.GetCoordinateSystem(wkid) ?? ResolveKnownEpsg(wkid);
+            var coordinateSystem = coordinateSystemServices?.GetCoordinateSystem(wkid);
+            if (coordinateSystem is not null)
+            {
+                return coordinateSystem;
+            }
+
+            return ResolveKnownEpsg(wkid);
         }
 
         if (spatialReference is { Authority: not null, Code: int code })
         {
-            var coordinateSystem = coordinateSystemServices.GetCoordinateSystem(spatialReference.Authority, code);
+            var coordinateSystem = coordinateSystemServices?.GetCoordinateSystem(spatialReference.Authority, code);
             if (coordinateSystem is not null)
             {
                 return coordinateSystem;

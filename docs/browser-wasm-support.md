@@ -12,8 +12,8 @@ rendering stay in host applications or downstream adapter packages.
 | --- | --- | --- |
 | `Honua.Sdk.Abstractions` | Supported | Pure contracts and source/query/edit abstractions. No transport, storage, or native runtime dependency. |
 | Console shell / route guard / environment profile contracts | Supported | `Honua.Sdk.Abstractions.Console` and `Honua.Sdk.Abstractions.Environments` are DTO-only. Browser hosts can use browser session/BFF auth modes and REST/realtime capability flags. Native mTLS certificate resolution remains outside the browser. |
-| `Honua.Sdk.Geometry` | Candidate | NetTopologySuite and ProjNET-backed geometry, CRS, transform helpers, and generated Geospatial gRPC geometry conversion. Pure managed compile smoke is covered, but host apps should still validate their projection set and payload sizes under their browser runtime. No display, map-rendering, or gRPC transport responsibility. |
-| `Honua.Sdk.Offline.Abstractions` | Supported | Offline manifests, checkpoints, sync state, change journals, storage interfaces, and conflict contracts only. |
+| `Honua.Sdk.Geometry` | Candidate | NetTopologySuite and ProjNET-backed geometry, CRS, transform helpers, and generated Geospatial gRPC geometry conversion. Trimmed runtime smoke covers NTS geometry/feature GeoJSON round-trips and a ProjNET WGS84/Web Mercator transform, but host apps should still validate their projection set and payload sizes. No display, map-rendering, or gRPC transport responsibility. |
+| `Honua.Sdk.Abstractions` (`Honua.Sdk.Offline.Abstractions` namespace) | Supported | Offline manifests, checkpoints, sync state, change journals, storage interfaces, and conflict contracts only. |
 | `Honua.Sdk.Offline` | Conditional | Planner and sync engine are portable, but the host must provide browser-safe storage, scheduling, conflict-review, and auth adapters. This package is not a GeoPackage, SQLite, service-worker, or background-sync implementation. |
 | `Honua.Sdk.Admin` | Candidate | REST client over injected `HttpClient`. Browser hosts must use same-origin/BFF credentials or delegated bearer tokens, and the server must allow the required CORS policy when cross-origin. Static privileged admin API keys must not be shipped in browser config. |
 | Geocoding client in `Honua.Sdk.Admin` | Candidate | Same REST, CORS, and browser credential requirements as `Honua.Sdk.Admin`. |
@@ -83,6 +83,16 @@ non-secret probe header so cross-origin hosts must satisfy a real browser CORS
 preflight. The CI `Browser WASM Smoke` job runs this mode with a cross-origin
 fake Honua API so package changes cannot regress browser fetch/preflight
 behavior.
+
+The dedicated `Browser WASM Trim Safety` workflow also publishes the smoke app
+with trimming enabled and individual trim diagnostics visible, then serves that
+published output to the same Playwright runtime test. Its reviewed warning
+baseline is limited to specific Blazor/JS interop, NetTopologySuite, and ProjNET
+warning sites in upstream dependencies. Any SDK-owned diagnostic, new warning
+code, or new upstream warning site fails the gate. The trimmed runtime check
+also round-trips NTS GeoJSON geometry and feature-collection payloads and
+performs a ProjNET coordinate transformation so the dependency paths covered
+by the baseline are exercised, not merely preserved at publish time.
 
 The fake API backs the Studio check with
 `contracts/fixtures/console/analysis-report.v1.json` and observes both

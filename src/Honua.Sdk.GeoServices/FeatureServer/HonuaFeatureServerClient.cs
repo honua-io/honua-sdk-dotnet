@@ -1195,7 +1195,9 @@ public sealed class HonuaFeatureServerClient :
             var objectId = ResolveFeatureObjectId(feature);
             if (objectId.HasValue)
             {
-                attributes[objectIdField] = JsonSerializer.SerializeToElement(objectId.Value);
+                attributes[objectIdField] = JsonSerializer.SerializeToElement(
+                    objectId.Value,
+                    FeatureServerJsonContext.Default.Int64);
             }
         }
 
@@ -1323,13 +1325,15 @@ public sealed class HonuaFeatureServerClient :
             return null;
         }
 
-        var geometry = JsonSerializer.Serialize(new
-        {
-            xmin = bbox.MinX,
-            ymin = bbox.MinY,
-            xmax = bbox.MaxX,
-            ymax = bbox.MaxY
-        });
+        var geometry = JsonSerializer.Serialize(
+            new FeatureServerEnvelope
+            {
+                MinX = bbox.MinX,
+                MinY = bbox.MinY,
+                MaxX = bbox.MaxX,
+                MaxY = bbox.MaxY,
+            },
+            FeatureServerJsonContext.Default.FeatureServerEnvelope);
 
         return new FeatureServerSpatialFilter
         {

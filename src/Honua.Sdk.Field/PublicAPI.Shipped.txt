@@ -1,0 +1,758 @@
+#nullable enable
+const Honua.Sdk.Field.Forms.Expressions.ExpressionEvaluator.MaxDepth = 64 -> int
+const Honua.Sdk.Field.Forms.Expressions.ExpressionEvaluator.MaxExpressionLength = 8000 -> int
+const Honua.Sdk.Field.Projects.FieldProjectPackage.CurrentSchemaVersion = "honua.field-project-package.v1" -> string!
+const Honua.Sdk.Field.Projects.FieldProjectPackageValidationCodes.DuplicateIdentifier = "duplicate-identifier" -> string!
+const Honua.Sdk.Field.Projects.FieldProjectPackageValidationCodes.InvalidValue = "invalid-value" -> string!
+const Honua.Sdk.Field.Projects.FieldProjectPackageValidationCodes.MissingReference = "missing-reference" -> string!
+const Honua.Sdk.Field.Projects.FieldProjectPackageValidationCodes.MissingRequiredValue = "missing-required-value" -> string!
+const Honua.Sdk.Field.Projects.FieldProjectPackageValidationCodes.UnsupportedSchemaVersion = "unsupported-schema-version" -> string!
+Honua.Sdk.Field.Forms.CalculatedFieldEvaluator
+Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.ComparisonOperator.Contains = 4 -> Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.ComparisonOperator.Equals = 0 -> Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.ComparisonOperator.GreaterThan = 2 -> Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.ComparisonOperator.LessThan = 3 -> Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.ComparisonOperator.NotEquals = 1 -> Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.Expressions.ExpressionEvaluator
+Honua.Sdk.Field.Forms.Expressions.ExpressionException
+Honua.Sdk.Field.Forms.Expressions.ExpressionException.ExpressionException() -> void
+Honua.Sdk.Field.Forms.Expressions.ExpressionException.ExpressionException(string! message) -> void
+Honua.Sdk.Field.Forms.Expressions.ExpressionException.ExpressionException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Field.Forms.Expressions.ExpressionResult
+Honua.Sdk.Field.Forms.Expressions.ExpressionResult.Diagnostic.get -> string?
+Honua.Sdk.Field.Forms.Expressions.ExpressionResult.Succeeded.get -> bool
+Honua.Sdk.Field.Forms.Expressions.ExpressionResult.Value.get -> object?
+Honua.Sdk.Field.Forms.FieldChoice
+Honua.Sdk.Field.Forms.FieldChoice.<Clone>$() -> Honua.Sdk.Field.Forms.FieldChoice!
+Honua.Sdk.Field.Forms.FieldChoice.Children.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FieldChoice!>!
+Honua.Sdk.Field.Forms.FieldChoice.Children.init -> void
+Honua.Sdk.Field.Forms.FieldChoice.Equals(Honua.Sdk.Field.Forms.FieldChoice? other) -> bool
+Honua.Sdk.Field.Forms.FieldChoice.FieldChoice() -> void
+Honua.Sdk.Field.Forms.FieldChoice.Label.get -> string?
+Honua.Sdk.Field.Forms.FieldChoice.Label.init -> void
+Honua.Sdk.Field.Forms.FieldChoice.ParentValue.get -> string?
+Honua.Sdk.Field.Forms.FieldChoice.ParentValue.init -> void
+Honua.Sdk.Field.Forms.FieldChoice.Value.get -> string!
+Honua.Sdk.Field.Forms.FieldChoice.Value.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapper
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.<Clone>$() -> Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions!
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Description.get -> string?
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Description.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Equals(Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions? other) -> bool
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.FieldFormSchemaMapperOptions() -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.FormId.get -> string?
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.FormId.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.IncludeReadOnlyFields.get -> bool
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.IncludeReadOnlyFields.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.IncludeSystemFields.get -> bool
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.IncludeSystemFields.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Name.get -> string?
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Name.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.SectionId.get -> string!
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.SectionId.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.SectionLabel.get -> string!
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.SectionLabel.init -> void
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Version.get -> string?
+Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Version.init -> void
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.<Clone>$() -> Honua.Sdk.Field.Forms.FieldMediaCapturePolicy!
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.AllowedContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.AllowedContentTypes.init -> void
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.CaptureGpsTrack.get -> bool
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.CaptureGpsTrack.init -> void
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.CaptureLocation.get -> bool
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.CaptureLocation.init -> void
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.Equals(Honua.Sdk.Field.Forms.FieldMediaCapturePolicy? other) -> bool
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.FieldMediaCapturePolicy() -> void
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.MaxAttachmentBytes.get -> long?
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.MaxAttachmentBytes.init -> void
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.RequiresFaceBlur.get -> bool
+Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.RequiresFaceBlur.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule
+Honua.Sdk.Field.Forms.FieldValidationRule.<Clone>$() -> Honua.Sdk.Field.Forms.FieldValidationRule!
+Honua.Sdk.Field.Forms.FieldValidationRule.ConstraintExpression.get -> string?
+Honua.Sdk.Field.Forms.FieldValidationRule.ConstraintExpression.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.ConstraintMessage.get -> string?
+Honua.Sdk.Field.Forms.FieldValidationRule.ConstraintMessage.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.Equals(Honua.Sdk.Field.Forms.FieldValidationRule? other) -> bool
+Honua.Sdk.Field.Forms.FieldValidationRule.FieldValidationRule() -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.MaxLength.get -> int?
+Honua.Sdk.Field.Forms.FieldValidationRule.MaxLength.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.MaxMediaCount.get -> int?
+Honua.Sdk.Field.Forms.FieldValidationRule.MaxMediaCount.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.MaxNumericValue.get -> double?
+Honua.Sdk.Field.Forms.FieldValidationRule.MaxNumericValue.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.MinLength.get -> int?
+Honua.Sdk.Field.Forms.FieldValidationRule.MinLength.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.MinMediaCount.get -> int?
+Honua.Sdk.Field.Forms.FieldValidationRule.MinMediaCount.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.MinNumericValue.get -> double?
+Honua.Sdk.Field.Forms.FieldValidationRule.MinNumericValue.init -> void
+Honua.Sdk.Field.Forms.FieldValidationRule.RegexPattern.get -> string?
+Honua.Sdk.Field.Forms.FieldValidationRule.RegexPattern.init -> void
+Honua.Sdk.Field.Forms.FieldVisibilityRule
+Honua.Sdk.Field.Forms.FieldVisibilityRule.<Clone>$() -> Honua.Sdk.Field.Forms.FieldVisibilityRule!
+Honua.Sdk.Field.Forms.FieldVisibilityRule.DependsOnFieldId.get -> string!
+Honua.Sdk.Field.Forms.FieldVisibilityRule.DependsOnFieldId.init -> void
+Honua.Sdk.Field.Forms.FieldVisibilityRule.Equals(Honua.Sdk.Field.Forms.FieldVisibilityRule? other) -> bool
+Honua.Sdk.Field.Forms.FieldVisibilityRule.FieldVisibilityRule() -> void
+Honua.Sdk.Field.Forms.FieldVisibilityRule.MatchValue.get -> object?
+Honua.Sdk.Field.Forms.FieldVisibilityRule.MatchValue.init -> void
+Honua.Sdk.Field.Forms.FieldVisibilityRule.Operator.get -> Honua.Sdk.Field.Forms.ComparisonOperator
+Honua.Sdk.Field.Forms.FieldVisibilityRule.Operator.init -> void
+Honua.Sdk.Field.Forms.FormDefinition
+Honua.Sdk.Field.Forms.FormDefinition.<Clone>$() -> Honua.Sdk.Field.Forms.FormDefinition!
+Honua.Sdk.Field.Forms.FormDefinition.Description.get -> string?
+Honua.Sdk.Field.Forms.FormDefinition.Description.init -> void
+Honua.Sdk.Field.Forms.FormDefinition.Equals(Honua.Sdk.Field.Forms.FormDefinition? other) -> bool
+Honua.Sdk.Field.Forms.FormDefinition.FormDefinition() -> void
+Honua.Sdk.Field.Forms.FormDefinition.FormId.get -> string!
+Honua.Sdk.Field.Forms.FormDefinition.FormId.init -> void
+Honua.Sdk.Field.Forms.FormDefinition.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Field.Forms.FormDefinition.Metadata.init -> void
+Honua.Sdk.Field.Forms.FormDefinition.Name.get -> string!
+Honua.Sdk.Field.Forms.FormDefinition.Name.init -> void
+Honua.Sdk.Field.Forms.FormDefinition.Sections.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FormSection!>!
+Honua.Sdk.Field.Forms.FormDefinition.Sections.init -> void
+Honua.Sdk.Field.Forms.FormDefinition.Target.get -> Honua.Sdk.Field.Forms.FormTarget?
+Honua.Sdk.Field.Forms.FormDefinition.Target.init -> void
+Honua.Sdk.Field.Forms.FormDefinition.Version.get -> string?
+Honua.Sdk.Field.Forms.FormDefinition.Version.init -> void
+Honua.Sdk.Field.Forms.FormField
+Honua.Sdk.Field.Forms.FormField.<Clone>$() -> Honua.Sdk.Field.Forms.FormField!
+Honua.Sdk.Field.Forms.FormField.CalculatedExpression.get -> string?
+Honua.Sdk.Field.Forms.FormField.CalculatedExpression.init -> void
+Honua.Sdk.Field.Forms.FormField.Choices.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FieldChoice!>!
+Honua.Sdk.Field.Forms.FormField.Choices.init -> void
+Honua.Sdk.Field.Forms.FormField.ChoiceSetId.get -> string?
+Honua.Sdk.Field.Forms.FormField.ChoiceSetId.init -> void
+Honua.Sdk.Field.Forms.FormField.Equals(Honua.Sdk.Field.Forms.FormField? other) -> bool
+Honua.Sdk.Field.Forms.FormField.FieldId.get -> string!
+Honua.Sdk.Field.Forms.FormField.FieldId.init -> void
+Honua.Sdk.Field.Forms.FormField.FormField() -> void
+Honua.Sdk.Field.Forms.FormField.HelpText.get -> string?
+Honua.Sdk.Field.Forms.FormField.HelpText.init -> void
+Honua.Sdk.Field.Forms.FormField.Label.get -> string!
+Honua.Sdk.Field.Forms.FormField.Label.init -> void
+Honua.Sdk.Field.Forms.FormField.MediaPolicy.get -> Honua.Sdk.Field.Forms.FieldMediaCapturePolicy?
+Honua.Sdk.Field.Forms.FormField.MediaPolicy.init -> void
+Honua.Sdk.Field.Forms.FormField.ReferencedFormId.get -> string?
+Honua.Sdk.Field.Forms.FormField.ReferencedFormId.init -> void
+Honua.Sdk.Field.Forms.FormField.RelevanceExpression.get -> string?
+Honua.Sdk.Field.Forms.FormField.RelevanceExpression.init -> void
+Honua.Sdk.Field.Forms.FormField.Required.get -> bool
+Honua.Sdk.Field.Forms.FormField.Required.init -> void
+Honua.Sdk.Field.Forms.FormField.SourceFieldName.get -> string?
+Honua.Sdk.Field.Forms.FormField.SourceFieldName.init -> void
+Honua.Sdk.Field.Forms.FormField.Type.get -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormField.Type.init -> void
+Honua.Sdk.Field.Forms.FormField.Validation.get -> Honua.Sdk.Field.Forms.FieldValidationRule!
+Honua.Sdk.Field.Forms.FormField.Validation.init -> void
+Honua.Sdk.Field.Forms.FormField.VisibilityRule.get -> Honua.Sdk.Field.Forms.FieldVisibilityRule?
+Honua.Sdk.Field.Forms.FormField.VisibilityRule.init -> void
+Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Address = 9 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Audio = 15 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Barcode = 18 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Calculated = 12 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Classification = 8 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Date = 2 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.DateTime = 4 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.File = 19 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.GeoShape = 21 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.GeoTrace = 22 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Hyperlink = 10 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Location = 20 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.MultipleChoice = 7 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Numeric = 1 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Photo = 13 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.RecordLink = 11 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Signature = 16 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.SingleChoice = 6 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Sketch = 17 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Text = 0 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Time = 3 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.Video = 14 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormFieldType.YesNo = 5 -> Honua.Sdk.Field.Forms.FormFieldType
+Honua.Sdk.Field.Forms.FormSection
+Honua.Sdk.Field.Forms.FormSection.<Clone>$() -> Honua.Sdk.Field.Forms.FormSection!
+Honua.Sdk.Field.Forms.FormSection.Collapsible.get -> bool
+Honua.Sdk.Field.Forms.FormSection.Collapsible.init -> void
+Honua.Sdk.Field.Forms.FormSection.Description.get -> string?
+Honua.Sdk.Field.Forms.FormSection.Description.init -> void
+Honua.Sdk.Field.Forms.FormSection.Equals(Honua.Sdk.Field.Forms.FormSection? other) -> bool
+Honua.Sdk.Field.Forms.FormSection.Fields.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FormField!>!
+Honua.Sdk.Field.Forms.FormSection.Fields.init -> void
+Honua.Sdk.Field.Forms.FormSection.FormSection() -> void
+Honua.Sdk.Field.Forms.FormSection.InitiallyCollapsed.get -> bool
+Honua.Sdk.Field.Forms.FormSection.InitiallyCollapsed.init -> void
+Honua.Sdk.Field.Forms.FormSection.Label.get -> string!
+Honua.Sdk.Field.Forms.FormSection.Label.init -> void
+Honua.Sdk.Field.Forms.FormSection.Repeatable.get -> bool
+Honua.Sdk.Field.Forms.FormSection.Repeatable.init -> void
+Honua.Sdk.Field.Forms.FormSection.SectionId.get -> string!
+Honua.Sdk.Field.Forms.FormSection.SectionId.init -> void
+Honua.Sdk.Field.Forms.FormTarget
+Honua.Sdk.Field.Forms.FormTarget.<Clone>$() -> Honua.Sdk.Field.Forms.FormTarget!
+Honua.Sdk.Field.Forms.FormTarget.CollectionId.get -> string?
+Honua.Sdk.Field.Forms.FormTarget.CollectionId.init -> void
+Honua.Sdk.Field.Forms.FormTarget.Equals(Honua.Sdk.Field.Forms.FormTarget? other) -> bool
+Honua.Sdk.Field.Forms.FormTarget.FormTarget() -> void
+Honua.Sdk.Field.Forms.FormTarget.LayerId.get -> int?
+Honua.Sdk.Field.Forms.FormTarget.LayerId.init -> void
+Honua.Sdk.Field.Forms.FormTarget.ServiceId.get -> string?
+Honua.Sdk.Field.Forms.FormTarget.ServiceId.init -> void
+Honua.Sdk.Field.Forms.FormTarget.SourceId.get -> string?
+Honua.Sdk.Field.Forms.FormTarget.SourceId.init -> void
+Honua.Sdk.Field.Forms.FormTarget.TypeName.get -> string?
+Honua.Sdk.Field.Forms.FormTarget.TypeName.init -> void
+Honua.Sdk.Field.Forms.FormValidationError
+Honua.Sdk.Field.Forms.FormValidationError.<Clone>$() -> Honua.Sdk.Field.Forms.FormValidationError!
+Honua.Sdk.Field.Forms.FormValidationError.Deconstruct(out string! FieldId, out string! Message) -> void
+Honua.Sdk.Field.Forms.FormValidationError.Equals(Honua.Sdk.Field.Forms.FormValidationError? other) -> bool
+Honua.Sdk.Field.Forms.FormValidationError.FieldId.get -> string!
+Honua.Sdk.Field.Forms.FormValidationError.FieldId.init -> void
+Honua.Sdk.Field.Forms.FormValidationError.FormValidationError(string! FieldId, string! Message) -> void
+Honua.Sdk.Field.Forms.FormValidationError.Message.get -> string!
+Honua.Sdk.Field.Forms.FormValidationError.Message.init -> void
+Honua.Sdk.Field.Forms.FormValidationResult
+Honua.Sdk.Field.Forms.FormValidationResult.Errors.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FormValidationError!>!
+Honua.Sdk.Field.Forms.FormValidationResult.FormValidationResult(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FormValidationError!>! errors) -> void
+Honua.Sdk.Field.Forms.FormValidationResult.IsValid.get -> bool
+Honua.Sdk.Field.Forms.FormValidator
+Honua.Sdk.Field.Projects.FieldAssignment
+Honua.Sdk.Field.Projects.FieldAssignment.<Clone>$() -> Honua.Sdk.Field.Projects.FieldAssignment!
+Honua.Sdk.Field.Projects.FieldAssignment.AssigneeUserId.get -> string?
+Honua.Sdk.Field.Projects.FieldAssignment.AssigneeUserId.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.AssignmentId.get -> string!
+Honua.Sdk.Field.Projects.FieldAssignment.AssignmentId.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.BindingId.get -> string!
+Honua.Sdk.Field.Projects.FieldAssignment.BindingId.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.CrewId.get -> string?
+Honua.Sdk.Field.Projects.FieldAssignment.CrewId.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.DueAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Projects.FieldAssignment.DueAtUtc.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.Equals(Honua.Sdk.Field.Projects.FieldAssignment? other) -> bool
+Honua.Sdk.Field.Projects.FieldAssignment.FieldAssignment() -> void
+Honua.Sdk.Field.Projects.FieldAssignment.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Field.Projects.FieldAssignment.Metadata.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.Priority.get -> Honua.Sdk.Field.Projects.FieldAssignmentPriority
+Honua.Sdk.Field.Projects.FieldAssignment.Priority.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.RecordIds.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Projects.FieldAssignment.RecordIds.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.Status.get -> Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldAssignment.Status.init -> void
+Honua.Sdk.Field.Projects.FieldAssignment.WorkQuery.get -> Honua.Sdk.Abstractions.Features.SourceQuery?
+Honua.Sdk.Field.Projects.FieldAssignment.WorkQuery.init -> void
+Honua.Sdk.Field.Projects.FieldAssignmentPriority
+Honua.Sdk.Field.Projects.FieldAssignmentPriority.High = 2 -> Honua.Sdk.Field.Projects.FieldAssignmentPriority
+Honua.Sdk.Field.Projects.FieldAssignmentPriority.Low = 0 -> Honua.Sdk.Field.Projects.FieldAssignmentPriority
+Honua.Sdk.Field.Projects.FieldAssignmentPriority.Normal = 1 -> Honua.Sdk.Field.Projects.FieldAssignmentPriority
+Honua.Sdk.Field.Projects.FieldAssignmentPriority.Urgent = 3 -> Honua.Sdk.Field.Projects.FieldAssignmentPriority
+Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldAssignmentStatus.Blocked = 2 -> Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldAssignmentStatus.Canceled = 4 -> Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldAssignmentStatus.Complete = 3 -> Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldAssignmentStatus.InProgress = 1 -> Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldAssignmentStatus.NotStarted = 0 -> Honua.Sdk.Field.Projects.FieldAssignmentStatus
+Honua.Sdk.Field.Projects.FieldMediaRequirement
+Honua.Sdk.Field.Projects.FieldMediaRequirement.<Clone>$() -> Honua.Sdk.Field.Projects.FieldMediaRequirement!
+Honua.Sdk.Field.Projects.FieldMediaRequirement.AllowedContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Projects.FieldMediaRequirement.AllowedContentTypes.init -> void
+Honua.Sdk.Field.Projects.FieldMediaRequirement.Equals(Honua.Sdk.Field.Projects.FieldMediaRequirement? other) -> bool
+Honua.Sdk.Field.Projects.FieldMediaRequirement.FieldId.get -> string!
+Honua.Sdk.Field.Projects.FieldMediaRequirement.FieldId.init -> void
+Honua.Sdk.Field.Projects.FieldMediaRequirement.FieldMediaRequirement() -> void
+Honua.Sdk.Field.Projects.FieldMediaRequirement.FormId.get -> string!
+Honua.Sdk.Field.Projects.FieldMediaRequirement.FormId.init -> void
+Honua.Sdk.Field.Projects.FieldMediaRequirement.MaxCount.get -> int?
+Honua.Sdk.Field.Projects.FieldMediaRequirement.MaxCount.init -> void
+Honua.Sdk.Field.Projects.FieldMediaRequirement.MediaType.get -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Projects.FieldMediaRequirement.MediaType.init -> void
+Honua.Sdk.Field.Projects.FieldMediaRequirement.MinCount.get -> int?
+Honua.Sdk.Field.Projects.FieldMediaRequirement.MinCount.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageKind.FeatureData = 0 -> Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageKind.MapTiles = 1 -> Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageKind.Media = 3 -> Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageKind.Other = 4 -> Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageKind.Scene = 2 -> Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.<Clone>$() -> Honua.Sdk.Field.Projects.FieldOfflinePackageReference!
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.ContentType.get -> string?
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.ContentType.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.Equals(Honua.Sdk.Field.Projects.FieldOfflinePackageReference? other) -> bool
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.FieldOfflinePackageReference() -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.Kind.get -> Honua.Sdk.Field.Projects.FieldOfflinePackageKind
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.Kind.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.OfflineUseExpiresAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.OfflineUseExpiresAtUtc.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.PackageId.get -> string!
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.PackageId.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.RelativePath.get -> string?
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.RelativePath.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.Sha256.get -> string?
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.Sha256.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.SizeBytes.get -> long?
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.SizeBytes.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.SourceIds.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.SourceIds.init -> void
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.StaleAfterUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Projects.FieldOfflinePackageReference.StaleAfterUtc.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding
+Honua.Sdk.Field.Projects.FieldProjectBinding.<Clone>$() -> Honua.Sdk.Field.Projects.FieldProjectBinding!
+Honua.Sdk.Field.Projects.FieldProjectBinding.BindingId.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectBinding.BindingId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.DisplayFieldId.get -> string?
+Honua.Sdk.Field.Projects.FieldProjectBinding.DisplayFieldId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.DuplicateKeyFieldId.get -> string?
+Honua.Sdk.Field.Projects.FieldProjectBinding.DuplicateKeyFieldId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.Editable.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectBinding.Editable.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.Equals(Honua.Sdk.Field.Projects.FieldProjectBinding? other) -> bool
+Honua.Sdk.Field.Projects.FieldProjectBinding.FieldProjectBinding() -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.FormId.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectBinding.FormId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.OfflinePackageId.get -> string?
+Honua.Sdk.Field.Projects.FieldProjectBinding.OfflinePackageId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.RequiresGeometry.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectBinding.RequiresGeometry.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.SourceId.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectBinding.SourceId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectBinding.SourceQuery.get -> Honua.Sdk.Abstractions.Features.SourceQuery?
+Honua.Sdk.Field.Projects.FieldProjectBinding.SourceQuery.init -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.<Clone>$() -> Honua.Sdk.Field.Projects.FieldProjectMediaPolicy!
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.AllowedContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.AllowedContentTypes.init -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.CaptureGpsTrackForTimedMedia.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.CaptureGpsTrackForTimedMedia.init -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.CaptureLocationByDefault.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.CaptureLocationByDefault.init -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.Equals(Honua.Sdk.Field.Projects.FieldProjectMediaPolicy? other) -> bool
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.FieldProjectMediaPolicy() -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.MaxAttachmentBytes.get -> long?
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.MaxAttachmentBytes.init -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.Requirements.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldMediaRequirement!>!
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.Requirements.init -> void
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.RequiresFaceBlurByDefault.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.RequiresFaceBlurByDefault.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage
+Honua.Sdk.Field.Projects.FieldProjectPackage.<Clone>$() -> Honua.Sdk.Field.Projects.FieldProjectPackage!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Bindings.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldProjectBinding!>!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Bindings.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.Description.get -> string?
+Honua.Sdk.Field.Projects.FieldProjectPackage.Description.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.Equals(Honua.Sdk.Field.Projects.FieldProjectPackage? other) -> bool
+Honua.Sdk.Field.Projects.FieldProjectPackage.FieldProjectPackage() -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.Forms.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.FormDefinition!>!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Forms.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.GeneratedAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Projects.FieldProjectPackage.GeneratedAtUtc.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.LifecyclePolicy.get -> Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy!
+Honua.Sdk.Field.Projects.FieldProjectPackage.LifecyclePolicy.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.MediaPolicy.get -> Honua.Sdk.Field.Projects.FieldProjectMediaPolicy!
+Honua.Sdk.Field.Projects.FieldProjectPackage.MediaPolicy.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Metadata.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.Name.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Name.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.OfflinePackages.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldOfflinePackageReference!>!
+Honua.Sdk.Field.Projects.FieldProjectPackage.OfflinePackages.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.ProjectId.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackage.ProjectId.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.SchemaVersion.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackage.SchemaVersion.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.Sources.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.SourceDescriptor!>!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Sources.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.TaskPackets.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldTaskPacket!>!
+Honua.Sdk.Field.Projects.FieldProjectPackage.TaskPackets.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackage.ToJson() -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Validate() -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult!
+Honua.Sdk.Field.Projects.FieldProjectPackage.Version.get -> string?
+Honua.Sdk.Field.Projects.FieldProjectPackage.Version.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationCodes
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.<Clone>$() -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue!
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Code.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Code.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Equals(Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue? other) -> bool
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.FieldProjectPackageValidationIssue() -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Message.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Message.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Path.get -> string!
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Path.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Severity.get -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationSeverity
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Severity.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.<Clone>$() -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult!
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.Equals(Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult? other) -> bool
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.FieldProjectPackageValidationResult() -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.HasWarnings.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.Issues.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue!>!
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.Issues.init -> void
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.IsValid.get -> bool
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationSeverity
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationSeverity.Error = 1 -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationSeverity
+Honua.Sdk.Field.Projects.FieldProjectPackageValidationSeverity.Warning = 0 -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationSeverity
+Honua.Sdk.Field.Projects.FieldProjectPackageValidator
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.<Clone>$() -> Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy!
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.AllowedStatuses.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Records.RecordStatus>!
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.AllowedStatuses.init -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.AllowedTransitions.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition!>!
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.AllowedTransitions.init -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.AllowRejectedEdit.get -> bool
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.AllowRejectedEdit.init -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.Equals(Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy? other) -> bool
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.FieldRecordLifecyclePolicy() -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.ProtectSubmittedRecords.get -> bool
+Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.ProtectSubmittedRecords.init -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.<Clone>$() -> Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition!
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.Equals(Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition? other) -> bool
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.FieldRecordLifecycleTransition() -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.From.get -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.From.init -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.RequiredActorRole.get -> string?
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.RequiredActorRole.init -> void
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.To.get -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.To.init -> void
+Honua.Sdk.Field.Projects.FieldTaskPacket
+Honua.Sdk.Field.Projects.FieldTaskPacket.<Clone>$() -> Honua.Sdk.Field.Projects.FieldTaskPacket!
+Honua.Sdk.Field.Projects.FieldTaskPacket.Assignments.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Projects.FieldAssignment!>!
+Honua.Sdk.Field.Projects.FieldTaskPacket.Assignments.init -> void
+Honua.Sdk.Field.Projects.FieldTaskPacket.Equals(Honua.Sdk.Field.Projects.FieldTaskPacket? other) -> bool
+Honua.Sdk.Field.Projects.FieldTaskPacket.FieldTaskPacket() -> void
+Honua.Sdk.Field.Projects.FieldTaskPacket.Name.get -> string?
+Honua.Sdk.Field.Projects.FieldTaskPacket.Name.init -> void
+Honua.Sdk.Field.Projects.FieldTaskPacket.TaskPacketId.get -> string!
+Honua.Sdk.Field.Projects.FieldTaskPacket.TaskPacketId.init -> void
+Honua.Sdk.Field.Records.DuplicateDetectionOptions
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.<Clone>$() -> Honua.Sdk.Field.Records.DuplicateDetectionOptions!
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.DuplicateDetectionOptions() -> void
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.Equals(Honua.Sdk.Field.Records.DuplicateDetectionOptions? other) -> bool
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.MatchFieldIds.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.MatchFieldIds.init -> void
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.MaxDistanceMeters.get -> double
+Honua.Sdk.Field.Records.DuplicateDetectionOptions.MaxDistanceMeters.init -> void
+Honua.Sdk.Field.Records.DuplicateDetector
+Honua.Sdk.Field.Records.DuplicateDetector.DuplicateDetector(Honua.Sdk.Field.Records.IFieldRecordDistanceCalculator? distanceCalculator = null) -> void
+Honua.Sdk.Field.Records.DuplicateDetector.FindPotentialDuplicates(System.Collections.Generic.IEnumerable<Honua.Sdk.Field.Records.FieldRecord!>! existing, Honua.Sdk.Field.Records.FieldRecord! candidate, Honua.Sdk.Field.Records.DuplicateDetectionOptions? options = null) -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Records.PotentialDuplicate!>!
+Honua.Sdk.Field.Records.FieldAddressValue
+Honua.Sdk.Field.Records.FieldAddressValue.<Clone>$() -> Honua.Sdk.Field.Records.FieldAddressValue!
+Honua.Sdk.Field.Records.FieldAddressValue.Country.get -> string?
+Honua.Sdk.Field.Records.FieldAddressValue.Country.init -> void
+Honua.Sdk.Field.Records.FieldAddressValue.Equals(Honua.Sdk.Field.Records.FieldAddressValue? other) -> bool
+Honua.Sdk.Field.Records.FieldAddressValue.FieldAddressValue() -> void
+Honua.Sdk.Field.Records.FieldAddressValue.Formatted.get -> string?
+Honua.Sdk.Field.Records.FieldAddressValue.Formatted.init -> void
+Honua.Sdk.Field.Records.FieldAddressValue.Lines.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Records.FieldAddressValue.Lines.init -> void
+Honua.Sdk.Field.Records.FieldAddressValue.Locality.get -> string?
+Honua.Sdk.Field.Records.FieldAddressValue.Locality.init -> void
+Honua.Sdk.Field.Records.FieldAddressValue.Location.get -> Honua.Sdk.Field.Records.FieldGeoPoint?
+Honua.Sdk.Field.Records.FieldAddressValue.Location.init -> void
+Honua.Sdk.Field.Records.FieldAddressValue.PostalCode.get -> string?
+Honua.Sdk.Field.Records.FieldAddressValue.PostalCode.init -> void
+Honua.Sdk.Field.Records.FieldAddressValue.Region.get -> string?
+Honua.Sdk.Field.Records.FieldAddressValue.Region.init -> void
+Honua.Sdk.Field.Records.FieldBarcodeValue
+Honua.Sdk.Field.Records.FieldBarcodeValue.<Clone>$() -> Honua.Sdk.Field.Records.FieldBarcodeValue!
+Honua.Sdk.Field.Records.FieldBarcodeValue.Equals(Honua.Sdk.Field.Records.FieldBarcodeValue? other) -> bool
+Honua.Sdk.Field.Records.FieldBarcodeValue.FieldBarcodeValue() -> void
+Honua.Sdk.Field.Records.FieldBarcodeValue.Format.get -> string?
+Honua.Sdk.Field.Records.FieldBarcodeValue.Format.init -> void
+Honua.Sdk.Field.Records.FieldBarcodeValue.ScannedAtUtc.get -> System.DateTimeOffset
+Honua.Sdk.Field.Records.FieldBarcodeValue.ScannedAtUtc.init -> void
+Honua.Sdk.Field.Records.FieldBarcodeValue.Value.get -> string!
+Honua.Sdk.Field.Records.FieldBarcodeValue.Value.init -> void
+Honua.Sdk.Field.Records.FieldGeoPoint
+Honua.Sdk.Field.Records.FieldGeoPoint.<Clone>$() -> Honua.Sdk.Field.Records.FieldGeoPoint!
+Honua.Sdk.Field.Records.FieldGeoPoint.AccuracyMeters.get -> double?
+Honua.Sdk.Field.Records.FieldGeoPoint.AccuracyMeters.init -> void
+Honua.Sdk.Field.Records.FieldGeoPoint.Deconstruct(out double Latitude, out double Longitude, out double? AccuracyMeters) -> void
+Honua.Sdk.Field.Records.FieldGeoPoint.Equals(Honua.Sdk.Field.Records.FieldGeoPoint? other) -> bool
+Honua.Sdk.Field.Records.FieldGeoPoint.FieldGeoPoint(double Latitude, double Longitude, double? AccuracyMeters = null) -> void
+Honua.Sdk.Field.Records.FieldGeoPoint.Latitude.get -> double
+Honua.Sdk.Field.Records.FieldGeoPoint.Latitude.init -> void
+Honua.Sdk.Field.Records.FieldGeoPoint.Longitude.get -> double
+Honua.Sdk.Field.Records.FieldGeoPoint.Longitude.init -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference
+Honua.Sdk.Field.Records.FieldGpsTrackReference.<Clone>$() -> Honua.Sdk.Field.Records.FieldGpsTrackReference!
+Honua.Sdk.Field.Records.FieldGpsTrackReference.ContentType.get -> string?
+Honua.Sdk.Field.Records.FieldGpsTrackReference.ContentType.init -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference.EndedAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Records.FieldGpsTrackReference.EndedAtUtc.init -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference.Equals(Honua.Sdk.Field.Records.FieldGpsTrackReference? other) -> bool
+Honua.Sdk.Field.Records.FieldGpsTrackReference.FieldGpsTrackReference() -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference.FileName.get -> string?
+Honua.Sdk.Field.Records.FieldGpsTrackReference.FileName.init -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference.PointCount.get -> int?
+Honua.Sdk.Field.Records.FieldGpsTrackReference.PointCount.init -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference.StartedAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Records.FieldGpsTrackReference.StartedAtUtc.init -> void
+Honua.Sdk.Field.Records.FieldGpsTrackReference.TrackId.get -> string!
+Honua.Sdk.Field.Records.FieldGpsTrackReference.TrackId.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment
+Honua.Sdk.Field.Records.FieldMediaAttachment.<Clone>$() -> Honua.Sdk.Field.Records.FieldMediaAttachment!
+Honua.Sdk.Field.Records.FieldMediaAttachment.AttachmentId.get -> string!
+Honua.Sdk.Field.Records.FieldMediaAttachment.AttachmentId.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.CapturedAtUtc.get -> System.DateTimeOffset
+Honua.Sdk.Field.Records.FieldMediaAttachment.CapturedAtUtc.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.CaptureLocation.get -> Honua.Sdk.Field.Records.FieldGeoPoint?
+Honua.Sdk.Field.Records.FieldMediaAttachment.CaptureLocation.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.ContentType.get -> string?
+Honua.Sdk.Field.Records.FieldMediaAttachment.ContentType.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.Duration.get -> System.TimeSpan?
+Honua.Sdk.Field.Records.FieldMediaAttachment.Duration.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.Equals(Honua.Sdk.Field.Records.FieldMediaAttachment? other) -> bool
+Honua.Sdk.Field.Records.FieldMediaAttachment.FieldId.get -> string?
+Honua.Sdk.Field.Records.FieldMediaAttachment.FieldId.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.FieldMediaAttachment() -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.FileName.get -> string?
+Honua.Sdk.Field.Records.FieldMediaAttachment.FileName.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.GpsTrack.get -> Honua.Sdk.Field.Records.FieldGpsTrackReference?
+Honua.Sdk.Field.Records.FieldMediaAttachment.GpsTrack.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.MediaType.get -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaAttachment.MediaType.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.RequiresFaceBlur.get -> bool
+Honua.Sdk.Field.Records.FieldMediaAttachment.RequiresFaceBlur.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.Sha256.get -> string?
+Honua.Sdk.Field.Records.FieldMediaAttachment.Sha256.init -> void
+Honua.Sdk.Field.Records.FieldMediaAttachment.SizeBytes.get -> long?
+Honua.Sdk.Field.Records.FieldMediaAttachment.SizeBytes.init -> void
+Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaType.Audio = 2 -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaType.File = 5 -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaType.Photo = 0 -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaType.Signature = 3 -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaType.Sketch = 4 -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldMediaType.Video = 1 -> Honua.Sdk.Field.Records.FieldMediaType
+Honua.Sdk.Field.Records.FieldRecord
+Honua.Sdk.Field.Records.FieldRecord.AssignedUserId.get -> string?
+Honua.Sdk.Field.Records.FieldRecord.AssignedUserId.set -> void
+Honua.Sdk.Field.Records.FieldRecord.CompletedAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Records.FieldRecord.CompletedAtUtc.set -> void
+Honua.Sdk.Field.Records.FieldRecord.CreatedAtUtc.get -> System.DateTimeOffset
+Honua.Sdk.Field.Records.FieldRecord.CreatedAtUtc.init -> void
+Honua.Sdk.Field.Records.FieldRecord.Duration.get -> System.TimeSpan?
+Honua.Sdk.Field.Records.FieldRecord.FieldRecord() -> void
+Honua.Sdk.Field.Records.FieldRecord.FormId.get -> string!
+Honua.Sdk.Field.Records.FieldRecord.FormId.init -> void
+Honua.Sdk.Field.Records.FieldRecord.Location.get -> Honua.Sdk.Field.Records.FieldGeoPoint?
+Honua.Sdk.Field.Records.FieldRecord.Location.set -> void
+Honua.Sdk.Field.Records.FieldRecord.Media.get -> System.Collections.ObjectModel.Collection<Honua.Sdk.Field.Records.FieldMediaAttachment!>!
+Honua.Sdk.Field.Records.FieldRecord.Media.init -> void
+Honua.Sdk.Field.Records.FieldRecord.RecordId.get -> string!
+Honua.Sdk.Field.Records.FieldRecord.RecordId.init -> void
+Honua.Sdk.Field.Records.FieldRecord.Repeats.get -> System.Collections.Generic.Dictionary<string!, System.Collections.Generic.IList<Honua.Sdk.Field.Records.FieldRepeatInstance!>!>!
+Honua.Sdk.Field.Records.FieldRecord.Repeats.init -> void
+Honua.Sdk.Field.Records.FieldRecord.Status.get -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.FieldRecord.Status.set -> void
+Honua.Sdk.Field.Records.FieldRecord.SubmittedAtUtc.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Records.FieldRecord.SubmittedAtUtc.set -> void
+Honua.Sdk.Field.Records.FieldRecord.Values.get -> System.Collections.Generic.Dictionary<string!, object?>!
+Honua.Sdk.Field.Records.FieldRecord.Values.init -> void
+Honua.Sdk.Field.Records.FieldRecordLinkValue
+Honua.Sdk.Field.Records.FieldRecordLinkValue.<Clone>$() -> Honua.Sdk.Field.Records.FieldRecordLinkValue!
+Honua.Sdk.Field.Records.FieldRecordLinkValue.Equals(Honua.Sdk.Field.Records.FieldRecordLinkValue? other) -> bool
+Honua.Sdk.Field.Records.FieldRecordLinkValue.FieldRecordLinkValue() -> void
+Honua.Sdk.Field.Records.FieldRecordLinkValue.FormId.get -> string?
+Honua.Sdk.Field.Records.FieldRecordLinkValue.FormId.init -> void
+Honua.Sdk.Field.Records.FieldRecordLinkValue.Label.get -> string?
+Honua.Sdk.Field.Records.FieldRecordLinkValue.Label.init -> void
+Honua.Sdk.Field.Records.FieldRecordLinkValue.RecordId.get -> string!
+Honua.Sdk.Field.Records.FieldRecordLinkValue.RecordId.init -> void
+Honua.Sdk.Field.Records.FieldRecordLinkValue.SourceId.get -> string?
+Honua.Sdk.Field.Records.FieldRecordLinkValue.SourceId.init -> void
+Honua.Sdk.Field.Records.FieldRepeatInstance
+Honua.Sdk.Field.Records.FieldRepeatInstance.FieldRepeatInstance() -> void
+Honua.Sdk.Field.Records.FieldRepeatInstance.Media.get -> System.Collections.ObjectModel.Collection<Honua.Sdk.Field.Records.FieldMediaAttachment!>!
+Honua.Sdk.Field.Records.FieldRepeatInstance.Media.init -> void
+Honua.Sdk.Field.Records.FieldRepeatInstance.Values.get -> System.Collections.Generic.Dictionary<string!, object?>!
+Honua.Sdk.Field.Records.FieldRepeatInstance.Values.init -> void
+Honua.Sdk.Field.Records.IFieldRecordDistanceCalculator
+Honua.Sdk.Field.Records.IFieldRecordDistanceCalculator.CalculateDistanceMeters(Honua.Sdk.Field.Records.FieldGeoPoint? left, Honua.Sdk.Field.Records.FieldGeoPoint? right) -> double?
+Honua.Sdk.Field.Records.PotentialDuplicate
+Honua.Sdk.Field.Records.PotentialDuplicate.<Clone>$() -> Honua.Sdk.Field.Records.PotentialDuplicate!
+Honua.Sdk.Field.Records.PotentialDuplicate.Deconstruct(out string! RecordId, out double DistanceMeters, out System.Collections.Generic.IReadOnlyList<string!>! MatchedFieldIds) -> void
+Honua.Sdk.Field.Records.PotentialDuplicate.DistanceMeters.get -> double
+Honua.Sdk.Field.Records.PotentialDuplicate.DistanceMeters.init -> void
+Honua.Sdk.Field.Records.PotentialDuplicate.Equals(Honua.Sdk.Field.Records.PotentialDuplicate? other) -> bool
+Honua.Sdk.Field.Records.PotentialDuplicate.MatchedFieldIds.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Field.Records.PotentialDuplicate.MatchedFieldIds.init -> void
+Honua.Sdk.Field.Records.PotentialDuplicate.PotentialDuplicate(string! RecordId, double DistanceMeters, System.Collections.Generic.IReadOnlyList<string!>! MatchedFieldIds) -> void
+Honua.Sdk.Field.Records.PotentialDuplicate.RecordId.get -> string!
+Honua.Sdk.Field.Records.PotentialDuplicate.RecordId.init -> void
+Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.Approved = 3 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.Deleted = 6 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.Draft = 0 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.ReadyToSubmit = 1 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.Rejected = 4 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.Reopened = 5 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordStatus.Submitted = 2 -> Honua.Sdk.Field.Records.RecordStatus
+Honua.Sdk.Field.Records.RecordWorkflow
+Honua.Sdk.Field.Records.SphericalFieldDistanceCalculator
+Honua.Sdk.Field.Records.SphericalFieldDistanceCalculator.CalculateDistanceMeters(Honua.Sdk.Field.Records.FieldGeoPoint? left, Honua.Sdk.Field.Records.FieldGeoPoint? right) -> double?
+Honua.Sdk.Field.Records.SphericalFieldDistanceCalculator.SphericalFieldDistanceCalculator() -> void
+override Honua.Sdk.Field.Forms.FieldChoice.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FieldChoice.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FieldChoice.ToString() -> string!
+override Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.ToString() -> string!
+override Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.ToString() -> string!
+override Honua.Sdk.Field.Forms.FieldValidationRule.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FieldValidationRule.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FieldValidationRule.ToString() -> string!
+override Honua.Sdk.Field.Forms.FieldVisibilityRule.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FieldVisibilityRule.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FieldVisibilityRule.ToString() -> string!
+override Honua.Sdk.Field.Forms.FormDefinition.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FormDefinition.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FormDefinition.ToString() -> string!
+override Honua.Sdk.Field.Forms.FormField.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FormField.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FormField.ToString() -> string!
+override Honua.Sdk.Field.Forms.FormSection.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FormSection.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FormSection.ToString() -> string!
+override Honua.Sdk.Field.Forms.FormTarget.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FormTarget.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FormTarget.ToString() -> string!
+override Honua.Sdk.Field.Forms.FormValidationError.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.FormValidationError.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.FormValidationError.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldAssignment.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldAssignment.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldAssignment.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldMediaRequirement.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldMediaRequirement.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldMediaRequirement.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldOfflinePackageReference.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldOfflinePackageReference.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldOfflinePackageReference.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldProjectBinding.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldProjectBinding.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldProjectBinding.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldProjectPackage.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldProjectPackage.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldProjectPackage.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.ToString() -> string!
+override Honua.Sdk.Field.Projects.FieldTaskPacket.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Projects.FieldTaskPacket.GetHashCode() -> int
+override Honua.Sdk.Field.Projects.FieldTaskPacket.ToString() -> string!
+override Honua.Sdk.Field.Records.DuplicateDetectionOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.DuplicateDetectionOptions.GetHashCode() -> int
+override Honua.Sdk.Field.Records.DuplicateDetectionOptions.ToString() -> string!
+override Honua.Sdk.Field.Records.FieldAddressValue.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.FieldAddressValue.GetHashCode() -> int
+override Honua.Sdk.Field.Records.FieldAddressValue.ToString() -> string!
+override Honua.Sdk.Field.Records.FieldBarcodeValue.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.FieldBarcodeValue.GetHashCode() -> int
+override Honua.Sdk.Field.Records.FieldBarcodeValue.ToString() -> string!
+override Honua.Sdk.Field.Records.FieldGeoPoint.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.FieldGeoPoint.GetHashCode() -> int
+override Honua.Sdk.Field.Records.FieldGeoPoint.ToString() -> string!
+override Honua.Sdk.Field.Records.FieldGpsTrackReference.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.FieldGpsTrackReference.GetHashCode() -> int
+override Honua.Sdk.Field.Records.FieldGpsTrackReference.ToString() -> string!
+override Honua.Sdk.Field.Records.FieldMediaAttachment.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.FieldMediaAttachment.GetHashCode() -> int
+override Honua.Sdk.Field.Records.FieldMediaAttachment.ToString() -> string!
+override Honua.Sdk.Field.Records.FieldRecordLinkValue.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.FieldRecordLinkValue.GetHashCode() -> int
+override Honua.Sdk.Field.Records.FieldRecordLinkValue.ToString() -> string!
+override Honua.Sdk.Field.Records.PotentialDuplicate.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Records.PotentialDuplicate.GetHashCode() -> int
+override Honua.Sdk.Field.Records.PotentialDuplicate.ToString() -> string!
+static Honua.Sdk.Field.Forms.CalculatedFieldEvaluator.ApplyCalculatedFields(Honua.Sdk.Field.Forms.FormDefinition! form, Honua.Sdk.Field.Records.FieldRecord! record) -> void
+static Honua.Sdk.Field.Forms.Expressions.ExpressionEvaluator.Evaluate(string? expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? context) -> object?
+static Honua.Sdk.Field.Forms.Expressions.ExpressionEvaluator.EvaluateBoolean(string? expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? context) -> bool
+static Honua.Sdk.Field.Forms.Expressions.ExpressionEvaluator.EvaluateDetailed(string? expression, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? context) -> Honua.Sdk.Field.Forms.Expressions.ExpressionResult!
+static Honua.Sdk.Field.Forms.FieldChoice.operator !=(Honua.Sdk.Field.Forms.FieldChoice? left, Honua.Sdk.Field.Forms.FieldChoice? right) -> bool
+static Honua.Sdk.Field.Forms.FieldChoice.operator ==(Honua.Sdk.Field.Forms.FieldChoice? left, Honua.Sdk.Field.Forms.FieldChoice? right) -> bool
+static Honua.Sdk.Field.Forms.FieldFormSchemaMapper.CreateForm(Honua.Sdk.Abstractions.Features.SourceDescriptor! source, Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions? options = null) -> Honua.Sdk.Field.Forms.FormDefinition!
+static Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.operator !=(Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions? left, Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions? right) -> bool
+static Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions.operator ==(Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions? left, Honua.Sdk.Field.Forms.FieldFormSchemaMapperOptions? right) -> bool
+static Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.operator !=(Honua.Sdk.Field.Forms.FieldMediaCapturePolicy? left, Honua.Sdk.Field.Forms.FieldMediaCapturePolicy? right) -> bool
+static Honua.Sdk.Field.Forms.FieldMediaCapturePolicy.operator ==(Honua.Sdk.Field.Forms.FieldMediaCapturePolicy? left, Honua.Sdk.Field.Forms.FieldMediaCapturePolicy? right) -> bool
+static Honua.Sdk.Field.Forms.FieldValidationRule.operator !=(Honua.Sdk.Field.Forms.FieldValidationRule? left, Honua.Sdk.Field.Forms.FieldValidationRule? right) -> bool
+static Honua.Sdk.Field.Forms.FieldValidationRule.operator ==(Honua.Sdk.Field.Forms.FieldValidationRule? left, Honua.Sdk.Field.Forms.FieldValidationRule? right) -> bool
+static Honua.Sdk.Field.Forms.FieldVisibilityRule.operator !=(Honua.Sdk.Field.Forms.FieldVisibilityRule? left, Honua.Sdk.Field.Forms.FieldVisibilityRule? right) -> bool
+static Honua.Sdk.Field.Forms.FieldVisibilityRule.operator ==(Honua.Sdk.Field.Forms.FieldVisibilityRule? left, Honua.Sdk.Field.Forms.FieldVisibilityRule? right) -> bool
+static Honua.Sdk.Field.Forms.FormDefinition.operator !=(Honua.Sdk.Field.Forms.FormDefinition? left, Honua.Sdk.Field.Forms.FormDefinition? right) -> bool
+static Honua.Sdk.Field.Forms.FormDefinition.operator ==(Honua.Sdk.Field.Forms.FormDefinition? left, Honua.Sdk.Field.Forms.FormDefinition? right) -> bool
+static Honua.Sdk.Field.Forms.FormField.operator !=(Honua.Sdk.Field.Forms.FormField? left, Honua.Sdk.Field.Forms.FormField? right) -> bool
+static Honua.Sdk.Field.Forms.FormField.operator ==(Honua.Sdk.Field.Forms.FormField? left, Honua.Sdk.Field.Forms.FormField? right) -> bool
+static Honua.Sdk.Field.Forms.FormSection.operator !=(Honua.Sdk.Field.Forms.FormSection? left, Honua.Sdk.Field.Forms.FormSection? right) -> bool
+static Honua.Sdk.Field.Forms.FormSection.operator ==(Honua.Sdk.Field.Forms.FormSection? left, Honua.Sdk.Field.Forms.FormSection? right) -> bool
+static Honua.Sdk.Field.Forms.FormTarget.operator !=(Honua.Sdk.Field.Forms.FormTarget? left, Honua.Sdk.Field.Forms.FormTarget? right) -> bool
+static Honua.Sdk.Field.Forms.FormTarget.operator ==(Honua.Sdk.Field.Forms.FormTarget? left, Honua.Sdk.Field.Forms.FormTarget? right) -> bool
+static Honua.Sdk.Field.Forms.FormValidationError.operator !=(Honua.Sdk.Field.Forms.FormValidationError? left, Honua.Sdk.Field.Forms.FormValidationError? right) -> bool
+static Honua.Sdk.Field.Forms.FormValidationError.operator ==(Honua.Sdk.Field.Forms.FormValidationError? left, Honua.Sdk.Field.Forms.FormValidationError? right) -> bool
+static Honua.Sdk.Field.Forms.FormValidator.Validate(Honua.Sdk.Field.Forms.FormDefinition! form, Honua.Sdk.Field.Records.FieldRecord! record) -> Honua.Sdk.Field.Forms.FormValidationResult!
+static Honua.Sdk.Field.Projects.FieldAssignment.operator !=(Honua.Sdk.Field.Projects.FieldAssignment? left, Honua.Sdk.Field.Projects.FieldAssignment? right) -> bool
+static Honua.Sdk.Field.Projects.FieldAssignment.operator ==(Honua.Sdk.Field.Projects.FieldAssignment? left, Honua.Sdk.Field.Projects.FieldAssignment? right) -> bool
+static Honua.Sdk.Field.Projects.FieldMediaRequirement.operator !=(Honua.Sdk.Field.Projects.FieldMediaRequirement? left, Honua.Sdk.Field.Projects.FieldMediaRequirement? right) -> bool
+static Honua.Sdk.Field.Projects.FieldMediaRequirement.operator ==(Honua.Sdk.Field.Projects.FieldMediaRequirement? left, Honua.Sdk.Field.Projects.FieldMediaRequirement? right) -> bool
+static Honua.Sdk.Field.Projects.FieldOfflinePackageReference.operator !=(Honua.Sdk.Field.Projects.FieldOfflinePackageReference? left, Honua.Sdk.Field.Projects.FieldOfflinePackageReference? right) -> bool
+static Honua.Sdk.Field.Projects.FieldOfflinePackageReference.operator ==(Honua.Sdk.Field.Projects.FieldOfflinePackageReference? left, Honua.Sdk.Field.Projects.FieldOfflinePackageReference? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectBinding.operator !=(Honua.Sdk.Field.Projects.FieldProjectBinding? left, Honua.Sdk.Field.Projects.FieldProjectBinding? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectBinding.operator ==(Honua.Sdk.Field.Projects.FieldProjectBinding? left, Honua.Sdk.Field.Projects.FieldProjectBinding? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.operator !=(Honua.Sdk.Field.Projects.FieldProjectMediaPolicy? left, Honua.Sdk.Field.Projects.FieldProjectMediaPolicy? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectMediaPolicy.operator ==(Honua.Sdk.Field.Projects.FieldProjectMediaPolicy? left, Honua.Sdk.Field.Projects.FieldProjectMediaPolicy? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackage.operator !=(Honua.Sdk.Field.Projects.FieldProjectPackage? left, Honua.Sdk.Field.Projects.FieldProjectPackage? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackage.operator ==(Honua.Sdk.Field.Projects.FieldProjectPackage? left, Honua.Sdk.Field.Projects.FieldProjectPackage? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackage.ParseJson(string! json) -> Honua.Sdk.Field.Projects.FieldProjectPackage!
+static Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.operator !=(Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue? left, Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue.operator ==(Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue? left, Honua.Sdk.Field.Projects.FieldProjectPackageValidationIssue? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.operator !=(Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult? left, Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult.operator ==(Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult? left, Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult? right) -> bool
+static Honua.Sdk.Field.Projects.FieldProjectPackageValidator.Validate(Honua.Sdk.Field.Projects.FieldProjectPackage! package) -> Honua.Sdk.Field.Projects.FieldProjectPackageValidationResult!
+static Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.Default.get -> Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy!
+static Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.operator !=(Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy? left, Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy? right) -> bool
+static Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy.operator ==(Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy? left, Honua.Sdk.Field.Projects.FieldRecordLifecyclePolicy? right) -> bool
+static Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.operator !=(Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition? left, Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition? right) -> bool
+static Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition.operator ==(Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition? left, Honua.Sdk.Field.Projects.FieldRecordLifecycleTransition? right) -> bool
+static Honua.Sdk.Field.Projects.FieldTaskPacket.operator !=(Honua.Sdk.Field.Projects.FieldTaskPacket? left, Honua.Sdk.Field.Projects.FieldTaskPacket? right) -> bool
+static Honua.Sdk.Field.Projects.FieldTaskPacket.operator ==(Honua.Sdk.Field.Projects.FieldTaskPacket? left, Honua.Sdk.Field.Projects.FieldTaskPacket? right) -> bool
+static Honua.Sdk.Field.Records.DuplicateDetectionOptions.operator !=(Honua.Sdk.Field.Records.DuplicateDetectionOptions? left, Honua.Sdk.Field.Records.DuplicateDetectionOptions? right) -> bool
+static Honua.Sdk.Field.Records.DuplicateDetectionOptions.operator ==(Honua.Sdk.Field.Records.DuplicateDetectionOptions? left, Honua.Sdk.Field.Records.DuplicateDetectionOptions? right) -> bool
+static Honua.Sdk.Field.Records.FieldAddressValue.operator !=(Honua.Sdk.Field.Records.FieldAddressValue? left, Honua.Sdk.Field.Records.FieldAddressValue? right) -> bool
+static Honua.Sdk.Field.Records.FieldAddressValue.operator ==(Honua.Sdk.Field.Records.FieldAddressValue? left, Honua.Sdk.Field.Records.FieldAddressValue? right) -> bool
+static Honua.Sdk.Field.Records.FieldBarcodeValue.operator !=(Honua.Sdk.Field.Records.FieldBarcodeValue? left, Honua.Sdk.Field.Records.FieldBarcodeValue? right) -> bool
+static Honua.Sdk.Field.Records.FieldBarcodeValue.operator ==(Honua.Sdk.Field.Records.FieldBarcodeValue? left, Honua.Sdk.Field.Records.FieldBarcodeValue? right) -> bool
+static Honua.Sdk.Field.Records.FieldGeoPoint.operator !=(Honua.Sdk.Field.Records.FieldGeoPoint? left, Honua.Sdk.Field.Records.FieldGeoPoint? right) -> bool
+static Honua.Sdk.Field.Records.FieldGeoPoint.operator ==(Honua.Sdk.Field.Records.FieldGeoPoint? left, Honua.Sdk.Field.Records.FieldGeoPoint? right) -> bool
+static Honua.Sdk.Field.Records.FieldGpsTrackReference.operator !=(Honua.Sdk.Field.Records.FieldGpsTrackReference? left, Honua.Sdk.Field.Records.FieldGpsTrackReference? right) -> bool
+static Honua.Sdk.Field.Records.FieldGpsTrackReference.operator ==(Honua.Sdk.Field.Records.FieldGpsTrackReference? left, Honua.Sdk.Field.Records.FieldGpsTrackReference? right) -> bool
+static Honua.Sdk.Field.Records.FieldMediaAttachment.operator !=(Honua.Sdk.Field.Records.FieldMediaAttachment? left, Honua.Sdk.Field.Records.FieldMediaAttachment? right) -> bool
+static Honua.Sdk.Field.Records.FieldMediaAttachment.operator ==(Honua.Sdk.Field.Records.FieldMediaAttachment? left, Honua.Sdk.Field.Records.FieldMediaAttachment? right) -> bool
+static Honua.Sdk.Field.Records.FieldRecordLinkValue.operator !=(Honua.Sdk.Field.Records.FieldRecordLinkValue? left, Honua.Sdk.Field.Records.FieldRecordLinkValue? right) -> bool
+static Honua.Sdk.Field.Records.FieldRecordLinkValue.operator ==(Honua.Sdk.Field.Records.FieldRecordLinkValue? left, Honua.Sdk.Field.Records.FieldRecordLinkValue? right) -> bool
+static Honua.Sdk.Field.Records.PotentialDuplicate.operator !=(Honua.Sdk.Field.Records.PotentialDuplicate? left, Honua.Sdk.Field.Records.PotentialDuplicate? right) -> bool
+static Honua.Sdk.Field.Records.PotentialDuplicate.operator ==(Honua.Sdk.Field.Records.PotentialDuplicate? left, Honua.Sdk.Field.Records.PotentialDuplicate? right) -> bool
+static Honua.Sdk.Field.Records.RecordWorkflow.CanTransition(Honua.Sdk.Field.Records.RecordStatus from, Honua.Sdk.Field.Records.RecordStatus to) -> bool
+static Honua.Sdk.Field.Records.RecordWorkflow.Transition(Honua.Sdk.Field.Records.FieldRecord! record, Honua.Sdk.Field.Records.RecordStatus targetStatus, System.DateTimeOffset? transitionTimeUtc = null) -> void
+static Honua.Sdk.Field.Records.SphericalFieldDistanceCalculator.Instance.get -> Honua.Sdk.Field.Records.SphericalFieldDistanceCalculator!

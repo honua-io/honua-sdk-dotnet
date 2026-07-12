@@ -18,6 +18,10 @@ on:
         description: "honua-server git ref for the seed SQL (should match the server_image commit). Blank = pinned seed ref."
         required: false
         default: ""
+  schedule:
+    # Moving compatibility canary. Pull requests and trunk pushes continue to
+    # use the deterministic pins recorded below and in conformance/PINS.md.
+    - cron: "0 16 * * 1"
   push:
     branches: [trunk]
   pull_request:
@@ -27,15 +31,12 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  # Pinned conformance fixture version (must equal Geospatial.Grpc <Version>;
-  # enforced by conformance/check-version.sh).
-  CONFORMANCE_FIXTURE_VERSION: "0.1.0-alpha.1"
   # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
   # nightly-86042bd, dated 20260530. The :nightly tag is a moving pointer; the
   # digest is what is actually pinned.
-  HONUA_SERVER_IMAGE: ${{ github.event.inputs.server_image || 'ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865' }}
+  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865"
   # honua-server commit that produced the pinned nightly image (for the seed SQL).
-  HONUA_SERVER_SEED_REF: ${{ github.event.inputs.server_seed_ref || '86042bd' }}
+  PINNED_HONUA_SERVER_SEED_REF: "86042bd"
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
@@ -47,9 +48,20 @@ permissions:
 
 jobs:
   conformance:
-    name: Contract Conformance (pinned honua-server:nightly)
+    name: Contract Conformance (${{ github.event_name == 'schedule' && 'moving canary' || 'pinned' }})
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    outputs:
+      mode: ${{ steps.resolve-pins.outputs.mode }}
+      pinned-fixture-version: ${{ steps.resolve-pins.outputs.pinned-fixture-version }}
+      fixture-version: ${{ steps.resolve-pins.outputs.fixture-version }}
+      fixture-package-published: ${{ steps.resolve-pins.outputs.fixture-package-published }}
+      pinned-server-image: ${{ steps.resolve-pins.outputs.pinned-server-image }}
+      server-image: ${{ steps.resolve-pins.outputs.server-image }}
+      pinned-server-seed-ref: ${{ steps.resolve-pins.outputs.pinned-server-seed-ref }}
+      server-seed-ref: ${{ steps.resolve-pins.outputs.server-seed-ref }}
+      schema-outcome: ${{ steps.schema.outcome }}
+      live-outcome: ${{ steps.live.outcome }}
     services:
       postgres:
         image: postgis/postgis:16-3.4
@@ -68,14 +80,110 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
-      # 1. Enforce the fixture/schema pin equality before doing anything else.
+      - name: Resolve deterministic or moving pins
+        id: resolve-pins
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REQUESTED_SERVER_IMAGE: ${{ github.event.inputs.server_image }}
+          REQUESTED_SERVER_SEED_REF: ${{ github.event.inputs.server_seed_ref }}
+          WORKFLOW_EVENT: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pinned_fixture_version="$(tr -d '[:space:]' < conformance/FIXTURE_VERSION)"
+          fixture_version="${pinned_fixture_version}"
+          server_image="${REQUESTED_SERVER_IMAGE:-${PINNED_HONUA_SERVER_IMAGE}}"
+          server_seed_ref="${REQUESTED_SERVER_SEED_REF:-${PINNED_HONUA_SERVER_SEED_REF}}"
+          fixture_package_published=not-checked
+          mode=pinned
+
+          {
+            echo "pinned-fixture-version=${pinned_fixture_version}"
+            echo "pinned-server-image=${PINNED_HONUA_SERVER_IMAGE}"
+            echo "pinned-server-seed-ref=${PINNED_HONUA_SERVER_SEED_REF}"
+          } >> "${GITHUB_OUTPUT}"
+
+          if [[ "${WORKFLOW_EVENT}" == "schedule" ]]; then
+            mode=moving
+
+            mapfile -t release_tags < <(
+              gh api "repos/honua-io/geospatial-grpc/releases?per_page=20" \
+                --jq '.[] | select(.draft == false) | .tag_name'
+            )
+            fixture_version=""
+            for tag in "${release_tags[@]}"; do
+              candidate="${tag#v}"
+              asset="conformance-fixtures-${candidate}.tar.gz"
+              if gh api "repos/honua-io/geospatial-grpc/releases/tags/${tag}" \
+                --jq '.assets[].name' | grep -Fxq "${asset}"; then
+                fixture_version="${candidate}"
+                break
+              fi
+            done
+            if [[ -z "${fixture_version}" ]]; then
+              echo "::error::No published geospatial-grpc release with conformance fixtures was found."
+              exit 1
+            fi
+
+            fixture_package_published=unknown
+            if package_versions="$(
+              gh api '/orgs/honua-io/packages/nuget/Geospatial.Grpc/versions?per_page=100' \
+                --jq '.[].name'
+            )"; then
+              if grep -Fxq "${fixture_version}" <<< "${package_versions}"; then
+                fixture_package_published=true
+              else
+                fixture_package_published=false
+                echo "::warning::Fixtures ${fixture_version} are published, but the matching Geospatial.Grpc package is not. This is distribution drift and the pins cannot be promoted yet."
+              fi
+            else
+              echo "::warning::Could not query Geospatial.Grpc package versions; recording package publication status as unknown."
+            fi
+
+            nightly_metadata="$(
+              docker buildx imagetools inspect \
+                ghcr.io/honua-io/honua-server:nightly --format '{{json .}}'
+            )"
+            nightly_digest="$(jq -er '.manifest.digest' <<< "${nightly_metadata}")"
+            server_image="ghcr.io/honua-io/honua-server@${nightly_digest}"
+            server_seed_ref="$(
+              jq -er '.image["linux/amd64"].config.Labels["org.opencontainers.image.revision"]' \
+                <<< "${nightly_metadata}"
+            )"
+            if [[ ! "${server_seed_ref}" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+              echo "::error::The nightly image must expose an org.opencontainers.image.revision label so its matching seed schema can be fetched; got '${server_seed_ref}'."
+              exit 1
+            fi
+          fi
+
+          {
+            echo "mode=${mode}"
+            echo "fixture-version=${fixture_version}"
+            echo "fixture-package-published=${fixture_package_published}"
+            echo "server-image=${server_image}"
+            echo "server-seed-ref=${server_seed_ref}"
+          } >> "${GITHUB_OUTPUT}"
+          {
+            echo "CONFORMANCE_MODE=${mode}"
+            echo "CONFORMANCE_FIXTURE_VERSION=${fixture_version}"
+            echo "HONUA_CONFORMANCE_EXPECTED_FIXTURE_VERSION=${fixture_version}"
+            echo "CONFORMANCE_FIXTURE_PACKAGE_PUBLISHED=${fixture_package_published}"
+            echo "HONUA_SERVER_IMAGE=${server_image}"
+            echo "HONUA_SERVER_SEED_REF=${server_seed_ref}"
+          } >> "${GITHUB_ENV}"
+
+      # 1. Enforce the deterministic fixture/schema pin equality. The moving
+      # canary intentionally permits a newer fixture so it can expose pin drift.
       - name: Verify fixture version matches pinned Geospatial.Grpc
+        if: ${{ github.event_name != 'schedule' }}
         run: conformance/check-version.sh
 
-      # 2. Pull the pinned shared conformance fixtures from geospatial-grpc.
+      # 2. Pull the selected shared conformance fixtures from geospatial-grpc.
       #    Uses the committed helper; verifies the tarball + per-file SHA-256 and
       #    asserts the embedded VERSION equals the pin.
-      - name: Fetch pinned conformance fixtures
+      - name: Fetch conformance fixtures
+        id: fetch-fixtures
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -87,11 +195,17 @@ jobs:
       - name: Record pins in run summary
         run: |
           {
-            echo "## Conformance gate pins"
+            echo "## Conformance ${CONFORMANCE_MODE} pins"
             echo
             echo "- Fixtures: \`${CONFORMANCE_FIXTURE_VERSION}\` (geospatial-grpc v${CONFORMANCE_FIXTURE_VERSION})"
             echo "- Server image: \`${HONUA_SERVER_IMAGE}\`"
             echo "- Seed ref: \`${HONUA_SERVER_SEED_REF}\` (honua-server tests/seed/base-schema.sql)"
+            if [[ "${CONFORMANCE_MODE}" == "moving" ]]; then
+              echo "- Pinned fixtures: \`${{ steps.resolve-pins.outputs.pinned-fixture-version }}\`"
+              echo "- Pinned server: \`${PINNED_HONUA_SERVER_IMAGE}\`"
+              echo "- Matching Geospatial.Grpc package published: \`${CONFORMANCE_FIXTURE_PACKAGE_PUBLISHED}\`"
+              echo "- Promotion: review the compatibility-canary evidence artifact and update pins in a pull request; pins are never promoted automatically."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup .NET + NuGet
@@ -102,6 +216,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build conformance suite
+        id: build
         run: |
           dotnet build tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
             --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
@@ -111,6 +226,8 @@ jobs:
       #    required; injected drift (renamed/removed field, type/enum change)
       #    fails here.
       - name: Run schema conformance
+        id: schema
+        continue-on-error: true
         run: |
           dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
             --configuration Release --no-build \
@@ -120,6 +237,7 @@ jobs:
       # 4. Seed PostGIS from the pinned honua-server release's base schema, then
       #    boot the pinned honua-server:nightly image against it.
       - name: Fetch pinned server seed schema
+        id: fetch-seed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -130,12 +248,14 @@ jobs:
           test -s .conformance/base-schema.sql
 
       - name: Apply seed to PostGIS
+        id: apply-seed
         env:
           PGPASSWORD: honua
         run: |
           psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .conformance/base-schema.sql
 
-      - name: Start pinned honua-server:nightly
+      - name: Start honua-server
+        id: start-server
         run: |
           key="$(head -c 32 /dev/urandom | base64)"
           salt="$(head -c 16 /dev/urandom | base64)"
@@ -172,6 +292,8 @@ jobs:
       #    known-expected-failing in the suite (skipped with explicit issue
       #    references); any new/untracked drift fails here.
       - name: Run live conformance
+        id: live
+        continue-on-error: true
         env:
           HONUA_PROTOCOL_INTEGRATION: "true"
           # gRPC client talks h2c on 8081; HTTP protocol clients on 8080. The
@@ -186,6 +308,176 @@ jobs:
             --filter "FullyQualifiedName~LiveConformanceTests" \
             --logger "console;verbosity=normal"
 
+      - name: Enforce conformance outcomes
+        if: always()
+        env:
+          FETCH_FIXTURES_OUTCOME: ${{ steps.fetch-fixtures.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          SCHEMA_OUTCOME: ${{ steps.schema.outcome }}
+          FETCH_SEED_OUTCOME: ${{ steps.fetch-seed.outcome }}
+          APPLY_SEED_OUTCOME: ${{ steps.apply-seed.outcome }}
+          START_SERVER_OUTCOME: ${{ steps.start-server.outcome }}
+          LIVE_OUTCOME: ${{ steps.live.outcome }}
+        shell: bash
+        run: |
+          status=0
+          for result in \
+            "fixtures:${FETCH_FIXTURES_OUTCOME}" \
+            "build:${BUILD_OUTCOME}" \
+            "schema:${SCHEMA_OUTCOME}" \
+            "seed-fetch:${FETCH_SEED_OUTCOME}" \
+            "seed-apply:${APPLY_SEED_OUTCOME}" \
+            "server-start:${START_SERVER_OUTCOME}" \
+            "live:${LIVE_OUTCOME}"; do
+            surface="${result%%:*}"
+            outcome="${result#*:}"
+            if [[ "${outcome}" != "success" ]]; then
+              echo "::error::Conformance surface '${surface}' completed with outcome '${outcome}'."
+              status=1
+            fi
+          done
+          exit "${status}"
+
       - name: Dump server logs on failure
         if: failure()
         run: docker logs honua-server || true
+
+  compatibility-canary-report:
+    name: Moving Canary Evidence and Alert
+    needs: conformance
+    if: ${{ always() && github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      CANARY_RESULT: ${{ needs.conformance.result }}
+      PINNED_FIXTURE_VERSION: ${{ needs.conformance.outputs.pinned-fixture-version }}
+      FIXTURE_VERSION: ${{ needs.conformance.outputs.fixture-version }}
+      FIXTURE_PACKAGE_PUBLISHED: ${{ needs.conformance.outputs.fixture-package-published }}
+      PINNED_SERVER_IMAGE: ${{ needs.conformance.outputs.pinned-server-image }}
+      SERVER_IMAGE: ${{ needs.conformance.outputs.server-image }}
+      PINNED_SERVER_SEED_REF: ${{ needs.conformance.outputs.pinned-server-seed-ref }}
+      SERVER_SEED_REF: ${{ needs.conformance.outputs.server-seed-ref }}
+      SCHEMA_OUTCOME: ${{ needs.conformance.outputs.schema-outcome }}
+      LIVE_OUTCOME: ${{ needs.conformance.outputs.live-outcome }}
+      RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Write canary evidence
+        shell: bash
+        run: |
+          mkdir -p compatibility-canary
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          evidence = {
+              "result": os.environ.get("CANARY_RESULT") or "unknown",
+              "runUrl": os.environ["RUN_URL"],
+              "pinned": {
+                  "fixtureVersion": os.environ.get("PINNED_FIXTURE_VERSION") or "unknown",
+                  "serverImage": os.environ.get("PINNED_SERVER_IMAGE") or "unknown",
+                  "serverSeedRef": os.environ.get("PINNED_SERVER_SEED_REF") or "unknown",
+              },
+              "canary": {
+                  "fixtureVersion": os.environ.get("FIXTURE_VERSION") or "unknown",
+                  "fixturePackagePublished": os.environ.get("FIXTURE_PACKAGE_PUBLISHED") or "unknown",
+                  "serverImage": os.environ.get("SERVER_IMAGE") or "unknown",
+                  "serverSeedRef": os.environ.get("SERVER_SEED_REF") or "unknown",
+              },
+              "surfaces": {
+                  "schema": os.environ.get("SCHEMA_OUTCOME") or "not-run",
+                  "live": os.environ.get("LIVE_OUTCOME") or "not-run",
+              },
+          }
+          Path("compatibility-canary/evidence.json").write_text(
+              json.dumps(evidence, indent=2) + "\n", encoding="utf-8"
+          )
+          PY
+
+      - name: Summarize successful moving canary
+        if: ${{ needs.conformance.result == 'success' && needs.conformance.outputs.fixture-package-published == 'true' }}
+        shell: bash
+        run: |
+          {
+            echo "## Moving compatibility canary passed"
+            echo
+            echo "| Pin | Committed | Canary |"
+            echo "| --- | --- | --- |"
+            echo "| Fixtures | \`${PINNED_FIXTURE_VERSION}\` | \`${FIXTURE_VERSION}\` |"
+            echo "| Server image | \`${PINNED_SERVER_IMAGE}\` | \`${SERVER_IMAGE}\` |"
+            echo "| Seed ref | \`${PINNED_SERVER_SEED_REF}\` | \`${SERVER_SEED_REF}\` |"
+            echo
+            echo "The evidence artifact is the input for an explicit pin-promotion pull request. No pin is changed automatically."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Create or update compatibility drift issue
+        if: ${{ needs.conformance.result != 'success' || needs.conformance.outputs.fixture-package-published != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          schema = os.environ.get("SCHEMA_OUTCOME") or "not-run"
+          live = os.environ.get("LIVE_OUTCOME") or "not-run"
+          failed = []
+          if schema != "success":
+              failed.append(f"schema fixtures ({schema})")
+          if live != "success":
+              failed.append(f"live protocols ({live})")
+          package_published = os.environ.get("FIXTURE_PACKAGE_PUBLISHED") or "unknown"
+          if package_published != "true":
+              failed.append(
+                  f"fixture/package publication skew (matching package: {package_published})"
+              )
+          if not failed:
+              failed.append("workflow setup/infrastructure")
+
+          body = f"""The scheduled moving compatibility canary failed.
+
+          Failing surface: {", ".join(failed)}
+
+          | Pin | Committed | Canary |
+          | --- | --- | --- |
+          | Geospatial.Grpc fixtures | `{os.environ.get('PINNED_FIXTURE_VERSION') or 'unknown'}` | `{os.environ.get('FIXTURE_VERSION') or 'unknown'}` |
+          | Matching Geospatial.Grpc package published | n/a | `{package_published}` |
+          | honua-server image | `{os.environ.get('PINNED_SERVER_IMAGE') or 'unknown'}` | `{os.environ.get('SERVER_IMAGE') or 'unknown'}` |
+          | server seed ref | `{os.environ.get('PINNED_SERVER_SEED_REF') or 'unknown'}` | `{os.environ.get('SERVER_SEED_REF') or 'unknown'}` |
+
+          Run: {os.environ['RUN_URL']}
+
+          Review the run and its `compatibility-canary-evidence` artifact. If the change is compatible, promote the exact canary pins in a dedicated pull request; otherwise link the upstream protocol/server regression before closing this alert.
+          """
+          Path("compatibility-canary/issue.md").write_text(
+              "\n".join(line.strip() for line in body.splitlines()).strip() + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          title="Moving compatibility canary drift detected"
+          issue_number="$(
+            gh issue list --repo "${GITHUB_REPOSITORY}" --state open \
+              --search "${title} in:title" --json number,title \
+              --jq ".[] | select(.title == \"${title}\") | .number" | head -n 1
+          )"
+          if [[ -n "${issue_number}" ]]; then
+            gh issue comment "${issue_number}" --repo "${GITHUB_REPOSITORY}" \
+              --body-file compatibility-canary/issue.md
+          else
+            gh issue create --repo "${GITHUB_REPOSITORY}" --title "${title}" \
+              --label bug --label area/infrastructure --label test \
+              --body-file compatibility-canary/issue.md
+          fi
+
+      - name: Upload compatibility canary evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: compatibility-canary-evidence-${{ github.run_id }}
+          path: compatibility-canary/
+          if-no-files-found: error
+          retention-days: 90

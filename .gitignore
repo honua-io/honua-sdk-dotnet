@@ -6,6 +6,10 @@
 **/TestResults/
 coverage*/
 
+# Python helper/test artifacts
+**/__pycache__/
+*.py[cod]
+
 # Local agent / IDE state
 .claude/
 .vs/

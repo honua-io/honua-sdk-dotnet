@@ -29,6 +29,7 @@ namespace Honua.Sdk.Abstractions;
 /// accordingly), rather than aborting every attempt at a hard-coded 14 s ceiling.
 /// </para>
 /// </remarks>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class HonuaResilienceTimeouts
 {
     // Per-attempt timeout as a fraction of the overall budget. At 0.45 the

@@ -137,7 +137,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
             var extra = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             foreach (var pair in query.AdditionalParameters)
             {
-                extra[pair.Key] = JsonSerializer.SerializeToElement(pair.Value);
+                extra[pair.Key] = JsonSerializer.SerializeToElement(pair.Value, StacJsonContext.Default.String);
             }
 
             request = request with { AdditionalProperties = extra };

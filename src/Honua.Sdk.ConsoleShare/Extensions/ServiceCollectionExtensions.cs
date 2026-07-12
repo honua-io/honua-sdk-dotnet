@@ -103,7 +103,7 @@ public static class ServiceCollectionExtensions
         {
             var options = sp.GetRequiredService<IOptions<HonuaConsoleShareClientOptions>>().Value;
             client.BaseAddress = options.BaseAddress;
-            client.Timeout = options.Timeout;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
         })
         .AddHttpMessageHandler<HonuaConsoleShareAuthHandler>();
 

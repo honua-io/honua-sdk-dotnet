@@ -7,7 +7,7 @@ An index of the public documentation that ships alongside the
 
 ## Get started
 
-- [Architecture overview](architecture.md) — a one-page map of the client packages and separate CLI tool, how they compose, and which one to use.
+- [Architecture overview](architecture.md) — a one-page map of the 15 packages (meta plus 14 sub-packages) and the separate CLI tool, how they compose, and which one to depend on.
 - [Quickstart](quickstart.md) — build a console app that talks gRPC + REST in 5 minutes.
 - [API reference](api-reference.md) — how to browse the full XML-doc API surface (IDE hover, local DocFX site, or GitHub source).
 - [INSTALL.md](../INSTALL.md) — NuGet, GitHub Packages, version policy, server compatibility baseline.
@@ -33,7 +33,7 @@ An index of the public documentation that ships alongside the
 
 ## Operations
 
-- [Release and NuGet publishing](release.md) — versioning, release tags, dry runs, GitHub Packages.
+- [Release and NuGet publishing](release.md) — versioning, release tags, dry runs, nuget.org, and GitHub Packages.
 - [Compatibility](compatibility.md) — server matrix and CI API compatibility gate before publish.
 - [Staging integration](staging-integration.md) — staging environment inputs, CI evidence, follow-on tickets.
 - [Protocol integration tests](protocol-integration-tests.md) — Testcontainers-backed coverage and fixture contract.

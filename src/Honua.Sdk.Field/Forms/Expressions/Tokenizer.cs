@@ -111,7 +111,7 @@ internal static class Tokenizer
                 continue;
             }
 
-            throw new ExpressionException($"Unexpected character '{c}' at position {i}.");
+            throw new ExpressionEvaluationException($"Unexpected character '{c}' at position {i}.");
         }
 
         tokens.Add(new Token(TokenType.End, string.Empty));
@@ -144,7 +144,7 @@ internal static class Tokenizer
             i++;
         }
 
-        throw new ExpressionException("Unterminated string literal.");
+        throw new ExpressionEvaluationException("Unterminated string literal.");
     }
 
     private static Token ReadFieldRef(string source, ref int i)
@@ -163,14 +163,14 @@ internal static class Tokenizer
 
             if (i >= source.Length)
             {
-                throw new ExpressionException("Unterminated field reference; missing '}'.");
+                throw new ExpressionEvaluationException("Unterminated field reference; missing '}'.");
             }
 
             i++; // consume '}'
             var name = sb.ToString().Trim();
             if (name.Length == 0)
             {
-                throw new ExpressionException("Empty field reference.");
+                throw new ExpressionEvaluationException("Empty field reference.");
             }
 
             return new Token(TokenType.FieldRef, name, name);
@@ -185,7 +185,7 @@ internal static class Tokenizer
 
             if (i == start)
             {
-                throw new ExpressionException("Empty field reference.");
+                throw new ExpressionEvaluationException("Empty field reference.");
             }
 
             var name = source[start..i];
@@ -228,7 +228,7 @@ internal static class Tokenizer
         var text = source[start..i];
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number))
         {
-            throw new ExpressionException($"Invalid number literal '{text}'.");
+            throw new ExpressionEvaluationException($"Invalid number literal '{text}'.");
         }
 
         return new Token(TokenType.Number, text, number);

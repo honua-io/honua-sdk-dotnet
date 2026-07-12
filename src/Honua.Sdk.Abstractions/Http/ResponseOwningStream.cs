@@ -8,6 +8,7 @@ namespace Honua.Sdk.Abstractions.Http;
 /// the stream is disposed. Used with <see cref="HttpCompletionOption.ResponseHeadersRead"/>
 /// to ensure the HTTP response lifecycle is tied to the returned stream.
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public sealed class ResponseOwningStream : Stream
 {
     private readonly Stream _inner;

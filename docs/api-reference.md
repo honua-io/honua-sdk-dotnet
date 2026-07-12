@@ -152,7 +152,7 @@ canonical interface listed in the cheat sheet above.
 
 ## How it composes
 
-- The 13 sub-packages share contracts from `Honua.Sdk.Abstractions`. If a
+- The 14 sub-packages share contracts from `Honua.Sdk.Abstractions`. If a
   type lives there (for example, `SourceDescriptor`, `IHonuaSceneClient`,
   `IReplicaSyncClient`), the surface is the same regardless of which
   transport package implements it. See [architecture.md](architecture.md)

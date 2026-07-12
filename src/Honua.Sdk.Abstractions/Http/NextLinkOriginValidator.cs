@@ -9,6 +9,7 @@ namespace Honua.Sdk.Abstractions.Http;
 /// server could point that link at a different origin to exfiltrate credentials/headers. This is
 /// the single home for that security control so a hardening change reaches every client at once.
 /// </summary>
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class NextLinkOriginValidator
 {
     /// <summary>

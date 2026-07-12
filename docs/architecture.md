@@ -6,7 +6,7 @@ to reason about how data flows through the SDK.
 
 ## The layers
 
-`Honua.Sdk` is a meta / umbrella package that fans out across the 13
+`Honua.Sdk` is a meta / umbrella package that fans out across the 14
 sub-packages below. Installing it brings in every other `Honua.Sdk.*` package
 and exposes a single `AddHonua(o => o.BaseAddress = ...)` DI extension. The
 per-package `AddHonua*` extensions remain available unchanged.
@@ -16,7 +16,7 @@ per-package `AddHonua*` extensions remain available unchanged.
                                    │
                                    ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Honua.Sdk  (meta / umbrella; fans out across the 13 sub-packages)  │
+│  Honua.Sdk  (meta / umbrella; fans out across the 14 sub-packages)  │
 └─────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
@@ -85,6 +85,16 @@ per-package `AddHonua*` extensions remain available unchanged.
 | Emit a sanitized support bundle or perform bounded read-only replay | Install the separate `Honua.Sdk.Cli` .NET tool and run `honua doctor` |
 
 ## How clients compose
+
+### Protocol dependency boundary
+
+`Honua.Sdk.Geometry` currently retains the public `GrpcGeometryConverter` and
+therefore a transitive `Geospatial.Grpc` dependency throughout the 1.x line.
+Removing or relocating that public type would be a binary breaking change. For
+2.0, move the converter to `Honua.Sdk.Grpc` or a dedicated Geometry.Grpc adapter
+so the base Geometry package remains protocol-neutral. Applications should
+avoid introducing new direct dependencies on `GrpcGeometryConverter` when a
+transport-specific adapter can own the conversion instead.
 
 - Feature protocol clients also implement the shared
   `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /

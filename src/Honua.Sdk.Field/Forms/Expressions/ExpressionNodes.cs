@@ -14,7 +14,7 @@ internal abstract class ExpressionNode
     {
         if (depth > ExpressionEvaluator.MaxDepth)
         {
-            throw new ExpressionException("Expression nesting is too deep.");
+            throw new ExpressionEvaluationException("Expression nesting is too deep.");
         }
     }
 }
@@ -61,7 +61,7 @@ internal sealed class UnaryNode : ExpressionNode
             case "not":
                 return !Coercion.ToBoolean(value);
             default:
-                throw new ExpressionException($"Unknown unary operator '{_op}'.");
+                throw new ExpressionEvaluationException($"Unknown unary operator '{_op}'.");
         }
     }
 }
@@ -125,7 +125,7 @@ internal sealed class BinaryNode : ExpressionNode
             case ">=":
                 return Compare(left, right) is { } ge && ge >= 0;
             default:
-                throw new ExpressionException($"Unknown operator '{_op}'.");
+                throw new ExpressionEvaluationException($"Unknown operator '{_op}'.");
         }
     }
 

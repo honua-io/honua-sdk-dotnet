@@ -1,0 +1,394 @@
+#nullable enable
+Honua.Sdk.Spec.Extensions.ServiceCollectionExtensions
+Honua.Sdk.Spec.HonuaSpecClient
+Honua.Sdk.Spec.HonuaSpecClient.ApplyAsync(Honua.Sdk.Spec.Models.SpecDocumentRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecApplyStream!>!
+Honua.Sdk.Spec.HonuaSpecClient.CancelAsync(string! applyToken, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecCancelResponse!>!
+Honua.Sdk.Spec.HonuaSpecClient.GetArtifactAsync(string! hash, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.HonuaSpecArtifact!>!
+Honua.Sdk.Spec.HonuaSpecClient.HonuaSpecClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Spec.HonuaSpecClient.PlanAsync(Honua.Sdk.Spec.Models.SpecDocumentRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecPlanResponse!>!
+Honua.Sdk.Spec.HonuaSpecClient.ValidateAsync(Honua.Sdk.Spec.Models.SpecValidateRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecValidateResponse!>!
+Honua.Sdk.Spec.HonuaSpecClientOptions
+Honua.Sdk.Spec.HonuaSpecClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.Spec.HonuaSpecClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.ApiKey.get -> string?
+Honua.Sdk.Spec.HonuaSpecClientOptions.ApiKey.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Spec.HonuaSpecClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.Spec.HonuaSpecClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.Spec.HonuaSpecClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Spec.HonuaSpecClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.BearerToken.get -> string?
+Honua.Sdk.Spec.HonuaSpecClientOptions.BearerToken.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Spec.HonuaSpecClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.Spec.HonuaSpecClientOptions.HonuaSpecClientOptions() -> void
+Honua.Sdk.Spec.HonuaSpecException
+Honua.Sdk.Spec.HonuaSpecException.HonuaSpecException() -> void
+Honua.Sdk.Spec.HonuaSpecException.HonuaSpecException(string! message) -> void
+Honua.Sdk.Spec.HonuaSpecException.HonuaSpecException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Spec.HonuaSpecException.HonuaSpecException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, Honua.Sdk.Spec.Models.SpecProblem? problem = null) -> void
+Honua.Sdk.Spec.HonuaSpecException.Problem.get -> Honua.Sdk.Spec.Models.SpecProblem?
+Honua.Sdk.Spec.HonuaSpecException.ResponseBody.get -> string?
+Honua.Sdk.Spec.HonuaSpecException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.Spec.IHonuaSpecClient
+Honua.Sdk.Spec.IHonuaSpecClient.ApplyAsync(Honua.Sdk.Spec.Models.SpecDocumentRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecApplyStream!>!
+Honua.Sdk.Spec.IHonuaSpecClient.CancelAsync(string! applyToken, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecCancelResponse!>!
+Honua.Sdk.Spec.IHonuaSpecClient.GetArtifactAsync(string! hash, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.HonuaSpecArtifact!>!
+Honua.Sdk.Spec.IHonuaSpecClient.PlanAsync(Honua.Sdk.Spec.Models.SpecDocumentRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecPlanResponse!>!
+Honua.Sdk.Spec.IHonuaSpecClient.ValidateAsync(Honua.Sdk.Spec.Models.SpecValidateRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Spec.Models.SpecValidateResponse!>!
+Honua.Sdk.Spec.Models.HonuaSpecArtifact
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.<Clone>$() -> Honua.Sdk.Spec.Models.HonuaSpecArtifact!
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.Content.get -> System.ReadOnlyMemory<byte>
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.Content.init -> void
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.ContentHash.get -> string!
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.ContentHash.init -> void
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.ContentType.get -> string!
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.ContentType.init -> void
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.Equals(Honua.Sdk.Spec.Models.HonuaSpecArtifact? other) -> bool
+Honua.Sdk.Spec.Models.HonuaSpecArtifact.HonuaSpecArtifact() -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent
+Honua.Sdk.Spec.Models.SpecApplyEvent.<Clone>$() -> Honua.Sdk.Spec.Models.SpecApplyEvent!
+Honua.Sdk.Spec.Models.SpecApplyEvent.ActualCost.get -> Honua.Sdk.Spec.Models.SpecCostActual?
+Honua.Sdk.Spec.Models.SpecApplyEvent.ActualCost.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.ApplyToken.get -> string!
+Honua.Sdk.Spec.Models.SpecApplyEvent.ApplyToken.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.ContentHash.get -> string?
+Honua.Sdk.Spec.Models.SpecApplyEvent.ContentHash.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.Diagnostic.get -> Honua.Sdk.Spec.Models.SpecWarning?
+Honua.Sdk.Spec.Models.SpecApplyEvent.Diagnostic.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.Equals(Honua.Sdk.Spec.Models.SpecApplyEvent? other) -> bool
+Honua.Sdk.Spec.Models.SpecApplyEvent.Kind.get -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEvent.Kind.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.NodeId.get -> string?
+Honua.Sdk.Spec.Models.SpecApplyEvent.NodeId.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.Sequence.get -> long
+Honua.Sdk.Spec.Models.SpecApplyEvent.Sequence.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.SpecApplyEvent() -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.Summary.get -> Honua.Sdk.Spec.Models.SpecApplySummary?
+Honua.Sdk.Spec.Models.SpecApplyEvent.Summary.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEvent.Timestamp.get -> System.DateTimeOffset
+Honua.Sdk.Spec.Models.SpecApplyEvent.Timestamp.init -> void
+Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.ApplyCancelled = 9 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.ApplyCompleted = 8 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.ApplyStarted = 7 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Cached = 2 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Failed = 4 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Queued = 0 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Running = 1 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Skipped = 5 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Succeeded = 3 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyEventKind.Warning = 6 -> Honua.Sdk.Spec.Models.SpecApplyEventKind
+Honua.Sdk.Spec.Models.SpecApplyStream
+Honua.Sdk.Spec.Models.SpecApplyStream.ApplyToken.get -> string?
+Honua.Sdk.Spec.Models.SpecApplyStream.Dispose() -> void
+Honua.Sdk.Spec.Models.SpecApplyStream.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Honua.Sdk.Spec.Models.SpecApplyStream.Events.get -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.Spec.Models.SpecApplyEvent!>!
+Honua.Sdk.Spec.Models.SpecApplySummary
+Honua.Sdk.Spec.Models.SpecApplySummary.<Clone>$() -> Honua.Sdk.Spec.Models.SpecApplySummary!
+Honua.Sdk.Spec.Models.SpecApplySummary.CachedNodes.get -> int
+Honua.Sdk.Spec.Models.SpecApplySummary.CachedNodes.init -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.Cancelled.get -> bool
+Honua.Sdk.Spec.Models.SpecApplySummary.Cancelled.init -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.Equals(Honua.Sdk.Spec.Models.SpecApplySummary? other) -> bool
+Honua.Sdk.Spec.Models.SpecApplySummary.FailedNodes.get -> int
+Honua.Sdk.Spec.Models.SpecApplySummary.FailedNodes.init -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.RanNodes.get -> int
+Honua.Sdk.Spec.Models.SpecApplySummary.RanNodes.init -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.SkippedNodes.get -> int
+Honua.Sdk.Spec.Models.SpecApplySummary.SkippedNodes.init -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.SpecApplySummary() -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.TotalDurationMs.get -> double
+Honua.Sdk.Spec.Models.SpecApplySummary.TotalDurationMs.init -> void
+Honua.Sdk.Spec.Models.SpecApplySummary.TotalNodes.get -> int
+Honua.Sdk.Spec.Models.SpecApplySummary.TotalNodes.init -> void
+Honua.Sdk.Spec.Models.SpecCacheMode
+Honua.Sdk.Spec.Models.SpecCacheMode.Bypass = 2 -> Honua.Sdk.Spec.Models.SpecCacheMode
+Honua.Sdk.Spec.Models.SpecCacheMode.ReadOnly = 1 -> Honua.Sdk.Spec.Models.SpecCacheMode
+Honua.Sdk.Spec.Models.SpecCacheMode.ReadWrite = 0 -> Honua.Sdk.Spec.Models.SpecCacheMode
+Honua.Sdk.Spec.Models.SpecCancelRequest
+Honua.Sdk.Spec.Models.SpecCancelRequest.<Clone>$() -> Honua.Sdk.Spec.Models.SpecCancelRequest!
+Honua.Sdk.Spec.Models.SpecCancelRequest.ApplyToken.get -> string!
+Honua.Sdk.Spec.Models.SpecCancelRequest.ApplyToken.init -> void
+Honua.Sdk.Spec.Models.SpecCancelRequest.Equals(Honua.Sdk.Spec.Models.SpecCancelRequest? other) -> bool
+Honua.Sdk.Spec.Models.SpecCancelRequest.SpecCancelRequest() -> void
+Honua.Sdk.Spec.Models.SpecCancelResponse
+Honua.Sdk.Spec.Models.SpecCancelResponse.<Clone>$() -> Honua.Sdk.Spec.Models.SpecCancelResponse!
+Honua.Sdk.Spec.Models.SpecCancelResponse.ApplyToken.get -> string!
+Honua.Sdk.Spec.Models.SpecCancelResponse.ApplyToken.init -> void
+Honua.Sdk.Spec.Models.SpecCancelResponse.Cancelled.get -> bool
+Honua.Sdk.Spec.Models.SpecCancelResponse.Cancelled.init -> void
+Honua.Sdk.Spec.Models.SpecCancelResponse.Equals(Honua.Sdk.Spec.Models.SpecCancelResponse? other) -> bool
+Honua.Sdk.Spec.Models.SpecCancelResponse.SpecCancelResponse() -> void
+Honua.Sdk.Spec.Models.SpecCostActual
+Honua.Sdk.Spec.Models.SpecCostActual.<Clone>$() -> Honua.Sdk.Spec.Models.SpecCostActual!
+Honua.Sdk.Spec.Models.SpecCostActual.Bytes.get -> long?
+Honua.Sdk.Spec.Models.SpecCostActual.Bytes.init -> void
+Honua.Sdk.Spec.Models.SpecCostActual.DurationMs.get -> double
+Honua.Sdk.Spec.Models.SpecCostActual.DurationMs.init -> void
+Honua.Sdk.Spec.Models.SpecCostActual.Equals(Honua.Sdk.Spec.Models.SpecCostActual? other) -> bool
+Honua.Sdk.Spec.Models.SpecCostActual.Rows.get -> long?
+Honua.Sdk.Spec.Models.SpecCostActual.Rows.init -> void
+Honua.Sdk.Spec.Models.SpecCostActual.SpecCostActual() -> void
+Honua.Sdk.Spec.Models.SpecCostEstimate
+Honua.Sdk.Spec.Models.SpecCostEstimate.<Clone>$() -> Honua.Sdk.Spec.Models.SpecCostEstimate!
+Honua.Sdk.Spec.Models.SpecCostEstimate.Equals(Honua.Sdk.Spec.Models.SpecCostEstimate? other) -> bool
+Honua.Sdk.Spec.Models.SpecCostEstimate.EstimatedBytes.get -> long?
+Honua.Sdk.Spec.Models.SpecCostEstimate.EstimatedBytes.init -> void
+Honua.Sdk.Spec.Models.SpecCostEstimate.EstimatedDurationMs.get -> double?
+Honua.Sdk.Spec.Models.SpecCostEstimate.EstimatedDurationMs.init -> void
+Honua.Sdk.Spec.Models.SpecCostEstimate.EstimatedRows.get -> long?
+Honua.Sdk.Spec.Models.SpecCostEstimate.EstimatedRows.init -> void
+Honua.Sdk.Spec.Models.SpecCostEstimate.SpecCostEstimate() -> void
+Honua.Sdk.Spec.Models.SpecDiagnosticSeverity
+Honua.Sdk.Spec.Models.SpecDiagnosticSeverity.Error = 2 -> Honua.Sdk.Spec.Models.SpecDiagnosticSeverity
+Honua.Sdk.Spec.Models.SpecDiagnosticSeverity.Info = 0 -> Honua.Sdk.Spec.Models.SpecDiagnosticSeverity
+Honua.Sdk.Spec.Models.SpecDiagnosticSeverity.Warning = 1 -> Honua.Sdk.Spec.Models.SpecDiagnosticSeverity
+Honua.Sdk.Spec.Models.SpecDocumentRequest
+Honua.Sdk.Spec.Models.SpecDocumentRequest.<Clone>$() -> Honua.Sdk.Spec.Models.SpecDocumentRequest!
+Honua.Sdk.Spec.Models.SpecDocumentRequest.CacheMode.get -> Honua.Sdk.Spec.Models.SpecCacheMode?
+Honua.Sdk.Spec.Models.SpecDocumentRequest.CacheMode.init -> void
+Honua.Sdk.Spec.Models.SpecDocumentRequest.Equals(Honua.Sdk.Spec.Models.SpecDocumentRequest? other) -> bool
+Honua.Sdk.Spec.Models.SpecDocumentRequest.GrammarVersion.get -> string!
+Honua.Sdk.Spec.Models.SpecDocumentRequest.GrammarVersion.init -> void
+Honua.Sdk.Spec.Models.SpecDocumentRequest.MaxConcurrency.get -> int?
+Honua.Sdk.Spec.Models.SpecDocumentRequest.MaxConcurrency.init -> void
+Honua.Sdk.Spec.Models.SpecDocumentRequest.Nodes.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Spec.Models.SpecNodeRequest!>!
+Honua.Sdk.Spec.Models.SpecDocumentRequest.Nodes.init -> void
+Honua.Sdk.Spec.Models.SpecDocumentRequest.ProcessFamilyVersion.get -> string!
+Honua.Sdk.Spec.Models.SpecDocumentRequest.ProcessFamilyVersion.init -> void
+Honua.Sdk.Spec.Models.SpecDocumentRequest.SpecDocumentRequest() -> void
+Honua.Sdk.Spec.Models.SpecDocumentRequest.SpecId.get -> string?
+Honua.Sdk.Spec.Models.SpecDocumentRequest.SpecId.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest
+Honua.Sdk.Spec.Models.SpecNodeRequest.<Clone>$() -> Honua.Sdk.Spec.Models.SpecNodeRequest!
+Honua.Sdk.Spec.Models.SpecNodeRequest.CanonicalFragment.get -> string?
+Honua.Sdk.Spec.Models.SpecNodeRequest.CanonicalFragment.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.Equals(Honua.Sdk.Spec.Models.SpecNodeRequest? other) -> bool
+Honua.Sdk.Spec.Models.SpecNodeRequest.Id.get -> string!
+Honua.Sdk.Spec.Models.SpecNodeRequest.Id.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.Inputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Honua.Sdk.Spec.Models.SpecNodeRequest.Inputs.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.Kind.get -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecNodeRequest.Kind.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.Nondeterministic.get -> bool
+Honua.Sdk.Spec.Models.SpecNodeRequest.Nondeterministic.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.Op.get -> string?
+Honua.Sdk.Spec.Models.SpecNodeRequest.Op.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Honua.Sdk.Spec.Models.SpecNodeRequest.Parameters.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.SourcePins.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Honua.Sdk.Spec.Models.SpecNodeRequest.SourcePins.init -> void
+Honua.Sdk.Spec.Models.SpecNodeRequest.SpecNodeRequest() -> void
+Honua.Sdk.Spec.Models.SpecPlanNode
+Honua.Sdk.Spec.Models.SpecPlanNode.<Clone>$() -> Honua.Sdk.Spec.Models.SpecPlanNode!
+Honua.Sdk.Spec.Models.SpecPlanNode.ContentHash.get -> string!
+Honua.Sdk.Spec.Models.SpecPlanNode.ContentHash.init -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.Cost.get -> Honua.Sdk.Spec.Models.SpecCostEstimate!
+Honua.Sdk.Spec.Models.SpecPlanNode.Cost.init -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.DependsOn.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Spec.Models.SpecPlanNode.DependsOn.init -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.Equals(Honua.Sdk.Spec.Models.SpecPlanNode? other) -> bool
+Honua.Sdk.Spec.Models.SpecPlanNode.Kind.get -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecPlanNode.Kind.init -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.NodeId.get -> string!
+Honua.Sdk.Spec.Models.SpecPlanNode.NodeId.init -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.Op.get -> string?
+Honua.Sdk.Spec.Models.SpecPlanNode.Op.init -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.SpecPlanNode() -> void
+Honua.Sdk.Spec.Models.SpecPlanNode.Warnings.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Spec.Models.SpecWarning!>!
+Honua.Sdk.Spec.Models.SpecPlanNode.Warnings.init -> void
+Honua.Sdk.Spec.Models.SpecPlanResponse
+Honua.Sdk.Spec.Models.SpecPlanResponse.<Clone>$() -> Honua.Sdk.Spec.Models.SpecPlanResponse!
+Honua.Sdk.Spec.Models.SpecPlanResponse.Equals(Honua.Sdk.Spec.Models.SpecPlanResponse? other) -> bool
+Honua.Sdk.Spec.Models.SpecPlanResponse.GrammarVersion.get -> string!
+Honua.Sdk.Spec.Models.SpecPlanResponse.GrammarVersion.init -> void
+Honua.Sdk.Spec.Models.SpecPlanResponse.Nodes.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Spec.Models.SpecPlanNode!>!
+Honua.Sdk.Spec.Models.SpecPlanResponse.Nodes.init -> void
+Honua.Sdk.Spec.Models.SpecPlanResponse.PlanId.get -> string!
+Honua.Sdk.Spec.Models.SpecPlanResponse.PlanId.init -> void
+Honua.Sdk.Spec.Models.SpecPlanResponse.ProcessFamilyVersion.get -> string!
+Honua.Sdk.Spec.Models.SpecPlanResponse.ProcessFamilyVersion.init -> void
+Honua.Sdk.Spec.Models.SpecPlanResponse.SpecPlanResponse() -> void
+Honua.Sdk.Spec.Models.SpecPlanResponse.Warnings.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Spec.Models.SpecWarning!>!
+Honua.Sdk.Spec.Models.SpecPlanResponse.Warnings.init -> void
+Honua.Sdk.Spec.Models.SpecProblem
+Honua.Sdk.Spec.Models.SpecProblem.<Clone>$() -> Honua.Sdk.Spec.Models.SpecProblem!
+Honua.Sdk.Spec.Models.SpecProblem.Code.get -> string!
+Honua.Sdk.Spec.Models.SpecProblem.Code.init -> void
+Honua.Sdk.Spec.Models.SpecProblem.Detail.get -> string!
+Honua.Sdk.Spec.Models.SpecProblem.Detail.init -> void
+Honua.Sdk.Spec.Models.SpecProblem.Equals(Honua.Sdk.Spec.Models.SpecProblem? other) -> bool
+Honua.Sdk.Spec.Models.SpecProblem.NodeId.get -> string?
+Honua.Sdk.Spec.Models.SpecProblem.NodeId.init -> void
+Honua.Sdk.Spec.Models.SpecProblem.Remedy.get -> string?
+Honua.Sdk.Spec.Models.SpecProblem.Remedy.init -> void
+Honua.Sdk.Spec.Models.SpecProblem.SpecProblem() -> void
+Honua.Sdk.Spec.Models.SpecProblem.Status.get -> int
+Honua.Sdk.Spec.Models.SpecProblem.Status.init -> void
+Honua.Sdk.Spec.Models.SpecProblem.Title.get -> string!
+Honua.Sdk.Spec.Models.SpecProblem.Title.init -> void
+Honua.Sdk.Spec.Models.SpecProblem.Type.get -> string!
+Honua.Sdk.Spec.Models.SpecProblem.Type.init -> void
+Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecResourceKind.App = 4 -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecResourceKind.Compute = 0 -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecResourceKind.Dataset = 2 -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecResourceKind.Report = 1 -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecResourceKind.Service = 3 -> Honua.Sdk.Spec.Models.SpecResourceKind
+Honua.Sdk.Spec.Models.SpecSourceSpan
+Honua.Sdk.Spec.Models.SpecSourceSpan.Column.get -> int
+Honua.Sdk.Spec.Models.SpecSourceSpan.Column.init -> void
+Honua.Sdk.Spec.Models.SpecSourceSpan.Deconstruct(out int Line, out int Column, out int Offset, out int Length) -> void
+Honua.Sdk.Spec.Models.SpecSourceSpan.Equals(Honua.Sdk.Spec.Models.SpecSourceSpan other) -> bool
+Honua.Sdk.Spec.Models.SpecSourceSpan.Length.get -> int
+Honua.Sdk.Spec.Models.SpecSourceSpan.Length.init -> void
+Honua.Sdk.Spec.Models.SpecSourceSpan.Line.get -> int
+Honua.Sdk.Spec.Models.SpecSourceSpan.Line.init -> void
+Honua.Sdk.Spec.Models.SpecSourceSpan.Offset.get -> int
+Honua.Sdk.Spec.Models.SpecSourceSpan.Offset.init -> void
+Honua.Sdk.Spec.Models.SpecSourceSpan.SpecSourceSpan() -> void
+Honua.Sdk.Spec.Models.SpecSourceSpan.SpecSourceSpan(int Line, int Column, int Offset, int Length) -> void
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.<Clone>$() -> Honua.Sdk.Spec.Models.SpecValidateDiagnostic!
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Code.get -> string!
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Code.init -> void
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Equals(Honua.Sdk.Spec.Models.SpecValidateDiagnostic? other) -> bool
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Message.get -> string!
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Message.init -> void
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Path.get -> string?
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Path.init -> void
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Severity.get -> string!
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Severity.init -> void
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Span.get -> Honua.Sdk.Spec.Models.SpecSourceSpan?
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Span.init -> void
+Honua.Sdk.Spec.Models.SpecValidateDiagnostic.SpecValidateDiagnostic() -> void
+Honua.Sdk.Spec.Models.SpecValidateRequest
+Honua.Sdk.Spec.Models.SpecValidateRequest.<Clone>$() -> Honua.Sdk.Spec.Models.SpecValidateRequest!
+Honua.Sdk.Spec.Models.SpecValidateRequest.Equals(Honua.Sdk.Spec.Models.SpecValidateRequest? other) -> bool
+Honua.Sdk.Spec.Models.SpecValidateRequest.IncludeCanonicalJson.get -> bool
+Honua.Sdk.Spec.Models.SpecValidateRequest.IncludeCanonicalJson.init -> void
+Honua.Sdk.Spec.Models.SpecValidateRequest.Spec.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Spec.Models.SpecValidateRequest.Spec.init -> void
+Honua.Sdk.Spec.Models.SpecValidateRequest.SpecValidateRequest() -> void
+Honua.Sdk.Spec.Models.SpecValidateRequest.Text.get -> string?
+Honua.Sdk.Spec.Models.SpecValidateRequest.Text.init -> void
+Honua.Sdk.Spec.Models.SpecValidateResponse
+Honua.Sdk.Spec.Models.SpecValidateResponse.<Clone>$() -> Honua.Sdk.Spec.Models.SpecValidateResponse!
+Honua.Sdk.Spec.Models.SpecValidateResponse.CanonicalJson.get -> string?
+Honua.Sdk.Spec.Models.SpecValidateResponse.CanonicalJson.init -> void
+Honua.Sdk.Spec.Models.SpecValidateResponse.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Spec.Models.SpecValidateDiagnostic!>!
+Honua.Sdk.Spec.Models.SpecValidateResponse.Diagnostics.init -> void
+Honua.Sdk.Spec.Models.SpecValidateResponse.Equals(Honua.Sdk.Spec.Models.SpecValidateResponse? other) -> bool
+Honua.Sdk.Spec.Models.SpecValidateResponse.Grammar.get -> string?
+Honua.Sdk.Spec.Models.SpecValidateResponse.Grammar.init -> void
+Honua.Sdk.Spec.Models.SpecValidateResponse.IsValid.get -> bool
+Honua.Sdk.Spec.Models.SpecValidateResponse.IsValid.init -> void
+Honua.Sdk.Spec.Models.SpecValidateResponse.OperatorCapabilityVersion.get -> string!
+Honua.Sdk.Spec.Models.SpecValidateResponse.OperatorCapabilityVersion.init -> void
+Honua.Sdk.Spec.Models.SpecValidateResponse.SpecValidateResponse() -> void
+Honua.Sdk.Spec.Models.SpecWarning
+Honua.Sdk.Spec.Models.SpecWarning.<Clone>$() -> Honua.Sdk.Spec.Models.SpecWarning!
+Honua.Sdk.Spec.Models.SpecWarning.Code.get -> string!
+Honua.Sdk.Spec.Models.SpecWarning.Code.init -> void
+Honua.Sdk.Spec.Models.SpecWarning.Equals(Honua.Sdk.Spec.Models.SpecWarning? other) -> bool
+Honua.Sdk.Spec.Models.SpecWarning.Message.get -> string!
+Honua.Sdk.Spec.Models.SpecWarning.Message.init -> void
+Honua.Sdk.Spec.Models.SpecWarning.NodeId.get -> string?
+Honua.Sdk.Spec.Models.SpecWarning.NodeId.init -> void
+Honua.Sdk.Spec.Models.SpecWarning.Remedy.get -> string?
+Honua.Sdk.Spec.Models.SpecWarning.Remedy.init -> void
+Honua.Sdk.Spec.Models.SpecWarning.Severity.get -> Honua.Sdk.Spec.Models.SpecDiagnosticSeverity
+Honua.Sdk.Spec.Models.SpecWarning.Severity.init -> void
+Honua.Sdk.Spec.Models.SpecWarning.SpecWarning() -> void
+override Honua.Sdk.Spec.HonuaSpecException.HttpStatus.get -> int?
+override Honua.Sdk.Spec.HonuaSpecException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.Spec.Models.HonuaSpecArtifact.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.HonuaSpecArtifact.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.HonuaSpecArtifact.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecApplyEvent.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecApplyEvent.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecApplyEvent.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecApplySummary.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecApplySummary.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecApplySummary.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecCancelRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecCancelRequest.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecCancelRequest.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecCancelResponse.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecCancelResponse.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecCancelResponse.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecCostActual.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecCostActual.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecCostActual.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecCostEstimate.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecCostEstimate.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecCostEstimate.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecDocumentRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecDocumentRequest.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecDocumentRequest.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecNodeRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecNodeRequest.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecNodeRequest.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecPlanNode.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecPlanNode.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecPlanNode.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecPlanResponse.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecPlanResponse.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecPlanResponse.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecProblem.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecProblem.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecProblem.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecSourceSpan.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecValidateDiagnostic.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecValidateDiagnostic.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecValidateDiagnostic.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecValidateRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecValidateRequest.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecValidateRequest.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecValidateResponse.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecValidateResponse.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecValidateResponse.ToString() -> string!
+override Honua.Sdk.Spec.Models.SpecWarning.Equals(object? obj) -> bool
+override Honua.Sdk.Spec.Models.SpecWarning.GetHashCode() -> int
+override Honua.Sdk.Spec.Models.SpecWarning.ToString() -> string!
+static Honua.Sdk.Spec.Extensions.ServiceCollectionExtensions.AddHonuaSpec(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.Spec.HonuaSpecClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.Spec.Models.HonuaSpecArtifact.operator !=(Honua.Sdk.Spec.Models.HonuaSpecArtifact? left, Honua.Sdk.Spec.Models.HonuaSpecArtifact? right) -> bool
+static Honua.Sdk.Spec.Models.HonuaSpecArtifact.operator ==(Honua.Sdk.Spec.Models.HonuaSpecArtifact? left, Honua.Sdk.Spec.Models.HonuaSpecArtifact? right) -> bool
+static Honua.Sdk.Spec.Models.SpecApplyEvent.operator !=(Honua.Sdk.Spec.Models.SpecApplyEvent? left, Honua.Sdk.Spec.Models.SpecApplyEvent? right) -> bool
+static Honua.Sdk.Spec.Models.SpecApplyEvent.operator ==(Honua.Sdk.Spec.Models.SpecApplyEvent? left, Honua.Sdk.Spec.Models.SpecApplyEvent? right) -> bool
+static Honua.Sdk.Spec.Models.SpecApplySummary.operator !=(Honua.Sdk.Spec.Models.SpecApplySummary? left, Honua.Sdk.Spec.Models.SpecApplySummary? right) -> bool
+static Honua.Sdk.Spec.Models.SpecApplySummary.operator ==(Honua.Sdk.Spec.Models.SpecApplySummary? left, Honua.Sdk.Spec.Models.SpecApplySummary? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCancelRequest.operator !=(Honua.Sdk.Spec.Models.SpecCancelRequest? left, Honua.Sdk.Spec.Models.SpecCancelRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCancelRequest.operator ==(Honua.Sdk.Spec.Models.SpecCancelRequest? left, Honua.Sdk.Spec.Models.SpecCancelRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCancelResponse.operator !=(Honua.Sdk.Spec.Models.SpecCancelResponse? left, Honua.Sdk.Spec.Models.SpecCancelResponse? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCancelResponse.operator ==(Honua.Sdk.Spec.Models.SpecCancelResponse? left, Honua.Sdk.Spec.Models.SpecCancelResponse? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCostActual.operator !=(Honua.Sdk.Spec.Models.SpecCostActual? left, Honua.Sdk.Spec.Models.SpecCostActual? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCostActual.operator ==(Honua.Sdk.Spec.Models.SpecCostActual? left, Honua.Sdk.Spec.Models.SpecCostActual? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCostEstimate.operator !=(Honua.Sdk.Spec.Models.SpecCostEstimate? left, Honua.Sdk.Spec.Models.SpecCostEstimate? right) -> bool
+static Honua.Sdk.Spec.Models.SpecCostEstimate.operator ==(Honua.Sdk.Spec.Models.SpecCostEstimate? left, Honua.Sdk.Spec.Models.SpecCostEstimate? right) -> bool
+static Honua.Sdk.Spec.Models.SpecDocumentRequest.operator !=(Honua.Sdk.Spec.Models.SpecDocumentRequest? left, Honua.Sdk.Spec.Models.SpecDocumentRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecDocumentRequest.operator ==(Honua.Sdk.Spec.Models.SpecDocumentRequest? left, Honua.Sdk.Spec.Models.SpecDocumentRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecNodeRequest.operator !=(Honua.Sdk.Spec.Models.SpecNodeRequest? left, Honua.Sdk.Spec.Models.SpecNodeRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecNodeRequest.operator ==(Honua.Sdk.Spec.Models.SpecNodeRequest? left, Honua.Sdk.Spec.Models.SpecNodeRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecPlanNode.operator !=(Honua.Sdk.Spec.Models.SpecPlanNode? left, Honua.Sdk.Spec.Models.SpecPlanNode? right) -> bool
+static Honua.Sdk.Spec.Models.SpecPlanNode.operator ==(Honua.Sdk.Spec.Models.SpecPlanNode? left, Honua.Sdk.Spec.Models.SpecPlanNode? right) -> bool
+static Honua.Sdk.Spec.Models.SpecPlanResponse.operator !=(Honua.Sdk.Spec.Models.SpecPlanResponse? left, Honua.Sdk.Spec.Models.SpecPlanResponse? right) -> bool
+static Honua.Sdk.Spec.Models.SpecPlanResponse.operator ==(Honua.Sdk.Spec.Models.SpecPlanResponse? left, Honua.Sdk.Spec.Models.SpecPlanResponse? right) -> bool
+static Honua.Sdk.Spec.Models.SpecProblem.operator !=(Honua.Sdk.Spec.Models.SpecProblem? left, Honua.Sdk.Spec.Models.SpecProblem? right) -> bool
+static Honua.Sdk.Spec.Models.SpecProblem.operator ==(Honua.Sdk.Spec.Models.SpecProblem? left, Honua.Sdk.Spec.Models.SpecProblem? right) -> bool
+static Honua.Sdk.Spec.Models.SpecSourceSpan.operator !=(Honua.Sdk.Spec.Models.SpecSourceSpan left, Honua.Sdk.Spec.Models.SpecSourceSpan right) -> bool
+static Honua.Sdk.Spec.Models.SpecSourceSpan.operator ==(Honua.Sdk.Spec.Models.SpecSourceSpan left, Honua.Sdk.Spec.Models.SpecSourceSpan right) -> bool
+static Honua.Sdk.Spec.Models.SpecValidateDiagnostic.operator !=(Honua.Sdk.Spec.Models.SpecValidateDiagnostic? left, Honua.Sdk.Spec.Models.SpecValidateDiagnostic? right) -> bool
+static Honua.Sdk.Spec.Models.SpecValidateDiagnostic.operator ==(Honua.Sdk.Spec.Models.SpecValidateDiagnostic? left, Honua.Sdk.Spec.Models.SpecValidateDiagnostic? right) -> bool
+static Honua.Sdk.Spec.Models.SpecValidateRequest.operator !=(Honua.Sdk.Spec.Models.SpecValidateRequest? left, Honua.Sdk.Spec.Models.SpecValidateRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecValidateRequest.operator ==(Honua.Sdk.Spec.Models.SpecValidateRequest? left, Honua.Sdk.Spec.Models.SpecValidateRequest? right) -> bool
+static Honua.Sdk.Spec.Models.SpecValidateResponse.operator !=(Honua.Sdk.Spec.Models.SpecValidateResponse? left, Honua.Sdk.Spec.Models.SpecValidateResponse? right) -> bool
+static Honua.Sdk.Spec.Models.SpecValidateResponse.operator ==(Honua.Sdk.Spec.Models.SpecValidateResponse? left, Honua.Sdk.Spec.Models.SpecValidateResponse? right) -> bool
+static Honua.Sdk.Spec.Models.SpecWarning.operator !=(Honua.Sdk.Spec.Models.SpecWarning? left, Honua.Sdk.Spec.Models.SpecWarning? right) -> bool
+static Honua.Sdk.Spec.Models.SpecWarning.operator ==(Honua.Sdk.Spec.Models.SpecWarning? left, Honua.Sdk.Spec.Models.SpecWarning? right) -> bool
+~override Honua.Sdk.Spec.Models.SpecSourceSpan.Equals(object obj) -> bool
+~override Honua.Sdk.Spec.Models.SpecSourceSpan.ToString() -> string

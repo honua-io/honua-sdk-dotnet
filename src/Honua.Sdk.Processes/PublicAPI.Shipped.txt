@@ -1,0 +1,720 @@
+#nullable enable
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.AddGeoprocessStep(string! stepId, string! processId, System.Action<Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder!>? configure = null) -> Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder!
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.AddStep(string! stepId, string! kind, System.Action<Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder!>? configure = null) -> Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder!
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.Build() -> Honua.Sdk.Processes.Models.HonuaAnalysisPlan!
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.BuildExecuteRequest() -> Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest!
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.WithOutputs(params string![]! outputs) -> Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder!
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.WithSpecVersion(string! specVersion) -> Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder!
+Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder.WithWorkflowFamily(string! workflowFamily) -> Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder!
+Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder
+Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder.DependsOn(params string![]! stepIds) -> Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder!
+Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder.WithInput(string! name, string! value) -> Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder!
+Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder.WithInput(string! name, System.IFormattable! value) -> Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder!
+Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder.WithProcessId(string! processId) -> Honua.Sdk.Processes.Authoring.HonuaPlanStepBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.AppBundle = 7 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.FeatureLayer = 1 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.File = 4 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.Map = 6 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.Raster = 3 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.Report = 5 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.Scalar = 0 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind.Table = 2 -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessAuthoring
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.AddInput(string! name, Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType valueType, System.Action<Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder!>? configure = null) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.AddOutput(string! name, Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind artifactKind, System.Action<Honua.Sdk.Processes.Authoring.HonuaProcessOutputBuilder!>? configure = null) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.Build() -> Honua.Sdk.Processes.Authoring.HonuaProcessDefinition!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithCategory(string! category) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithDescription(string! description) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithJobControlOptions(params string![]! jobControlOptions) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithOutputTransmission(params string![]! outputTransmission) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithRuntimeProfile(string! runtimeProfile) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithTitle(string! title) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessBuilder.WithVersion(string! version) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessDefinition!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Category.get -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Category.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Description.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Description.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessDefinition? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.HonuaProcessDefinition() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.JobControlOptions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.JobControlOptions.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Outputs.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Authoring.HonuaProcessOutput!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Outputs.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.OutputTransmission.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.OutputTransmission.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Parameters.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Authoring.HonuaProcessParameter!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Parameters.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.ProcessId.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.ProcessId.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.RuntimeProfile.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.RuntimeProfile.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Title.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Title.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.ToOgcDescription() -> Honua.Sdk.Processes.Models.HonuaProcessDescription!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Version.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Version.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress!
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.HonuaProcessHarnessProgress() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.PercentComplete.get -> double?
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.PercentComplete.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.Phase.get -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.Phase.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun!
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Artifacts.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Artifacts.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.HonuaProcessHarnessRun() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Logs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Logs.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Progress.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Progress.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Result.get -> Honua.Sdk.Processes.Authoring.HonuaProcessJobResult!
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Result.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Succeeded.get -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessJobInput!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessJobInput? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.GetOptional(string! name, string? fallback = null) -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.GetRequired(string! name) -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.HonuaProcessJobInput() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.JobId.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.JobId.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.Parameters.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.ProcessId.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.ProcessId.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessJobResult!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessJobResult? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.ErrorMessage.get -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.ErrorMessage.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.HonuaProcessJobResult() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Outputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Outputs.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.State.get -> Honua.Sdk.Processes.Authoring.HonuaProcessJobState
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.State.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Warnings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Warnings.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessJobState
+Honua.Sdk.Processes.Authoring.HonuaProcessJobState.Cancelled = 2 -> Honua.Sdk.Processes.Authoring.HonuaProcessJobState
+Honua.Sdk.Processes.Authoring.HonuaProcessJobState.Failed = 1 -> Honua.Sdk.Processes.Authoring.HonuaProcessJobState
+Honua.Sdk.Processes.Authoring.HonuaProcessJobState.Succeeded = 0 -> Honua.Sdk.Processes.Authoring.HonuaProcessJobState
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessOutput!
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.ArtifactKind.get -> Honua.Sdk.Processes.Authoring.HonuaProcessArtifactKind
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.ArtifactKind.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.Description.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.Description.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.DisplayName.get -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.DisplayName.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessOutput? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.HonuaProcessOutput() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.Name.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.Name.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessOutput.ToSchema() -> Honua.Sdk.Processes.Models.HonuaProcessIoSchema!
+Honua.Sdk.Processes.Authoring.HonuaProcessOutputBuilder
+Honua.Sdk.Processes.Authoring.HonuaProcessOutputBuilder.WithDescription(string! description) -> Honua.Sdk.Processes.Authoring.HonuaProcessOutputBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessOutputBuilder.WithDisplayName(string! displayName) -> Honua.Sdk.Processes.Authoring.HonuaProcessOutputBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.<Clone>$() -> Honua.Sdk.Processes.Authoring.HonuaProcessParameter!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.AllowedValues.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.AllowedValues.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.DefaultValue.get -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.DefaultValue.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Description.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Description.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.DisplayName.get -> string?
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.DisplayName.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Equals(Honua.Sdk.Processes.Authoring.HonuaProcessParameter? other) -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.HonuaProcessParameter() -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Name.get -> string!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Name.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Required.get -> bool
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Required.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.ToSchema() -> Honua.Sdk.Processes.Models.HonuaProcessIoSchema!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.ValueType.get -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameter.ValueType.init -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder.Required(bool required = true) -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder.WithAllowedValues(params string![]! allowedValues) -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder.WithDefault(string! defaultValue) -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder.WithDescription(string! description) -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder.WithDisplayName(string! displayName) -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterBuilder!
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.Flag = 3 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.FloatingPoint = 2 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.LayerId = 7 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.Srid = 6 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.Text = 0 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.WholeNumber = 1 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.Wkb = 4 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType.WkbArray = 5 -> Honua.Sdk.Processes.Authoring.HonuaProcessParameterValueType
+Honua.Sdk.Processes.Authoring.HonuaProcessTestHarness
+Honua.Sdk.Processes.Authoring.HonuaProcessTestHarness.HonuaProcessTestHarness(Honua.Sdk.Processes.Authoring.IHonuaProcessExecutor! executor, Honua.Sdk.Processes.Authoring.HonuaProcessDefinition? definition = null) -> void
+Honua.Sdk.Processes.Authoring.HonuaProcessTestHarness.RunAsync(Honua.Sdk.Processes.Models.HonuaPlanStep! step, string? jobId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun!>!
+Honua.Sdk.Processes.Authoring.HonuaProcessTestHarness.RunAsync(System.Collections.Generic.IReadOnlyDictionary<string!, string!>! parameters, string? jobId = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun!>!
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutionContext
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutionContext.AppendLogAsync(string! message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutionContext.JobId.get -> string!
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutionContext.PublishArtifactAsync(string! artifactReference, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutionContext.ReportProgressAsync(double? percentComplete, string? phase, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutor
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutor.ExecuteAsync(Honua.Sdk.Processes.Authoring.HonuaProcessJobInput! job, Honua.Sdk.Processes.Authoring.IHonuaProcessExecutionContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Authoring.HonuaProcessJobResult!>!
+Honua.Sdk.Processes.Authoring.IHonuaProcessExecutor.ProcessId.get -> string!
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.HonuaProcessesException() -> void
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.HonuaProcessesException(string! message) -> void
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.HonuaProcessesException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.HonuaProcessesException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null, string? problemType = null, string? problemTitle = null, string? problemDetail = null) -> void
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.HonuaProcessesException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, System.Exception! innerException) -> void
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.ProblemDetail.get -> string?
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.ProblemTitle.get -> string?
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.ProblemType.get -> string?
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.ResponseBody.get -> string?
+Honua.Sdk.Processes.Exceptions.HonuaProcessesException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.Processes.Extensions.ServiceCollectionExtensions
+Honua.Sdk.Processes.HonuaProcessesClient
+Honua.Sdk.Processes.HonuaProcessesClient.DismissJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.HonuaProcessesClient.GetConformanceAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessesConformance!>!
+Honua.Sdk.Processes.HonuaProcessesClient.GetJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.HonuaProcessesClient.GetJobResultsAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessResults!>!
+Honua.Sdk.Processes.HonuaProcessesClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessesLandingPage!>!
+Honua.Sdk.Processes.HonuaProcessesClient.GetProcessAsync(string! processId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessDescription!>!
+Honua.Sdk.Processes.HonuaProcessesClient.HonuaProcessesClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Processes.HonuaProcessesClient.ListJobsAsync(int? limit = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobList!>!
+Honua.Sdk.Processes.HonuaProcessesClient.ListProcessesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessList!>!
+Honua.Sdk.Processes.HonuaProcessesClient.SubmitJobAsync(string! processId, Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.HonuaProcessesClient.SubmitJobAsync(string! processId, System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>! inputs, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.HonuaProcessesClientOptions
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.ApiKey.get -> string?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.ApiKey.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.HonuaProcessesClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.BearerToken.get -> string?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.BearerToken.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Processes.HonuaProcessesClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.Processes.HonuaProcessesClientOptions.HonuaProcessesClientOptions() -> void
+Honua.Sdk.Processes.IHonuaProcessesClient
+Honua.Sdk.Processes.IHonuaProcessesClient.DismissJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.GetConformanceAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessesConformance!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.GetJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.GetJobResultsAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessResults!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.GetLandingPageAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessesLandingPage!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.GetProcessAsync(string! processId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessDescription!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.ListJobsAsync(int? limit = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobList!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.ListProcessesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessList!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.SubmitJobAsync(string! processId, Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.IHonuaProcessesClient.SubmitJobAsync(string! processId, System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>! inputs, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaAnalysisPlan!
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.Equals(Honua.Sdk.Processes.Models.HonuaAnalysisPlan? other) -> bool
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.HonuaAnalysisPlan() -> void
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.Outputs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.Outputs.init -> void
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.PlanId.get -> string!
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.PlanId.init -> void
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.SpecVersion.get -> string?
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.SpecVersion.init -> void
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.Steps.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaPlanStep!>!
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.Steps.init -> void
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.WorkflowFamily.get -> string?
+Honua.Sdk.Processes.Models.HonuaAnalysisPlan.WorkflowFamily.init -> void
+Honua.Sdk.Processes.Models.HonuaPlanStep
+Honua.Sdk.Processes.Models.HonuaPlanStep.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaPlanStep!
+Honua.Sdk.Processes.Models.HonuaPlanStep.DependsOn.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Models.HonuaPlanStep.DependsOn.init -> void
+Honua.Sdk.Processes.Models.HonuaPlanStep.Equals(Honua.Sdk.Processes.Models.HonuaPlanStep? other) -> bool
+Honua.Sdk.Processes.Models.HonuaPlanStep.HonuaPlanStep() -> void
+Honua.Sdk.Processes.Models.HonuaPlanStep.Inputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Processes.Models.HonuaPlanStep.Inputs.init -> void
+Honua.Sdk.Processes.Models.HonuaPlanStep.Kind.get -> string!
+Honua.Sdk.Processes.Models.HonuaPlanStep.Kind.init -> void
+Honua.Sdk.Processes.Models.HonuaPlanStep.ProcessId.get -> string?
+Honua.Sdk.Processes.Models.HonuaPlanStep.ProcessId.init -> void
+Honua.Sdk.Processes.Models.HonuaPlanStep.StepId.get -> string?
+Honua.Sdk.Processes.Models.HonuaPlanStep.StepId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessArtifactRef!
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ArtifactClass.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ArtifactClass.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ArtifactId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ArtifactId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ArtifactVersion.get -> int
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ArtifactVersion.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.Equals(Honua.Sdk.Processes.Models.HonuaProcessArtifactRef? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.HonuaProcessArtifactRef() -> void
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ProducerRef.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ProducerRef.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessAssumption
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessAssumption!
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.AssumptionId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.AssumptionId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.Equals(Honua.Sdk.Processes.Models.HonuaProcessAssumption? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.HonuaProcessAssumption() -> void
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.Rationale.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.Rationale.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.UserConfirmed.get -> bool
+Honua.Sdk.Processes.Models.HonuaProcessAssumption.UserConfirmed.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessCostEstimate!
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.Amount.get -> double
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.Amount.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.Equals(Honua.Sdk.Processes.Models.HonuaProcessCostEstimate? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.HonuaProcessCostEstimate() -> void
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.Units.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.Units.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDescription
+Honua.Sdk.Processes.Models.HonuaProcessDescription.HonuaProcessDescription() -> void
+Honua.Sdk.Processes.Models.HonuaProcessDescription.Inputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Honua.Sdk.Processes.Models.HonuaProcessInputDescription!>!
+Honua.Sdk.Processes.Models.HonuaProcessDescription.Inputs.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDescription.Outputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Honua.Sdk.Processes.Models.HonuaProcessOutputDescription!>!
+Honua.Sdk.Processes.Models.HonuaProcessDescription.Outputs.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessDryRunResult!
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Equals(Honua.Sdk.Processes.Models.HonuaProcessDryRunResult? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.HonuaProcessDryRunResult() -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Issues.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessValidationIssue!>!
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Issues.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Result.get -> Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary?
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Result.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Valid.get -> bool
+Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Valid.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary!
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.CostEstimate.get -> Honua.Sdk.Processes.Models.HonuaProcessCostEstimate?
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.CostEstimate.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.Equals(Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.EstimatedArtifacts.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact!>!
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.EstimatedArtifacts.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.EstimatedDuration.get -> System.TimeSpan?
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.EstimatedDuration.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.HonuaProcessDryRunSummary() -> void
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.SideEffects.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessSideEffect!>!
+Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.SideEffects.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError
+Honua.Sdk.Processes.Models.HonuaProcessError.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessError!
+Honua.Sdk.Processes.Models.HonuaProcessError.Category.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.Category.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.Details.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Processes.Models.HonuaProcessError.Details.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.Equals(Honua.Sdk.Processes.Models.HonuaProcessError? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessError.ErrorCode.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.ErrorCode.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.HonuaProcessError() -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.Message.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.Message.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.NodeId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.NodeId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.Phase.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.Phase.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.Retryability.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.Retryability.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessError.SuggestedAction.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessError.SuggestedAction.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessesConformance
+Honua.Sdk.Processes.Models.HonuaProcessesConformance.ConformsTo.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Models.HonuaProcessesConformance.ConformsTo.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessesConformance.HonuaProcessesConformance() -> void
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.HonuaProcessesLandingPage() -> void
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessLink!>!
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.Links.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.Title.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessesLandingPage.Title.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact!
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.ArtifactClass.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.ArtifactClass.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.Equals(Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.EstimatedSizeBytes.get -> long
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.EstimatedSizeBytes.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.HonuaProcessEstimatedArtifact() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs!
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.DirectInputs.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>!
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.DirectInputs.set -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.Equals(Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.HonuaProcessExecuteInputs() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.Plan.get -> Honua.Sdk.Processes.Models.HonuaAnalysisPlan?
+Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.Plan.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest!
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.Equals(Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.HonuaProcessExecuteRequest() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.Inputs.get -> Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs!
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.Inputs.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.Response.get -> string!
+Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.Response.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessExecutionContext!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.Equals(Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.HonuaProcessExecutionContext() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.Metadata.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.Timeout.get -> System.TimeSpan?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.Timeout.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.WorkspaceId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.WorkspaceId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Equals(Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Error.get -> Honua.Sdk.Processes.Models.HonuaProcessError?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Error.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.EventType.get -> string!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.EventType.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.HonuaProcessExecutionEvent() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Progress.get -> Honua.Sdk.Processes.Models.HonuaProcessJobProgress?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Progress.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Result.get -> Honua.Sdk.Processes.Models.HonuaProcessExecutionResult?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Result.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.StageResult.get -> Honua.Sdk.Processes.Models.HonuaProcessStageResult?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.StageResult.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.Equals(Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.Error.get -> Honua.Sdk.Processes.Models.HonuaProcessError?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.Error.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.HonuaProcessExecutionOutcome() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.JobId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.JobId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.Result.get -> Honua.Sdk.Processes.Models.HonuaProcessExecutionResult?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.Result.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessExecutionResult!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Artifacts.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessArtifactRef!>!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Artifacts.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Assumptions.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessAssumption!>!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Assumptions.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Equals(Honua.Sdk.Processes.Models.HonuaProcessExecutionResult? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.HonuaProcessExecutionResult() -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.ResultId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.ResultId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.StageResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessStageResult!>!
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.StageResults.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Status.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Status.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Summary.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Summary.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.HonuaProcessInputDescription() -> void
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.Schema.get -> Honua.Sdk.Processes.Models.HonuaProcessIoSchema?
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.Schema.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.Title.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessInputDescription.Title.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.ContentMediaType.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.ContentMediaType.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.ExtensionData.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>!
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.ExtensionData.set -> void
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.HonuaProcessIoSchema() -> void
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.Type.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessIoSchema.Type.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobList
+Honua.Sdk.Processes.Models.HonuaProcessJobList.HonuaProcessJobList() -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobList.Jobs.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessJobStatus!>!
+Honua.Sdk.Processes.Models.HonuaProcessJobList.Jobs.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobList.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessLink!>!
+Honua.Sdk.Processes.Models.HonuaProcessJobList.Links.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessJobProgress!
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.CurrentNodeId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.CurrentNodeId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.Equals(Honua.Sdk.Processes.Models.HonuaProcessJobProgress? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.HonuaProcessJobProgress() -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.JobId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.JobId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.Message.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.Message.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.ProgressPercent.get -> int
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.ProgressPercent.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.StartedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.StartedAt.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.State.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.State.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.UpdatedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Processes.Models.HonuaProcessJobProgress.UpdatedAt.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Created.get -> System.DateTimeOffset?
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Created.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.HonuaProcessJobStatus() -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.JobId.get -> string!
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.JobId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessLink!>!
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Links.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Message.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Message.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.ProcessId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.ProcessId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Progress.get -> int?
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Progress.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Status.get -> string!
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Status.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Type.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Type.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Updated.get -> System.DateTimeOffset?
+Honua.Sdk.Processes.Models.HonuaProcessJobStatus.Updated.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessLink
+Honua.Sdk.Processes.Models.HonuaProcessLink.HonuaProcessLink() -> void
+Honua.Sdk.Processes.Models.HonuaProcessLink.Href.get -> string!
+Honua.Sdk.Processes.Models.HonuaProcessLink.Href.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessLink.Rel.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessLink.Rel.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessLink.Title.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessLink.Title.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessLink.Type.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessLink.Type.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessList
+Honua.Sdk.Processes.Models.HonuaProcessList.HonuaProcessList() -> void
+Honua.Sdk.Processes.Models.HonuaProcessList.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessLink!>!
+Honua.Sdk.Processes.Models.HonuaProcessList.Links.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessList.Processes.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessSummary!>!
+Honua.Sdk.Processes.Models.HonuaProcessList.Processes.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.HonuaProcessOutputDescription() -> void
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.Schema.get -> Honua.Sdk.Processes.Models.HonuaProcessIoSchema?
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.Schema.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.Title.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessOutputDescription.Title.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult!
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.Equals(Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.HonuaProcessPlanValidationResult() -> void
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.Issues.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessValidationIssue!>!
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.Issues.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.Valid.get -> bool
+Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.Valid.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessProblem
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Detail.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Detail.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessProblem.HonuaProcessProblem() -> void
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Status.get -> int?
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Status.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Title.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Title.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Type.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessProblem.Type.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessResults
+Honua.Sdk.Processes.Models.HonuaProcessResults.HonuaProcessResults() -> void
+Honua.Sdk.Processes.Models.HonuaProcessResults.Outputs.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>!
+Honua.Sdk.Processes.Models.HonuaProcessResults.Outputs.set -> void
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessSideEffect!
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.EffectType.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.EffectType.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.Equals(Honua.Sdk.Processes.Models.HonuaProcessSideEffect? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.HonuaProcessSideEffect() -> void
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.Target.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessSideEffect.Target.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessStageResult
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessStageResult!
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.Equals(Honua.Sdk.Processes.Models.HonuaProcessStageResult? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.Error.get -> Honua.Sdk.Processes.Models.HonuaProcessError?
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.Error.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.HonuaProcessStageResult() -> void
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.NodeId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.NodeId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.PartialArtifacts.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessArtifactRef!>!
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.PartialArtifacts.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.State.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessStageResult.State.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Description.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Description.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.HonuaProcessSummary() -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Id.get -> string!
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Id.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.JobControlOptions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Models.HonuaProcessSummary.JobControlOptions.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Processes.Models.HonuaProcessLink!>!
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Links.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.OutputTransmission.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Processes.Models.HonuaProcessSummary.OutputTransmission.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Title.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Title.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Version.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessSummary.Version.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.<Clone>$() -> Honua.Sdk.Processes.Models.HonuaProcessValidationIssue!
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Equals(Honua.Sdk.Processes.Models.HonuaProcessValidationIssue? other) -> bool
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Field.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Field.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.HonuaProcessValidationIssue() -> void
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Message.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Message.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.NodeId.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.NodeId.init -> void
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Severity.get -> string?
+Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Severity.init -> void
+override Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.ToString() -> string!
+override Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.ToString() -> string!
+override Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.ToString() -> string!
+override Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.ToString() -> string!
+override Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.ToString() -> string!
+override Honua.Sdk.Processes.Authoring.HonuaProcessOutput.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessOutput.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessOutput.ToString() -> string!
+override Honua.Sdk.Processes.Authoring.HonuaProcessParameter.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Authoring.HonuaProcessParameter.GetHashCode() -> int
+override Honua.Sdk.Processes.Authoring.HonuaProcessParameter.ToString() -> string!
+override Honua.Sdk.Processes.Exceptions.HonuaProcessesException.HttpStatus.get -> int?
+override Honua.Sdk.Processes.Exceptions.HonuaProcessesException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+override Honua.Sdk.Processes.Models.HonuaAnalysisPlan.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaAnalysisPlan.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaAnalysisPlan.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaPlanStep.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaPlanStep.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaPlanStep.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessAssumption.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessAssumption.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessAssumption.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessError.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessError.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessError.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessJobProgress.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessJobProgress.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessJobProgress.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessSideEffect.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessSideEffect.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessSideEffect.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessStageResult.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessStageResult.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessStageResult.ToString() -> string!
+override Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.Equals(object? obj) -> bool
+override Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.GetHashCode() -> int
+override Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.ToString() -> string!
+static Honua.Sdk.Processes.Authoring.HonuaProcessAuthoring.DefinePlan(string! planId) -> Honua.Sdk.Processes.Authoring.HonuaAnalysisPlanBuilder!
+static Honua.Sdk.Processes.Authoring.HonuaProcessAuthoring.DefineProcess(string! processId) -> Honua.Sdk.Processes.Authoring.HonuaProcessBuilder!
+static Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessDefinition? left, Honua.Sdk.Processes.Authoring.HonuaProcessDefinition? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessDefinition.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessDefinition? left, Honua.Sdk.Processes.Authoring.HonuaProcessDefinition? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress? left, Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress? left, Honua.Sdk.Processes.Authoring.HonuaProcessHarnessProgress? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun? left, Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun? left, Honua.Sdk.Processes.Authoring.HonuaProcessHarnessRun? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessJobInput? left, Honua.Sdk.Processes.Authoring.HonuaProcessJobInput? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessJobInput.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessJobInput? left, Honua.Sdk.Processes.Authoring.HonuaProcessJobInput? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Failure(string! errorMessage) -> Honua.Sdk.Processes.Authoring.HonuaProcessJobResult!
+static Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessJobResult? left, Honua.Sdk.Processes.Authoring.HonuaProcessJobResult? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessJobResult? left, Honua.Sdk.Processes.Authoring.HonuaProcessJobResult? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessJobResult.Success(System.Collections.Generic.IReadOnlyDictionary<string!, string!>? outputs = null) -> Honua.Sdk.Processes.Authoring.HonuaProcessJobResult!
+static Honua.Sdk.Processes.Authoring.HonuaProcessOutput.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessOutput? left, Honua.Sdk.Processes.Authoring.HonuaProcessOutput? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessOutput.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessOutput? left, Honua.Sdk.Processes.Authoring.HonuaProcessOutput? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessParameter.operator !=(Honua.Sdk.Processes.Authoring.HonuaProcessParameter? left, Honua.Sdk.Processes.Authoring.HonuaProcessParameter? right) -> bool
+static Honua.Sdk.Processes.Authoring.HonuaProcessParameter.operator ==(Honua.Sdk.Processes.Authoring.HonuaProcessParameter? left, Honua.Sdk.Processes.Authoring.HonuaProcessParameter? right) -> bool
+static Honua.Sdk.Processes.Extensions.ServiceCollectionExtensions.AddHonuaProcesses(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.Processes.HonuaProcessesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Honua.Sdk.Processes.Models.HonuaAnalysisPlan.operator !=(Honua.Sdk.Processes.Models.HonuaAnalysisPlan? left, Honua.Sdk.Processes.Models.HonuaAnalysisPlan? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaAnalysisPlan.operator ==(Honua.Sdk.Processes.Models.HonuaAnalysisPlan? left, Honua.Sdk.Processes.Models.HonuaAnalysisPlan? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaPlanStep.operator !=(Honua.Sdk.Processes.Models.HonuaPlanStep? left, Honua.Sdk.Processes.Models.HonuaPlanStep? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaPlanStep.operator ==(Honua.Sdk.Processes.Models.HonuaPlanStep? left, Honua.Sdk.Processes.Models.HonuaPlanStep? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.operator !=(Honua.Sdk.Processes.Models.HonuaProcessArtifactRef? left, Honua.Sdk.Processes.Models.HonuaProcessArtifactRef? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessArtifactRef.operator ==(Honua.Sdk.Processes.Models.HonuaProcessArtifactRef? left, Honua.Sdk.Processes.Models.HonuaProcessArtifactRef? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessAssumption.operator !=(Honua.Sdk.Processes.Models.HonuaProcessAssumption? left, Honua.Sdk.Processes.Models.HonuaProcessAssumption? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessAssumption.operator ==(Honua.Sdk.Processes.Models.HonuaProcessAssumption? left, Honua.Sdk.Processes.Models.HonuaProcessAssumption? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.operator !=(Honua.Sdk.Processes.Models.HonuaProcessCostEstimate? left, Honua.Sdk.Processes.Models.HonuaProcessCostEstimate? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessCostEstimate.operator ==(Honua.Sdk.Processes.Models.HonuaProcessCostEstimate? left, Honua.Sdk.Processes.Models.HonuaProcessCostEstimate? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.operator !=(Honua.Sdk.Processes.Models.HonuaProcessDryRunResult? left, Honua.Sdk.Processes.Models.HonuaProcessDryRunResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessDryRunResult.operator ==(Honua.Sdk.Processes.Models.HonuaProcessDryRunResult? left, Honua.Sdk.Processes.Models.HonuaProcessDryRunResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.operator !=(Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary? left, Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary.operator ==(Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary? left, Honua.Sdk.Processes.Models.HonuaProcessDryRunSummary? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessError.operator !=(Honua.Sdk.Processes.Models.HonuaProcessError? left, Honua.Sdk.Processes.Models.HonuaProcessError? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessError.operator ==(Honua.Sdk.Processes.Models.HonuaProcessError? left, Honua.Sdk.Processes.Models.HonuaProcessError? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.operator !=(Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact? left, Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact.operator ==(Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact? left, Honua.Sdk.Processes.Models.HonuaProcessEstimatedArtifact? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.FromDirectInputs(System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>! inputs) -> Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs!
+static Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.FromPlan(Honua.Sdk.Processes.Models.HonuaAnalysisPlan! plan) -> Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs!
+static Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.operator !=(Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs? left, Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs.operator ==(Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs? left, Honua.Sdk.Processes.Models.HonuaProcessExecuteInputs? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.operator !=(Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest? left, Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest.operator ==(Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest? left, Honua.Sdk.Processes.Models.HonuaProcessExecuteRequest? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.operator !=(Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.operator ==(Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionContext? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.operator !=(Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent.operator ==(Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionEvent? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.operator !=(Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome.operator ==(Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionOutcome? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.operator !=(Honua.Sdk.Processes.Models.HonuaProcessExecutionResult? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessExecutionResult.operator ==(Honua.Sdk.Processes.Models.HonuaProcessExecutionResult? left, Honua.Sdk.Processes.Models.HonuaProcessExecutionResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessJobProgress.operator !=(Honua.Sdk.Processes.Models.HonuaProcessJobProgress? left, Honua.Sdk.Processes.Models.HonuaProcessJobProgress? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessJobProgress.operator ==(Honua.Sdk.Processes.Models.HonuaProcessJobProgress? left, Honua.Sdk.Processes.Models.HonuaProcessJobProgress? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.operator !=(Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult? left, Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult.operator ==(Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult? left, Honua.Sdk.Processes.Models.HonuaProcessPlanValidationResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessSideEffect.operator !=(Honua.Sdk.Processes.Models.HonuaProcessSideEffect? left, Honua.Sdk.Processes.Models.HonuaProcessSideEffect? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessSideEffect.operator ==(Honua.Sdk.Processes.Models.HonuaProcessSideEffect? left, Honua.Sdk.Processes.Models.HonuaProcessSideEffect? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessStageResult.operator !=(Honua.Sdk.Processes.Models.HonuaProcessStageResult? left, Honua.Sdk.Processes.Models.HonuaProcessStageResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessStageResult.operator ==(Honua.Sdk.Processes.Models.HonuaProcessStageResult? left, Honua.Sdk.Processes.Models.HonuaProcessStageResult? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.operator !=(Honua.Sdk.Processes.Models.HonuaProcessValidationIssue? left, Honua.Sdk.Processes.Models.HonuaProcessValidationIssue? right) -> bool
+static Honua.Sdk.Processes.Models.HonuaProcessValidationIssue.operator ==(Honua.Sdk.Processes.Models.HonuaProcessValidationIssue? left, Honua.Sdk.Processes.Models.HonuaProcessValidationIssue? right) -> bool

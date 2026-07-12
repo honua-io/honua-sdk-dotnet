@@ -25,7 +25,7 @@ published `Honua.Sdk.*` package versions in the fixture.
 | Feature edit envelopes/results | `Honua.Sdk.Abstractions` | Mobile edit DTOs and queued offline payloads map to SDK edit contracts. |
 | Feature attachment requests/results | `Honua.Sdk.Abstractions` | Mobile delegates through SDK attachment clients and keeps only runtime adapter behavior. |
 | Geometry and spatial references | Split pending SDK geometry contracts | Keep platform coordinates at mobile edges; use NetTopologySuite and ProjNet rather than custom geometry engines where possible. |
-| Offline sync state, journals, conflicts | `Honua.Sdk.Offline.Abstractions` plus mobile runtime adapters | Mobile owns native queues, GeoPackage persistence, scheduling, and background execution. |
+| Offline sync state, journals, conflicts | `Honua.Sdk.Abstractions` (`Honua.Sdk.Offline.Abstractions` namespace) plus mobile runtime adapters | Mobile owns native queues, GeoPackage persistence, scheduling, and background execution. |
 | Form-related feature schemas | `Honua.Sdk.Abstractions` plus `Honua.Sdk.Field` | Mobile owns form rendering, validation UX, capture workflow, local media paths, and device media handling. |
 | Scene metadata and offline scene packages | `Honua.Sdk.Abstractions.Scenes` plus `Honua.Sdk.Scenes` client | Mobile and embed own renderers, caches, downloads, file placement, and display lifecycle. |
 | Routing and network analysis | `Honua.Sdk.Abstractions` contracts plus `Honua.Sdk.GeoServices` NAServer client | Mobile owns device location providers, platform permission flows, route display, and map interaction. |
@@ -53,7 +53,8 @@ published `Honua.Sdk.*` package versions in the fixture.
 - New scene discovery, endpoint resolution, access envelope, and offline scene
   package manifest code targets `Honua.Sdk.Abstractions.Scenes` contracts and
   the `Honua.Sdk.Scenes` client.
-- New portable offline code targets `Honua.Sdk.Offline.Abstractions` for
+- New portable offline code targets the `Honua.Sdk.Offline.Abstractions`
+  namespace from the `Honua.Sdk.Abstractions` package for
   manifests, source descriptors, change journal entries, checkpoints, retry
   checkpoints, and conflict envelopes.
 - Sibling repos consume SDK contracts through published NuGet packages from

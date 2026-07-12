@@ -1,0 +1,39 @@
+#nullable enable
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.HonuaSceneException() -> void
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.HonuaSceneException(string! message) -> void
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.HonuaSceneException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.HonuaSceneException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody = null) -> void
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.HonuaSceneException(System.Net.HttpStatusCode statusCode, string! message, string? responseBody, System.Exception! innerException) -> void
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.ResponseBody.get -> string?
+Honua.Sdk.Scenes.Exceptions.HonuaSceneException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.Scenes.Extensions.ServiceCollectionExtensions
+Honua.Sdk.Scenes.HonuaSceneClient
+Honua.Sdk.Scenes.HonuaSceneClient.GetSceneAsync(string! sceneId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Scenes.HonuaSceneMetadata!>!
+Honua.Sdk.Scenes.HonuaSceneClient.HonuaSceneClient(System.Net.Http.HttpClient! httpClient, Honua.Sdk.Scenes.HonuaSceneClientOptions! options) -> void
+Honua.Sdk.Scenes.HonuaSceneClient.HonuaSceneClient(System.Net.Http.HttpClient! httpClient, Microsoft.Extensions.Options.IOptions<Honua.Sdk.Scenes.HonuaSceneClientOptions!>! options) -> void
+Honua.Sdk.Scenes.HonuaSceneClient.ListScenesAsync(Honua.Sdk.Abstractions.Scenes.HonuaSceneListRequest? request = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Scenes.HonuaSceneSummary!>!>!
+Honua.Sdk.Scenes.HonuaSceneClient.ResolveSceneAsync(string! sceneId, Honua.Sdk.Abstractions.Scenes.HonuaSceneResolveRequest? request = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Abstractions.Scenes.HonuaSceneResolution!>!
+Honua.Sdk.Scenes.HonuaSceneClientOptions
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AccessTokenProvider.get -> Honua.Sdk.Abstractions.Authentication.IHonuaAccessTokenProvider?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AccessTokenProvider.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.ApiKey.get -> string?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.ApiKey.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.ApiKeyProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.ApiKeyProvider.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AuthenticationAudience.get -> string?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AuthenticationAudience.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AuthenticationDiagnostics.get -> Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationDiagnosticHandler?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AuthenticationDiagnostics.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AuthenticationScopes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Scenes.HonuaSceneClientOptions.AuthenticationScopes.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.BearerToken.get -> string?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.BearerToken.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.Scenes.HonuaSceneClientOptions.BearerTokenProvider.set -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.HonuaSceneClientOptions() -> void
+Honua.Sdk.Scenes.HonuaSceneClientOptions.SceneApiPath.get -> string!
+Honua.Sdk.Scenes.HonuaSceneClientOptions.SceneApiPath.set -> void
+override Honua.Sdk.Scenes.Exceptions.HonuaSceneException.HttpStatus.get -> int?
+override Honua.Sdk.Scenes.Exceptions.HonuaSceneException.ProblemDetails.get -> Honua.Sdk.Abstractions.HonuaProblemDetails?
+static Honua.Sdk.Scenes.Extensions.ServiceCollectionExtensions.AddHonuaScenes(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.Scenes.HonuaSceneClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -21,7 +21,7 @@ internal static class ExpressionFunctions
         {
             if (args.Count != 3)
             {
-                throw new ExpressionException("if() requires exactly 3 arguments.");
+                throw new ExpressionEvaluationException("if() requires exactly 3 arguments.");
             }
 
             var condition = Coercion.ToBoolean(args[0].Evaluate(context, depth));
@@ -72,7 +72,7 @@ internal static class ExpressionFunctions
             "NOW" => DateTimeOffset.UtcNow,
             "DATE-DIFF-DAYS" or "DATEDIFFDAYS" => DateDiffDays(values),
             "ADD-DAYS" or "ADDDAYS" => AddDays(values),
-            _ => throw new ExpressionException($"Unknown function '{name}'."),
+            _ => throw new ExpressionEvaluationException($"Unknown function '{name}'."),
         };
     }
 

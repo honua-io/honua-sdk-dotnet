@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Honua / generated">
-    <PackageVersion Include="Geospatial.Grpc" Version="$(GeospatialGrpcVersion)" />
+    <PackageVersion Include="Geospatial.Grpc" Version="0.1.0-alpha.2" />
   </ItemGroup>
 
   <ItemGroup Label="Microsoft.Extensions">
@@ -35,6 +35,10 @@
 
   <ItemGroup Label="SourceLink (debug stepping)">
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="API approval">
+    <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
   </ItemGroup>
 
   <ItemGroup Label="Test runtime">
