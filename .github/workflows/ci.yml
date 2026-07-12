@@ -216,9 +216,9 @@ jobs:
 
   dotnet-sdk:
     # Matrix replacement for the 13 previously-duplicated dotnet-<package>-sdk
-    # jobs. Each matrix leg builds one shipped SDK package (13 sub-packages plus
-    # the Honua.Sdk meta) under strict release flags and, when present, runs its
-    # dedicated test project. The strict flag set
+    # jobs. Each matrix leg builds one shipped SDK package (13 sub-packages,
+    # the Honua.Sdk meta, plus the separate CLI tool) under strict release
+    # flags and, when present, runs its dedicated test project. The strict flag set
     # (TreatWarningsAsErrors=true / EnforceCodeStyleInBuild=true / Release) is
     # preserved verbatim. fail-fast is disabled so one package's failure does
     # not mask the others -- we want to see every red leg in a single run.
@@ -298,6 +298,11 @@ jobs:
             src: src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj
             tests:
               - tests/Honua.Sdk.ConsoleShare.Tests/Honua.Sdk.ConsoleShare.Tests.csproj
+          # Schema-pinned support-safe `honua doctor` .NET tool.
+          - label: Cli
+            src: src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj
+            tests:
+              - tests/Honua.Sdk.Cli.Tests/Honua.Sdk.Cli.Tests.csproj
           # Umbrella meta package -- builds Honua.Sdk and runs the AddHonua DI
           # smoke test that exercises the umbrella's registration surface.
           - label: Meta
