@@ -39,7 +39,7 @@ jobs:
             ${{ github.repository }}-${{ runner.os }}-playwright-
 
       - name: Restore browser trim projects
-        run: dotnet restore tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj
+        run: dotnet restore tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --locked-mode
 
       - name: Publish trimmed browser smoke app
         shell: bash

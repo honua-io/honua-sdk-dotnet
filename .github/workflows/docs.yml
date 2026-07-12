@@ -48,7 +48,7 @@ jobs:
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Restore
-        run: dotnet restore Honua.Sdk.sln
+        run: dotnet restore Honua.Sdk.sln --locked-mode
 
       - name: Build solution
         run: dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true
