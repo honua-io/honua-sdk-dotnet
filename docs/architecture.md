@@ -82,6 +82,7 @@ per-package `AddHonua*` extensions remain available unchanged.
 | Define / validate field forms, run record workflows | `Honua.Sdk.Field` |
 | Write a library that's agnostic to transport | `Honua.Sdk.Abstractions` only |
 | Model Console shells, route guards, environment profiles, and mTLS state | `Honua.Sdk.Abstractions` |
+| Emit a sanitized support bundle or perform bounded read-only replay | Install the separate `Honua.Sdk.Cli` .NET tool and run `honua doctor` |
 
 ## How clients compose
 

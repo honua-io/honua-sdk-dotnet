@@ -69,6 +69,7 @@ jobs:
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
+            "src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -127,6 +128,7 @@ jobs:
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
+            "src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -153,6 +155,7 @@ jobs:
             "tests/Honua.Sdk.Offline.Tests/Honua.Sdk.Offline.Tests.csproj"
             "tests/Honua.Sdk.Studio.Tests/Honua.Sdk.Studio.Tests.csproj"
             "tests/Honua.Sdk.ConsoleShare.Tests/Honua.Sdk.ConsoleShare.Tests.csproj"
+            "tests/Honua.Sdk.Cli.Tests/Honua.Sdk.Cli.Tests.csproj"
             "tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj"
           )
 
@@ -216,6 +219,7 @@ jobs:
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
+            "src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -254,6 +258,7 @@ jobs:
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
+            "src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 
@@ -284,6 +289,7 @@ jobs:
             "src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj"
             "src/Honua.Sdk.Studio/Honua.Sdk.Studio.csproj"
             "src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj"
+            "src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj"
             "src/Honua.Sdk/Honua.Sdk.csproj"
           )
 

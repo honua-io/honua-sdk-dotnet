@@ -22,6 +22,7 @@ The publish workflow builds and packs:
 - `Honua.Sdk.Catalogs`
 - `Honua.Sdk.Offline`
 - `Honua.Sdk.ConsoleShare`
+- `Honua.Sdk.Cli` (.NET tool package)
 - `Honua.Sdk`
 
 ## Release Flow
@@ -93,6 +94,7 @@ for project in \
   src/Honua.Sdk.Catalogs/Honua.Sdk.Catalogs.csproj \
   src/Honua.Sdk.Offline/Honua.Sdk.Offline.csproj \
   src/Honua.Sdk.ConsoleShare/Honua.Sdk.ConsoleShare.csproj \
+  src/Honua.Sdk.Cli/Honua.Sdk.Cli.csproj \
   src/Honua.Sdk/Honua.Sdk.csproj
 do
   dotnet pack "$project" --configuration Release -o ./nupkgs

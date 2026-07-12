@@ -12,7 +12,7 @@ real-time feature stream contracts.
 
 > **New here? Pick your path:**
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
-> - Want a map of the 14 packages before you choose → [docs/architecture.md](docs/architecture.md)
+> - Want a map of the client packages and CLI tool → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
 > - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
@@ -38,6 +38,7 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
 | **Honua.Sdk.OgcFeatures** | OGC API Features and WFS 2.0 read/query client -- landing page, conformance, collections, queryables, items, plus WFS GetCapabilities / GetFeature (GeoJSON) / DescribeFeatureType |
 | **Honua.Sdk.Catalogs** | OGC API Records + STAC catalog client -- landing pages, conformance, collections, item / record pages, GET/POST search with paging, raw JSON |
+| **Honua.Sdk.Cli** | `honua doctor` .NET tool -- schema-pinned sanitized diagnostic bundles, anonymous capability probe, and bounded read-only replay |
 | *Geocoding* (in Admin) | Forward/reverse geocoding and autocomplete via `IHonuaGeocodingClient` |
 
 Browser and WebAssembly consumers should start with
@@ -73,6 +74,16 @@ dotnet add package Honua.Sdk.Catalogs
 ```
 
 </details>
+
+Install the support-safe diagnostics tool separately:
+
+```bash
+dotnet tool install --global Honua.Sdk.Cli
+honua doctor --help
+```
+
+See [Sanitized diagnostic bundles](docs/diagnostic-bundles.md) for capture,
+consent, privacy, and replay guidance.
 
 Prerelease / dry-run builds are also available from
 [GitHub Packages](INSTALL.md#install-from-github-packages).
@@ -186,6 +197,7 @@ src/
   Honua.Sdk.Spec/                Spec workspace validate/plan/apply/artifact client package
   Honua.Sdk.Studio/              Console Studio analysis-report read client package
   Honua.Sdk.ConsoleShare/        Console Share access/public-link/embed-token, export/traffic, and open-data (DCAT/STAC) client package
+  Honua.Sdk.Cli/                 `honua doctor` support-safe diagnostic .NET tool
   Honua.Sdk.Field/               Field form, validation, and workflow contracts
   Honua.Sdk.GeoServices/         GeoServices FeatureServer + routing client package
   Honua.Sdk.Scenes/              Scene metadata and offline package contract client

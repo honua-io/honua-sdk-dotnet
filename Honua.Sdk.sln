@@ -96,11 +96,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfflineConflictConsole", "examples\OfflineConflictConsole\OfflineConflictConsole.csproj", "{08FAB285-9461-48CF-A3C2-763D470BF544}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FieldFormConsole", "examples\FieldFormConsole\FieldFormConsole.csproj", "{1B913296-7F44-425E-8EEB-51C1E9967F9A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.ConsoleShare", "src\Honua.Sdk.ConsoleShare\Honua.Sdk.ConsoleShare.csproj", "{2A710C6A-B656-4803-A3D0-A38FE81E21B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.ConsoleShare.Tests", "tests\Honua.Sdk.ConsoleShare.Tests\Honua.Sdk.ConsoleShare.Tests.csproj", "{68A8457E-4830-45F3-A0BA-C68F706201B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Conformance.Tests", "tests\Honua.Sdk.Conformance.Tests\Honua.Sdk.Conformance.Tests.csproj", "{11481936-9CF4-444A-A1A7-B7E56C118278}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Cli", "src\Honua.Sdk.Cli\Honua.Sdk.Cli.csproj", "{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Honua.Sdk.Cli.Tests", "tests\Honua.Sdk.Cli.Tests\Honua.Sdk.Cli.Tests.csproj", "{9E5F4FBD-2100-486E-A13D-50771F11B489}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -676,6 +681,30 @@ Global
 		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x64.Build.0 = Release|Any CPU
 		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x86.ActiveCfg = Release|Any CPU
 		{11481936-9CF4-444A-A1A7-B7E56C118278}.Release|x86.Build.0 = Release|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Release|x64.Build.0 = Release|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E}.Release|x86.Build.0 = Release|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Debug|x86.Build.0 = Debug|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Release|x64.Build.0 = Release|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Release|x86.ActiveCfg = Release|Any CPU
+		{9E5F4FBD-2100-486E-A13D-50771F11B489}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -728,5 +757,7 @@ Global
 		{2A710C6A-B656-4803-A3D0-A38FE81E21B7} = {2F8F8F8F-8F8F-8F8F-8F8F-8F8F8F8F8F8F}
 		{68A8457E-4830-45F3-A0BA-C68F706201B4} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 		{11481936-9CF4-444A-A1A7-B7E56C118278} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
+		{DB369D5C-9C66-4C4A-9A0C-9E33F478D98E} = {2F8F8F8F-8F8F-8F8F-8F8F-8F8F8F8F8F8F}
+		{9E5F4FBD-2100-486E-A13D-50771F11B489} = {3F9F9F9F-9F9F-9F9F-9F9F-9F9F9F9F9F9F}
 	EndGlobalSection
 EndGlobal

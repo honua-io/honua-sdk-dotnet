@@ -7,7 +7,7 @@ An index of the public documentation that ships alongside the
 
 ## Get started
 
-- [Architecture overview](architecture.md) — a one-page map of the 14 packages (meta plus 13 sub-packages), how they compose, and which one to depend on.
+- [Architecture overview](architecture.md) — a one-page map of the client packages and separate CLI tool, how they compose, and which one to use.
 - [Quickstart](quickstart.md) — build a console app that talks gRPC + REST in 5 minutes.
 - [API reference](api-reference.md) — how to browse the full XML-doc API surface (IDE hover, local DocFX site, or GitHub source).
 - [INSTALL.md](../INSTALL.md) — NuGet, GitHub Packages, version policy, server compatibility baseline.
@@ -15,6 +15,7 @@ An index of the public documentation that ships alongside the
 - [Console client contracts](console-client-contracts.md) — Blazor Web and MAUI host contract map, route guards, environment profiles, Studio reports/artifacts, native mTLS state, and fixtures.
 - [Browser / WASM support](browser-wasm-support.md) — supported surface, gRPC-Web, host-side constraints.
 - [Troubleshooting](troubleshooting.md) — concrete failure modes and fixes for configuration, auth, retry, CORS, compatibility, Catalog/Records/STAC/Scenes, and offline sync.
+- [Sanitized diagnostic bundles](diagnostic-bundles.md) — `honua doctor` capture, consent, schema provenance, privacy boundary, and read-only replay.
 
 ## Capability guides
 
