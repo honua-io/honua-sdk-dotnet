@@ -30,6 +30,7 @@ An index of the public documentation that ships alongside the
 - [Plugin contracts](plugin-contracts.md) — host-neutral plugin manifests, permissions, compatibility.
 - [Metadata catalog parity](metadata-catalog-parity.md) — Catalog vs OGC API Records vs STAC surface comparison.
 - [Capability feature map](features/README.md) — current capability snapshot per protocol.
+- [Capability coverage snapshot](capability-coverage.md) — `sdk-coverage.v1.json` schema, generation, and CI drift gate for the cross-repo capability matrix.
 
 ## Operations
 

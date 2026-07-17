@@ -42,6 +42,8 @@
       href: plugin-contracts.md
     - name: Metadata catalog parity
       href: metadata-catalog-parity.md
+    - name: Capability coverage snapshot
+      href: capability-coverage.md
 - name: Operations
   items:
     - name: Release
