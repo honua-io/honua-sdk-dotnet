@@ -38,6 +38,31 @@ jobs:
       - name: Test CI enforcement helpers
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 
+  sdk-coverage:
+    name: SDK Capability Coverage Snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+
+      - name: Validate sdk-coverage.v1.json (drift gate)
+        # Regenerates the snapshot in memory from the curated inventory in
+        # scripts/generate-sdk-coverage.py and fails if it differs from the
+        # committed contracts/sdk-coverage.v1.json -- catching both stale
+        # commits and unknown/malformed capability keys. KEY_LIST_URL is
+        # intentionally left unset here so this always validates against the
+        # pinned contracts/fixtures/capability-keys.fixture.json mirror,
+        # matching what's actually committed.
+        run: |
+          python3 scripts/generate-sdk-coverage.py --check --summary "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload sdk-coverage.v1.json artifact
+        if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: sdk-coverage-v1
+          path: contracts/sdk-coverage.v1.json
+          if-no-files-found: error
+
   security-audit:
     name: Security Audit (NuGet)
     runs-on: ubuntu-latest
