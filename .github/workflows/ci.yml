@@ -47,8 +47,9 @@ jobs:
       - name: Validate sdk-coverage.v1.json (drift gate)
         # Regenerates the snapshot in memory from the curated inventory in
         # scripts/generate-sdk-coverage.py and fails if it differs from the
-        # committed contracts/sdk-coverage.v1.json -- catching both stale
-        # commits and unknown/malformed capability keys. KEY_LIST_URL is
+        # committed contracts/sdk-coverage.v1.json -- catching stale commits,
+        # unknown/malformed capability keys, and entrypoints that no longer
+        # resolve against src/ (deleted/renamed surfaces). KEY_LIST_URL is
         # intentionally left unset here so this always validates against the
         # pinned contracts/fixtures/capability-keys.fixture.json mirror,
         # matching what's actually committed.

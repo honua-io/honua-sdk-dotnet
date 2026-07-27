@@ -36,6 +36,21 @@ says, in concrete terms, where SDK coverage stops. This is enforced by
 ``_validate_entries`` below, not just convention -- a partial entry with no
 note fails the build.
 
+Entrypoints-must-exist (source-truth gate)
+-------------------------------------------
+Every ``entrypoints`` reference must resolve against the actual SDK source
+under ``src/``: the referenced type must be *publicly* declared in some
+``.cs`` file (real declaration syntax on comment/string-stripped text --
+``public [modifiers] class|interface|record|struct|enum Name``), and a
+``Type.Member`` reference must additionally match an accessible,
+declaration-shaped member in a file declaring that type. Occurrences that
+survive only in comments, XML doc prose, or string literals never count,
+and a type demoted to ``internal`` stops resolving. This is what makes the
+CI drift gate honest about *renames, deletions, and de-publicizing*, not
+just stale regeneration: any of those without updating the inventory fails
+``--check`` instead of leaving the snapshot claiming coverage that no
+longer exists.
+
 Usage
 -----
   python3 scripts/generate-sdk-coverage.py            # (re)writes contracts/sdk-coverage.v1.json
@@ -48,6 +63,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -55,6 +71,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
 OUTPUT_PATH = ROOT / "contracts" / "sdk-coverage.v1.json"
 FIXTURE_PATH = ROOT / "contracts" / "fixtures" / "capability-keys.fixture.json"
 CANONICAL_URL = (
@@ -507,6 +524,206 @@ def _validate_entries(entries: list[dict[str, Any]], canonical_keys: frozenset[s
         raise ValueError("sdk-coverage.v1.json validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
 
+_NAMESPACE_RE = re.compile(r"^\s*namespace\s+([A-Za-z_][\w.]*)", re.MULTILINE)
+
+# A *real, public* type declaration: the `public` keyword, optional
+# additional modifiers, then a type keyword and the type name. Matching is
+# done against comment/string-stripped text (see _strip_comments_and_strings)
+# so a declaration that only survives inside a comment, XML doc line, or
+# string literal never counts, and a type demoted to `internal` (or default
+# accessibility) drops out of the index -- exactly the cases where the
+# snapshot would otherwise keep advertising a public entrypoint that no
+# longer exists. Nested public types and `public partial` declarations
+# spread across files all match (each declaring file lands in the index).
+_PUBLIC_TYPE_DECL_RE = re.compile(
+    r"\bpublic\s+(?:(?:sealed|static|abstract|partial|readonly|ref|unsafe|new)\s+)*"
+    r"(?:class|interface|enum|struct|record(?:\s+(?:class|struct))?)\s+([A-Za-z_]\w*)"
+)
+
+
+def _strip_comments_and_strings(text: str) -> str:
+    """Blanks out comments and string/char literals from C# source.
+
+    Keeps the gate lexical and stdlib-only while making sure that ``//`` and
+    ``///`` line comments, ``/* */`` block comments, ordinary/interpolated
+    string literals (with backslash escapes), verbatim ``@"..."`` strings
+    (with ``\"\"`` escapes), raw ``\"\"\"...\"\"\"`` strings, and char
+    literals can never satisfy a type or member existence check. Newlines are
+    preserved so surrounding code structure stays intact.
+    """
+
+    out: list[str] = []
+    i, n = 0, len(text)
+    while i < n:
+        ch = text[i]
+        nxt = text[i + 1] if i + 1 < n else ""
+        if ch == "/" and nxt == "/":
+            end = text.find("\n", i)
+            i = n if end == -1 else end  # keep the newline itself
+        elif ch == "/" and nxt == "*":
+            end = text.find("*/", i + 2)
+            stop = n if end == -1 else end + 2
+            out.append("".join(c if c == "\n" else " " for c in text[i:stop]))
+            i = stop
+        elif ch == "@" and nxt == '"':
+            j = i + 2
+            while j < n:
+                if text[j] == '"':
+                    if j + 1 < n and text[j + 1] == '"':
+                        j += 2
+                        continue
+                    break
+                j += 1
+            out.append(" ")
+            i = j + 1
+        elif ch == '"':
+            if text.startswith('"""', i):
+                end = text.find('"""', i + 3)
+                out.append(" ")
+                i = n if end == -1 else end + 3
+            else:
+                j = i + 1
+                while j < n and text[j] != '"':
+                    j += 2 if text[j] == "\\" else 1
+                out.append(" ")
+                i = j + 1
+        elif ch == "'":
+            j = i + 1
+            while j < n and text[j] != "'":
+                j += 2 if text[j] == "\\" else 1
+            out.append(" ")
+            i = j + 1
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out)
+
+
+def _build_source_type_index(src_root: Path) -> dict[str, list[Path]]:
+    """Indexes every *public* type declared under ``src/`` as ``Namespace.TypeName``.
+
+    Deliberately lexical (regex over comment/string-stripped ``.cs`` files,
+    no Roslyn): the entrypoint strings in ``COVERAGE_ENTRIES`` are flat
+    ``Namespace.Type`` or ``Namespace.Type.Member`` references, so namespace
+    declarations plus public type-declaration syntax are enough to resolve
+    them, and this keeps the gate runnable in the same dependency-free
+    python step CI already uses.
+    """
+
+    index: dict[str, list[Path]] = {}
+    for path in sorted(src_root.rglob("*.cs")):
+        text = _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
+        namespaces = _NAMESPACE_RE.findall(text)
+        type_names = _PUBLIC_TYPE_DECL_RE.findall(text)
+        for namespace in namespaces or [""]:
+            for type_name in type_names:
+                full_name = f"{namespace}.{type_name}" if namespace else type_name
+                index.setdefault(full_name, []).append(path)
+    return index
+
+
+# Header tokens that mark a candidate member match as something other than an
+# accessible declaration: explicit non-public accessibility, or statement
+# keywords that mean the name is being *invoked/consumed* rather than declared.
+_MEMBER_REJECT_TOKENS = frozenset({"private", "protected", "return", "await", "throw", "yield"})
+
+
+def _member_publicly_declared(member: str, stripped_text: str) -> bool:
+    """True when ``stripped_text`` plausibly *declares* an accessible ``member``.
+
+    A declaration-shaped occurrence is the member name followed by ``(`` or
+    ``<...>(`` (method/ctor), or by ``{``, ``=>``, ``;``, or ``=`` (property,
+    field, event, expression-bodied member). The declaration header -- the
+    text between the previous ``;``/``{``/``}`` and the name -- must not
+    carry ``private``/``protected`` (or ``internal`` without ``public``;
+    interface members legitimately carry no modifier at all) and must not
+    look like an invocation context. Input must already be comment/string
+    stripped, so a renamed method whose old name lingers only in XML doc
+    prose, a comment, or a string no longer resolves.
+    """
+
+    declaration_re = re.compile(
+        rf"(?<![\w.]){re.escape(member)}\s*(?:<[^<>]{{0,120}}>)?\s*(?:\(|\{{|=>|;|=(?!=))"
+    )
+    for match in declaration_re.finditer(stripped_text):
+        start = match.start()
+        header_start = max(
+            stripped_text.rfind(";", 0, start),
+            stripped_text.rfind("{", 0, start),
+            stripped_text.rfind("}", 0, start),
+        ) + 1
+        header = stripped_text[header_start:start]
+        tokens = set(re.findall(r"[A-Za-z_]\w*", header))
+        if tokens & _MEMBER_REJECT_TOKENS:
+            continue
+        if "internal" in tokens and "public" not in tokens:
+            continue
+        trailing = header.rstrip()
+        if trailing and trailing[-1] in "=(,&|?:!+-*/":
+            continue  # argument/operand position -- an invocation, not a declaration
+        return True
+    return False
+
+
+def _validate_entrypoints_against_source(
+    entries: list[dict[str, Any]],
+    type_index: dict[str, list[Path]],
+) -> None:
+    """Source-truth gate: every entrypoint must resolve to real SDK source.
+
+    An entrypoint is either ``Namespace.TypeName`` (must be a *publicly*
+    declared type) or ``Namespace.TypeName.MemberName`` (the type must be
+    publicly declared and the member name must appear as an accessible,
+    declaration-shaped member in a file declaring that type -- see
+    ``_member_publicly_declared``). A reference that no longer resolves --
+    because the surface was deleted, renamed, or demoted from ``public`` --
+    fails generation and the CI ``--check`` drift gate.
+    """
+
+    errors: list[str] = []
+    file_text_cache: dict[Path, str] = {}
+
+    for entry in entries:
+        key = entry.get("key", "<missing key>")
+        for entrypoint in entry.get("entrypoints", []):
+            if not isinstance(entrypoint, str) or not entrypoint:
+                continue  # shape errors are _validate_entries' job
+            if entrypoint in type_index:
+                continue
+            parent, _, member = entrypoint.rpartition(".")
+            declaring_files = type_index.get(parent, [])
+            if declaring_files and member:
+                found = False
+                for path in declaring_files:
+                    if path not in file_text_cache:
+                        file_text_cache[path] = _strip_comments_and_strings(
+                            path.read_text(encoding="utf-8", errors="replace")
+                        )
+                    if _member_publicly_declared(member, file_text_cache[path]):
+                        found = True
+                        break
+                if found:
+                    continue
+                errors.append(
+                    f"{key!r}: entrypoint {entrypoint!r} names member {member!r}, but no file "
+                    f"declaring {parent!r} declares an accessible member by that name "
+                    "(occurrences in comments, XML docs, and strings do not count). The member "
+                    "was removed or renamed -- update or drop this coverage entry."
+                )
+                continue
+            errors.append(
+                f"{key!r}: entrypoint {entrypoint!r} does not resolve to any type publicly declared "
+                "under src/. The surface was removed, renamed, or made non-public -- update or drop "
+                "this coverage entry so the snapshot stops claiming coverage that no longer exists."
+            )
+
+    if errors:
+        raise ValueError(
+            "sdk-coverage.v1.json entrypoint source-truth check failed:\n"
+            + "\n".join(f"  - {e}" for e in errors)
+        )
+
+
 def _build_document(canonical_keys: frozenset[str], key_list_source: str) -> dict[str, Any]:
     ordered = sorted(COVERAGE_ENTRIES, key=lambda e: e["key"])
     _validate_entries(ordered, canonical_keys)
@@ -577,6 +794,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         canonical_keys, key_list_source = _load_canonical_keys()
+        _validate_entrypoints_against_source(COVERAGE_ENTRIES, _build_source_type_index(SRC_ROOT))
         document = _build_document(canonical_keys, key_list_source)
     except (ValueError, OSError, urllib.error.URLError, json.JSONDecodeError) as error:
         print(f"::error::{error}", file=sys.stderr)

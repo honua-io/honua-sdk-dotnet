@@ -93,6 +93,16 @@ Field semantics:
   this doc (and the generator) should be updated together.
 - **`entrypoints`**: fully-qualified public type and/or method names that
   provide the coverage -- always a real symbol in `src/`, never a paraphrase.
+  This is machine-enforced, not just convention: the generator indexes every
+  *publicly declared* type under `src/` (real declaration syntax, matched on
+  comment/string-stripped source) and fails if an entrypoint no longer
+  resolves (`Namespace.Type` must be a public type declaration;
+  `Namespace.Type.Member` must additionally match an accessible,
+  declaration-shaped member in a file declaring the type). Occurrences that
+  survive only in comments, XML doc prose, or string literals never count,
+  and a type demoted to `internal` stops resolving -- so a rename, deletion,
+  or de-publicizing of a mapped surface fails the CI drift gate until the
+  inventory and snapshot are updated together.
 
 ## Generating and validating
 
@@ -102,8 +112,8 @@ Field semantics:
 python3 scripts/generate-sdk-coverage.py
 
 # Drift gate: fails if the committed file doesn't match what the generator
-# would produce right now (unknown keys, missing partial notes, and stale
-# content all fail this):
+# would produce right now (unknown keys, missing partial notes, entrypoints
+# that no longer resolve against src/, and stale content all fail this):
 python3 scripts/generate-sdk-coverage.py --check
 ```
 
@@ -113,8 +123,8 @@ CI runs the `--check` form (see `.github/workflows/ci.yml`, job
 honua-evidence (honua-io/honua-evidence#1) can pull the latest snapshot.
 `scripts/tests/test_sdk_coverage.py` unit-tests the validation rules
 (unknown-key rejection, partial-requires-note, no-note-on-covered, duplicate
-keys) plus an end-to-end `--check` smoke test, and runs as part of the
-`workflow-validation` job's existing
+keys, entrypoint source-truth resolution) plus an end-to-end `--check` smoke
+test, and runs as part of the `workflow-validation` job's existing
 `python3 -m unittest discover -s scripts/tests -p 'test_*.py'` step.
 
 ## Updating the inventory
@@ -130,10 +140,15 @@ capability:
 3. Commit both files together. CI's drift gate fails a PR that changes
    coverage-relevant source without regenerating the snapshot.
 
-## Known gaps
+## Downstream ingestion
 
-- **honua-evidence ingestion is not yet proven end-to-end.** This issue
-  (honua-io/honua-server#2892 tracking the family; honua-io/honua-evidence#1
-  for the consumer) ships the producer side -- the validated, drift-gated,
-  CI-published snapshot -- but a live aggregate run pulling this SDK's
-  artifact into honua-evidence has not been executed as part of this change.
+honua-evidence (honua-io/honua-evidence#1) ingests this snapshot end-to-end:
+its aggregator fetches
+`https://raw.githubusercontent.com/honua-io/honua-sdk-dotnet/trunk/contracts/sdk-coverage.v1.json`,
+joins each entry into `data/capability-matrix.v1.json` under
+`capabilities[].sdks.dotnet` (status, `sinceVersion`, entrypoints), and tracks
+this producer in its freshness ledger (30-day staleness threshold). Pushes to
+`trunk` that change the snapshot also fire a `producer-updated`
+repository_dispatch to honua-evidence via
+`.github/workflows/notify-evidence.yml`, so re-aggregation is event-driven
+rather than waiting on the daily schedule.
