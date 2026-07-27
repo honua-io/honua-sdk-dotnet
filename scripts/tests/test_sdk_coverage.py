@@ -89,6 +89,17 @@ class SourceTruthGateTests(unittest.TestCase):
     def setUp(self) -> None:
         self.module = _load_module()
 
+    def _index_of(self, *sources: str):
+        """Builds a source type index over throwaway .cs files."""
+        import tempfile
+
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        root = Path(self._tmp.name)
+        for i, source in enumerate(sources):
+            (root / f"File{i}.cs").write_text(source, encoding="utf-8")
+        return self.module._build_source_type_index(root)
+
     def test_source_type_index_finds_declared_types(self) -> None:
         index = self.module._build_source_type_index(ROOT / "src")
         self.assertIn("Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient", index)
@@ -124,6 +135,123 @@ class SourceTruthGateTests(unittest.TestCase):
             entries = [{"key": "a.one", "entrypoints": ["Ns.Client.OldNameAsync"]}]
             with self.assertRaisesRegex(ValueError, "was removed or renamed"):
                 self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_internal_type_is_not_indexed(self) -> None:
+        index = self._index_of("namespace Ns;\ninternal sealed class Client { }\n")
+        self.assertNotIn("Ns.Client", index)
+        entries = [{"key": "a.one", "entrypoints": ["Ns.Client"]}]
+        with self.assertRaisesRegex(ValueError, "does not resolve to any type"):
+            self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_default_accessibility_type_is_not_indexed(self) -> None:
+        index = self._index_of("namespace Ns;\nclass Client { }\n")
+        self.assertNotIn("Ns.Client", index)
+
+    def test_type_declaration_only_in_comment_is_not_indexed(self) -> None:
+        source = (
+            "namespace Ns;\n"
+            "// public class Client used to live here\n"
+            "/* public interface Client { } */\n"
+            "/// <summary>public record Client</summary>\n"
+            'public class Other { public string S => "public class Client"; }\n'
+        )
+        index = self._index_of(source)
+        self.assertNotIn("Ns.Client", index)
+        self.assertIn("Ns.Other", index)
+
+    def test_public_partial_and_nested_types_are_indexed(self) -> None:
+        index = self._index_of(
+            "namespace Ns;\npublic partial class Client { public void FirstAsync() { } }\n",
+            "namespace Ns;\npublic partial class Client { public void SecondAsync() { } }\n",
+            "namespace Ns;\npublic static class Outer { public sealed class Inner { } }\n",
+        )
+        self.assertEqual(2, len(index["Ns.Client"]))
+        self.assertIn("Ns.Inner", index)
+        entries = [
+            {"key": "a.one", "entrypoints": ["Ns.Client.FirstAsync", "Ns.Client.SecondAsync"]},
+            {"key": "a.two", "entrypoints": ["Ns.Outer.Inner"]},
+        ]
+        # Should not raise: partial spread across files and nested public types resolve.
+        self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_record_struct_and_readonly_record_struct_are_indexed(self) -> None:
+        index = self._index_of(
+            "namespace Ns;\npublic readonly record struct Envelope(double X, double Y);\n"
+            "namespace Ns;\npublic record class Payload(string Id);\n"
+        )
+        self.assertIn("Ns.Envelope", index)
+        self.assertIn("Ns.Payload", index)
+
+    def test_member_only_in_xml_doc_or_comment_fails(self) -> None:
+        source = (
+            "namespace Ns;\n"
+            "/// <summary>Replaces OldNameAsync entirely; see OldNameAsync(CancellationToken).</summary>\n"
+            "public interface Client\n{\n"
+            "    // OldNameAsync() was removed in 2.0\n"
+            "    Task NewNameAsync();\n"
+            "}\n"
+        )
+        index = self._index_of(source)
+        entries = [{"key": "a.one", "entrypoints": ["Ns.Client.OldNameAsync"]}]
+        with self.assertRaisesRegex(ValueError, "was removed or renamed"):
+            self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_member_only_in_string_literal_fails(self) -> None:
+        source = (
+            "namespace Ns;\n"
+            "public class Client\n{\n"
+            '    public string Hint => "call OldNameAsync() instead";\n'
+            "}\n"
+        )
+        index = self._index_of(source)
+        entries = [{"key": "a.one", "entrypoints": ["Ns.Client.OldNameAsync"]}]
+        with self.assertRaisesRegex(ValueError, "was removed or renamed"):
+            self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_private_member_fails(self) -> None:
+        source = (
+            "namespace Ns;\n"
+            "public class Client\n{\n"
+            "    private Task OldNameAsync() => Task.CompletedTask;\n"
+            "}\n"
+        )
+        index = self._index_of(source)
+        entries = [{"key": "a.one", "entrypoints": ["Ns.Client.OldNameAsync"]}]
+        with self.assertRaisesRegex(ValueError, "was removed or renamed"):
+            self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_genuine_public_member_shapes_resolve(self) -> None:
+        source = (
+            "namespace Ns;\n"
+            "public class Client\n{\n"
+            "    public async Task<int> QueryAsync(string q) => await Task.FromResult(1);\n"
+            "    public int Count => 42;\n"
+            "    public string Name { get; set; }\n"
+            "    public event EventHandler Changed;\n"
+            "    public Client(string seed) { }\n"
+            "    public TResult Map<TResult>(Func<int, TResult> f) => f(1);\n"
+            "}\n"
+            "public interface Reader\n{\n"
+            "    Task<string> ReadAsync(CancellationToken ct);\n"
+            "}\n"
+        )
+        index = self._index_of(source)
+        entries = [
+            {
+                "key": "a.one",
+                "entrypoints": [
+                    "Ns.Client.QueryAsync",
+                    "Ns.Client.Count",
+                    "Ns.Client.Name",
+                    "Ns.Client.Changed",
+                    "Ns.Client.Map",
+                    "Ns.Reader.ReadAsync",
+                ],
+            }
+        ]
+        # Should not raise: methods, expression-bodied members, auto-properties,
+        # events, generic methods, and implicit-public interface members resolve.
+        self.module._validate_entrypoints_against_source(entries, index)
 
     def test_every_curated_entrypoint_resolves_against_real_source(self) -> None:
         # The gate CI actually relies on: the shipped inventory must resolve

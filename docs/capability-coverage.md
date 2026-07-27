@@ -94,11 +94,15 @@ Field semantics:
 - **`entrypoints`**: fully-qualified public type and/or method names that
   provide the coverage -- always a real symbol in `src/`, never a paraphrase.
   This is machine-enforced, not just convention: the generator indexes every
-  type declared under `src/` and fails if an entrypoint no longer resolves
-  (`Namespace.Type` must be a declared type; `Namespace.Type.Member` must
-  additionally name a member appearing in a file that declares the type). A
-  rename or deletion of a mapped public surface therefore fails the CI drift
-  gate until the inventory and snapshot are updated together.
+  *publicly declared* type under `src/` (real declaration syntax, matched on
+  comment/string-stripped source) and fails if an entrypoint no longer
+  resolves (`Namespace.Type` must be a public type declaration;
+  `Namespace.Type.Member` must additionally match an accessible,
+  declaration-shaped member in a file declaring the type). Occurrences that
+  survive only in comments, XML doc prose, or string literals never count,
+  and a type demoted to `internal` stops resolving -- so a rename, deletion,
+  or de-publicizing of a mapped surface fails the CI drift gate until the
+  inventory and snapshot are updated together.
 
 ## Generating and validating
 

@@ -39,13 +39,17 @@ note fails the build.
 Entrypoints-must-exist (source-truth gate)
 -------------------------------------------
 Every ``entrypoints`` reference must resolve against the actual SDK source
-under ``src/``: the referenced type must be declared in some ``.cs`` file
-(namespace + type name), and a ``Type.Member`` reference must additionally
-name a member that appears in a file declaring that type. This is what makes
-the CI drift gate honest about *renames and deletions*, not just stale
-regeneration: removing or renaming a mapped public client without updating
-the inventory fails ``--check`` instead of leaving the snapshot claiming
-coverage that no longer exists.
+under ``src/``: the referenced type must be *publicly* declared in some
+``.cs`` file (real declaration syntax on comment/string-stripped text --
+``public [modifiers] class|interface|record|struct|enum Name``), and a
+``Type.Member`` reference must additionally match an accessible,
+declaration-shaped member in a file declaring that type. Occurrences that
+survive only in comments, XML doc prose, or string literals never count,
+and a type demoted to ``internal`` stops resolving. This is what makes the
+CI drift gate honest about *renames, deletions, and de-publicizing*, not
+just stale regeneration: any of those without updating the inventory fails
+``--check`` instead of leaving the snapshot claiming coverage that no
+longer exists.
 
 Usage
 -----
@@ -521,32 +525,144 @@ def _validate_entries(entries: list[dict[str, Any]], canonical_keys: frozenset[s
 
 
 _NAMESPACE_RE = re.compile(r"^\s*namespace\s+([A-Za-z_][\w.]*)", re.MULTILINE)
-_TYPE_DECL_RE = re.compile(
-    r"\b(?:class|interface|struct|enum)\s+([A-Za-z_]\w*)"
-    r"|\brecord(?:\s+(?:class|struct))?\s+([A-Za-z_]\w*)"
+
+# A *real, public* type declaration: the `public` keyword, optional
+# additional modifiers, then a type keyword and the type name. Matching is
+# done against comment/string-stripped text (see _strip_comments_and_strings)
+# so a declaration that only survives inside a comment, XML doc line, or
+# string literal never counts, and a type demoted to `internal` (or default
+# accessibility) drops out of the index -- exactly the cases where the
+# snapshot would otherwise keep advertising a public entrypoint that no
+# longer exists. Nested public types and `public partial` declarations
+# spread across files all match (each declaring file lands in the index).
+_PUBLIC_TYPE_DECL_RE = re.compile(
+    r"\bpublic\s+(?:(?:sealed|static|abstract|partial|readonly|ref|unsafe|new)\s+)*"
+    r"(?:class|interface|enum|struct|record(?:\s+(?:class|struct))?)\s+([A-Za-z_]\w*)"
 )
 
 
-def _build_source_type_index(src_root: Path) -> dict[str, list[Path]]:
-    """Indexes every type declared under ``src/`` as ``Namespace.TypeName``.
+def _strip_comments_and_strings(text: str) -> str:
+    """Blanks out comments and string/char literals from C# source.
 
-    Deliberately lexical (regex over ``.cs`` files, no Roslyn): the
-    entrypoint strings in ``COVERAGE_ENTRIES`` are flat ``Namespace.Type``
-    or ``Namespace.Type.Member`` references, so namespace declarations plus
-    type-declaration keywords are enough to resolve them, and this keeps the
-    gate runnable in the same dependency-free python step CI already uses.
+    Keeps the gate lexical and stdlib-only while making sure that ``//`` and
+    ``///`` line comments, ``/* */`` block comments, ordinary/interpolated
+    string literals (with backslash escapes), verbatim ``@"..."`` strings
+    (with ``\"\"`` escapes), raw ``\"\"\"...\"\"\"`` strings, and char
+    literals can never satisfy a type or member existence check. Newlines are
+    preserved so surrounding code structure stays intact.
+    """
+
+    out: list[str] = []
+    i, n = 0, len(text)
+    while i < n:
+        ch = text[i]
+        nxt = text[i + 1] if i + 1 < n else ""
+        if ch == "/" and nxt == "/":
+            end = text.find("\n", i)
+            i = n if end == -1 else end  # keep the newline itself
+        elif ch == "/" and nxt == "*":
+            end = text.find("*/", i + 2)
+            stop = n if end == -1 else end + 2
+            out.append("".join(c if c == "\n" else " " for c in text[i:stop]))
+            i = stop
+        elif ch == "@" and nxt == '"':
+            j = i + 2
+            while j < n:
+                if text[j] == '"':
+                    if j + 1 < n and text[j + 1] == '"':
+                        j += 2
+                        continue
+                    break
+                j += 1
+            out.append(" ")
+            i = j + 1
+        elif ch == '"':
+            if text.startswith('"""', i):
+                end = text.find('"""', i + 3)
+                out.append(" ")
+                i = n if end == -1 else end + 3
+            else:
+                j = i + 1
+                while j < n and text[j] != '"':
+                    j += 2 if text[j] == "\\" else 1
+                out.append(" ")
+                i = j + 1
+        elif ch == "'":
+            j = i + 1
+            while j < n and text[j] != "'":
+                j += 2 if text[j] == "\\" else 1
+            out.append(" ")
+            i = j + 1
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out)
+
+
+def _build_source_type_index(src_root: Path) -> dict[str, list[Path]]:
+    """Indexes every *public* type declared under ``src/`` as ``Namespace.TypeName``.
+
+    Deliberately lexical (regex over comment/string-stripped ``.cs`` files,
+    no Roslyn): the entrypoint strings in ``COVERAGE_ENTRIES`` are flat
+    ``Namespace.Type`` or ``Namespace.Type.Member`` references, so namespace
+    declarations plus public type-declaration syntax are enough to resolve
+    them, and this keeps the gate runnable in the same dependency-free
+    python step CI already uses.
     """
 
     index: dict[str, list[Path]] = {}
     for path in sorted(src_root.rglob("*.cs")):
-        text = path.read_text(encoding="utf-8", errors="replace")
+        text = _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
         namespaces = _NAMESPACE_RE.findall(text)
-        type_names = [first or second for first, second in _TYPE_DECL_RE.findall(text)]
+        type_names = _PUBLIC_TYPE_DECL_RE.findall(text)
         for namespace in namespaces or [""]:
             for type_name in type_names:
                 full_name = f"{namespace}.{type_name}" if namespace else type_name
                 index.setdefault(full_name, []).append(path)
     return index
+
+
+# Header tokens that mark a candidate member match as something other than an
+# accessible declaration: explicit non-public accessibility, or statement
+# keywords that mean the name is being *invoked/consumed* rather than declared.
+_MEMBER_REJECT_TOKENS = frozenset({"private", "protected", "return", "await", "throw", "yield"})
+
+
+def _member_publicly_declared(member: str, stripped_text: str) -> bool:
+    """True when ``stripped_text`` plausibly *declares* an accessible ``member``.
+
+    A declaration-shaped occurrence is the member name followed by ``(`` or
+    ``<...>(`` (method/ctor), or by ``{``, ``=>``, ``;``, or ``=`` (property,
+    field, event, expression-bodied member). The declaration header -- the
+    text between the previous ``;``/``{``/``}`` and the name -- must not
+    carry ``private``/``protected`` (or ``internal`` without ``public``;
+    interface members legitimately carry no modifier at all) and must not
+    look like an invocation context. Input must already be comment/string
+    stripped, so a renamed method whose old name lingers only in XML doc
+    prose, a comment, or a string no longer resolves.
+    """
+
+    declaration_re = re.compile(
+        rf"(?<![\w.]){re.escape(member)}\s*(?:<[^<>]{{0,120}}>)?\s*(?:\(|\{{|=>|;|=(?!=))"
+    )
+    for match in declaration_re.finditer(stripped_text):
+        start = match.start()
+        header_start = max(
+            stripped_text.rfind(";", 0, start),
+            stripped_text.rfind("{", 0, start),
+            stripped_text.rfind("}", 0, start),
+        ) + 1
+        header = stripped_text[header_start:start]
+        tokens = set(re.findall(r"[A-Za-z_]\w*", header))
+        if tokens & _MEMBER_REJECT_TOKENS:
+            continue
+        if "internal" in tokens and "public" not in tokens:
+            continue
+        trailing = header.rstrip()
+        if trailing and trailing[-1] in "=(,&|?:!+-*/":
+            continue  # argument/operand position -- an invocation, not a declaration
+        return True
+    return False
 
 
 def _validate_entrypoints_against_source(
@@ -555,10 +671,12 @@ def _validate_entrypoints_against_source(
 ) -> None:
     """Source-truth gate: every entrypoint must resolve to real SDK source.
 
-    An entrypoint is either ``Namespace.TypeName`` (must be a declared type)
-    or ``Namespace.TypeName.MemberName`` (the type must be declared and the
-    member name must appear in a file declaring that type). A reference that
-    no longer resolves -- because the surface was deleted or renamed --
+    An entrypoint is either ``Namespace.TypeName`` (must be a *publicly*
+    declared type) or ``Namespace.TypeName.MemberName`` (the type must be
+    publicly declared and the member name must appear as an accessible,
+    declaration-shaped member in a file declaring that type -- see
+    ``_member_publicly_declared``). A reference that no longer resolves --
+    because the surface was deleted, renamed, or demoted from ``public`` --
     fails generation and the CI ``--check`` drift gate.
     """
 
@@ -575,26 +693,28 @@ def _validate_entrypoints_against_source(
             parent, _, member = entrypoint.rpartition(".")
             declaring_files = type_index.get(parent, [])
             if declaring_files and member:
-                member_re = re.compile(rf"\b{re.escape(member)}\b")
                 found = False
                 for path in declaring_files:
                     if path not in file_text_cache:
-                        file_text_cache[path] = path.read_text(encoding="utf-8", errors="replace")
-                    if member_re.search(file_text_cache[path]):
+                        file_text_cache[path] = _strip_comments_and_strings(
+                            path.read_text(encoding="utf-8", errors="replace")
+                        )
+                    if _member_publicly_declared(member, file_text_cache[path]):
                         found = True
                         break
                 if found:
                     continue
                 errors.append(
                     f"{key!r}: entrypoint {entrypoint!r} names member {member!r}, but no file "
-                    f"declaring {parent!r} mentions it. The member was removed or renamed -- "
-                    "update or drop this coverage entry."
+                    f"declaring {parent!r} declares an accessible member by that name "
+                    "(occurrences in comments, XML docs, and strings do not count). The member "
+                    "was removed or renamed -- update or drop this coverage entry."
                 )
                 continue
             errors.append(
-                f"{key!r}: entrypoint {entrypoint!r} does not resolve to any type declared "
-                "under src/. The surface was removed or renamed -- update or drop this "
-                "coverage entry so the snapshot stops claiming coverage that no longer exists."
+                f"{key!r}: entrypoint {entrypoint!r} does not resolve to any type publicly declared "
+                "under src/. The surface was removed, renamed, or made non-public -- update or drop "
+                "this coverage entry so the snapshot stops claiming coverage that no longer exists."
             )
 
     if errors:
