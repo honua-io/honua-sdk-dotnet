@@ -83,6 +83,56 @@ class ValidateEntriesTests(unittest.TestCase):
             self.module._validate_entries(entries, self.canonical)
 
 
+class SourceTruthGateTests(unittest.TestCase):
+    """The entrypoints-must-exist gate (rename/delete drift, issue #273)."""
+
+    def setUp(self) -> None:
+        self.module = _load_module()
+
+    def test_source_type_index_finds_declared_types(self) -> None:
+        index = self.module._build_source_type_index(ROOT / "src")
+        self.assertIn("Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient", index)
+
+    def test_type_entrypoint_resolves(self) -> None:
+        index = {"Ns.Client": [Path("fake.cs")]}
+        entries = [{"key": "a.one", "entrypoints": ["Ns.Client"]}]
+        # Should not raise.
+        self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_member_entrypoint_resolves_when_member_in_declaring_file(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "Client.cs"
+            source.write_text("namespace Ns;\npublic interface Client { void DoThingAsync(); }\n", encoding="utf-8")
+            index = {"Ns.Client": [source]}
+            entries = [{"key": "a.one", "entrypoints": ["Ns.Client.DoThingAsync"]}]
+            self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_deleted_type_fails(self) -> None:
+        entries = [{"key": "a.one", "entrypoints": ["Ns.RemovedClient"]}]
+        with self.assertRaisesRegex(ValueError, "does not resolve to any type"):
+            self.module._validate_entrypoints_against_source(entries, {})
+
+    def test_renamed_member_fails(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "Client.cs"
+            source.write_text("namespace Ns;\npublic interface Client { void NewNameAsync(); }\n", encoding="utf-8")
+            index = {"Ns.Client": [source]}
+            entries = [{"key": "a.one", "entrypoints": ["Ns.Client.OldNameAsync"]}]
+            with self.assertRaisesRegex(ValueError, "was removed or renamed"):
+                self.module._validate_entrypoints_against_source(entries, index)
+
+    def test_every_curated_entrypoint_resolves_against_real_source(self) -> None:
+        # The gate CI actually relies on: the shipped inventory must resolve
+        # against the shipped src/ tree, so a rename/deletion of a mapped
+        # public surface fails this suite (and generate --check) immediately.
+        index = self.module._build_source_type_index(ROOT / "src")
+        self.module._validate_entrypoints_against_source(self.module.COVERAGE_ENTRIES, index)
+
+
 class RealInventoryTests(unittest.TestCase):
     """Exercises the actual curated COVERAGE_ENTRIES against the pinned fixture."""
 

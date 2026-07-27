@@ -36,6 +36,17 @@ says, in concrete terms, where SDK coverage stops. This is enforced by
 ``_validate_entries`` below, not just convention -- a partial entry with no
 note fails the build.
 
+Entrypoints-must-exist (source-truth gate)
+-------------------------------------------
+Every ``entrypoints`` reference must resolve against the actual SDK source
+under ``src/``: the referenced type must be declared in some ``.cs`` file
+(namespace + type name), and a ``Type.Member`` reference must additionally
+name a member that appears in a file declaring that type. This is what makes
+the CI drift gate honest about *renames and deletions*, not just stale
+regeneration: removing or renaming a mapped public client without updating
+the inventory fails ``--check`` instead of leaving the snapshot claiming
+coverage that no longer exists.
+
 Usage
 -----
   python3 scripts/generate-sdk-coverage.py            # (re)writes contracts/sdk-coverage.v1.json
@@ -48,6 +59,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -55,6 +67,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
 OUTPUT_PATH = ROOT / "contracts" / "sdk-coverage.v1.json"
 FIXTURE_PATH = ROOT / "contracts" / "fixtures" / "capability-keys.fixture.json"
 CANONICAL_URL = (
@@ -507,6 +520,90 @@ def _validate_entries(entries: list[dict[str, Any]], canonical_keys: frozenset[s
         raise ValueError("sdk-coverage.v1.json validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
 
+_NAMESPACE_RE = re.compile(r"^\s*namespace\s+([A-Za-z_][\w.]*)", re.MULTILINE)
+_TYPE_DECL_RE = re.compile(
+    r"\b(?:class|interface|struct|enum)\s+([A-Za-z_]\w*)"
+    r"|\brecord(?:\s+(?:class|struct))?\s+([A-Za-z_]\w*)"
+)
+
+
+def _build_source_type_index(src_root: Path) -> dict[str, list[Path]]:
+    """Indexes every type declared under ``src/`` as ``Namespace.TypeName``.
+
+    Deliberately lexical (regex over ``.cs`` files, no Roslyn): the
+    entrypoint strings in ``COVERAGE_ENTRIES`` are flat ``Namespace.Type``
+    or ``Namespace.Type.Member`` references, so namespace declarations plus
+    type-declaration keywords are enough to resolve them, and this keeps the
+    gate runnable in the same dependency-free python step CI already uses.
+    """
+
+    index: dict[str, list[Path]] = {}
+    for path in sorted(src_root.rglob("*.cs")):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        namespaces = _NAMESPACE_RE.findall(text)
+        type_names = [first or second for first, second in _TYPE_DECL_RE.findall(text)]
+        for namespace in namespaces or [""]:
+            for type_name in type_names:
+                full_name = f"{namespace}.{type_name}" if namespace else type_name
+                index.setdefault(full_name, []).append(path)
+    return index
+
+
+def _validate_entrypoints_against_source(
+    entries: list[dict[str, Any]],
+    type_index: dict[str, list[Path]],
+) -> None:
+    """Source-truth gate: every entrypoint must resolve to real SDK source.
+
+    An entrypoint is either ``Namespace.TypeName`` (must be a declared type)
+    or ``Namespace.TypeName.MemberName`` (the type must be declared and the
+    member name must appear in a file declaring that type). A reference that
+    no longer resolves -- because the surface was deleted or renamed --
+    fails generation and the CI ``--check`` drift gate.
+    """
+
+    errors: list[str] = []
+    file_text_cache: dict[Path, str] = {}
+
+    for entry in entries:
+        key = entry.get("key", "<missing key>")
+        for entrypoint in entry.get("entrypoints", []):
+            if not isinstance(entrypoint, str) or not entrypoint:
+                continue  # shape errors are _validate_entries' job
+            if entrypoint in type_index:
+                continue
+            parent, _, member = entrypoint.rpartition(".")
+            declaring_files = type_index.get(parent, [])
+            if declaring_files and member:
+                member_re = re.compile(rf"\b{re.escape(member)}\b")
+                found = False
+                for path in declaring_files:
+                    if path not in file_text_cache:
+                        file_text_cache[path] = path.read_text(encoding="utf-8", errors="replace")
+                    if member_re.search(file_text_cache[path]):
+                        found = True
+                        break
+                if found:
+                    continue
+                errors.append(
+                    f"{key!r}: entrypoint {entrypoint!r} names member {member!r}, but no file "
+                    f"declaring {parent!r} mentions it. The member was removed or renamed -- "
+                    "update or drop this coverage entry."
+                )
+                continue
+            errors.append(
+                f"{key!r}: entrypoint {entrypoint!r} does not resolve to any type declared "
+                "under src/. The surface was removed or renamed -- update or drop this "
+                "coverage entry so the snapshot stops claiming coverage that no longer exists."
+            )
+
+    if errors:
+        raise ValueError(
+            "sdk-coverage.v1.json entrypoint source-truth check failed:\n"
+            + "\n".join(f"  - {e}" for e in errors)
+        )
+
+
 def _build_document(canonical_keys: frozenset[str], key_list_source: str) -> dict[str, Any]:
     ordered = sorted(COVERAGE_ENTRIES, key=lambda e: e["key"])
     _validate_entries(ordered, canonical_keys)
@@ -577,6 +674,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         canonical_keys, key_list_source = _load_canonical_keys()
+        _validate_entrypoints_against_source(COVERAGE_ENTRIES, _build_source_type_index(SRC_ROOT))
         document = _build_document(canonical_keys, key_list_source)
     except (ValueError, OSError, urllib.error.URLError, json.JSONDecodeError) as error:
         print(f"::error::{error}", file=sys.stderr)

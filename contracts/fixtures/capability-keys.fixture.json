@@ -323,15 +323,15 @@
       "key": "geocoding.forward",
       "displayName": "Forward Geocoding",
       "category": "Geocoding",
-      "edition": "Pro",
-      "description": "Convert addresses to coordinates using configured providers."
+      "edition": "Community",
+      "description": "Convert a freeform address to coordinates using configured providers."
     },
     {
       "key": "geocoding.reverse",
       "displayName": "Reverse Geocoding",
       "category": "Geocoding",
-      "edition": "Pro",
-      "description": "Convert coordinates to addresses using configured providers."
+      "edition": "Community",
+      "description": "Convert coordinates to a nearest-address match using configured providers."
     },
     {
       "key": "identity.claims-mapping",
@@ -379,14 +379,14 @@
       "key": "identity.saml",
       "displayName": "SAML 2.0 Authentication",
       "category": "Identity",
-      "edition": "Community",
-      "description": "SAML 2.0 service-provider metadata and assertion consumer endpoints."
+      "edition": "Enterprise",
+      "description": "SAML 2.0 service-provider metadata, assertion consumer, and single-logout endpoints."
     },
     {
       "key": "identity.scim",
       "displayName": "SCIM 2.0 Provisioning",
       "category": "Identity",
-      "edition": "Community",
+      "edition": "Enterprise",
       "description": "User/group provisioning through the SCIM 2.0 protocol surface."
     },
     {
@@ -548,7 +548,7 @@
       "displayName": "GeocodeServer Discovery",
       "category": "Serve",
       "edition": "Community",
-      "description": "Discover GeocodeServer service and layer metadata. Forward/reverse/batch geocode execution is gated by the geocoding.* entitlement keys."
+      "description": "Discover GeocodeServer service and layer metadata. Batch geocode execution is gated by the geocoding.batch entitlement key (Enterprise); forward and reverse geocode execution are Community (#2981)."
     },
     {
       "key": "serve.geoservices-geometry-service",
