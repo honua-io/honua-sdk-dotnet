@@ -197,15 +197,15 @@ file placement, or app lifecycle hooks.
   issue before implementation starts.
 - If mobile/admin needs different runtime behavior, put the stable contract here
   and put the adapter/runtime issue in the consuming repo.
-- Keep migration issues cross-linked with `honua-mobile` and `honua-server-admin`.
+- Keep migration issues cross-linked with `honua-mobile` and `honua-console`.
 
 ## Companion Repos
 
 - `honua-mobile`: mobile runtime, MAUI adapters, native storage adapters,
   permissions, background sync scheduling, mobile UI, AR/VR, and display
   integration.
-- `honua-server-admin`: Blazor/MudBlazor operator UI, page composition, local
-  stubs, and admin workspace UX.
+- `honua-console`: admin/console UI, Studio map builder, style editor, and
+  operator workspace UX.
 - `honua-server`: server APIs and backend functionality that SDK clients depend
   on.
 
