@@ -21,7 +21,7 @@ jobs:
     name: GitHub Workflow Validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Validate workflow syntax
         shell: bash
@@ -42,7 +42,7 @@ jobs:
     name: SDK Capability Coverage Snapshot
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Validate sdk-coverage.v1.json (drift gate)
         # Regenerates the snapshot in memory from the curated inventory in
@@ -67,7 +67,7 @@ jobs:
     name: Security Audit (NuGet)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -120,7 +120,7 @@ jobs:
     name: Code Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -200,7 +200,7 @@ jobs:
     name: API Compatibility
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
 
@@ -313,7 +313,7 @@ jobs:
             tests:
               - tests/Honua.Sdk.MetaSmoke.Tests/Honua.Sdk.MetaSmoke.Tests.csproj
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
@@ -345,7 +345,7 @@ jobs:
     name: Browser WASM Smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
@@ -380,7 +380,7 @@ jobs:
     name: Admin Bootstrap Sample
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
