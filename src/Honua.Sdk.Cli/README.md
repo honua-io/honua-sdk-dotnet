@@ -28,8 +28,7 @@ dotnet nuget add source https://nuget.pkg.github.com/honua-io/index.json \
   --store-password-in-clear-text
 
 # Install the tool (the feed must also be passed explicitly here):
-dotnet tool install --global Honua.Sdk.Cli \
-  --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
 honua doctor --help
 ```
 

@@ -140,8 +140,7 @@ credentials must already be configured for that source URL (step 1 above
 stores them in your user-level NuGet config):
 
 ```bash
-dotnet tool install --global Honua.Sdk.Cli \
-  --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
 honua doctor --help
 ```
 

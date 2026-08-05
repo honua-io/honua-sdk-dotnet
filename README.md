@@ -101,8 +101,7 @@ does not read a repository `NuGet.config`, so pass the feed explicitly (the
 credentials configured in [INSTALL.md](INSTALL.md) are matched by source URL):
 
 ```bash
-dotnet tool install --global Honua.Sdk.Cli \
-  --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
 honua doctor --help
 ```
 
