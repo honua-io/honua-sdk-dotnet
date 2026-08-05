@@ -29,6 +29,7 @@ jobs:
     outputs:
       package-version: ${{ steps.package-version.outputs.value }}
       nuget-org-ready: ${{ steps.stable-feed.outputs.ready }}
+      nugetorg-artifact-set: ${{ steps.nugetorg-artifacts.outputs.set }}
     permissions:
       contents: read
       packages: read
@@ -324,6 +325,20 @@ jobs:
             echo "configured=false" >> "${GITHUB_OUTPUT}"
           fi
 
+      - name: Preserve unsigned packages for nuget.org
+        shell: bash
+        run: |
+          # nuget.org rejects author signatures from certificates that do not
+          # chain to a trusted root, so keep an unsigned copy of every package
+          # before the (possibly self-signed) signing pass. The publish job
+          # pushes this set to nuget.org when the signed set does not verify
+          # against public trust.
+          mkdir -p ./nupkgs-unsigned
+          cp ./nupkgs/*.nupkg ./nupkgs-unsigned/
+          if compgen -G "./nupkgs/*.snupkg" > /dev/null; then
+            cp ./nupkgs/*.snupkg ./nupkgs-unsigned/
+          fi
+
       - name: Sign NuGet packages
         if: ${{ steps.signing-config.outputs.configured == 'true' }}
         env:
@@ -373,17 +388,8 @@ jobs:
         run: |
           echo "::warning::NUGET_SIGNING_CERTIFICATE_BASE64 / NUGET_SIGNING_PASSWORD not configured — dry-run packages will remain unsigned. Release tags require signing."
 
-      - name: Public signing-chain check skipped (GitHub Packages only)
-        if: >-
-          ${{
-            !contains(steps.package-version.outputs.value, '-') &&
-            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') &&
-            steps.stable-feed.outputs.ready != 'true'
-          }}
-        run: |
-          echo "::warning::Skipping the publicly-trusted signing-chain requirement: this stable release ships to GitHub Packages only, where the private-feed certificate applies. A nuget.org release requires a publicly chained certificate (honua-sdk-dotnet#263)."
-
-      - name: Validate public package signing chain
+      - name: Select nuget.org artifact set
+        id: nugetorg-artifacts
         if: >-
           ${{
             !contains(steps.package-version.outputs.value, '-') &&
@@ -392,12 +398,24 @@ jobs:
           }}
         shell: bash
         run: |
+          # nuget.org accepts unsigned packages (it repository-signs every
+          # upload) but rejects author signatures from untrusted roots. Push
+          # the signed set only when it verifies against public trust;
+          # otherwise fall back to the preserved unsigned set.
+          publicly_verified=true
           for package_file in ./nupkgs/*.nupkg ./nupkgs/*.snupkg; do
             if ! dotnet nuget verify --all "${package_file}"; then
-              echo "::error::Stable nuget.org packages require an author-signing certificate that chains to a publicly trusted root. Replace the private-feed self-signed certificate and register the public certificate with nuget.org before releasing."
-              exit 1
+              publicly_verified=false
+              break
             fi
           done
+
+          if [[ "${publicly_verified}" == "true" ]]; then
+            echo "set=signed" >> "${GITHUB_OUTPUT}"
+          else
+            echo "set=unsigned" >> "${GITHUB_OUTPUT}"
+            echo "::warning::The author-signing certificate does not chain to a publicly trusted root, so nuget.org receives the unsigned package set (nuget.org repository-signs uploads). Register a publicly chained certificate to ship author-signed packages there (honua-sdk-dotnet#263)."
+          fi
 
       - name: Package install smoke
         shell: bash
@@ -676,6 +694,16 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+      - name: Upload unsigned package artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-unsigned
+          path: |
+            ./nupkgs-unsigned/*.nupkg
+            ./nupkgs-unsigned/*.snupkg
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Dry-run summary
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
         shell: bash
@@ -718,6 +746,12 @@ jobs:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages
           path: ./nupkgs
 
+      - name: Download unsigned package artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-unsigned
+          path: ./nupkgs-unsigned
+
       - name: Setup .NET
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
@@ -754,8 +788,14 @@ jobs:
           }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          ARTIFACT_SET: ${{ needs.release-smoke.outputs.nugetorg-artifact-set }}
         run: |
-          dotnet nuget push ./nupkgs/*.nupkg \
+          source_dir="./nupkgs"
+          if [[ "${ARTIFACT_SET}" != "signed" ]]; then
+            source_dir="./nupkgs-unsigned"
+            echo "::notice::Pushing the unsigned package set to nuget.org (author certificate is not publicly chained); nuget.org repository-signs every upload."
+          fi
+          dotnet nuget push ${source_dir}/*.nupkg \
             --source "https://api.nuget.org/v3/index.json" \
             --api-key "${NUGET_API_KEY}" \
             --skip-duplicate
