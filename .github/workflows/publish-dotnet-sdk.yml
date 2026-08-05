@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       package-version: ${{ steps.package-version.outputs.value }}
+      nuget-org-ready: ${{ steps.stable-feed.outputs.ready }}
     permissions:
       contents: read
       packages: read
@@ -108,7 +109,8 @@ jobs:
           echo "PACKAGE_VERSION=${package_version}" >> "${GITHUB_ENV}"
           echo "value=${package_version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Validate stable feed prerequisites
+      - name: Evaluate stable feed prerequisites
+        id: stable-feed
         if: >-
           ${{
             !contains(steps.package-version.outputs.value, '-') &&
@@ -118,9 +120,15 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         shell: bash
         run: |
+          # Stable releases go to nuget.org ONLY when every public-feed
+          # prerequisite is in place (tracked by #263/#264). When one is
+          # missing, the release still ships to GitHub Packages — the channel
+          # v1.1.0–v1.5.0 used — and the nuget.org lane is skipped with loud
+          # warnings instead of failing the whole release.
+          missing=()
+
           if [[ -z "${NUGET_API_KEY}" ]]; then
-            echo "::error::Stable releases require the NUGET_API_KEY repository secret for nuget.org publishing."
-            exit 1
+            missing+=("NUGET_API_KEY repository secret")
           fi
 
           protocol_version="$(
@@ -135,9 +143,16 @@ jobs:
           protocol_index="https://api.nuget.org/v3-flatcontainer/geospatial.grpc/index.json"
           if ! curl --fail --silent --show-error "${protocol_index}" \
             | grep -Fq "\"${protocol_version}\""; then
-            echo "::error::Geospatial.Grpc ${protocol_version} is not available from nuget.org. Publishing a stable Honua SDK now would produce packages that cannot restore from the public feed."
-            echo "::error::Publish a stable public protocol dependency first; tracked by honua-sdk-dotnet#264."
-            exit 1
+            missing+=("Geospatial.Grpc ${protocol_version} on nuget.org (honua-sdk-dotnet#264)")
+          fi
+
+          if [[ ${#missing[@]} -eq 0 ]]; then
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            for item in "${missing[@]}"; do
+              echo "::warning::nuget.org prerequisite missing: ${item} — this stable release will publish to GitHub Packages only (see honua-sdk-dotnet#263)."
+            done
           fi
 
       - name: Build SDK packages
@@ -358,11 +373,22 @@ jobs:
         run: |
           echo "::warning::NUGET_SIGNING_CERTIFICATE_BASE64 / NUGET_SIGNING_PASSWORD not configured — dry-run packages will remain unsigned. Release tags require signing."
 
+      - name: Public signing-chain check skipped (GitHub Packages only)
+        if: >-
+          ${{
+            !contains(steps.package-version.outputs.value, '-') &&
+            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') &&
+            steps.stable-feed.outputs.ready != 'true'
+          }}
+        run: |
+          echo "::warning::Skipping the publicly-trusted signing-chain requirement: this stable release ships to GitHub Packages only, where the private-feed certificate applies. A nuget.org release requires a publicly chained certificate (honua-sdk-dotnet#263)."
+
       - name: Validate public package signing chain
         if: >-
           ${{
             !contains(steps.package-version.outputs.value, '-') &&
-            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
+            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') &&
+            steps.stable-feed.outputs.ready == 'true'
           }}
         shell: bash
         run: |
@@ -697,8 +723,21 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: nuget.org publish skipped (prerequisites absent)
+        if: >-
+          ${{
+            !contains(needs.release-smoke.outputs.package-version, '-') &&
+            needs.release-smoke.outputs.nuget-org-ready != 'true'
+          }}
+        run: |
+          echo "::warning::Stable ${PACKAGE_VERSION} is publishing to GitHub Packages only — nuget.org prerequisites are not in place (NUGET_API_KEY / public Geospatial.Grpc / publicly-chained signing cert; see honua-sdk-dotnet#263 and #264)."
+
       - name: Validate nuget.org credential
-        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        if: >-
+          ${{
+            !contains(needs.release-smoke.outputs.package-version, '-') &&
+            needs.release-smoke.outputs.nuget-org-ready == 'true'
+          }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
@@ -708,7 +747,11 @@ jobs:
           fi
 
       - name: Publish stable packages to nuget.org
-        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        if: >-
+          ${{
+            !contains(needs.release-smoke.outputs.package-version, '-') &&
+            needs.release-smoke.outputs.nuget-org-ready == 'true'
+          }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
@@ -726,7 +769,11 @@ jobs:
             --skip-duplicate
 
       - name: Verify stable package from nuget.org
-        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        if: >-
+          ${{
+            !contains(needs.release-smoke.outputs.package-version, '-') &&
+            needs.release-smoke.outputs.nuget-org-ready == 'true'
+          }}
         shell: bash
         run: |
           smoke_dir="$(mktemp -d)"
