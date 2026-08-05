@@ -2,6 +2,27 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.6.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.5.0...dotnet-sdk-v1.6.0) (2026-08-05)
+
+
+### Features
+
+* **cli:** add support-safe doctor bundles ([#258](https://github.com/honua-io/honua-sdk-dotnet/issues/258)) ([#269](https://github.com/honua-io/honua-sdk-dotnet/issues/269)) ([4de2e19](https://github.com/honua-io/honua-sdk-dotnet/commit/4de2e1979b0113a16875a06273b25704f3b8fd66))
+* **coverage:** enforce entrypoint source-truth in sdk-coverage drift gate ([#282](https://github.com/honua-io/honua-sdk-dotnet/issues/282)) ([9cd511c](https://github.com/honua-io/honua-sdk-dotnet/commit/9cd511c913f18876e933848f162e762887886a57))
+* **coverage:** sdk-coverage.v1.json per-capability coverage snapshot ([#273](https://github.com/honua-io/honua-sdk-dotnet/issues/273)) ([#274](https://github.com/honua-io/honua-sdk-dotnet/issues/274)) ([677372e](https://github.com/honua-io/honua-sdk-dotnet/commit/677372ebfad2908e375a5853e91db592d791d56b))
+
+
+### Bug Fixes
+
+* harden SDK compatibility and release gates ([#268](https://github.com/honua-io/honua-sdk-dotnet/issues/268)) ([fc23997](https://github.com/honua-io/honua-sdk-dotnet/commit/fc23997745a09f1c11fd3e77de52cf0c041b5441))
+* integrate workflow and SDK audit fixes ([#255](https://github.com/honua-io/honua-sdk-dotnet/issues/255)) ([6da2ae6](https://github.com/honua-io/honua-sdk-dotnet/commit/6da2ae6b70649acbf910b0a85c1c7f27c18e2ceb))
+
+
+### Documentation
+
+* lead install docs with the working GitHub Packages channel ([#286](https://github.com/honua-io/honua-sdk-dotnet/issues/286)) ([ecc2ae8](https://github.com/honua-io/honua-sdk-dotnet/commit/ecc2ae842c84d006dc706ae1053b200783d071ea))
+* replace archived honua-server-admin with honua-console in AGENTS.md ([#271](https://github.com/honua-io/honua-sdk-dotnet/issues/271)) ([#283](https://github.com/honua-io/honua-sdk-dotnet/issues/283)) ([319f524](https://github.com/honua-io/honua-sdk-dotnet/commit/319f524018a940edc0c38d95c0351fd0a7dfa463))
+
 ## [1.5.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.4.3...dotnet-sdk-v1.5.0) (2026-07-03)
 
 
