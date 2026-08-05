@@ -56,12 +56,19 @@ for entry in "${entries[@]}"; do
     fail "${package_id} is missing its package README."
   fi
 
+  # Install commands must name the authenticated GitHub Packages feed: the
+  # packages are not on nuget.org yet, so a bare `dotnet add package` (or a
+  # `dotnet tool install` without --add-source) fails with NU1101. The docs
+  # must ship the feed-qualified form until nuget.org publishing starts.
   if [[ "${is_tool}" == "true" ]]; then
     # Tool packages ship an executable, not a referenceable library API, so
     # they carry no PublicAPI approval files and install via `dotnet tool`.
-    grep -Fxq "dotnet tool install --global ${package_id}" "${ROOT}/README.md" \
+    # `dotnet tool install` never reads a repository NuGet.config, so the
+    # feed must be passed explicitly with --add-source.
+    tool_install="dotnet tool install --global ${package_id} --add-source https://nuget.pkg.github.com/honua-io/index.json"
+    grep -Fxq "${tool_install}" "${ROOT}/README.md" \
       || fail "README.md tool install command is missing ${package_id}."
-    grep -Fxq "dotnet tool install --global ${package_id}" "${ROOT}/INSTALL.md" \
+    grep -Fxq "${tool_install}" "${ROOT}/INSTALL.md" \
       || fail "INSTALL.md tool install command is missing ${package_id}."
   else
     if [[ ! -f "${package_dir}/PublicAPI.Shipped.txt" ]]; then
@@ -70,9 +77,9 @@ for entry in "${entries[@]}"; do
     if [[ ! -f "${package_dir}/PublicAPI.Unshipped.txt" ]]; then
       fail "${package_id} is missing PublicAPI.Unshipped.txt."
     fi
-    grep -Fxq "dotnet add package ${package_id}" "${ROOT}/README.md" \
+    grep -Fxq "dotnet add package ${package_id} --source honua" "${ROOT}/README.md" \
       || fail "README.md install commands are missing ${package_id}."
-    grep -Fxq "dotnet add package ${package_id}" "${ROOT}/INSTALL.md" \
+    grep -Fxq "dotnet add package ${package_id} --source honua" "${ROOT}/INSTALL.md" \
       || fail "INSTALL.md install commands are missing ${package_id}."
   fi
 

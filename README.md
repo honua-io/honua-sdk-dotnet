@@ -2,7 +2,7 @@
 
 [![.NET SDK CI](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml)
 [![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://honua-io.github.io/honua-sdk-dotnet/)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 Official .NET client libraries for [Honua](https://github.com/honua-io/honua-server),
@@ -18,16 +18,16 @@ sharing one options/auth/resilience pattern.
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
 > - Want a map of the 15 packages and the separate CLI tool before you choose → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
-> - Want to install pre-release packages → [INSTALL.md](INSTALL.md)
+> - Want to set up the package feed (all versions install from GitHub Packages today) → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
 
 ## Status
 
 | | |
 |---|---|
-| Current version | 1.5.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) |
+| Current version | 1.5.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
 | Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
-| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)). nuget.org publishing is wired into the release workflow but gated until the `Geospatial.Grpc` protocol dependency has a stable public release. |
+| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is planned but deliberately deferred until the `Geospatial.Grpc` protocol dependency has a stable public release there. |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
 | License | [Apache 2.0](LICENSE) |
 
@@ -48,7 +48,7 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk.ConsoleShare** | Console Share clients -- read share detail, update access, validate dependency closure, manage public-link / embed-token lifecycle, drive scheduled exports and traffic, and publish open-data (DCAT / STAC) |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
-| **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query client -- service/layer metadata, query, count, IDs, extent, statistics -- plus NAServer routing |
+| **Honua.Sdk.GeoServices** | GeoServices FeatureServer read/query/edit client -- service/layer metadata, query, count, IDs, extent, statistics, apply-edits -- plus NAServer routing and the ImageServer raster client (`IHonuaRasterDataClient`: raster metadata, coverage statistics, windowed reads) |
 | **Honua.Sdk.Scenes** | Scene metadata client -- list/detail/resolve scene endpoints plus offline scene package contracts |
 | **Honua.Sdk.OgcFeatures** | OGC API Features and WFS 2.0 read/query client -- landing page, conformance, collections, queryables, items, plus WFS GetCapabilities / GetFeature (GeoJSON) / DescribeFeatureType |
 | **Honua.Sdk.Catalogs** | OGC API Records + STAC catalog client -- landing pages, conformance, collections, item / record pages, GET/POST search with paging, raw JSON |
@@ -66,39 +66,42 @@ schedulers, and display renderers stay out of SDK core.
 Packages are not yet on nuget.org: stable release tags will publish there once
 the `Geospatial.Grpc` protocol dependency has a stable public release. Until
 then, all packages (stable and preview) install from the authenticated GitHub
-Packages feed — follow [INSTALL.md](INSTALL.md) to configure the source, then:
+Packages feed. Follow [INSTALL.md](INSTALL.md) to add the `honua` source with a
+GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
 
 ```bash
 # Easiest: install the umbrella to get every Honua.Sdk.* package at once.
-dotnet add package Honua.Sdk
+dotnet add package Honua.Sdk --source honua
 ```
 
 <details>
 <summary>Want narrower dependencies? Install per-package instead.</summary>
 
 ```bash
-dotnet add package Honua.Sdk.Abstractions
-dotnet add package Honua.Sdk.Offline
-dotnet add package Honua.Sdk.Grpc
-dotnet add package Honua.Sdk.Admin
-dotnet add package Honua.Sdk.Processes
-dotnet add package Honua.Sdk.Spec
-dotnet add package Honua.Sdk.Studio
-dotnet add package Honua.Sdk.ConsoleShare
-dotnet add package Honua.Sdk.Field
-dotnet add package Honua.Sdk.Geometry
-dotnet add package Honua.Sdk.GeoServices
-dotnet add package Honua.Sdk.Scenes
-dotnet add package Honua.Sdk.OgcFeatures
-dotnet add package Honua.Sdk.Catalogs
+dotnet add package Honua.Sdk.Abstractions --source honua
+dotnet add package Honua.Sdk.Offline --source honua
+dotnet add package Honua.Sdk.Grpc --source honua
+dotnet add package Honua.Sdk.Admin --source honua
+dotnet add package Honua.Sdk.Processes --source honua
+dotnet add package Honua.Sdk.Spec --source honua
+dotnet add package Honua.Sdk.Studio --source honua
+dotnet add package Honua.Sdk.ConsoleShare --source honua
+dotnet add package Honua.Sdk.Field --source honua
+dotnet add package Honua.Sdk.Geometry --source honua
+dotnet add package Honua.Sdk.GeoServices --source honua
+dotnet add package Honua.Sdk.Scenes --source honua
+dotnet add package Honua.Sdk.OgcFeatures --source honua
+dotnet add package Honua.Sdk.Catalogs --source honua
 ```
 
 </details>
 
-Install the support-safe diagnostics tool separately:
+Install the support-safe diagnostics tool separately. `dotnet tool install`
+does not read a repository `NuGet.config`, so pass the feed explicitly (the
+credentials configured in [INSTALL.md](INSTALL.md) are matched by source URL):
 
 ```bash
-dotnet tool install --global Honua.Sdk.Cli
+dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
 honua doctor --help
 ```
 
@@ -124,7 +127,8 @@ var serverUri = new Uri("https://localhost:5001");
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
 // Processes, and WFS 2.0 clients. Flip the situational Use* flags to opt in to Scenes,
-// Spec, Studio, ConsoleShare, Stac, OgcRecords, GeoServices, or Routing.
+// Spec, Studio, ConsoleShare, Stac, OgcRecords, GeoServices, Routing, or
+// ImageServer (raster).
 builder.Services.AddHonua(o =>
 {
     o.BaseAddress = serverUri;
@@ -241,7 +245,7 @@ src/
   Honua.Sdk.ConsoleShare/        Console Share access/public-link/embed-token, export/traffic, and open-data (DCAT/STAC) client package
   Honua.Sdk.Cli/                 `honua doctor` support-safe diagnostic .NET tool
   Honua.Sdk.Field/               Field form, validation, and workflow contracts
-  Honua.Sdk.GeoServices/         GeoServices FeatureServer + routing client package
+  Honua.Sdk.GeoServices/         GeoServices FeatureServer + routing + ImageServer raster client package
   Honua.Sdk.Scenes/              Scene metadata and offline package contract client
   Honua.Sdk.OgcFeatures/         OGC API Features + WFS 2.0 read/query client package
   Honua.Sdk.Catalogs/            OGC API Records + STAC catalog client package

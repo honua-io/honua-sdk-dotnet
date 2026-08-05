@@ -9,7 +9,7 @@ The repo boundary, what belongs here, and what doesn't, is documented in
 
 1. Install [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later.
 2. Clone the repo and configure the GitHub Packages source — see
-   [INSTALL.md](INSTALL.md#install-from-github-packages-pre-release).
+   [INSTALL.md](INSTALL.md#install-from-github-packages-current-channel).
 3. Build the solution:
 
    ```bash

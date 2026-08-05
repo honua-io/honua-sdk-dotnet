@@ -10,6 +10,14 @@
         {
           "type": "generic",
           "path": "Directory.Build.props"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        },
+        {
+          "type": "generic",
+          "path": "src/Honua.Sdk.Abstractions/README.md"
         }
       ],
       "changelog-sections": [
