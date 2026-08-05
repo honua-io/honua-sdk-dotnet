@@ -458,8 +458,20 @@ jobs:
           EOF
 
           dotnet add package Microsoft.Extensions.Hosting --version 10.0.0
-          while IFS='|' read -r _ package_id; do
-            dotnet add package "${package_id}" --version "${PACKAGE_VERSION}"
+          while IFS='|' read -r project_path package_id; do
+            if grep -q "<PackAsTool>true</PackAsTool>" "${GITHUB_WORKSPACE}/${project_path}"; then
+              # DotnetTool packages cannot be referenced as libraries (NU1212);
+              # smoke them through the tool installer instead.
+              tool_dir="$(mktemp -d)"
+              dotnet tool install "${package_id}" \
+                --tool-path "${tool_dir}" \
+                --version "${PACKAGE_VERSION}" \
+                --configfile NuGet.config
+              dotnet tool list --tool-path "${tool_dir}" | grep -Fiq "${package_id}"
+              rm -rf "${tool_dir}"
+            else
+              dotnet add package "${package_id}" --version "${PACKAGE_VERSION}"
+            fi
           done < <(
             grep -Ev '^[[:space:]]*(#|$)' \
               "${GITHUB_WORKSPACE}/eng/shipped-packages.txt"
