@@ -7,8 +7,17 @@ exposes a single `AddHonua(o => o.BaseAddress = ...)` DI extension that fans
 the shared cross-cutting configuration (base address, authentication, retry /
 timeout, primary HTTP handler) out across every enabled sub-package.
 
+Honua SDK packages are currently published to the authenticated GitHub Packages
+feed only — nuget.org publishing is planned but not yet available. One-time
+setup: configure the feed with a GitHub **classic** PAT that has the
+`read:packages` scope, then install with `--source honua`. Full setup (CI,
+package source mapping): [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
+
 ```bash
-dotnet add package Honua.Sdk
+dotnet nuget add source https://nuget.pkg.github.com/honua-io/index.json \
+  --name honua --username YOUR_GITHUB_USERNAME --password YOUR_CLASSIC_PAT \
+  --store-password-in-clear-text
+dotnet add package Honua.Sdk --source honua
 ```
 
 ```csharp
@@ -46,6 +55,7 @@ situational sub-packages or to opt out of any default module:
 | `UseWfs` | `true` | `IHonuaWfsClient` (ships inside Honua.Sdk.OgcFeatures) |
 | `UseGeoServices` | `false` | `IHonuaFeatureServerClient` |
 | `UseRouting` | `false` | `IHonuaRoutingClient` (NAServer) |
+| `UseImageServer` | `false` | ImageServer raster client + provider-neutral `IHonuaRasterDataClient` (raster metadata, coverage statistics, windowed reads) |
 | `UseScenes` | `false` | `IHonuaSceneClient` |
 | `UseSpec` | `false` | `IHonuaSpecClient` (validate / plan / apply / artifacts) |
 | `UseStac` | `false` | `IHonuaStacClient` |
@@ -112,12 +122,12 @@ them directly if you want to depend on only one (or a few) of the sub-packages
 without pulling in the rest:
 
 ```bash
-dotnet add package Honua.Sdk.Grpc       
-dotnet add package Honua.Sdk.Admin      
-dotnet add package Honua.Sdk.OgcFeatures
-dotnet add package Honua.Sdk.Processes
-dotnet add package Honua.Sdk.Studio
-dotnet add package Honua.Sdk.ConsoleShare
+dotnet add package Honua.Sdk.Grpc --source honua
+dotnet add package Honua.Sdk.Admin --source honua
+dotnet add package Honua.Sdk.OgcFeatures --source honua
+dotnet add package Honua.Sdk.Processes --source honua
+dotnet add package Honua.Sdk.Studio --source honua
+dotnet add package Honua.Sdk.ConsoleShare --source honua
 ```
 
 ```csharp

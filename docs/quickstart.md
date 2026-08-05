@@ -14,6 +14,11 @@ This page has two paths:
 
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
 - A running Honua server (default: `https://localhost:5001`)
+- The authenticated Honua GitHub Packages feed configured as a source named
+  `honua` — the packages are **not yet on nuget.org**, so every
+  `dotnet add package` below fails with `NU1101` until the feed is set up.
+  One-time setup (GitHub classic PAT with `read:packages`):
+  [INSTALL.md](../INSTALL.md#install-from-github-packages-current-channel)
 
 ## 60-second hello-features
 
@@ -22,7 +27,7 @@ Single package, single async call. Replace the URL with your Honua server.
 ```bash
 dotnet new console -n HonuaHello
 cd HonuaHello
-dotnet add package Honua.Sdk.Grpc
+dotnet add package Honua.Sdk.Grpc --source honua
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
@@ -75,11 +80,11 @@ address -- all printed to the console.
 dotnet new console -n HonuaDemo
 cd HonuaDemo
 
-# Core packages this quickstart uses:
-dotnet add package Honua.Sdk.Grpc            # gRPC FeatureService + native ProcessService jobs
-dotnet add package Honua.Sdk.Abstractions    # shared query abstraction
-dotnet add package Honua.Sdk.Admin           # Admin + Geocoding REST
-dotnet add package Honua.Sdk.OgcFeatures     # OGC API Features + WFS 2.0
+# Core packages this quickstart uses (feed setup: see Prerequisites above):
+dotnet add package Honua.Sdk.Grpc --source honua           # gRPC FeatureService + native ProcessService jobs
+dotnet add package Honua.Sdk.Abstractions --source honua   # shared query abstraction
+dotnet add package Honua.Sdk.Admin --source honua          # Admin + Geocoding REST
+dotnet add package Honua.Sdk.OgcFeatures --source honua    # OGC API Features + WFS 2.0
 
 # Generic Host for dependency injection
 dotnet add package Microsoft.Extensions.Hosting
@@ -102,8 +107,8 @@ flags or their package-specific `AddHonua*` extensions.
 The recommended path is the **umbrella** `AddHonua` registration from the
 `Honua.Sdk` meta package: one call configures every enabled sub-package with a
 shared base address, auth, and retry / timeout policy. Add
-`dotnet add package Honua.Sdk` to the install step above when you
-take this path.
+`dotnet add package Honua.Sdk --source honua` to the install step above when
+you take this path.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -291,7 +296,7 @@ catalog and the caller should discover standards-facing metadata records instead
 of operator/control-plane inventory. First install and register the package:
 
 ```bash
-dotnet add package Honua.Sdk.Catalogs
+dotnet add package Honua.Sdk.Catalogs --source honua
 ```
 
 ```csharp
@@ -318,7 +323,7 @@ asset search semantics instead of Records metadata records. First install and
 register the package:
 
 ```bash
-dotnet add package Honua.Sdk.Catalogs
+dotnet add package Honua.Sdk.Catalogs --source honua
 ```
 
 ```csharp
