@@ -34,6 +34,15 @@ version with a matching `Geospatial.Grpc` package published to GitHub Packages.
 Alpha.3 fixture assets existed without an alpha.3 NuGet package, so promoting
 only the fixtures would have broken the required fixture/package equality.
 
+As of 2026-08-17 the newest fixture release is `0.2.0-alpha.1` (published
+2026-08-17) and it *does* have a matching published package, so the
+fixture/package equality gate is no longer what blocks promotion. The remaining
+blocker is the server side: `honua-server` trunk still consumes
+`Geospatial.Grpc 0.1.0-alpha.2`, so the pinned nightly image speaks the alpha.2
+contract. Promoting the SDK alone would put the client ahead of every server
+build it is certified against. Promotion therefore stays coordinated — see the
+promotion section below.
+
 ## Pinned server image
 
 The live tier boots this exact `honua-server` image via Testcontainers:
@@ -81,7 +90,23 @@ matching `Geospatial.Grpc` package is not. The canary records that as a distinct
 distribution-drift signal and does not treat the candidate as promotable.
 
 Promote only a successful candidate with a matching published package: review
-the evidence, update `conformance/FIXTURE_VERSION`, `Directory.Build.props`, the
-server digest/ref in this file and `.github/workflows/conformance.yml`, and send
-those changes through the normal pull-request gate. Promotion is never
-automatic.
+the evidence, update `conformance/FIXTURE_VERSION`, the `Geospatial.Grpc`
+`PackageVersion` in `Directory.Packages.props` (the two are equality-checked by
+`conformance/check-version.sh`), the server digest/ref in this file and
+`.github/workflows/conformance.yml`, and send those changes through the normal
+pull-request gate. Promotion is never automatic.
+
+### Harness failures are not drift
+
+The canary runs harness surfaces (fixture download, conformance build, server
+seed fetch/apply, server start) before the two contract surfaces (schema, live).
+If a harness surface fails, schema and live never run and the canary has no
+compatibility verdict — the drift alert says so explicitly and lists the harness
+outcomes, rather than presenting skipped contract surfaces as drift (#272). Fix
+the harness failure and re-run before reading the pin table as a signal.
+
+A harness failure can come from outside this repo entirely: a new NuGet
+advisory against a transitive dependency fails the warnings-as-errors restore
+and takes the whole gate down. That is what happened in 2026-08 (GHSA-q939-rpr3-3284
+against `SSH.NET <= 2025.1.0`, reached through `Testcontainers`), and it is why
+the alert now separates the two categories.

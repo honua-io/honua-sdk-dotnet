@@ -60,8 +60,16 @@ jobs:
       server-image: ${{ steps.resolve-pins.outputs.server-image }}
       pinned-server-seed-ref: ${{ steps.resolve-pins.outputs.pinned-server-seed-ref }}
       server-seed-ref: ${{ steps.resolve-pins.outputs.server-seed-ref }}
+      # Contract surfaces: these are the only two that can express real drift.
       schema-outcome: ${{ steps.schema.outcome }}
       live-outcome: ${{ steps.live.outcome }}
+      # Harness surfaces: when one of these fails the contract surfaces never
+      # run, so the canary has no drift verdict to report (see #272).
+      fixtures-outcome: ${{ steps.fetch-fixtures.outcome }}
+      build-outcome: ${{ steps.build.outcome }}
+      seed-fetch-outcome: ${{ steps.fetch-seed.outcome }}
+      seed-apply-outcome: ${{ steps.apply-seed.outcome }}
+      server-start-outcome: ${{ steps.start-server.outcome }}
     services:
       postgres:
         image: postgis/postgis:16-3.4
@@ -361,6 +369,11 @@ jobs:
       SERVER_SEED_REF: ${{ needs.conformance.outputs.server-seed-ref }}
       SCHEMA_OUTCOME: ${{ needs.conformance.outputs.schema-outcome }}
       LIVE_OUTCOME: ${{ needs.conformance.outputs.live-outcome }}
+      FIXTURES_OUTCOME: ${{ needs.conformance.outputs.fixtures-outcome }}
+      BUILD_OUTCOME: ${{ needs.conformance.outputs.build-outcome }}
+      SEED_FETCH_OUTCOME: ${{ needs.conformance.outputs.seed-fetch-outcome }}
+      SEED_APPLY_OUTCOME: ${{ needs.conformance.outputs.seed-apply-outcome }}
+      SERVER_START_OUTCOME: ${{ needs.conformance.outputs.server-start-outcome }}
       RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Write canary evidence
@@ -389,6 +402,13 @@ jobs:
               "surfaces": {
                   "schema": os.environ.get("SCHEMA_OUTCOME") or "not-run",
                   "live": os.environ.get("LIVE_OUTCOME") or "not-run",
+              },
+              "harness": {
+                  "fixtures": os.environ.get("FIXTURES_OUTCOME") or "not-run",
+                  "build": os.environ.get("BUILD_OUTCOME") or "not-run",
+                  "seedFetch": os.environ.get("SEED_FETCH_OUTCOME") or "not-run",
+                  "seedApply": os.environ.get("SEED_APPLY_OUTCOME") or "not-run",
+                  "serverStart": os.environ.get("SERVER_START_OUTCOME") or "not-run",
               },
           }
           Path("compatibility-canary/evidence.json").write_text(
@@ -422,8 +442,29 @@ jobs:
           import os
           from pathlib import Path
 
-          schema = os.environ.get("SCHEMA_OUTCOME") or "not-run"
-          live = os.environ.get("LIVE_OUTCOME") or "not-run"
+          def outcome(name):
+              return os.environ.get(name) or "not-run"
+
+          schema = outcome("SCHEMA_OUTCOME")
+          live = outcome("LIVE_OUTCOME")
+
+          # Harness surfaces run before the contract surfaces. If one of them
+          # fails, `schema`/`live` are skipped and the canary has no drift
+          # verdict at all — report that as a harness failure instead of
+          # dressing it up as contract drift (#272).
+          harness = [
+              ("fixture download", outcome("FIXTURES_OUTCOME")),
+              ("conformance build", outcome("BUILD_OUTCOME")),
+              ("server seed fetch", outcome("SEED_FETCH_OUTCOME")),
+              ("server seed apply", outcome("SEED_APPLY_OUTCOME")),
+              ("server start", outcome("SERVER_START_OUTCOME")),
+          ]
+          harness_failed = [
+              f"{name} ({state})"
+              for name, state in harness
+              if state not in ("success", "not-run")
+          ]
+
           failed = []
           if schema != "success":
               failed.append(f"schema fixtures ({schema})")
@@ -434,12 +475,29 @@ jobs:
               failed.append(
                   f"fixture/package publication skew (matching package: {package_published})"
               )
-          if not failed:
+          if not failed and not harness_failed:
               failed.append("workflow setup/infrastructure")
+
+          if harness_failed:
+              verdict = (
+                  "**This is a harness failure, not contract drift.** The canary never "
+                  f"evaluated the contract surfaces (failed: {', '.join(harness_failed)}). "
+                  "Fix the harness failure and re-run before reading the pin table below "
+                  "as a compatibility signal."
+              )
+          else:
+              verdict = (
+                  "The contract surfaces ran, so the outcomes below are a real "
+                  "compatibility signal."
+              )
 
           body = f"""The scheduled moving compatibility canary failed.
 
-          Failing surface: {", ".join(failed)}
+          Failing surface: {", ".join(failed) if failed else "none (harness only)"}
+
+          Harness surfaces: {", ".join(f"{name}: {state}" for name, state in harness)}
+
+          {verdict}
 
           | Pin | Committed | Canary |
           | --- | --- | --- |
