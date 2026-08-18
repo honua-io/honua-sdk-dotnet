@@ -65,11 +65,21 @@ jobs:
       live-outcome: ${{ steps.live.outcome }}
       # Harness surfaces: when one of these fails the contract surfaces never
       # run, so the canary has no drift verdict to report (see #272).
+      pins-outcome: ${{ steps.resolve-pins.outcome }}
       fixtures-outcome: ${{ steps.fetch-fixtures.outcome }}
+      setup-outcome: ${{ steps.setup.outcome }}
       build-outcome: ${{ steps.build.outcome }}
       seed-fetch-outcome: ${{ steps.fetch-seed.outcome }}
       seed-apply-outcome: ${{ steps.apply-seed.outcome }}
       server-start-outcome: ${{ steps.start-server.outcome }}
+      # The canary verdict, computed by the "Enforce conformance outcomes"
+      # step. On a scheduled (moving) run the job itself always concludes
+      # success -- see #300 -- so this output, NOT `needs.conformance.result`,
+      # is what the alert job keys off. An empty value (job cancelled/timed
+      # out before the enforce step) is deliberately not `clean`, so the alert
+      # still fires.
+      verdict: ${{ steps.enforce.outputs.verdict }}
+      failed-surfaces: ${{ steps.enforce.outputs.failed-surfaces }}
     services:
       postgres:
         image: postgis/postgis:16-3.4
@@ -90,6 +100,11 @@ jobs:
 
       - name: Resolve deterministic or moving pins
         id: resolve-pins
+        # See #300: on the scheduled moving-canary run every step is
+        # non-fatal so the job's check-run on trunk HEAD never carries a
+        # failure conclusion. The verdict is enforced in
+        # "Enforce conformance outcomes" and delivered by the alert job.
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REQUESTED_SERVER_IMAGE: ${{ github.event.inputs.server_image }}
@@ -192,6 +207,7 @@ jobs:
       #    asserts the embedded VERSION equals the pin.
       - name: Fetch conformance fixtures
         id: fetch-fixtures
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -217,6 +233,8 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup .NET + NuGet
+        id: setup
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         uses: ./.github/actions/setup-dotnet-and-nuget
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -225,6 +243,7 @@ jobs:
 
       - name: Build conformance suite
         id: build
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         run: |
           dotnet build tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
             --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
@@ -246,6 +265,7 @@ jobs:
       #    boot the pinned honua-server:nightly image against it.
       - name: Fetch pinned server seed schema
         id: fetch-seed
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -257,6 +277,7 @@ jobs:
 
       - name: Apply seed to PostGIS
         id: apply-seed
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         env:
           PGPASSWORD: honua
         run: |
@@ -264,6 +285,7 @@ jobs:
 
       - name: Start honua-server
         id: start-server
+        continue-on-error: ${{ github.event_name == 'schedule' }}
         run: |
           key="$(head -c 32 /dev/urandom | base64)"
           salt="$(head -c 16 /dev/urandom | base64)"
@@ -316,10 +338,25 @@ jobs:
             --filter "FullyQualifiedName~LiveConformanceTests" \
             --logger "console;verbosity=normal"
 
+      # Records the verdict for every surface. On a pull request or a trunk
+      # push this step FAILS the job on any non-success surface, exactly as
+      # before -- those runs are the commit's build verdict.
+      #
+      # On the scheduled moving-canary run it exits 0 and only publishes the
+      # verdict (#300). The canary deliberately runs *moving* fixtures against
+      # the *pinned* package/server, so it is designed to be able to go red for
+      # the reason it exists; a red check-run on trunk HEAD is indistinguishable
+      # to honua-release's `gate_build_test` from a broken build. The early
+      # warning is not weakened: the verdict below drives the alert job, which
+      # files/updates the drift issue and uploads the evidence artifact.
       - name: Enforce conformance outcomes
+        id: enforce
         if: always()
         env:
+          IS_SCHEDULED_CANARY: ${{ github.event_name == 'schedule' }}
+          RESOLVE_PINS_OUTCOME: ${{ steps.resolve-pins.outcome }}
           FETCH_FIXTURES_OUTCOME: ${{ steps.fetch-fixtures.outcome }}
+          SETUP_OUTCOME: ${{ steps.setup.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           SCHEMA_OUTCOME: ${{ steps.schema.outcome }}
           FETCH_SEED_OUTCOME: ${{ steps.fetch-seed.outcome }}
@@ -328,9 +365,13 @@ jobs:
           LIVE_OUTCOME: ${{ steps.live.outcome }}
         shell: bash
         run: |
+          set -uo pipefail
           status=0
+          failed=()
           for result in \
+            "pins:${RESOLVE_PINS_OUTCOME}" \
             "fixtures:${FETCH_FIXTURES_OUTCOME}" \
+            "setup:${SETUP_OUTCOME}" \
             "build:${BUILD_OUTCOME}" \
             "schema:${SCHEMA_OUTCOME}" \
             "seed-fetch:${FETCH_SEED_OUTCOME}" \
@@ -340,14 +381,53 @@ jobs:
             surface="${result%%:*}"
             outcome="${result#*:}"
             if [[ "${outcome}" != "success" ]]; then
-              echo "::error::Conformance surface '${surface}' completed with outcome '${outcome}'."
+              failed+=("${surface}:${outcome}")
               status=1
             fi
+          done
+
+          failed_surfaces="$(IFS=,; echo "${failed[*]:-}")"
+          if [[ "${status}" -eq 0 ]]; then
+            verdict=clean
+          else
+            verdict=drift
+          fi
+          {
+            echo "verdict=${verdict}"
+            echo "failed-surfaces=${failed_surfaces}"
+          } >> "${GITHUB_OUTPUT}"
+
+          if [[ "${IS_SCHEDULED_CANARY}" == "true" ]]; then
+            for entry in "${failed[@]:-}"; do
+              [[ -n "${entry}" ]] || continue
+              echo "::warning::Moving canary surface '${entry%%:*}' completed with outcome '${entry#*:}'."
+            done
+            {
+              echo "## Moving canary verdict: \`${verdict}\`"
+              echo
+              if [[ -n "${failed_surfaces}" ]]; then
+                echo "Failing surfaces: \`${failed_surfaces}\`"
+              else
+                echo "All surfaces succeeded."
+              fi
+              echo
+              echo "This scheduled run reports through the drift issue and the"
+              echo "\`compatibility-canary-evidence\` artifact, and deliberately does not"
+              echo "fail its own check-run on trunk HEAD (#300)."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 0
+          fi
+
+          for entry in "${failed[@]:-}"; do
+            [[ -n "${entry}" ]] || continue
+            echo "::error::Conformance surface '${entry%%:*}' completed with outcome '${entry#*:}'."
           done
           exit "${status}"
 
       - name: Dump server logs on failure
-        if: failure()
+        # `failure()` alone is never true on the scheduled canary now that its
+        # steps are non-fatal, so also dump whenever a surface went red.
+        if: ${{ always() && (failure() || steps.enforce.outputs.verdict != 'clean') }}
         run: docker logs honua-server || true
 
   compatibility-canary-report:
@@ -359,7 +439,13 @@ jobs:
       contents: read
       issues: write
     env:
-      CANARY_RESULT: ${{ needs.conformance.result }}
+      # The conformance job always concludes `success` on a scheduled run
+      # (#300), so the compatibility verdict comes from its `verdict` output,
+      # not from its job result. An empty verdict (cancelled/timed-out job)
+      # is not `clean` and therefore raises the alert.
+      CANARY_RESULT: ${{ needs.conformance.outputs.verdict || 'unknown' }}
+      CANARY_JOB_RESULT: ${{ needs.conformance.result }}
+      CANARY_FAILED_SURFACES: ${{ needs.conformance.outputs.failed-surfaces }}
       PINNED_FIXTURE_VERSION: ${{ needs.conformance.outputs.pinned-fixture-version }}
       FIXTURE_VERSION: ${{ needs.conformance.outputs.fixture-version }}
       FIXTURE_PACKAGE_PUBLISHED: ${{ needs.conformance.outputs.fixture-package-published }}
@@ -369,7 +455,9 @@ jobs:
       SERVER_SEED_REF: ${{ needs.conformance.outputs.server-seed-ref }}
       SCHEMA_OUTCOME: ${{ needs.conformance.outputs.schema-outcome }}
       LIVE_OUTCOME: ${{ needs.conformance.outputs.live-outcome }}
+      PINS_OUTCOME: ${{ needs.conformance.outputs.pins-outcome }}
       FIXTURES_OUTCOME: ${{ needs.conformance.outputs.fixtures-outcome }}
+      SETUP_OUTCOME: ${{ needs.conformance.outputs.setup-outcome }}
       BUILD_OUTCOME: ${{ needs.conformance.outputs.build-outcome }}
       SEED_FETCH_OUTCOME: ${{ needs.conformance.outputs.seed-fetch-outcome }}
       SEED_APPLY_OUTCOME: ${{ needs.conformance.outputs.seed-apply-outcome }}
@@ -387,6 +475,12 @@ jobs:
 
           evidence = {
               "result": os.environ.get("CANARY_RESULT") or "unknown",
+              "jobResult": os.environ.get("CANARY_JOB_RESULT") or "unknown",
+              "failedSurfaces": [
+                  entry
+                  for entry in (os.environ.get("CANARY_FAILED_SURFACES") or "").split(",")
+                  if entry
+              ],
               "runUrl": os.environ["RUN_URL"],
               "pinned": {
                   "fixtureVersion": os.environ.get("PINNED_FIXTURE_VERSION") or "unknown",
@@ -404,7 +498,9 @@ jobs:
                   "live": os.environ.get("LIVE_OUTCOME") or "not-run",
               },
               "harness": {
+                  "pins": os.environ.get("PINS_OUTCOME") or "not-run",
                   "fixtures": os.environ.get("FIXTURES_OUTCOME") or "not-run",
+                  "setup": os.environ.get("SETUP_OUTCOME") or "not-run",
                   "build": os.environ.get("BUILD_OUTCOME") or "not-run",
                   "seedFetch": os.environ.get("SEED_FETCH_OUTCOME") or "not-run",
                   "seedApply": os.environ.get("SEED_APPLY_OUTCOME") or "not-run",
@@ -417,7 +513,7 @@ jobs:
           PY
 
       - name: Summarize successful moving canary
-        if: ${{ needs.conformance.result == 'success' && needs.conformance.outputs.fixture-package-published == 'true' }}
+        if: ${{ needs.conformance.outputs.verdict == 'clean' && needs.conformance.outputs.fixture-package-published == 'true' }}
         shell: bash
         run: |
           {
@@ -433,7 +529,7 @@ jobs:
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Create or update compatibility drift issue
-        if: ${{ needs.conformance.result != 'success' || needs.conformance.outputs.fixture-package-published != 'true' }}
+        if: ${{ needs.conformance.outputs.verdict != 'clean' || needs.conformance.outputs.fixture-package-published != 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
@@ -453,7 +549,9 @@ jobs:
           # verdict at all — report that as a harness failure instead of
           # dressing it up as contract drift (#272).
           harness = [
+              ("pin resolution", outcome("PINS_OUTCOME")),
               ("fixture download", outcome("FIXTURES_OUTCOME")),
+              (".NET/NuGet setup", outcome("SETUP_OUTCOME")),
               ("conformance build", outcome("BUILD_OUTCOME")),
               ("server seed fetch", outcome("SEED_FETCH_OUTCOME")),
               ("server seed apply", outcome("SEED_APPLY_OUTCOME")),
@@ -507,6 +605,8 @@ jobs:
           | server seed ref | `{os.environ.get('PINNED_SERVER_SEED_REF') or 'unknown'}` | `{os.environ.get('SERVER_SEED_REF') or 'unknown'}` |
 
           Run: {os.environ['RUN_URL']}
+
+          This scheduled canary intentionally does not fail its own check-run on `trunk` HEAD (#300): it runs *moving* fixtures against the *pinned* package and server image, so a red verdict here is an early warning about the pins, not a verdict on the commit. This issue and the run's `compatibility-canary-evidence` artifact are the signal.
 
           Review the run and its `compatibility-canary-evidence` artifact. If the change is compatible, promote the exact canary pins in a dedicated pull request; otherwise link the upstream protocol/server regression before closing this alert.
           """

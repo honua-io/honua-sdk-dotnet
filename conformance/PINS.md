@@ -81,8 +81,42 @@ See `HONUA_CONFORMANCE_KNOWN_GAPS` in
 The weekly scheduled run of `.github/workflows/conformance.yml` leaves these
 deterministic pins untouched and tests the newest published fixture asset plus
 the current official `honua-server:nightly` image. Its evidence artifact records
-both the values in this file and the moving candidates. A failure creates or
-updates a single drift issue with schema and live-protocol outcomes.
+both the values in this file and the moving candidates. A drift verdict creates
+or updates a single drift issue with schema and live-protocol outcomes.
+
+### Where the drift signal goes (#300)
+
+The moving canary is **not** part of any commit's build verdict. It runs
+*moving* fixtures against the *pinned* `Geospatial.Grpc` package and the pinned
+server image, so it is designed to be able to go red for exactly the reason it
+exists — a true-positive early warning is the canary working correctly.
+
+A scheduled workflow run always has `trunk` HEAD as its head SHA, so GitHub
+attaches its job check-runs to that commit; that cannot be turned off. What the
+canary no longer does is let those check-runs carry a **failure** conclusion:
+every step of the scheduled `conformance` job is non-fatal, and the
+`Enforce conformance outcomes` step publishes a `verdict` output (`clean` /
+`drift`) and exits 0. Pull requests and trunk pushes are unchanged — there the
+same step still fails the job on any non-success surface, because those runs
+*are* the commit's build verdict.
+
+The drift signal therefore travels entirely through:
+
+- the **`Moving compatibility canary drift detected`** issue, created/updated by
+  the `Moving Canary Evidence and Alert` job — now keyed off the `verdict`
+  output rather than the conformance job's result, so making the job green does
+  not silence the alert;
+- the **`compatibility-canary-evidence`** artifact (90-day retention), which
+  records the verdict, the failing surfaces, and both pin tables;
+- the run's step summary.
+
+The alert job itself is still allowed to fail. That is deliberate: a broken
+alert path is a real, actionable red, not a correctly-firing canary.
+
+Consumers such as `honua-release`'s `gate_build_test`, which read the
+check-runs attached to a pinned commit, therefore see the canary only as
+build/analysis-shaped signal and are never reddened by a compatibility warning
+about pins that the commit does not control.
 
 Fixture publication and NuGet publication can move independently. In
 particular, a newer fixture release such as alpha.3 may be available while the
