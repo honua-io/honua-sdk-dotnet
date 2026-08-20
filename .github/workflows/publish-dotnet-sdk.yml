@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       package-version: ${{ steps.package-version.outputs.value }}
-      nuget-org-ready: ${{ steps.stable-feed.outputs.ready }}
       nugetorg-artifact-set: ${{ steps.nugetorg-artifacts.outputs.set }}
     permissions:
       contents: read
@@ -110,8 +109,7 @@ jobs:
           echo "PACKAGE_VERSION=${package_version}" >> "${GITHUB_ENV}"
           echo "value=${package_version}" >> "${GITHUB_OUTPUT}"
 
-      - name: Evaluate stable feed prerequisites
-        id: stable-feed
+      - name: Validate stable nuget.org prerequisites
         if: >-
           ${{
             !contains(steps.package-version.outputs.value, '-') &&
@@ -119,42 +117,24 @@ jobs:
           }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        shell: bash
         run: |
-          # Stable releases go to nuget.org ONLY when every public-feed
-          # prerequisite is in place (tracked by #263/#264). When one is
-          # missing, the release still ships to GitHub Packages — the channel
-          # v1.1.0–v1.5.0 used — and the nuget.org lane is skipped with loud
-          # warnings instead of failing the whole release.
-          missing=()
+          python scripts/check-nuget-org-prerequisites.py \
+            --dependency-manifest Directory.Packages.props \
+            --evidence-out stable-nuget-org-prerequisites.json
 
-          if [[ -z "${NUGET_API_KEY}" ]]; then
-            missing+=("NUGET_API_KEY repository secret")
-          fi
-
-          protocol_version="$(
-            sed -n 's:.*<PackageVersion Include="Geospatial\.Grpc" Version="\([^"]*\)".*:\1:p' \
-              Directory.Packages.props
-          )"
-          if [[ -z "${protocol_version}" ]]; then
-            echo "::error::Could not resolve the centrally managed Geospatial.Grpc package version."
-            exit 1
-          fi
-
-          protocol_index="https://api.nuget.org/v3-flatcontainer/geospatial.grpc/index.json"
-          if ! curl --fail --silent --show-error "${protocol_index}" \
-            | grep -Fq "\"${protocol_version}\""; then
-            missing+=("Geospatial.Grpc ${protocol_version} on nuget.org (honua-sdk-dotnet#264)")
-          fi
-
-          if [[ ${#missing[@]} -eq 0 ]]; then
-            echo "ready=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "ready=false" >> "${GITHUB_OUTPUT}"
-            for item in "${missing[@]}"; do
-              echo "::warning::nuget.org prerequisite missing: ${item} — this stable release will publish to GitHub Packages only (see honua-sdk-dotnet#263)."
-            done
-          fi
+      - name: Upload stable nuget.org prerequisite evidence
+        if: >-
+          ${{
+            always() &&
+            !contains(steps.package-version.outputs.value, '-') &&
+            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
+          }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-nuget-org-prerequisites
+          path: stable-nuget-org-prerequisites.json
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Build SDK packages
         shell: bash
@@ -393,8 +373,7 @@ jobs:
         if: >-
           ${{
             !contains(steps.package-version.outputs.value, '-') &&
-            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true') &&
-            steps.stable-feed.outputs.ready == 'true'
+            !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
           }}
         shell: bash
         run: |
@@ -752,6 +731,9 @@ jobs:
       contents: read
       packages: write
     steps:
+      - name: Checkout release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
       - name: Download package artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -769,21 +751,8 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: nuget.org publish skipped (prerequisites absent)
-        if: >-
-          ${{
-            !contains(needs.release-smoke.outputs.package-version, '-') &&
-            needs.release-smoke.outputs.nuget-org-ready != 'true'
-          }}
-        run: |
-          echo "::warning::Stable ${PACKAGE_VERSION} is publishing to GitHub Packages only — nuget.org prerequisites are not in place (NUGET_API_KEY / public Geospatial.Grpc / publicly-chained signing cert; see honua-sdk-dotnet#263 and #264)."
-
       - name: Validate nuget.org credential
-        if: >-
-          ${{
-            !contains(needs.release-smoke.outputs.package-version, '-') &&
-            needs.release-smoke.outputs.nuget-org-ready == 'true'
-          }}
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
@@ -793,11 +762,7 @@ jobs:
           fi
 
       - name: Publish stable packages to nuget.org
-        if: >-
-          ${{
-            !contains(needs.release-smoke.outputs.package-version, '-') &&
-            needs.release-smoke.outputs.nuget-org-ready == 'true'
-          }}
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
           ARTIFACT_SET: ${{ needs.release-smoke.outputs.nugetorg-artifact-set }}
@@ -812,6 +777,69 @@ jobs:
             --api-key "${NUGET_API_KEY}" \
             --skip-duplicate
 
+      - name: Verify stable packages from nuget.org
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          smoke_root="$(mktemp -d)"
+          trap 'rm -rf "${smoke_root}"' EXIT
+
+          mapfile -t package_ids < <(
+            awk -F'|' '!/^[[:space:]]*(#|$)/ { print $2 }' eng/shipped-packages.txt
+          )
+          indexed=false
+          for attempt in $(seq 1 30); do
+            missing=()
+            for package_id in "${package_ids[@]}"; do
+              flat_id="$(printf '%s' "${package_id}" | tr '[:upper:]' '[:lower:]')"
+              if ! curl --fail --silent --show-error \
+                "https://api.nuget.org/v3-flatcontainer/${flat_id}/index.json" \
+                | grep -Fq "\"${PACKAGE_VERSION}\""; then
+                missing+=("${package_id}")
+              fi
+            done
+            if [[ ${#missing[@]} -eq 0 ]]; then
+              indexed=true
+              break
+            fi
+            echo "nuget.org has not indexed ${#missing[@]} package(s) yet (attempt ${attempt}/30): ${missing[*]}"
+            if [[ ${attempt} -lt 30 ]]; then
+              sleep 30
+            fi
+          done
+          if [[ "${indexed}" != "true" ]]; then
+            echo "::error::The complete ${PACKAGE_VERSION} package inventory was not indexed by nuget.org."
+            exit 1
+          fi
+
+          cat > "${smoke_root}/NuGet.config" <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+            </packageSources>
+          </configuration>
+          EOF
+
+          for package_id in Honua.Sdk Honua.Sdk.Admin Honua.Sdk.Grpc; do
+            project_dir="${smoke_root}/${package_id}"
+            dotnet new console --framework net10.0 --output "${project_dir}" --no-restore
+            project_file="$(find "${project_dir}" -maxdepth 1 -name '*.csproj' -print -quit)"
+            test -n "${project_file}"
+            dotnet add "${project_file}" package "${package_id}" --version "${PACKAGE_VERSION}" --no-restore
+            dotnet restore "${project_file}" --configfile "${smoke_root}/NuGet.config" --no-cache --force-evaluate
+            dotnet build "${project_file}" --configuration Release --no-restore
+          done
+
+          dotnet tool install Honua.Sdk.Cli \
+            --tool-path "${smoke_root}/tools" \
+            --version "${PACKAGE_VERSION}" \
+            --configfile "${smoke_root}/NuGet.config"
+          "${smoke_root}/tools/honua" doctor --help >/dev/null
+          echo "Indexed every package and installed the umbrella, Admin/Grpc leaves, and CLI using only nuget.org." >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Publish to GitHub Packages
         run: |
           dotnet nuget push ./nupkgs/*.nupkg \
@@ -819,43 +847,3 @@ jobs:
             --api-key ${{ secrets.GITHUB_TOKEN }} \
             --no-symbols \
             --skip-duplicate
-
-      - name: Verify stable package from nuget.org
-        if: >-
-          ${{
-            !contains(needs.release-smoke.outputs.package-version, '-') &&
-            needs.release-smoke.outputs.nuget-org-ready == 'true'
-          }}
-        shell: bash
-        run: |
-          smoke_dir="$(mktemp -d)"
-          trap 'rm -rf "${smoke_dir}"' EXIT
-
-          dotnet new console --framework net10.0 --output "${smoke_dir}" --no-restore
-          pushd "${smoke_dir}" >/dev/null
-          dotnet add package Honua.Sdk --version "${PACKAGE_VERSION}" --no-restore
-
-          restored=false
-          for attempt in $(seq 1 30); do
-            if dotnet restore \
-              --locked-mode \
-              --source "https://api.nuget.org/v3/index.json" \
-              --no-cache \
-              --force-evaluate; then
-              restored=true
-              break
-            fi
-
-            echo "nuget.org has not indexed Honua.Sdk ${PACKAGE_VERSION} yet (attempt ${attempt}/30)."
-            if [[ ${attempt} -lt 30 ]]; then
-              sleep 30
-            fi
-          done
-
-          if [[ "${restored}" != "true" ]]; then
-            echo "::error::Honua.Sdk ${PACKAGE_VERSION} could not be restored using only nuget.org."
-            exit 1
-          fi
-
-          dotnet build --configuration Release --no-restore
-          echo "Restored and built Honua.Sdk ${PACKAGE_VERSION} using only nuget.org." >> "${GITHUB_STEP_SUMMARY}"

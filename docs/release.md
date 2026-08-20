@@ -39,12 +39,13 @@ The publish workflow builds and packs:
    Example: `dotnet-sdk-v1.0.0`.
 
 Before a stable tag is created, confirm the repository has a `NUGET_API_KEY`
-secret and that the pinned `Geospatial.Grpc` version is available from
+secret and that the pinned **stable** `Geospatial.Grpc` version is available from
 nuget.org. The workflow fails before publishing when either prerequisite is
 missing, because otherwise the public SDK packages would not be restorable
-from the public feed. Also replace the private-feed self-signed signing
-certificate with a publicly trusted code-signing certificate and register it
-with the nuget.org account before the first public release.
+from the public feed. Repository admins can verify secret presence with
+`gh secret list --repo honua-io/honua-sdk-dotnet`; the preflight never prints
+the credential. nuget.org does not expose a non-mutating API-key permission
+check, so account/package scope is finally proven by the first push.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects. The workflow fails before publishing if they differ.
@@ -67,8 +68,10 @@ previews of a future major.
 
 ## Publishing Targets
 
-- Stable versions publish to both nuget.org and GitHub Packages. A post-publish
-  smoke test restores `Honua.Sdk` in a clean project using only nuget.org.
+- Stable versions publish to both nuget.org and GitHub Packages. The workflow first waits for every
+  shipped package to be indexed, then clean-installs the `Honua.Sdk` umbrella, representative
+  `Honua.Sdk.Admin` / `Honua.Sdk.Grpc` leaves, and the `Honua.Sdk.Cli` tool using a NuGet.config that
+  contains only nuget.org. GitHub Packages publication happens only after that public-feed proof.
 - Prerelease versions publish to GitHub Packages only.
 - Dry runs build, inspect, and install the local packages without pushing to
   either feed. They sign only when signing credentials are configured and keep
@@ -78,13 +81,11 @@ The workflow uses `NUGET_API_KEY` for nuget.org and `GITHUB_TOKEN` for GitHub
 Packages. It restores GitHub-hosted dependencies such as `Geospatial.Grpc` from
 `nuget.pkg.github.com/honua-io` during build validation. Stable public publishing
 remains blocked until the same dependency version is available from nuget.org.
-Release signing certificates must satisfy nuget.org's certificate requirements;
-the self-signed certificate used for private-feed dry runs is not sufficient for
-a public signed release. The workflow verifies the public trust chain after its
-temporary private-feed trust exception has been removed; nuget.org certificate
-registration remains an explicit release-owner prerequisite. Release-tag
-signing and verification cover both primary `.nupkg` and symbol `.snupkg`
-artifacts.
+Release-tag signing and verification continue to cover both primary `.nupkg` and symbol `.snupkg`
+artifacts. GitHub Packages receives that author-signed set. If the author certificate chains to a
+publicly trusted root, nuget.org receives the same set; otherwise it receives the preserved unsigned
+set and adds its own repository signature. Registering a publicly trusted author certificate remains
+a hardening action, not a prerequisite for nuget.org's repository-signed publication path.
 
 ## Local Checks
 

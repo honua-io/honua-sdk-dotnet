@@ -74,6 +74,16 @@ GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
 dotnet add package Honua.Sdk --source honua
 ```
 
+Channel policy is explicit and fail-closed: the first stable tag after the public dependency is
+available must publish the complete package inventory to both nuget.org and GitHub Packages, or the
+release fails. Prereleases remain on GitHub Packages only. Once
+[Honua.Sdk appears on nuget.org](https://www.nuget.org/packages/Honua.Sdk), stable users can use the
+standard command with no Honua feed configuration:
+
+```bash
+dotnet add package Honua.Sdk
+```
+
 <details>
 <summary>Want narrower dependencies? Install per-package instead.</summary>
 
