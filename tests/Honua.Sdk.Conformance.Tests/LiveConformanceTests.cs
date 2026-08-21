@@ -107,14 +107,7 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         Assert.NotEmpty(feature.Properties);
     }
 
-    // honua-server#1238: a server-side JSONB attribute-projection change alters
-    // the on-the-wire shape of FeatureServer query responses. Until it lands,
-    // this stays known-expected-failing (skipped with the reference) so the job
-    // is green and the harness is in place; flip to a required check by removing
-    // the knownGap argument when the server fix ships.
-    [LiveConformanceFact(
-        knownGap: ConformanceKnownGaps.FeatureServerOgcJsonbProjection,
-        surface: "FeatureServer JSONB attribute projection shape")]
+    [LiveConformanceFact]
     public async Task FeatureServerQuery_RoundTripsCanonicalAttributeProjection()
     {
         using var timeout = _fixture.CreateTimeoutScope();
@@ -126,24 +119,19 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
             timeout.Token).ConfigureAwait(false);
 
         var feature = Assert.Single(query.Features ?? []);
-        // The canonical contract: attributes project as a flat name->scalar map,
-        // not a nested JSONB envelope. #1238 regresses exactly this shape.
+        // The canonical contract: JSONB attributes project into their native
+        // JSON types, not a nested envelope or stringified JSON.
         Assert.NotNull(feature.Attributes);
-        foreach (var attribute in feature.Attributes!)
-        {
-            Assert.True(
-                attribute.Value.ValueKind is JsonValueKind.String or JsonValueKind.Number
-                    or JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null,
-                $"FeatureServer attribute '{attribute.Key}' projected as {attribute.Value.ValueKind}, " +
-                "not a flat scalar — JSONB projection drift (honua-server#1238).");
-        }
+        Assert.True(feature.Attributes!.TryGetValue("tags", out var tags));
+        Assert.Equal(JsonValueKind.Array, tags.ValueKind);
+        Assert.All(tags.EnumerateArray(), value => Assert.Equal(JsonValueKind.String, value.ValueKind));
+
+        Assert.True(feature.Attributes.TryGetValue("numbers", out var numbers));
+        Assert.Equal(JsonValueKind.Array, numbers.ValueKind);
+        Assert.All(numbers.EnumerateArray(), value => Assert.Equal(JsonValueKind.Number, value.ValueKind));
     }
 
-    // honua-server#1238 also covers the OGC API Features projection of the same
-    // canonical data; kept known-expected-failing alongside the FeatureServer case.
-    [LiveConformanceFact(
-        knownGap: ConformanceKnownGaps.FeatureServerOgcJsonbProjection,
-        surface: "OGC API Features JSONB property projection shape")]
+    [LiveConformanceFact]
     public async Task OgcItems_RoundTripCanonicalPropertyProjection()
     {
         using var timeout = _fixture.CreateTimeoutScope();
@@ -163,5 +151,12 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         var feature = Assert.Single(items.Features ?? []);
         Assert.Equal("Feature", feature.Type);
         Assert.NotNull(feature.Properties);
+        Assert.True(feature.Properties!.TryGetValue("tags", out var tags));
+        Assert.Equal(JsonValueKind.Array, tags.ValueKind);
+        Assert.All(tags.EnumerateArray(), value => Assert.Equal(JsonValueKind.String, value.ValueKind));
+
+        Assert.True(feature.Properties.TryGetValue("numbers", out var numbers));
+        Assert.Equal(JsonValueKind.Array, numbers.ValueKind);
+        Assert.All(numbers.EnumerateArray(), value => Assert.Equal(JsonValueKind.Number, value.ValueKind));
     }
 }

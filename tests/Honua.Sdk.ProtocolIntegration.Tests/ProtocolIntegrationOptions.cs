@@ -8,6 +8,8 @@ public sealed record ProtocolIntegrationOptions
 
     public Uri? ExternalBaseUri { get; init; }
 
+    public Uri? GrpcBaseUri { get; init; }
+
     public string? ServerImage { get; init; }
 
     public ushort ServerPort { get; init; } = 8080;
@@ -80,6 +82,7 @@ public sealed record ProtocolIntegrationOptions
         {
             Enabled = true,
             ExternalBaseUri = ReadUri("HONUA_PROTOCOL_EXTERNAL_BASE_URL"),
+            GrpcBaseUri = ReadUri("HONUA_PROTOCOL_GRPC_BASE_URL"),
             ServerImage = ReadString("HONUA_PROTOCOL_SERVER_IMAGE"),
             ServerPort = ReadUShort("HONUA_PROTOCOL_SERVER_PORT", 8080),
             ServerScheme = ReadString("HONUA_PROTOCOL_SERVER_SCHEME") ?? "http",
@@ -145,6 +148,7 @@ public sealed record ProtocolIntegrationOptions
                 $"enabled={Enabled}",
                 $"serverImage={(string.IsNullOrWhiteSpace(ServerImage) ? "none" : ServerImage)}",
                 $"externalBaseUrl={(ExternalBaseUri is null ? "none" : ExternalBaseUri)}",
+                $"grpcBaseUrl={(GrpcBaseUri is null ? "shared" : GrpcBaseUri)}",
                 $"service={ServiceName}",
                 $"layerId={LayerId.ToString(CultureInfo.InvariantCulture)}",
                 $"wfsType={WfsTypeName}",

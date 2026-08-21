@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.GeoServices.FeatureServer.Models;
@@ -24,6 +25,7 @@ public sealed class FeatureServerServiceInfo
 
     /// <summary>Supported query formats.</summary>
     [JsonPropertyName("supportedQueryFormats")]
+    [JsonConverter(typeof(CommaSeparatedStringOrArrayConverter))]
     public string? SupportedQueryFormats { get; init; }
 
     /// <summary>Capabilities supported by the service.</summary>
@@ -45,6 +47,48 @@ public sealed class FeatureServerServiceInfo
     /// <summary>Layers in the service.</summary>
     [JsonPropertyName("layers")]
     public IReadOnlyList<FeatureServerLayerSummary>? Layers { get; init; }
+}
+
+internal sealed class CommaSeparatedStringOrArrayConverter : JsonConverter<string?>
+{
+    public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            return reader.GetString();
+        }
+
+        if (reader.TokenType != JsonTokenType.StartArray)
+        {
+            throw new JsonException("Expected a string or string array.");
+        }
+
+        var values = new List<string>();
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        {
+            if (reader.TokenType != JsonTokenType.String)
+            {
+                throw new JsonException("Expected supportedQueryFormats array entries to be strings.");
+            }
+
+            values.Add(reader.GetString()!);
+        }
+
+        if (reader.TokenType != JsonTokenType.EndArray)
+        {
+            throw new JsonException("Unterminated supportedQueryFormats array.");
+        }
+
+        return string.Join(", ", values);
+    }
+
+    public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
+        => writer.WriteStringValue(value);
 }
 
 /// <summary>
