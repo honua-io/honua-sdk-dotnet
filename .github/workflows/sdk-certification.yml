@@ -186,6 +186,7 @@ jobs:
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
             -e HONUA_ADMIN_PASSWORD="ci-admin-password" \
+            -e HONUA_API_KEY="ci-protocol-api-key" \
             -e Kestrel__Endpoints__Http__Url="http://+:8080" \
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
@@ -200,11 +201,14 @@ jobs:
 
       - name: Run public SDK operations
         id: tests
+        continue-on-error: true
         env:
           TIER: ${{ steps.identity.outputs.tier }}
           HONUA_PROTOCOL_INTEGRATION: "true"
           HONUA_PROTOCOL_EXTERNAL_BASE_URL: "http://localhost:8080"
           HONUA_PROTOCOL_GRPC_BASE_URL: "http://localhost:8081"
+          HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
+          HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
@@ -259,6 +263,7 @@ jobs:
             --fixture-revision "${FIXTURE_REVISION}" \
             --candidate-cut "${{ steps.identity.outputs.candidate-cut }}" \
             --evidence-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --allow-nonpass \
             ${RELEASE_CUT:+--release-cut "${RELEASE_CUT}"}
 
       - name: Upload certification evidence

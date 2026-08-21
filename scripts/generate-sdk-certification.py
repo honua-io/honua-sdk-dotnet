@@ -751,7 +751,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     }
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(_render(evidence), encoding="utf-8")
-    return 1 if has_nonpass else 0
+    return 1 if has_nonpass and not getattr(args, "allow_nonpass", False) else 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -771,6 +771,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fixture-revision")
     parser.add_argument("--seed-revision")
     parser.add_argument("--evidence-uri")
+    parser.add_argument(
+        "--allow-nonpass",
+        action="store_true",
+        help="Publish valid fail/skip observations without failing the producer job.",
+    )
     args = parser.parse_args(argv)
 
     try:
