@@ -264,16 +264,43 @@ def load_local_packages(
     return local
 
 
+def inspect_symbol_package_bytes(value: bytes) -> tuple[PackageArchive, tuple[dict[str, Any], ...]]:
+    package = inspect_package_bytes(value)
+    portable_pdbs: list[dict[str, Any]] = []
+    try:
+        with zipfile.ZipFile(BytesIO(value)) as archive:
+            for member in archive.infolist():
+                name = _safe_member_name(member.filename)
+                if member.is_dir() or not name.lower().endswith(".pdb"):
+                    continue
+                payload = archive.read(member)
+                if not payload.startswith(b"BSJB"):
+                    raise CoordinateError(
+                        f"{package.package_id} contains non-portable PDB {name}"
+                    )
+                portable_pdbs.append(
+                    {"path": name, "sha256": sha256_bytes(payload), "bytes": len(payload)}
+                )
+    except (OSError, zipfile.BadZipFile) as exc:
+        raise CoordinateError(f"cannot inspect symbol package for {package.package_id}: {exc}") from exc
+    if not portable_pdbs:
+        raise CoordinateError(f"{package.package_id} symbol package has no PDB")
+    return package, tuple(sorted(portable_pdbs, key=lambda row: row["path"]))
+
+
 def load_symbol_packages(
     package_dir: Path,
     inventory: Iterable[str],
     expected_version: str,
     expected_source_revision: str,
-) -> list[dict[str, Any]]:
+) -> dict[str, tuple[Path, PackageArchive, tuple[dict[str, Any], ...]]]:
     expected_ids = {package_id.casefold(): package_id for package_id in inventory}
-    symbols: dict[str, dict[str, Any]] = {}
+    symbols: dict[str, tuple[Path, PackageArchive, tuple[dict[str, Any], ...]]] = {}
     for path in sorted(package_dir.glob("*.snupkg")):
-        package = inspect_package_file(path)
+        try:
+            package, portable_pdbs = inspect_symbol_package_bytes(path.read_bytes())
+        except OSError as exc:
+            raise CoordinateError(f"cannot read symbol package {path}: {exc}") from exc
         folded = package.package_id.casefold()
         if folded not in expected_ids:
             raise CoordinateError(f"unexpected symbol package archive: {package.package_id}")
@@ -289,36 +316,11 @@ def load_symbol_packages(
                 f"{package.package_id} symbol repository commit is "
                 f"{package.repository_commit or '<missing>'}; expected {expected_source_revision}"
             )
-        try:
-            with zipfile.ZipFile(path) as archive:
-                pdb_names = sorted(
-                    member.filename
-                    for member in archive.infolist()
-                    if not member.is_dir() and member.filename.lower().endswith(".pdb")
-                )
-                if not pdb_names:
-                    raise CoordinateError(f"{package.package_id} symbol package has no PDB")
-                for pdb_name in pdb_names:
-                    with archive.open(pdb_name) as pdb:
-                        if pdb.read(4) != b"BSJB":
-                            raise CoordinateError(
-                                f"{package.package_id} contains non-portable PDB {pdb_name}"
-                            )
-        except (OSError, zipfile.BadZipFile) as exc:
-            raise CoordinateError(f"cannot inspect symbol package {path}: {exc}") from exc
-        symbols[folded] = {
-            "packageId": package.package_id,
-            "version": package.version,
-            "filename": path.name,
-            "rawSha256": package.raw_sha256,
-            "semanticSha256": package.semantic_sha256,
-            "repositoryCommit": package.repository_commit,
-            "portablePdbCount": len(pdb_names),
-        }
+        symbols[folded] = (path, package, portable_pdbs)
     missing = [expected_ids[key] for key in expected_ids.keys() - symbols.keys()]
     if missing:
         raise CoordinateError(f"local symbol package set is incomplete: {', '.join(sorted(missing))}")
-    return [symbols[key] for key in sorted(symbols)]
+    return symbols
 
 
 def _read_bounded(response: Any, *, limit: int = MAX_HTTP_BYTES) -> bytes:
@@ -416,6 +418,16 @@ def package_download_url(package_base: str, package_id: str, version: str) -> st
     return f"{package_base}{safe_id}/{safe_version}/{safe_id}.{safe_version}.nupkg"
 
 
+def symbol_package_download_url(
+    symbol_package_base: str,
+    package_id: str,
+    version: str,
+) -> str:
+    filename = f"{package_id}.{version}.snupkg"
+    safe_filename = urllib.parse.quote(filename.lower(), safe=".-_")
+    return f"{symbol_package_base.rstrip('/')}/{safe_filename}"
+
+
 def fetch_registry_package(url: str, *, headers: dict[str, str]) -> bytes | None:
     return _request_bytes(
         url,
@@ -511,6 +523,96 @@ def evaluate_coordinates(
     return result, publish_paths
 
 
+def evaluate_symbol_coordinates(
+    *,
+    symbol_package_base: str,
+    package_version: str,
+    local_symbols: dict[str, tuple[Path, PackageArchive, tuple[dict[str, Any], ...]]],
+    fetch_package: Callable[[str], bytes | None],
+    require_present: bool,
+) -> tuple[list[dict[str, Any]], list[Path], list[str]]:
+    rows: list[dict[str, Any]] = []
+    publish_paths: list[Path] = []
+    failures: list[str] = []
+    public_by_id: dict[str, bytes | None] = {}
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=min(4, max(1, len(local_symbols)))
+    ) as executor:
+        futures = {
+            folded_id: executor.submit(
+                fetch_package,
+                symbol_package_download_url(
+                    symbol_package_base,
+                    package.package_id,
+                    package_version,
+                ),
+            )
+            for folded_id, (_, package, _) in local_symbols.items()
+        }
+        for folded_id, future in futures.items():
+            public_by_id[folded_id] = future.result()
+
+    for folded_id in sorted(local_symbols):
+        path, local, local_pdbs = local_symbols[folded_id]
+        public_bytes = public_by_id[folded_id]
+        row: dict[str, Any] = {
+            "packageId": local.package_id,
+            "version": package_version,
+            "local": {
+                "filename": path.name,
+                "rawSha256": local.raw_sha256,
+                "semanticSha256": local.semantic_sha256,
+                "repositoryCommit": local.repository_commit,
+                "portablePdbs": list(local_pdbs),
+            },
+        }
+        if public_bytes is None:
+            row["state"] = "absent"
+            publish_paths.append(path)
+            if require_present:
+                failures.append(f"{local.package_id} {package_version} symbols are absent")
+        else:
+            public, public_pdbs = inspect_symbol_package_bytes(public_bytes)
+            row["public"] = {
+                "rawSha256": public.raw_sha256,
+                "semanticSha256": public.semantic_sha256,
+                "repositoryCommit": public.repository_commit,
+                "portablePdbs": list(public_pdbs),
+            }
+            if public.package_id.casefold() != local.package_id.casefold() or public.version != package_version:
+                row["state"] = "divergent"
+                failures.append(f"{local.package_id} returned mismatched symbol package identity")
+            elif public.semantic_sha256 != local.semantic_sha256:
+                row["state"] = "divergent"
+                failures.append(
+                    f"{local.package_id} {package_version} has divergent public symbol payload"
+                )
+            else:
+                row["state"] = "present-identical"
+        rows.append(row)
+    return rows, publish_paths, failures
+
+
+def local_symbol_evidence(
+    local_symbols: dict[str, tuple[Path, PackageArchive, tuple[dict[str, Any], ...]]],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "packageId": package.package_id,
+            "version": package.version,
+            "state": "local-only",
+            "local": {
+                "filename": path.name,
+                "rawSha256": package.raw_sha256,
+                "semanticSha256": package.semantic_sha256,
+                "repositoryCommit": package.repository_commit,
+                "portablePdbs": list(portable_pdbs),
+            },
+        }
+        for _, (path, package, portable_pdbs) in sorted(local_symbols.items())
+    ]
+
+
 def write_json(path: Path, value: dict[str, Any]) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -525,8 +627,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--inventory", required=True, type=Path)
     parser.add_argument("--package-version", required=True)
     parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--symbol-package-base-address")
     parser.add_argument("--evidence-out", required=True, type=Path)
     parser.add_argument("--publish-list-out", type=Path)
+    parser.add_argument("--symbol-publish-list-out", type=Path)
     parser.add_argument("--require-present", action="store_true")
     parser.add_argument("--attempts", type=int, default=1)
     parser.add_argument("--delay-seconds", type=float, default=0)
@@ -540,6 +644,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--attempts must be between 1 and 60")
     if args.delay_seconds < 0 or args.delay_seconds > 300:
         parser.error("--delay-seconds must be between 0 and 300")
+    if args.symbol_publish_list_out and not args.symbol_package_base_address:
+        parser.error("--symbol-publish-list-out requires --symbol-package-base-address")
+    if args.symbol_package_base_address and not args.symbol_package_base_address.startswith("https://"):
+        parser.error("--symbol-package-base-address must use HTTPS")
     token = None
     if args.token_env:
         token = os.environ.get(args.token_env, "").strip()
@@ -564,6 +672,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         result: dict[str, Any] | None = None
         publish_paths: list[Path] = []
+        symbol_publish_paths: list[Path] = []
         for attempt in range(1, args.attempts + 1):
             result, publish_paths = evaluate_coordinates(
                 registry_name=args.registry_name,
@@ -575,10 +684,36 @@ def main(argv: list[str] | None = None) -> int:
                 require_present=args.require_present,
             )
             result["attempt"] = attempt
-            result["symbolPackages"] = symbols
+            if args.symbol_package_base_address:
+                symbol_rows, symbol_publish_paths, symbol_failures = evaluate_symbol_coordinates(
+                    symbol_package_base=args.symbol_package_base_address,
+                    package_version=args.package_version,
+                    local_symbols=symbols,
+                    fetch_package=lambda url: fetch_registry_package(
+                        url,
+                        headers=registry_headers(None, None),
+                    ),
+                    require_present=args.require_present,
+                )
+                result["symbolPackageBaseAddress"] = args.symbol_package_base_address
+                result["symbolPackages"] = symbol_rows
+                result["failures"].extend(symbol_failures)
+                result["summary"]["symbols"] = {
+                    "total": len(symbol_rows),
+                    "absent": sum(row["state"] == "absent" for row in symbol_rows),
+                    "presentIdentical": sum(
+                        row["state"] == "present-identical" for row in symbol_rows
+                    ),
+                    "divergent": sum(row["state"] == "divergent" for row in symbol_rows),
+                }
+                result["status"] = "fail" if result["failures"] else "pass"
+            else:
+                result["symbolPackages"] = local_symbol_evidence(symbols)
             if result["status"] == "pass":
                 break
-            if any(row["state"] == "divergent" for row in result["packages"]):
+            if any(row["state"] == "divergent" for row in result["packages"]) or any(
+                row["state"] == "divergent" for row in result["symbolPackages"]
+            ):
                 break
             if attempt < args.attempts:
                 time.sleep(args.delay_seconds)
@@ -587,6 +722,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.publish_list_out:
             args.publish_list_out.write_text(
                 "".join(f"{path.as_posix()}\n" for path in publish_paths), encoding="utf-8"
+            )
+        if args.symbol_publish_list_out:
+            args.symbol_publish_list_out.write_text(
+                "".join(f"{path.as_posix()}\n" for path in symbol_publish_paths),
+                encoding="utf-8",
             )
         for failure in result["failures"]:
             print(f"::error::{failure}")

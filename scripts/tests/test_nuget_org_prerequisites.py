@@ -9,6 +9,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "check-nuget-org-prerequisites.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "publish-dotnet-sdk.yml"
+STAGING_WORKFLOW = ROOT / ".github" / "workflows" / "staging-integration.yml"
 SPEC = importlib.util.spec_from_file_location("nuget_org_prerequisites", SCRIPT)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -81,7 +82,8 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertNotIn("nuget.org publish skipped", workflow)
         self.assertNotIn("nuget-org-ready", workflow)
         self.assertIn("environment: public-nuget", workflow)
-        self.assertIn("NUGET_API_KEY in the protected public-nuget environment", workflow)
+        self.assertIn("The protected public-nuget environment is missing", workflow)
+        self.assertIn("missing+=(NUGET_API_KEY)", workflow)
 
     def test_public_verification_precedes_the_secondary_github_feed(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -108,8 +110,60 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertNotIn("--skip-duplicate", workflow[nuget_push:nuget_verify])
         self.assertNotIn("--skip-duplicate", workflow[github_push:])
 
+    def test_non_dry_publish_requires_staging_and_trunk_bound_tag(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        staging = workflow.index("release-staging-integration:")
+        publish = workflow.index("publish-dotnet-packages:")
+        self.assertIn("github.event.inputs.dry_run != 'true'", workflow[staging:publish])
+        self.assertIn(
+            "needs.release-staging-integration.result == 'success'",
+            workflow[publish:],
+        )
+        self.assertNotIn(
+            "needs.release-staging-integration.result == 'skipped'",
+            workflow[publish:],
+        )
+        self.assertIn(
+            'git merge-base --is-ancestor "${checked_out_sha}" refs/remotes/origin/trunk',
+            workflow[:staging],
+        )
+
+    def test_signing_credentials_are_only_read_in_the_protected_publish_job(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        protected_environment = workflow.index("environment: public-nuget")
+        signing_secret = workflow.index("NUGET_SIGNING_CERTIFICATE_BASE64")
+        self.assertLess(protected_environment, signing_secret)
+        self.assertIn("packages-input-unsigned", workflow)
+        self.assertIn("packages-signed", workflow)
+        self.assertNotIn("secrets: inherit", workflow)
+
+    def test_symbol_coordinates_are_preflighted_and_proven_without_duplicate_acceptance(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        preflight = workflow.index("- name: Preflight every immutable registry coordinate")
+        symbol_push = workflow.index("- name: Submit portable symbol packages to nuget.org")
+        symbol_proof = workflow.index("- name: Verify portable symbol packages from nuget.org")
+        github_push = workflow.index("- name: Publish to GitHub Packages")
+        self.assertLess(preflight, symbol_push)
+        self.assertLess(symbol_push, symbol_proof)
+        self.assertLess(symbol_proof, github_push)
+        self.assertIn("--symbol-package-base-address", workflow[preflight:symbol_push])
+        self.assertIn("--symbol-publish-list-out", workflow[preflight:symbol_push])
+        self.assertIn("--require-present", workflow[symbol_proof:github_push])
+        self.assertNotIn("--skip-duplicate", workflow)
+
+    def test_registry_evidence_survives_partial_publication_failure(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        upload = workflow.index("- name: Upload registry publication evidence")
+        self.assertIn("if: ${{ always() }}", workflow[upload:])
+        self.assertIn("if-no-files-found: warn", workflow[upload:])
+
     def test_release_tools_and_artifacts_are_rerun_safe(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn('DOTNET_VERSION: "10.0.100"', workflow)
+        self.assertNotIn('DOTNET_VERSION: "10.0.x"', workflow)
+        staging_workflow = STAGING_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn('DOTNET_VERSION: "10.0.100"', staging_workflow)
+        self.assertIn("Verify pinned .NET SDK", staging_workflow)
         self.assertIn("CycloneDX --version 4.2.0", workflow)
         self.assertNotIn("CycloneDX --version 4.*", workflow)
         self.assertIn("overwrite: true", workflow)

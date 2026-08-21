@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import importlib.util
 from io import BytesIO
+import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest import mock
 import urllib.request
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -71,6 +73,7 @@ def symbol_package_bytes(
     version: str = "1.6.1",
     *,
     pdb: bytes = b"BSJBportable-pdb",
+    signature: bytes | None = None,
     repository_commit: str = SOURCE_SHA,
 ) -> bytes:
     target = BytesIO()
@@ -83,6 +86,8 @@ def symbol_package_bytes(
             "</metadata></package>",
         )
         archive.writestr("lib/net10.0/Honua.Sdk.pdb", pdb)
+        if signature is not None:
+            archive.writestr(".signature.p7s", signature)
     return target.getvalue()
 
 
@@ -134,7 +139,9 @@ class PackageArchiveTests(unittest.TestCase):
             "1.6.1",
             SOURCE_SHA,
         )
-        self.assertEqual(1, symbols[0]["portablePdbCount"])
+        _, package, portable_pdbs = symbols["honua.sdk"]
+        self.assertEqual("Honua.Sdk", package.package_id)
+        self.assertEqual(1, len(portable_pdbs))
 
         Path(package_dir, "Honua.Sdk.1.6.1.snupkg").write_bytes(
             symbol_package_bytes(pdb=b"not-portable")
@@ -228,6 +235,123 @@ class CoordinateEvaluationTests(unittest.TestCase):
             MODULE.load_local_packages(package_dir, ["Honua.Sdk"], "1.6.2", SOURCE_SHA)
         with self.assertRaises(MODULE.CoordinateError):
             MODULE.load_local_packages(package_dir, ["Honua.Sdk"], "1.6.1", "b" * 40)
+
+
+class SymbolCoordinateEvaluationTests(unittest.TestCase):
+    def local(self) -> tuple[tempfile.TemporaryDirectory[str], dict]:
+        directory = tempfile.TemporaryDirectory()
+        path = Path(directory.name, "Honua.Sdk.1.6.1.snupkg")
+        path.write_bytes(symbol_package_bytes())
+        package, portable_pdbs = MODULE.inspect_symbol_package_bytes(path.read_bytes())
+        return directory, {"honua.sdk": (path, package, portable_pdbs)}
+
+    def test_symbol_url_is_derived_from_coordinate_not_local_path(self) -> None:
+        self.assertEqual(
+            "https://globalcdn.nuget.org/symbol-packages/honua.sdk.1.6.1.snupkg",
+            MODULE.symbol_package_download_url(
+                "https://globalcdn.nuget.org/symbol-packages/",
+                "Honua.Sdk",
+                "1.6.1",
+            ),
+        )
+
+    def test_absent_symbol_coordinate_is_the_only_publish_candidate(self) -> None:
+        directory, local = self.local()
+        self.addCleanup(directory.cleanup)
+        rows, paths, failures = MODULE.evaluate_symbol_coordinates(
+            symbol_package_base="https://example.invalid/symbols/",
+            package_version="1.6.1",
+            local_symbols=local,
+            fetch_package=lambda _: None,
+            require_present=False,
+        )
+        self.assertEqual("absent", rows[0]["state"])
+        self.assertEqual([local["honua.sdk"][0]], paths)
+        self.assertEqual([], failures)
+
+    def test_repository_signed_symbol_payload_is_semantically_identical(self) -> None:
+        directory, local = self.local()
+        self.addCleanup(directory.cleanup)
+        rows, paths, failures = MODULE.evaluate_symbol_coordinates(
+            symbol_package_base="https://example.invalid/symbols/",
+            package_version="1.6.1",
+            local_symbols=local,
+            fetch_package=lambda _: symbol_package_bytes(signature=b"repository-signature"),
+            require_present=True,
+        )
+        self.assertEqual("present-identical", rows[0]["state"])
+        self.assertEqual([], paths)
+        self.assertEqual([], failures)
+        self.assertEqual(rows[0]["local"]["portablePdbs"], rows[0]["public"]["portablePdbs"])
+
+    def test_divergent_public_symbol_payload_fails_closed(self) -> None:
+        directory, local = self.local()
+        self.addCleanup(directory.cleanup)
+        rows, paths, failures = MODULE.evaluate_symbol_coordinates(
+            symbol_package_base="https://example.invalid/symbols/",
+            package_version="1.6.1",
+            local_symbols=local,
+            fetch_package=lambda _: symbol_package_bytes(pdb=b"BSJBdifferent"),
+            require_present=False,
+        )
+        self.assertEqual("divergent", rows[0]["state"])
+        self.assertEqual([], paths)
+        self.assertEqual(1, len(failures))
+
+    def test_cli_writes_remote_symbol_evidence_and_exact_publish_plan(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        package_dir = root / "packages"
+        package_dir.mkdir()
+        (package_dir / "Honua.Sdk.1.6.1.nupkg").write_bytes(package_bytes())
+        (package_dir / "Honua.Sdk.1.6.1.snupkg").write_bytes(symbol_package_bytes())
+        inventory = root / "inventory.txt"
+        inventory.write_text("src/Honua.Sdk.csproj|Honua.Sdk\n", encoding="utf-8")
+        evidence = root / "evidence.json"
+        package_plan = root / "packages.txt"
+        symbol_plan = root / "symbols.txt"
+
+        with (
+            mock.patch.object(
+                MODULE,
+                "resolve_package_base_address",
+                return_value="https://example.invalid/flat/",
+            ),
+            mock.patch.object(MODULE, "fetch_registry_package", return_value=None),
+        ):
+            result = MODULE.main(
+                [
+                    "--registry-name",
+                    "nuget.org",
+                    "--service-index",
+                    "https://example.invalid/index.json",
+                    "--symbol-package-base-address",
+                    "https://example.invalid/symbols/",
+                    "--package-dir",
+                    str(package_dir),
+                    "--inventory",
+                    str(inventory),
+                    "--package-version",
+                    "1.6.1",
+                    "--source-revision",
+                    SOURCE_SHA,
+                    "--evidence-out",
+                    str(evidence),
+                    "--publish-list-out",
+                    str(package_plan),
+                    "--symbol-publish-list-out",
+                    str(symbol_plan),
+                ]
+            )
+
+        self.assertEqual(0, result)
+        receipt = json.loads(evidence.read_text(encoding="utf-8"))
+        self.assertEqual("pass", receipt["status"])
+        self.assertEqual("absent", receipt["packages"][0]["state"])
+        self.assertEqual("absent", receipt["symbolPackages"][0]["state"])
+        self.assertTrue(package_plan.read_text(encoding="utf-8").strip().endswith(".nupkg"))
+        self.assertTrue(symbol_plan.read_text(encoding="utf-8").strip().endswith(".snupkg"))
 
 
 if __name__ == "__main__":
