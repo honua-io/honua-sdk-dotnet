@@ -356,7 +356,7 @@ def build_document() -> dict[str, Any]:
         operation.pop("_parameters")
         if not implemented:
             status = "non-addressable"
-            owner = RASTER_ISSUE if operation["surface"] == "abstractions" else TRACKING_ISSUE
+            owner = RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
             disposition = "Public provider-neutral contract has no concrete Honua client implementation."
             tiers: list[str] = []
         elif tests:

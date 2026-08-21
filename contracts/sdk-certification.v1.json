@@ -23,7 +23,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -38,7 +38,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -53,7 +53,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -248,7 +248,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -263,7 +263,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -278,7 +278,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -293,7 +293,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -308,7 +308,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -360,7 +360,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -375,7 +375,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -390,7 +390,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -405,7 +405,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -420,7 +420,7 @@
         "mutation"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -600,7 +600,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -615,7 +615,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -630,7 +630,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -645,7 +645,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -660,7 +660,7 @@
         "read-only"
       ],
       "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {

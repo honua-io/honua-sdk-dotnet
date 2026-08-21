@@ -72,6 +72,22 @@ class SdkCertificationTests(unittest.TestCase):
         self.assertTrue(geocoding)
         self.assertTrue(all(cell["status"] != "non-addressable" for cell in geocoding))
 
+    def test_non_raster_non_addressable_operations_use_general_owner(self):
+        document = MODULE.build_document()
+        non_addressable = [
+            cell for cell in document["operations"] if cell["status"] == "non-addressable"
+        ]
+
+        self.assertTrue(non_addressable)
+        self.assertTrue(all(
+            not cell["client"].endswith("IHonuaRasterDataClient")
+            for cell in non_addressable
+        ))
+        self.assertTrue(all(
+            cell["ownerIssue"] == MODULE.TRACKING_ISSUE
+            for cell in non_addressable
+        ))
+
     def test_overloads_have_distinct_ids_and_only_the_invoked_signature_is_exercised(self):
         document = MODULE.build_document()
         overloads = [
