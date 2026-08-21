@@ -14,34 +14,26 @@ geospatial-grpc#19 (`conformance/fetch-fixtures.sh`), never copied/forked here.
 
 | Pin | Value | Source |
 |-----|-------|--------|
-| Conformance fixtures | `0.1.0-alpha.2` | `conformance/FIXTURE_VERSION` |
-| `Geospatial.Grpc` package | `0.1.0-alpha.2` | `Directory.Packages.props` (central `PackageVersion`) |
+| Conformance fixtures | `0.2.0-alpha.1` | `conformance/FIXTURE_VERSION` |
+| `Geospatial.Grpc` package | `0.2.0-alpha.1` | `Directory.Packages.props` (central `PackageVersion`) |
 
 These two **must stay equal** — a fixture set maps 1:1 to a `geospatial.v1`
 schema release, and the SDK's generated gRPC client is built against the same
 schema version. `conformance/check-version.sh` enforces the equality and the
 conformance CI job runs it before anything else.
 
-The fixtures are pulled at build time from the geospatial-grpc `v0.1.0-alpha.2`
+The fixtures are pulled at build time from the geospatial-grpc `v0.2.0-alpha.1`
 GitHub Release:
 
 ```bash
-conformance/fetch-fixtures.sh --version 0.1.0-alpha.2 --dest conformance/.fixtures
+conformance/fetch-fixtures.sh --version 0.2.0-alpha.1 --dest conformance/.fixtures
 ```
 
-The alpha.2 pin is intentional: when selected, it was the newest fixture
-version with a matching `Geospatial.Grpc` package published to GitHub Packages.
-Alpha.3 fixture assets existed without an alpha.3 NuGet package, so promoting
-only the fixtures would have broken the required fixture/package equality.
-
-As of 2026-08-17 the newest fixture release is `0.2.0-alpha.1` (published
-2026-08-17) and it *does* have a matching published package, so the
-fixture/package equality gate is no longer what blocks promotion. The remaining
-blocker is the server side: `honua-server` trunk still consumes
-`Geospatial.Grpc 0.1.0-alpha.2`, so the pinned nightly image speaks the alpha.2
-contract. Promoting the SDK alone would put the client ahead of every server
-build it is certified against. Promotion therefore stays coordinated — see the
-promotion section below.
+The `0.2.0-alpha.1` fixture and package pins were promoted together with a
+compatible immutable server image. Promotion run
+[`32451236434`](https://github.com/honua-io/honua-sdk-dotnet/actions/runs/32451236434)
+passed schema conformance and every live gRPC, FeatureServer, WFS, and OGC API
+Features assertion before the pins were committed.
 
 ## Pinned server image
 
@@ -50,12 +42,12 @@ The live tier boots this exact `honua-server` image via Testcontainers:
 | Pin | Value |
 |-----|-------|
 | Tag | `ghcr.io/honua-io/honua-server:nightly` |
-| Digest | `sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865` |
-| Build | `nightly-86042bd` (dated `20260530`, JIT/amd64+arm64 multi-arch index) |
+| Digest | `sha256:78e3088d64d832d3e2752c87d80bfcad201b414f4525989ca5d9a242cd5fee8a` |
+| Build | `nightly-f897700` (dated `20260820`, AOT/amd64+arm64 multi-arch index) |
 
 The digest is what is actually pinned and recorded; the `:nightly` tag is a
 moving pointer and is shown only for provenance. CI pulls
-`ghcr.io/honua-io/honua-server@sha256:1f92…913865`. Bump the digest here when
+`ghcr.io/honua-io/honua-server@sha256:78e308...5fee8a`. Bump the digest here when
 intentionally moving the conformance target to a newer nightly, and record the
 new build/date alongside it.
 

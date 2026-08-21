@@ -29,7 +29,7 @@ the SDK boundary.
 |------|---------|
 | `fetch-fixtures.sh` | Pull + verify a pinned fixture set from the geospatial-grpc release. |
 | `check-version.sh` | Assert `FIXTURE_VERSION` equals the SDK's `Geospatial.Grpc` pin. |
-| `FIXTURE_VERSION` | The pinned fixture/schema version (currently `0.1.0-alpha.2`). |
+| `FIXTURE_VERSION` | The pinned fixture/schema version (currently `0.2.0-alpha.1`). |
 | `PINS.md` | Recorded pins: fixtures, server image digest, known-expected-failing gaps. |
 
 ## Two-tier conformance suite
@@ -67,7 +67,7 @@ assertion becomes a required check. See
 
 ```bash
 # 1. Pull the pinned fixtures.
-conformance/fetch-fixtures.sh --version 0.1.0-alpha.2 --dest conformance/.fixtures
+conformance/fetch-fixtures.sh --version 0.2.0-alpha.1 --dest conformance/.fixtures
 
 # 2. Schema conformance (no server).
 export HONUA_CONFORMANCE_FIXTURES_DIR="$PWD/conformance/.fixtures"

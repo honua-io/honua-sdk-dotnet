@@ -32,11 +32,11 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
-  # nightly-86042bd, dated 20260530. The :nightly tag is a moving pointer; the
+  # nightly-f897700, dated 20260820. The :nightly tag is a moving pointer; the
   # digest is what is actually pinned.
-  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865"
+  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:78e3088d64d832d3e2752c87d80bfcad201b414f4525989ca5d9a242cd5fee8a"
   # honua-server commit that produced the pinned nightly image (for the seed SQL).
-  PINNED_HONUA_SERVER_SEED_REF: "86042bd"
+  PINNED_HONUA_SERVER_SEED_REF: "f897700159e2791c9468c6ca85bb4e2a3a8d8433"
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
