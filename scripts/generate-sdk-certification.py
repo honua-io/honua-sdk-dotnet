@@ -580,11 +580,13 @@ def _render(document: dict[str, Any]) -> str:
     return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
 
 
-def _trx_results(paths: list[Path]) -> dict[str, list[str]]:
+def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, dict[str, list[str]]]]:
     results: dict[str, list[str]] = defaultdict(list)
+    results_by_path: dict[Path, dict[str, list[str]]] = {}
     for path in paths:
         root = ET.parse(path).getroot()
         summary_outcomes: list[str] = []
+        path_results: dict[str, list[str]] = defaultdict(list)
         for result in root.iter():
             element_name = result.tag.rsplit("}", 1)[-1]
             outcome = result.attrib.get("outcome", "Unknown")
@@ -599,12 +601,14 @@ def _trx_results(paths: list[Path]) -> dict[str, list[str]]:
                 raise ValueError(f"TRX records an unsupported outcome in {path.name}: {outcome}")
             if name:
                 results[name].append(outcome)
+                path_results[name].append(outcome)
         invalid_summaries = set(summary_outcomes) & {"Aborted", "Error", "Timeout"}
         if invalid_summaries:
             raise ValueError(
                 f"TRX records an incomplete run in {path.name}: {', '.join(sorted(invalid_summaries))}"
             )
-    return results
+        results_by_path[path] = path_results
+    return results, results_by_path
 
 
 def _identity(args: argparse.Namespace) -> dict[str, Any]:
@@ -646,7 +650,28 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
-    results = _trx_results(args.trx)
+    results, results_by_path = _trx_results(args.trx)
+    exit_codes = getattr(args, "trx_exit_code", [])
+    if exit_codes and len(exit_codes) != len(args.trx):
+        raise ValueError("each TRX must have exactly one corresponding exit code")
+    governed_tests = {
+        test
+        for operation in document["operations"]
+        if args.tier in operation["requiredTiers"]
+        for test in operation["tests"]
+    }
+    for path, exit_code in zip(args.trx, exit_codes, strict=True):
+        if exit_code == 0:
+            continue
+        failed_tests = {
+            name
+            for name, outcomes in results_by_path[path].items()
+            if "Failed" in outcomes
+        }
+        if not failed_tests or not failed_tests <= governed_tests:
+            raise ValueError(
+                f"test command failed without exclusively governed assertion failures in {path.name}"
+            )
     payload_base64 = base64.b64encode(json.dumps(
         [
             {
@@ -779,6 +804,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--tier", choices=("pr", "nightly", "release"))
     parser.add_argument("--trx", type=Path, action="append", default=[])
+    parser.add_argument("--trx-exit-code", type=int, action="append", default=[])
     parser.add_argument("--evidence", type=Path)
     parser.add_argument("--started-at")
     parser.add_argument("--sdk-commit")

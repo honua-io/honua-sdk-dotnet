@@ -200,7 +200,6 @@ jobs:
 
       - name: Run public SDK operations
         id: tests
-        continue-on-error: true
         env:
           TIER: ${{ steps.identity.outputs.tier }}
           HONUA_PROTOCOL_INTEGRATION: "true"
@@ -220,18 +219,20 @@ jobs:
             filter='Category=ProtocolIntegration'
             conformance_filter='FullyQualifiedName~LiveConformanceTests'
           fi
-          code=0
+          protocol_code=0
           dotnet test tests/Honua.Sdk.ProtocolIntegration.Tests/Honua.Sdk.ProtocolIntegration.Tests.csproj \
             --configuration Release \
             --filter "${filter}" \
             --logger 'trx;LogFileName=protocol-integration.trx' \
-            --results-directory artifacts/test-results || code=1
+            --results-directory artifacts/test-results || protocol_code=$?
+          conformance_code=0
           dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
             --configuration Release \
             --filter "${conformance_filter}" \
             --logger 'trx;LogFileName=live-conformance.trx' \
-            --results-directory artifacts/test-results || code=1
-          exit "${code}"
+            --results-directory artifacts/test-results || conformance_code=$?
+          echo "protocol_exit_code=${protocol_code}" >> "${GITHUB_OUTPUT}"
+          echo "conformance_exit_code=${conformance_code}" >> "${GITHUB_OUTPUT}"
 
       - name: Emit and enforce normalized certification evidence
         if: always()
@@ -251,6 +252,8 @@ jobs:
             --tier "${TIER}" \
             --trx artifacts/test-results/protocol-integration.trx \
             --trx artifacts/test-results/live-conformance.trx \
+            --trx-exit-code "${{ steps.tests.outputs.protocol_exit_code }}" \
+            --trx-exit-code "${{ steps.tests.outputs.conformance_exit_code }}" \
             --evidence artifacts/evidence/sdk-certification.json \
             --started-at "${STARTED_AT}" \
             --sdk-commit "${SDK_COMMIT}" \
