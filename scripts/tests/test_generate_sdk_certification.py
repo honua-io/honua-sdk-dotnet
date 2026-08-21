@@ -82,6 +82,8 @@ class SdkCertificationTests(unittest.TestCase):
                 "anonymous-public-v1",
                 fragment["observations"][0]["auth_policy_revision"],
             )
+            self.assertIsNone(fragment["observations"][0]["evidence_digest"])
+            self.assertIsNone(fragment["observations"][0]["facet_results"])
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()

@@ -633,6 +633,11 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     results = _trx_results(args.trx)
+    evidence_hasher = hashlib.sha256()
+    for path in sorted(args.trx, key=lambda value: str(value)):
+        evidence_hasher.update(path.name.encode("utf-8"))
+        evidence_hasher.update(path.read_bytes())
+    evidence_digest = "sha256:" + evidence_hasher.hexdigest()
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     observations: list[dict[str, Any]] = []
     incomplete = False
@@ -658,13 +663,14 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         skip_reason = None if result != "skip" else (
             operation.get("ownerIssue") or operation.get("disposition") or verdict
         )
+        scenario_facets = list(dict.fromkeys(
+            "positive" if facet == "read-only" else facet
+            for facet in operation["scenarioFacets"]
+        ))
         observation = {
             "surface": operation["surface"],
             "operation": operation["id"],
-            "scenario_facets": list(dict.fromkeys(
-                "positive" if facet == "read-only" else facet
-                for facet in operation["scenarioFacets"]
-            )),
+            "scenario_facets": scenario_facets,
             "canonical_client": "Honua SDK .NET",
             "client_version": identity["sdkVersion"],
             "deployment_target": "local-docker",
@@ -677,6 +683,11 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "contract_revision": f"sdk-dotnet-certification@{identity['sdkCommit']}",
             "auth_policy_revision": "anonymous-public-v1",
             "evidence_uri": identity["evidenceUri"],
+            "evidence_digest": None if result == "skip" else evidence_digest,
+            "facet_results": None if result == "skip" else {
+                facet: {"result": result, "evidence_digest": evidence_digest}
+                for facet in scenario_facets
+            },
             "started_at": args.started_at or now,
             "completed_at": now,
         }
