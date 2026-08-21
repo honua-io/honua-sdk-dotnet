@@ -38,14 +38,17 @@ The publish workflow builds and packs:
    `dotnet-sdk-v<PackageVersion>`.
    Example: `dotnet-sdk-v1.0.0`.
 
-Before a stable tag is created, confirm the repository has a `NUGET_API_KEY`
-secret and that the pinned **stable** `Geospatial.Grpc` version is available from
-nuget.org. The workflow fails before publishing when either prerequisite is
-missing, because otherwise the public SDK packages would not be restorable
-from the public feed. Repository admins can verify secret presence with
-`gh secret list --repo honua-io/honua-sdk-dotnet`; the preflight never prints
-the credential. nuget.org does not expose a non-mutating API-key permission
-check, so account/package scope is finally proven by the first push.
+Before a stable tag is created, confirm the protected `public-nuget`
+environment has a scoped `NUGET_API_KEY` secret and that the pinned **stable**
+`Geospatial.Grpc` version is available from nuget.org. The environment must
+allow only selected `dotnet-sdk-v*` tags, require a reviewer, and disallow admin
+bypass. The dependency preflight runs before package construction; the
+credential is resolved only inside the protected publish job and is validated
+before any registry mutation. Repository admins can verify secret presence with
+`gh secret list --env public-nuget --repo honua-io/honua-sdk-dotnet`. The
+workflow never prints the credential. nuget.org does not expose a non-mutating
+API-key permission check, so account/package scope is finally proven by the
+first push.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects. The workflow fails before publishing if they differ.
@@ -68,17 +71,24 @@ previews of a future major.
 
 ## Publishing Targets
 
-- Stable versions publish to both nuget.org and GitHub Packages. The workflow first waits for every
-  shipped package to be indexed, then clean-installs the `Honua.Sdk` umbrella, representative
-  `Honua.Sdk.Admin` / `Honua.Sdk.Grpc` leaves, and the `Honua.Sdk.Cli` tool using a NuGet.config that
-  contains only nuget.org. GitHub Packages publication happens only after that public-feed proof.
+- Stable versions publish to both nuget.org and GitHub Packages. Before the
+  first mutation, the workflow audits every exact coordinate on both feeds.
+  Absent coordinates are eligible for publication, semantically identical
+  payloads are safe to resume, and an occupied divergent payload fails closed.
+  After publication it downloads and compares every public package with the
+  build-once payload, validates the portable symbol-package set, then
+  clean-installs the `Honua.Sdk` umbrella, representative `Honua.Sdk.Admin` /
+  `Honua.Sdk.Grpc` leaves, and the `Honua.Sdk.Cli` tool using a NuGet.config that
+  contains only nuget.org. GitHub Packages publication happens only after that
+  public-feed proof.
 - Prerelease versions publish to GitHub Packages only.
 - Dry runs build, inspect, and install the local packages without pushing to
   either feed. They sign only when signing credentials are configured and keep
   both primary and symbol packages as workflow artifacts.
 
-The workflow uses `NUGET_API_KEY` for nuget.org and `GITHUB_TOKEN` for GitHub
-Packages. It restores GitHub-hosted dependencies such as `Geospatial.Grpc` from
+The workflow uses the `public-nuget` environment's `NUGET_API_KEY` for
+nuget.org and the job-scoped `GITHUB_TOKEN` for GitHub Packages. It restores
+GitHub-hosted dependencies such as `Geospatial.Grpc` from
 `nuget.pkg.github.com/honua-io` during build validation. Stable public publishing
 remains blocked until the same dependency version is available from nuget.org.
 Release-tag signing and verification continue to cover both primary `.nupkg` and symbol `.snupkg`
@@ -86,6 +96,15 @@ artifacts. GitHub Packages receives that author-signed set. If the author certif
 publicly trusted root, nuget.org receives the same set; otherwise it receives the preserved unsigned
 set and adds its own repository signature. Registering a publicly trusted author certificate remains
 a hardening action, not a prerequisite for nuget.org's repository-signed publication path.
+
+Every build-once primary and symbol archive is covered by a committed-run
+`SHA256SUMS`. The publish job rechecks those hashes after artifact download and
+uploads machine-readable preflight and post-publication receipts. NuGet's
+repository signature can change raw archive bytes; the public comparison hashes
+the package payload while excluding only NuGet signature/container plumbing.
+Do not use a new workflow dispatch to recover a partially completed release.
+Use GitHub's rerun mechanism for the same run so it reuses the immutable tag and
+coordinate audit. Both failed-job and full-run retries are supported.
 
 ## Local Checks
 

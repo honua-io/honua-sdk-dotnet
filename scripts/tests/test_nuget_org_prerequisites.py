@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -27,41 +26,31 @@ class NugetOrgPrerequisiteTests(unittest.TestCase):
         )
         return directory
 
-    def evaluate(self, version: str, *, key: bool, published: list[str]):
+    def evaluate(self, version: str, *, published: list[str]):
         directory = self.manifest(version)
         self.addCleanup(directory.cleanup)
         return MODULE.evaluate(
             manifest=Path(directory.name, "Directory.Packages.props"),
             package="Geospatial.Grpc",
             index_url="https://example.invalid/index.json",
-            api_key_present=key,
             fetch_versions=lambda _: published,
         )
 
     def failed(self, result: dict) -> set[str]:
         return {check["check"] for check in result["checks"] if check["status"] == "fail"}
 
-    def test_stable_public_dependency_and_credential_pass(self) -> None:
-        result = self.evaluate("1.0.0", key=True, published=["1.0.0"])
+    def test_stable_public_dependency_passes(self) -> None:
+        result = self.evaluate("1.0.0", published=["1.0.0"])
         self.assertEqual("pass", result["status"])
         self.assertEqual(set(), self.failed(result))
 
-    def test_missing_credential_fails_without_recording_its_value(self) -> None:
-        result = self.evaluate("1.0.0", key=False, published=["1.0.0"])
-        self.assertEqual("fail", result["status"])
-        self.assertIn("nuget-api-key-present", self.failed(result))
-        serialized = json.dumps(result).lower()
-        self.assertNotIn("password", serialized)
-        self.assertNotIn("ghp_", serialized)
-        self.assertNotIn("github_pat_", serialized)
-
     def test_prerelease_dependency_is_refused_even_when_public(self) -> None:
-        result = self.evaluate("1.0.0-alpha.1", key=True, published=["1.0.0-alpha.1"])
+        result = self.evaluate("1.0.0-alpha.1", published=["1.0.0-alpha.1"])
         self.assertEqual("fail", result["status"])
         self.assertIn("dependency-is-stable", self.failed(result))
 
     def test_missing_public_dependency_fails_closed(self) -> None:
-        result = self.evaluate("1.0.0", key=True, published=[])
+        result = self.evaluate("1.0.0", published=[])
         self.assertEqual("fail", result["status"])
         self.assertIn("dependency-on-nuget-org", self.failed(result))
 
@@ -76,7 +65,6 @@ class NugetOrgPrerequisiteTests(unittest.TestCase):
             manifest=Path(directory.name, "Directory.Packages.props"),
             package="Geospatial.Grpc",
             index_url="https://example.invalid/index.json",
-            api_key_present=True,
             fetch_versions=unreadable,
         )
         self.assertEqual("fail", result["status"])
@@ -92,6 +80,8 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertIn("check-nuget-org-prerequisites.py", workflow)
         self.assertNotIn("nuget.org publish skipped", workflow)
         self.assertNotIn("nuget-org-ready", workflow)
+        self.assertIn("environment: public-nuget", workflow)
+        self.assertIn("NUGET_API_KEY in the protected public-nuget environment", workflow)
 
     def test_public_verification_precedes_the_secondary_github_feed(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -105,6 +95,26 @@ class PublishWorkflowContractTests(unittest.TestCase):
             self.assertIn(package, workflow[public_verify:github_push])
         self.assertIn("<clear />", workflow[public_verify:github_push])
         self.assertNotIn("nuget.pkg.github.com", workflow[public_verify:github_push])
+
+    def test_coordinates_are_preflighted_before_any_registry_mutation(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        preflight = workflow.index("- name: Preflight every immutable registry coordinate")
+        nuget_push = workflow.index("- name: Publish stable packages to nuget.org")
+        nuget_verify = workflow.index("- name: Verify stable packages from nuget.org")
+        github_push = workflow.index("- name: Publish to GitHub Packages")
+        self.assertLess(preflight, nuget_push)
+        self.assertLess(preflight, github_push)
+        self.assertIn("check-package-coordinates.py", workflow[preflight:nuget_push])
+        self.assertNotIn("--skip-duplicate", workflow[nuget_push:nuget_verify])
+        self.assertNotIn("--skip-duplicate", workflow[github_push:])
+
+    def test_release_tools_and_artifacts_are_rerun_safe(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("CycloneDX --version 4.2.0", workflow)
+        self.assertNotIn("CycloneDX --version 4.*", workflow)
+        self.assertIn("overwrite: true", workflow)
+        self.assertIn("sha256sum --check SHA256SUMS", workflow)
+        self.assertIn("git rev-parse \"refs/tags/${GITHUB_REF_NAME}^{commit}\"", workflow)
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import urllib.error
 import urllib.request
@@ -49,21 +48,12 @@ def evaluate(
     manifest: Path,
     package: str,
     index_url: str,
-    api_key_present: bool,
     fetch_versions: Callable[[str], list[str]] = public_versions,
 ) -> dict:
     checks: list[dict[str, str]] = []
 
     def record(name: str, ok: bool, why: str) -> None:
         checks.append({"check": name, "status": "pass" if ok else "fail", "why": why})
-
-    record(
-        "nuget-api-key-present",
-        api_key_present,
-        "NUGET_API_KEY is configured"
-        if api_key_present
-        else "NUGET_API_KEY repository secret is missing",
-    )
 
     version = ""
     try:
@@ -121,7 +111,6 @@ def main(argv: list[str] | None = None) -> int:
         manifest=args.dependency_manifest,
         package=args.package,
         index_url=args.index_url,
-        api_key_present=bool(os.environ.get("NUGET_API_KEY", "").strip()),
     )
     if args.evidence_out:
         args.evidence_out.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
