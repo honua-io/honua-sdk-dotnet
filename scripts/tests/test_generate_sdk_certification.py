@@ -64,6 +64,7 @@ class SdkCertificationTests(unittest.TestCase):
                 release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
                 fixture_revision="fixture", seed_revision="b" * 40,
                 evidence_uri="https://example.test/run/1",
+                allow_nonpass=True,
             ), document)
             self.assertEqual(1, result)
             fragment = json.loads(evidence.read_text(encoding="utf-8"))

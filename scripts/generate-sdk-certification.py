@@ -585,10 +585,15 @@ def _trx_results(paths: list[Path]) -> dict[str, list[str]]:
     for path in paths:
         root = ET.parse(path).getroot()
         for result in root.iter():
-            if result.tag.rsplit("}", 1)[-1] != "UnitTestResult":
+            element_name = result.tag.rsplit("}", 1)[-1]
+            outcome = result.attrib.get("outcome", "Unknown")
+            if element_name == "RunInfo" and outcome in {"Aborted", "Error"}:
+                raise ValueError(f"TRX records an infrastructure failure in {path.name}: {outcome}")
+            if element_name != "UnitTestResult":
                 continue
             name = result.attrib.get("testName", "").split("(", 1)[0]
-            outcome = result.attrib.get("outcome", "Unknown")
+            if outcome not in {"Passed", "Failed", "NotExecuted"}:
+                raise ValueError(f"TRX records an unsupported outcome in {path.name}: {outcome}")
             if name:
                 results[name].append(outcome)
     return results
@@ -647,6 +652,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     observations: list[dict[str, Any]] = []
     has_nonpass = False
+    has_incomplete_execution = False
     for operation in document["operations"]:
         if args.tier not in operation["requiredTiers"]:
             continue
@@ -664,6 +670,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             verdict = "skip"
         else:
             verdict = "missing"
+        has_incomplete_execution |= verdict == "missing" and operation["status"] != "gap"
         has_nonpass |= verdict != "pass"
         result = verdict if verdict in {"pass", "fail"} else "skip"
         skip_reason = None if result != "skip" else (
@@ -690,7 +697,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "image_digest": identity["serverImageDigest"],
                 "fixture_revision": identity["fixtureRevision"],
                 "contract_revision": contract_revision,
-                "auth_policy_revision": "anonymous-public-v1",
+                "auth_policy_revision": "api-key-protected-v1",
                 "started_at": started_at,
                 "completed_at": now,
             },
@@ -717,7 +724,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": contract_revision,
-            "auth_policy_revision": "anonymous-public-v1",
+            "auth_policy_revision": "api-key-protected-v1",
             "evidence_uri": (
                 None if result == "skip"
                 else f"https://evidence.honua.io/data/sha256/{evidence_digest[7:]}"
@@ -751,6 +758,8 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     }
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(_render(evidence), encoding="utf-8")
+    if has_incomplete_execution:
+        return 1
     return 1 if has_nonpass and not getattr(args, "allow_nonpass", False) else 0
 
 
