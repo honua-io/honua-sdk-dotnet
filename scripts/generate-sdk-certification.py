@@ -584,9 +584,12 @@ def _trx_results(paths: list[Path]) -> dict[str, list[str]]:
     results: dict[str, list[str]] = defaultdict(list)
     for path in paths:
         root = ET.parse(path).getroot()
+        summary_outcomes: list[str] = []
         for result in root.iter():
             element_name = result.tag.rsplit("}", 1)[-1]
             outcome = result.attrib.get("outcome", "Unknown")
+            if element_name == "ResultSummary":
+                summary_outcomes.append(outcome)
             if element_name == "RunInfo" and outcome in {"Aborted", "Error"}:
                 raise ValueError(f"TRX records an infrastructure failure in {path.name}: {outcome}")
             if element_name != "UnitTestResult":
@@ -596,6 +599,11 @@ def _trx_results(paths: list[Path]) -> dict[str, list[str]]:
                 raise ValueError(f"TRX records an unsupported outcome in {path.name}: {outcome}")
             if name:
                 results[name].append(outcome)
+        invalid_summaries = set(summary_outcomes) & {"Aborted", "Error", "Timeout"}
+        if invalid_summaries:
+            raise ValueError(
+                f"TRX records an incomplete run in {path.name}: {', '.join(sorted(invalid_summaries))}"
+            )
     return results
 
 
@@ -670,7 +678,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             verdict = "skip"
         else:
             verdict = "missing"
-        has_incomplete_execution |= verdict == "missing" and operation["status"] != "gap"
+        has_incomplete_execution |= (
+            operation["status"] != "gap"
+            and (verdict == "missing" or any(outcome == "NotExecuted" for outcome in outcomes))
+        )
         has_nonpass |= verdict != "pass"
         result = verdict if verdict in {"pass", "fail"} else "skip"
         skip_reason = None if result != "skip" else (

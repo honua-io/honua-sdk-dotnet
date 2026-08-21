@@ -80,7 +80,7 @@ class SdkCertificationTests(unittest.TestCase):
                 fragment["observations"][0]["contract_revision"],
             )
             self.assertEqual(
-                "anonymous-public-v1",
+                "api-key-protected-v1",
                 fragment["observations"][0]["auth_policy_revision"],
             )
             self.assertIsNone(fragment["observations"][0]["evidence_digest"])
