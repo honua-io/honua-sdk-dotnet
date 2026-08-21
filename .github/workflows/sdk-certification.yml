@@ -9,6 +9,7 @@ on:
       - "tests/Honua.Sdk.Conformance.Tests/**"
       - "scripts/generate-sdk-certification.py"
       - "contracts/sdk-certification.v1.json"
+      - "Directory.Build.props"
       - "Directory.Packages.props"
       - ".github/workflows/sdk-certification.yml"
   schedule:
