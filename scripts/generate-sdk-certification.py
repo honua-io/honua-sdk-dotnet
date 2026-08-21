@@ -651,8 +651,10 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     results, results_by_path = _trx_results(args.trx)
-    exit_codes = getattr(args, "trx_exit_code", [])
-    if exit_codes and len(exit_codes) != len(args.trx):
+    exit_codes = getattr(args, "trx_exit_code", None)
+    if exit_codes is None:
+        exit_codes = [0] * len(args.trx)
+    elif len(exit_codes) != len(args.trx):
         raise ValueError("each TRX must have exactly one corresponding exit code")
     governed_tests = {
         test
