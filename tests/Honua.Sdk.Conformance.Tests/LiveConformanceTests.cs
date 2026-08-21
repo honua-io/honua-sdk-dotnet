@@ -119,17 +119,16 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
             timeout.Token).ConfigureAwait(false);
 
         var feature = Assert.Single(query.Features ?? []);
-        // The canonical contract: attributes project as a flat name->scalar map,
-        // not a nested JSONB envelope. #1238 regresses exactly this shape.
+        // The canonical contract: JSONB attributes project into their native
+        // JSON types, not a nested envelope or stringified JSON.
         Assert.NotNull(feature.Attributes);
-        foreach (var attribute in feature.Attributes!)
-        {
-            Assert.True(
-                attribute.Value.ValueKind is JsonValueKind.String or JsonValueKind.Number
-                    or JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null,
-                $"FeatureServer attribute '{attribute.Key}' projected as {attribute.Value.ValueKind}, " +
-                "not a flat scalar — JSONB projection drift (honua-server#1238).");
-        }
+        Assert.True(feature.Attributes!.TryGetValue("tags", out var tags));
+        Assert.Equal(JsonValueKind.Array, tags.ValueKind);
+        Assert.All(tags.EnumerateArray(), value => Assert.Equal(JsonValueKind.String, value.ValueKind));
+
+        Assert.True(feature.Attributes.TryGetValue("numbers", out var numbers));
+        Assert.Equal(JsonValueKind.Array, numbers.ValueKind);
+        Assert.All(numbers.EnumerateArray(), value => Assert.Equal(JsonValueKind.Number, value.ValueKind));
     }
 
     [LiveConformanceFact]
