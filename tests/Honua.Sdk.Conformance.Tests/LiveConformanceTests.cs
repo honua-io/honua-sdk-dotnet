@@ -107,14 +107,7 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         Assert.NotEmpty(feature.Properties);
     }
 
-    // honua-server#1238: a server-side JSONB attribute-projection change alters
-    // the on-the-wire shape of FeatureServer query responses. Until it lands,
-    // this stays known-expected-failing (skipped with the reference) so the job
-    // is green and the harness is in place; flip to a required check by removing
-    // the knownGap argument when the server fix ships.
-    [LiveConformanceFact(
-        knownGap: ConformanceKnownGaps.FeatureServerOgcJsonbProjection,
-        surface: "FeatureServer JSONB attribute projection shape")]
+    [LiveConformanceFact]
     public async Task FeatureServerQuery_RoundTripsCanonicalAttributeProjection()
     {
         using var timeout = _fixture.CreateTimeoutScope();
@@ -139,11 +132,7 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         }
     }
 
-    // honua-server#1238 also covers the OGC API Features projection of the same
-    // canonical data; kept known-expected-failing alongside the FeatureServer case.
-    [LiveConformanceFact(
-        knownGap: ConformanceKnownGaps.FeatureServerOgcJsonbProjection,
-        surface: "OGC API Features JSONB property projection shape")]
+    [LiveConformanceFact]
     public async Task OgcItems_RoundTripCanonicalPropertyProjection()
     {
         using var timeout = _fixture.CreateTimeoutScope();

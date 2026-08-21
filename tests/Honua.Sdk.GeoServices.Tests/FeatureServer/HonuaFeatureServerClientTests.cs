@@ -26,6 +26,7 @@ public class HonuaFeatureServerClientTests
         {
             "serviceDescription": "Test Service",
             "maxRecordCount": 1000,
+            "supportedQueryFormats": ["JSON", "geoJSON"],
             "capabilities": "Query",
             "spatialReference": { "wkid": 4326, "latestWkid": 4326 },
             "layers": [{ "id": 0, "name": "TestLayer" }]
@@ -38,6 +39,7 @@ public class HonuaFeatureServerClientTests
 
         Assert.Equal("Test Service", result.ServiceDescription);
         Assert.Equal(1000, result.MaxRecordCount);
+        Assert.Equal("JSON, geoJSON", result.SupportedQueryFormats);
         Assert.Equal("Query", result.Capabilities);
         Assert.NotNull(result.Layers);
         Assert.Single(result.Layers);
