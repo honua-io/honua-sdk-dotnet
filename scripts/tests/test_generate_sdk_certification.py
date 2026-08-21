@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import tempfile
 import unittest
 from argparse import Namespace
@@ -33,6 +34,7 @@ class SdkCertificationTests(unittest.TestCase):
                 image_source_revision="b" * 40,
                 server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
                 release_cut="2026-01-01T00:00:00Z",
+                candidate_cut="2026-01-01T00:00:00Z", evidence_uri="https://example.test/run/1",
                 fixture_revision="sha256:" + "e" * 64,
                 seed_revision="d" * 40,
             ))
@@ -59,9 +61,16 @@ class SdkCertificationTests(unittest.TestCase):
                 server_source_sha="b" * 40,
                 image_source_revision="b" * 40,
                 server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
-                release_cut=None, fixture_revision="fixture", seed_revision="b" * 40,
+                release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                fixture_revision="fixture", seed_revision="b" * 40,
+                evidence_uri="https://example.test/run/1",
             ), document)
             self.assertEqual(1, result)
+            fragment = json.loads(evidence.read_text(encoding="utf-8"))
+            self.assertEqual("honua.protocol-certification-fragment/v1", fragment["schema"])
+            self.assertEqual("honua-sdk-dotnet", fragment["producer"])
+            self.assertEqual("skip", fragment["observations"][0]["result"])
+            self.assertEqual("b" * 40, fragment["candidate"]["source_sha"])
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()
@@ -205,7 +214,9 @@ class SdkCertificationTests(unittest.TestCase):
                 sdk_commit="a" * 40, sdk_version="1.6.0",
                 server_source_sha="b" * 40, image_source_revision="b" * 40,
                 server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
-                release_cut=None, fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                evidence_uri="https://example.test/run/1",
             ), document)
             self.assertEqual(1, result)
 

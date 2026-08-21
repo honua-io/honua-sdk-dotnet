@@ -533,8 +533,10 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "serverImage": args.server_image,
         "serverImageDigest": args.server_image.rsplit("@", 1)[-1] if "@" in args.server_image else None,
         "releaseCut": args.release_cut,
+        "candidateCut": args.candidate_cut,
         "fixtureRevision": args.fixture_revision,
         "seedRevision": args.seed_revision,
+        "evidenceUri": args.evidence_uri,
     }
     if args.tier == "release":
         missing = [key for key, value in values.items() if not value]
@@ -563,7 +565,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     results = _trx_results(args.trx)
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    cells: list[dict[str, Any]] = []
+    observations: list[dict[str, Any]] = []
     incomplete = False
     for operation in document["operations"]:
         if args.tier not in operation["requiredTiers"]:
@@ -583,33 +585,42 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         else:
             verdict = "missing"
         incomplete |= verdict != "pass"
-        cell = {
+        result = verdict if verdict in {"pass", "fail"} else "skip"
+        skip_reason = None if result != "skip" else (
+            operation.get("ownerIssue") or operation.get("disposition") or verdict
+        )
+        observation = {
             "surface": operation["surface"],
             "operation": operation["id"],
-            "canonicalClient": "Honua.Sdk.*",
-            "canonicalClientVersion": identity["sdkVersion"],
-            "deploymentTarget": identity["serverImage"],
-            "scenarioFacets": operation["scenarioFacets"],
-            "requiredTier": args.tier,
-            "status": verdict,
-            "tests": operation["tests"],
+            "canonical_client": "Honua.Sdk.*",
+            "client_version": identity["sdkVersion"],
+            "deployment_target": "local-docker",
+            "result": result,
+            "skip_reason": skip_reason,
+            "source_sha": identity["serverSourceSha"],
+            "image_digest": identity["serverImageDigest"],
+            "fixture_revision": identity["fixtureRevision"],
+            "evidence_uri": identity["evidenceUri"],
+            "started_at": args.started_at or now,
+            "completed_at": now,
         }
-        for key in ("ownerIssue", "disposition"):
-            if key in operation:
-                cell[key] = operation[key]
-        cells.append(cell)
+        observations.append(observation)
 
     evidence = {
-        "schemaVersion": "1.0.0",
-        "producer": "honua-io/honua-sdk-dotnet",
-        "tier": args.tier,
-        "complete": not incomplete,
-        "startedAt": args.started_at or now,
-        "completedAt": now,
-        "generatedAt": now,
-        "identity": identity,
-        "matrixSha256": hashlib.sha256(_render(document).encode()).hexdigest(),
-        "cells": cells,
+        "schema": "honua.protocol-certification-fragment/v1",
+        "producer": "honua-sdk-dotnet",
+        "generated_at": now,
+        "candidate": {
+            "source_sha": identity["serverSourceSha"],
+            "image_digest": identity["serverImageDigest"],
+            "cut_at": identity["candidateCut"],
+        },
+        "operation_scope": {
+            "complete": not incomplete,
+            "owner_issue": TRACKING_ISSUE,
+            "matrix_sha256": hashlib.sha256(_render(document).encode()).hexdigest(),
+        },
+        "observations": observations,
     }
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(_render(evidence), encoding="utf-8")
@@ -629,8 +640,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--image-source-revision")
     parser.add_argument("--server-image", default="")
     parser.add_argument("--release-cut")
+    parser.add_argument("--candidate-cut")
     parser.add_argument("--fixture-revision")
     parser.add_argument("--seed-revision")
+    parser.add_argument("--evidence-uri")
     args = parser.parse_args(argv)
 
     try:
