@@ -270,6 +270,9 @@ def _matches_arguments(operation: dict[str, Any], arguments: list[str]) -> bool:
 
 
 def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[str]]) -> dict[str, list[str]]:
+    facade_delegations = {
+        ("HonuaSource", "QueryAsync"): ("IHonuaFeatureQueryClient", "QueryAsync"),
+    }
     fixture_clients: dict[str, str] = {}
     test_files: list[Path] = []
     for root in TEST_ROOTS:
@@ -302,6 +305,16 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
         if len(candidates) == 1:
             mappings[candidates[0]["id"]].add(test_name)
 
+    def record_facade(interface: str, operation_name: str, test_name: str) -> None:
+        interfaces = {interface, *ancestors.get(interface, set())}
+        candidates = [
+            operation
+            for candidate_interface in interfaces
+            for operation in by_interface_method.get((candidate_interface, operation_name), [])
+        ]
+        if len(candidates) == 1:
+            mappings[candidates[0]["id"]].add(test_name)
+
     method_re = re.compile(r"\bpublic\s+(?:async\s+)?Task(?:<[^;{}]+>)?\s+(\w+)\s*\([^)]*\)\s*\{")
     class_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(\w+)")
     for path, stripped in stripped_files.items():
@@ -321,6 +334,11 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
                     re.S,
                 )
             }
+            local_facades = {
+                variable: facade
+                for facade, variable in re.findall(r"\b(Honua\w+)\s+(\w+)\s+in\b", body)
+                if any(known_facade == facade for known_facade, _ in facade_delegations)
+            }
             call_suffix = r"(\w*Async\w*)(?:\s*<[^(){};]+>)?\s*\("
             for call in re.finditer(r"_fixture\.(\w+)\." + call_suffix, body):
                 property_name, operation = call.group(1), call.group(2)
@@ -334,6 +352,10 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
                 if interface:
                     closing = _closing_delimiter(body, call.end() - 1)
                     record(interface, operation, _split_top_level(body[call.end():closing]), test_name)
+                    continue
+                delegation = facade_delegations.get((local_facades.get(variable, ""), operation))
+                if delegation:
+                    record_facade(*delegation, test_name)
     return {key: sorted(value) for key, value in mappings.items()}
 
 

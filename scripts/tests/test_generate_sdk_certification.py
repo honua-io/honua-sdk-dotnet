@@ -116,6 +116,21 @@ class SdkCertificationTests(unittest.TestCase):
         )
         self.assertEqual("exercised", apply_edits["status"])
 
+    def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
+        document = MODULE.build_document()
+        query = next(
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaFeatureQueryClient")
+            and cell["operation"] == "QueryAsync"
+        )
+
+        self.assertEqual("exercised", query["status"])
+        self.assertIn(
+            "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests."
+            "SourceFacade_QueriesConfiguredFeatureProtocols",
+            query["tests"],
+        )
+
     def test_known_state_changing_verbs_are_mutations(self):
         document = MODULE.build_document()
         names = {

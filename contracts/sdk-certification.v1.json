@@ -6,8 +6,8 @@
   "complete": false,
   "summary": {
     "total": 281,
-    "exercised": 22,
-    "gap": 241,
+    "exercised": 23,
+    "gap": 240,
     "non-addressable": 18
   },
   "operations": [
@@ -317,7 +317,7 @@
       "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient",
       "operation": "QueryAsync",
       "signature": "QueryAsync(FeatureQueryRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -325,9 +325,9 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.SourceFacade_QueriesConfiguredFeatureProtocols"
+      ]
     },
     {
       "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient.QueryPagesAsync(FeatureQueryRequest,CancellationToken)",
