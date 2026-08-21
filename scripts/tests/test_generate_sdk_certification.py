@@ -105,7 +105,7 @@ class SdkCertificationTests(unittest.TestCase):
         names = {
             "RollbackDeployOperationAsync", "RotateEncryptionKeyAsync", "ImportRasterAsync",
             "PatchItemAsync", "RollbackAsync", "CommitEditSessionAsync", "StartEditSessionAsync",
-            "UnsubscribeAsync", "ReopenVersionAsync",
+            "ConnectAsync", "ReconnectAsync", "SubscribeAsync", "UnsubscribeAsync", "ReopenVersionAsync",
         }
         matched = [cell for cell in document["operations"] if cell["operation"] in names]
         self.assertEqual(names, {cell["operation"] for cell in matched})

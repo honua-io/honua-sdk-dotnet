@@ -43,10 +43,10 @@ PR_OPERATIONS = frozenset(
 )
 
 MUTATION_PREFIXES = (
-    "Add", "Apply", "Cancel", "Create", "Delete", "Deprovision", "Dismiss",
+    "Add", "Apply", "Cancel", "Connect", "Create", "Delete", "Deprovision", "Dismiss",
     "Commit", "Disconnect", "Execute", "Import", "Patch", "Pause", "Publish", "Remove",
-    "Reopen", "Resume", "Revoke", "Rollback", "Rotate", "Set", "Start", "Submit",
-    "Synchronize", "Trigger", "Unpublish", "Unsubscribe", "Update", "Upload",
+    "Reconnect", "Reopen", "Resume", "Revoke", "Rollback", "Rotate", "Set", "Start", "Submit",
+    "Subscribe", "Synchronize", "Trigger", "Unpublish", "Unsubscribe", "Update", "Upload",
 )
 PAGINATION_PREFIXES = ("List", "Query", "Search", "GetItems", "GetFeatures")
 

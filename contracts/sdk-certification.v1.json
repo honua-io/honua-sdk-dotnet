@@ -359,7 +359,7 @@
       "status": "non-addressable",
       "requiredTiers": [],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
@@ -389,7 +389,7 @@
       "status": "non-addressable",
       "requiredTiers": [],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
@@ -404,7 +404,7 @@
       "status": "non-addressable",
       "requiredTiers": [],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
