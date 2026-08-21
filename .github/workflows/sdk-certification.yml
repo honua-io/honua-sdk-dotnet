@@ -103,7 +103,7 @@ jobs:
           requested_digest="${image##*@}"
           [[ "${requested_digest}" == "${resolved_digest}" ]] || { echo '::error::Requested image digest did not resolve exactly.'; exit 1; }
           image_source_revision="$(jq -er '.image["linux/amd64"].config.Labels["org.opencontainers.image.revision"] // .image.config.Labels["org.opencontainers.image.revision"]' <<< "${image_metadata}")"
-          image_created="$(jq -er '.image["linux/amd64"].config.created // .image.config.created' <<< "${image_metadata}")"
+          image_created="$(jq -er '.image["linux/amd64"].created // .image.created // .image["linux/amd64"].config.created // .image.config.created' <<< "${image_metadata}")"
           candidate_cut="${release_cut:-${image_created}}"
           if [[ "${tier}" == release ]]; then
             [[ "${image}" =~ @sha256:[0-9a-fA-F]{64}$ ]] || { echo '::error::Release image must be digest-addressed.'; exit 1; }
