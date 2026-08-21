@@ -156,6 +156,9 @@ def _method_declarations(body: str, *, require_public: bool = False) -> list[dic
             prefix = body[boundary + 1:match.start()]
             if not re.search(r"\bpublic\s+(?:async\s+)?[^;{}()=]+\s+$", prefix):
                 continue
+        prefix = body[:match.start()]
+        if prefix.count("{") != prefix.count("}") or prefix.rstrip().endswith("=>"):
+            continue
         opening = match.end() - 1
         closing = _closing_delimiter(body, opening)
         terminator = body[closing + 1:].lstrip()
@@ -166,6 +169,18 @@ def _method_declarations(body: str, *, require_public: bool = False) -> list[dic
         signature = f"{match.group(1)}{generic}({','.join(parameter['type'] for parameter in parameters)})"
         declarations.append({"name": match.group(1), "signature": signature, "parameters": parameters})
     return declarations
+
+
+def _semantic_signature(method: dict[str, Any]) -> tuple[str, tuple[str, ...]]:
+    """Compare C# signatures without namespace/alias spelling differences."""
+    method_head = method["signature"].split("(", 1)[0]
+
+    def normalize(type_name: str) -> str:
+        without_alias = type_name.replace("global::", "")
+        return re.sub(r"(?:\b[A-Za-z_]\w*\.)+([A-Za-z_]\w*)", r"\1", without_alias)
+
+    parameters = method["parameters"] if "parameters" in method else method["_parameters"]
+    return method_head, tuple(normalize(parameter["type"]) for parameter in parameters)
 
 
 def _namespace(text: str) -> str:
@@ -180,10 +195,10 @@ def _surface(path: Path) -> str:
 
 def _interface_ancestors(stripped_files: dict[Path, str]) -> dict[str, set[str]]:
     direct: dict[str, set[str]] = {}
-    declaration = re.compile(r"\bpublic\s+interface\s+(IHonua\w*Client)\b([^\{]*)\{")
+    declaration = re.compile(r"\bpublic\s+interface\s+(I\w*Client)\b([^\{]*)\{")
     for stripped in stripped_files.values():
         for match in declaration.finditer(stripped):
-            direct[match.group(1)] = set(re.findall(r"\b(IHonua\w*Client)\b", match.group(2)))
+            direct[match.group(1)] = set(re.findall(r"\b(I\w*Client)\b", match.group(2)))
 
     resolved: dict[str, set[str]] = {}
 
@@ -216,7 +231,7 @@ def _declared_operations() -> list[dict[str, Any]]:
         provider = re.search(r'\bProviderName\s*=>\s*"([^"]+)"', source)
         for match in re.finditer(r"\bclass\s+(\w+)(?:<[^>{}]+>)?\s*:\s*([^\{]+)\{", stripped):
             implementation = f"{namespace}.{match.group(1)}"
-            interfaces = re.findall(r"\b(IHonua\w*Client)\b", match.group(2))
+            interfaces = re.findall(r"\b(I\w*Client)\b", match.group(2))
             for interface in interfaces:
                 direct_implementations[interface].add(implementation)
             if provider:
@@ -230,7 +245,7 @@ def _declared_operations() -> list[dict[str, Any]]:
             implementations[ancestor].update(concrete_types)
 
     operations: dict[str, dict[str, Any]] = {}
-    interface_re = re.compile(r"\bpublic\s+interface\s+(IHonua\w*Client)\b[^\{]*\{")
+    interface_re = re.compile(r"\bpublic\s+interface\s+(I\w*Client)\b[^\{]*\{")
     for path, stripped in stripped_files.items():
         namespace = _namespace(stripped)
         for declaration in interface_re.finditer(stripped):
@@ -255,12 +270,12 @@ def _declared_operations() -> list[dict[str, Any]]:
                 }
     for path, stripped in stripped_files.items():
         namespace = _namespace(stripped)
-        concrete_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(Honua\w+Client)\b([^\{]*)\{")
+        concrete_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(\w+Client)\b([^\{]*)\{")
         for declaration in concrete_re.finditer(stripped):
             concrete = declaration.group(1)
             implementation = f"{namespace}.{concrete}"
             represented_signatures = {
-                operation["signature"]
+                _semantic_signature(operation)
                 for operation in operations.values()
                 if implementation in operation["_implementations"]
             }
@@ -268,7 +283,7 @@ def _declared_operations() -> list[dict[str, Any]]:
             for method in sorted(
                 _method_declarations(body, require_public=True), key=lambda item: item["signature"]
             ):
-                if method["signature"] in represented_signatures:
+                if _semantic_signature(method) in represented_signatures:
                     continue
                 operation_id = f"{namespace}.{concrete}.{method['signature']}"
                 operations[operation_id] = {
@@ -352,7 +367,7 @@ def _test_mappings(
         fixture_clients.update(
             (property_name, interface)
             for interface, property_name in re.findall(
-                r"\bpublic\s+(IHonua\w*Client|Honua\w+Client)\s+(\w+)\s*=>", stripped
+                r"\bpublic\s+(I\w*Client|\w+Client)\s+(\w+)\s*=>", stripped
             )
         )
 
@@ -401,7 +416,7 @@ def _test_mappings(
         file_clients = {
             variable: client
             for client, variable in re.findall(
-                r"\b(?:private|protected|internal|public)\s+(?:readonly\s+)?(Honua\w+Client)\s+(\w+)",
+                r"\b(?:private|protected|internal|public)\s+(?:readonly\s+)?(\w+Client)\s+(\w+)",
                 stripped,
             )
         }
@@ -415,7 +430,7 @@ def _test_mappings(
             local_clients = {
                 variable: interface
                 for variable, interface in re.findall(
-                    r"\b(?:var|IHonua\w*Client)\s+(\w+)\s*=\s*(?:(?!;).)*?GetServices<\s*(IHonua\w*Client)\s*>",
+                    r"\b(?:var|I\w*Client)\s+(\w+)\s*=\s*(?:(?!;).)*?GetServices<\s*(I\w*Client)\s*>",
                     body,
                     re.S,
                 )
@@ -424,7 +439,7 @@ def _test_mappings(
             local_clients.update({
                 variable: client
                 for variable, client in re.findall(
-                    r"\bvar\s+(\w+)\s*=\s*new\s+(Honua\w+Client)\s*\(", body
+                    r"\bvar\s+(\w+)\s*=\s*new\s+(\w+Client)\s*\(", body
                 )
             })
             local_facades = {

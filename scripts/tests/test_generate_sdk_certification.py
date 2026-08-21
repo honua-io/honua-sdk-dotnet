@@ -112,8 +112,6 @@ class SdkCertificationTests(unittest.TestCase):
         operations = document["operations"]
         expected = {
             ("HonuaFeatureServerClient", "QueryVectorAsync"),
-            ("HonuaGrpcClient", "QueryFeaturesAsync"),
-            ("HonuaGrpcClient", "QueryFeaturesStreamAsync"),
             ("HonuaOgcFeaturesClient", "GetItemsVectorAsync"),
             ("HonuaWfsClient", "GetFeaturesVectorAsync"),
         }
@@ -123,6 +121,43 @@ class SdkCertificationTests(unittest.TestCase):
         }
 
         self.assertTrue(expected <= actual, expected - actual)
+
+    def test_replica_sync_client_contract_is_cataloged(self):
+        operations = MODULE.build_document()["operations"]
+        replica = [
+            cell for cell in operations
+            if cell["client"].endswith("IReplicaSyncClient")
+        ]
+
+        self.assertEqual(5, len(replica))
+        self.assertEqual(
+            {
+                "CreateReplicaAsync",
+                "ExtractChangesAsync",
+                "SynchronizeReplicaAsync",
+                "UnRegisterReplicaAsync",
+            },
+            {cell["operation"] for cell in replica},
+        )
+        self.assertTrue(all(cell["status"] != "non-addressable" for cell in replica))
+
+    def test_semantic_signature_ignores_qualified_parameter_spelling(self):
+        interface = {
+            "signature": "QueryFeaturesAsync(QueryFeaturesRequest,CancellationToken)",
+            "parameters": [{"type": "QueryFeaturesRequest"}, {"type": "CancellationToken"}],
+        }
+        implementation = {
+            "signature": "QueryFeaturesAsync(Models.QueryFeaturesRequest,CancellationToken)",
+            "parameters": [
+                {"type": "Models.QueryFeaturesRequest"},
+                {"type": "System.Threading.CancellationToken"},
+            ],
+        }
+
+        self.assertEqual(
+            MODULE._semantic_signature(interface),
+            MODULE._semantic_signature(implementation),
+        )
 
     def test_non_raster_non_addressable_operations_use_general_owner(self):
         document = MODULE.build_document()
