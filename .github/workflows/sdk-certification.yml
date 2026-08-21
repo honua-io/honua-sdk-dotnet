@@ -185,7 +185,7 @@ jobs:
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
-            -e HONUA_ADMIN_PASSWORD="ci-admin-password" \
+            -e HONUA_ADMIN_PASSWORD="ci-protocol-api-key" \
             -e Kestrel__Endpoints__Http__Url="http://+:8080" \
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
@@ -205,6 +205,8 @@ jobs:
           HONUA_PROTOCOL_INTEGRATION: "true"
           HONUA_PROTOCOL_EXTERNAL_BASE_URL: "http://localhost:8080"
           HONUA_PROTOCOL_GRPC_BASE_URL: "http://localhost:8081"
+          HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
+          HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
@@ -217,18 +219,20 @@ jobs:
             filter='Category=ProtocolIntegration'
             conformance_filter='FullyQualifiedName~LiveConformanceTests'
           fi
-          code=0
+          protocol_code=0
           dotnet test tests/Honua.Sdk.ProtocolIntegration.Tests/Honua.Sdk.ProtocolIntegration.Tests.csproj \
             --configuration Release \
             --filter "${filter}" \
             --logger 'trx;LogFileName=protocol-integration.trx' \
-            --results-directory artifacts/test-results || code=1
+            --results-directory artifacts/test-results || protocol_code=$?
+          conformance_code=0
           dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
             --configuration Release \
             --filter "${conformance_filter}" \
             --logger 'trx;LogFileName=live-conformance.trx' \
-            --results-directory artifacts/test-results || code=1
-          exit "${code}"
+            --results-directory artifacts/test-results || conformance_code=$?
+          echo "protocol_exit_code=${protocol_code}" >> "${GITHUB_OUTPUT}"
+          echo "conformance_exit_code=${conformance_code}" >> "${GITHUB_OUTPUT}"
 
       - name: Emit and enforce normalized certification evidence
         if: always()
@@ -248,6 +252,8 @@ jobs:
             --tier "${TIER}" \
             --trx artifacts/test-results/protocol-integration.trx \
             --trx artifacts/test-results/live-conformance.trx \
+            --trx-exit-code "${{ steps.tests.outputs.protocol_exit_code }}" \
+            --trx-exit-code "${{ steps.tests.outputs.conformance_exit_code }}" \
             --evidence artifacts/evidence/sdk-certification.json \
             --started-at "${STARTED_AT}" \
             --sdk-commit "${SDK_COMMIT}" \
@@ -259,6 +265,7 @@ jobs:
             --fixture-revision "${FIXTURE_REVISION}" \
             --candidate-cut "${{ steps.identity.outputs.candidate-cut }}" \
             --evidence-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --allow-nonpass \
             ${RELEASE_CUT:+--release-cut "${RELEASE_CUT}"}
 
       - name: Upload certification evidence

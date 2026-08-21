@@ -580,18 +580,35 @@ def _render(document: dict[str, Any]) -> str:
     return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
 
 
-def _trx_results(paths: list[Path]) -> dict[str, list[str]]:
+def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, dict[str, list[str]]]]:
     results: dict[str, list[str]] = defaultdict(list)
+    results_by_path: dict[Path, dict[str, list[str]]] = {}
     for path in paths:
         root = ET.parse(path).getroot()
+        summary_outcomes: list[str] = []
+        path_results: dict[str, list[str]] = defaultdict(list)
         for result in root.iter():
-            if result.tag.rsplit("}", 1)[-1] != "UnitTestResult":
+            element_name = result.tag.rsplit("}", 1)[-1]
+            outcome = result.attrib.get("outcome", "Unknown")
+            if element_name == "ResultSummary":
+                summary_outcomes.append(outcome)
+            if element_name == "RunInfo" and outcome in {"Aborted", "Error"}:
+                raise ValueError(f"TRX records an infrastructure failure in {path.name}: {outcome}")
+            if element_name != "UnitTestResult":
                 continue
             name = result.attrib.get("testName", "").split("(", 1)[0]
-            outcome = result.attrib.get("outcome", "Unknown")
+            if outcome not in {"Passed", "Failed", "NotExecuted"}:
+                raise ValueError(f"TRX records an unsupported outcome in {path.name}: {outcome}")
             if name:
                 results[name].append(outcome)
-    return results
+                path_results[name].append(outcome)
+        invalid_summaries = set(summary_outcomes) & {"Aborted", "Error", "Timeout"}
+        if invalid_summaries:
+            raise ValueError(
+                f"TRX records an incomplete run in {path.name}: {', '.join(sorted(invalid_summaries))}"
+            )
+        results_by_path[path] = path_results
+    return results, results_by_path
 
 
 def _identity(args: argparse.Namespace) -> dict[str, Any]:
@@ -633,7 +650,30 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
-    results = _trx_results(args.trx)
+    results, results_by_path = _trx_results(args.trx)
+    exit_codes = getattr(args, "trx_exit_code", None)
+    if exit_codes is None:
+        exit_codes = [0] * len(args.trx)
+    elif len(exit_codes) != len(args.trx):
+        raise ValueError("each TRX must have exactly one corresponding exit code")
+    governed_tests = {
+        test
+        for operation in document["operations"]
+        if args.tier in operation["requiredTiers"]
+        for test in operation["tests"]
+    }
+    for path, exit_code in zip(args.trx, exit_codes, strict=True):
+        if exit_code == 0:
+            continue
+        failed_tests = {
+            name
+            for name, outcomes in results_by_path[path].items()
+            if "Failed" in outcomes
+        }
+        if not failed_tests or not failed_tests <= governed_tests:
+            raise ValueError(
+                f"test command failed without exclusively governed assertion failures in {path.name}"
+            )
     payload_base64 = base64.b64encode(json.dumps(
         [
             {
@@ -647,6 +687,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     observations: list[dict[str, Any]] = []
     has_nonpass = False
+    has_incomplete_execution = False
     for operation in document["operations"]:
         if args.tier not in operation["requiredTiers"]:
             continue
@@ -664,6 +705,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             verdict = "skip"
         else:
             verdict = "missing"
+        has_incomplete_execution |= (
+            operation["status"] != "gap"
+            and (verdict == "missing" or any(outcome == "NotExecuted" for outcome in outcomes))
+        )
         has_nonpass |= verdict != "pass"
         result = verdict if verdict in {"pass", "fail"} else "skip"
         skip_reason = None if result != "skip" else (
@@ -690,7 +735,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "image_digest": identity["serverImageDigest"],
                 "fixture_revision": identity["fixtureRevision"],
                 "contract_revision": contract_revision,
-                "auth_policy_revision": "anonymous-public-v1",
+                "auth_policy_revision": "api-key-protected-v1",
                 "started_at": started_at,
                 "completed_at": now,
             },
@@ -717,7 +762,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": contract_revision,
-            "auth_policy_revision": "anonymous-public-v1",
+            "auth_policy_revision": "api-key-protected-v1",
             "evidence_uri": (
                 None if result == "skip"
                 else f"https://evidence.honua.io/data/sha256/{evidence_digest[7:]}"
@@ -751,7 +796,9 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     }
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(_render(evidence), encoding="utf-8")
-    return 1 if has_nonpass else 0
+    if has_incomplete_execution:
+        return 1
+    return 1 if has_nonpass and not getattr(args, "allow_nonpass", False) else 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -759,6 +806,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--tier", choices=("pr", "nightly", "release"))
     parser.add_argument("--trx", type=Path, action="append", default=[])
+    parser.add_argument("--trx-exit-code", type=int, action="append", default=[])
     parser.add_argument("--evidence", type=Path)
     parser.add_argument("--started-at")
     parser.add_argument("--sdk-commit")
@@ -771,6 +819,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fixture-revision")
     parser.add_argument("--seed-revision")
     parser.add_argument("--evidence-uri")
+    parser.add_argument(
+        "--allow-nonpass",
+        action="store_true",
+        help="Publish valid fail/skip observations without failing the producer job.",
+    )
     args = parser.parse_args(argv)
 
     try:
