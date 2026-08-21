@@ -72,6 +72,39 @@ class SdkCertificationTests(unittest.TestCase):
         self.assertTrue(geocoding)
         self.assertTrue(all(cell["status"] != "non-addressable" for cell in geocoding))
 
+    def test_overloads_have_distinct_ids_and_only_the_invoked_signature_is_exercised(self):
+        document = MODULE.build_document()
+        overloads = [
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaWfsClient") and cell["operation"] == "GetFeaturesAsync"
+        ]
+        self.assertEqual(2, len(overloads))
+        self.assertEqual(2, len({cell["id"] for cell in overloads}))
+        ordinary = next(cell for cell in overloads if "IWfsOutputFormatHandler" not in cell["signature"])
+        handler = next(cell for cell in overloads if "IWfsOutputFormatHandler" in cell["signature"])
+        self.assertEqual("exercised", ordinary["status"])
+        self.assertEqual("gap", handler["status"])
+
+    def test_async_enumerable_and_local_service_operations_are_cataloged(self):
+        document = MODULE.build_document()
+        operations = document["operations"]
+        self.assertTrue(any(cell["operation"] == "GetFeaturesAsyncEnumerable" for cell in operations))
+        apply_edits = next(
+            cell for cell in operations
+            if cell["client"].endswith("IHonuaFeatureEditClient") and cell["operation"] == "ApplyEditsAsync"
+        )
+        self.assertEqual("exercised", apply_edits["status"])
+
+    def test_known_state_changing_verbs_are_mutations(self):
+        document = MODULE.build_document()
+        names = {
+            "RollbackDeployOperationAsync", "RotateEncryptionKeyAsync", "ImportRasterAsync",
+            "PatchItemAsync", "RollbackAsync",
+        }
+        matched = [cell for cell in document["operations"] if cell["operation"] in names]
+        self.assertEqual(names, {cell["operation"] for cell in matched})
+        self.assertTrue(all("mutation" in cell["scenarioFacets"] for cell in matched))
+
     def test_every_named_test_must_have_a_passing_result(self):
         document = {
             "operations": [{

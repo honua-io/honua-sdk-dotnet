@@ -187,7 +187,6 @@ jobs:
 
       - name: Run public SDK operations
         id: tests
-        continue-on-error: true
         env:
           TIER: ${{ steps.identity.outputs.tier }}
           HONUA_PROTOCOL_INTEGRATION: "true"

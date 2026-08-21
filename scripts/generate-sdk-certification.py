@@ -44,8 +44,9 @@ PR_OPERATIONS = frozenset(
 
 MUTATION_PREFIXES = (
     "Add", "Apply", "Cancel", "Create", "Delete", "Deprovision", "Dismiss",
-    "Disconnect", "Execute", "Pause", "Publish", "Remove", "Resume", "Revoke",
-    "Set", "Submit", "Synchronize", "Trigger", "Unpublish", "Update", "Upload",
+    "Disconnect", "Execute", "Import", "Patch", "Pause", "Publish", "Remove", "Resume",
+    "Revoke", "Rollback", "Rotate", "Set", "Submit", "Synchronize", "Trigger",
+    "Unpublish", "Update", "Upload",
 )
 PAGINATION_PREFIXES = ("List", "Query", "Search", "GetItems", "GetFeatures")
 
@@ -76,6 +77,67 @@ def _block(text: str, opening_brace: int) -> str:
             if depth == 0:
                 return text[opening_brace + 1:index]
     raise ValueError("unbalanced C# declaration block")
+
+
+def _closing_delimiter(text: str, opening: int, opener: str = "(", closer: str = ")") -> int:
+    depth = 0
+    for index in range(opening, len(text)):
+        if text[index] == opener:
+            depth += 1
+        elif text[index] == closer:
+            depth -= 1
+            if depth == 0:
+                return index
+    raise ValueError(f"unbalanced C# {opener}{closer} delimiters")
+
+
+def _split_top_level(text: str) -> list[str]:
+    parts: list[str] = []
+    start = 0
+    depths = {"(": 0, "[": 0, "{": 0, "<": 0}
+    pairs = {")": "(", "]": "[", "}": "{", ">": "<"}
+    for index, char in enumerate(text):
+        if char in depths:
+            depths[char] += 1
+        elif char in pairs and depths[pairs[char]]:
+            depths[pairs[char]] -= 1
+        elif char == "," and not any(depths.values()):
+            parts.append(text[start:index].strip())
+            start = index + 1
+    tail = text[start:].strip()
+    if tail:
+        parts.append(tail)
+    return parts
+
+
+def _parameters(text: str) -> list[dict[str, Any]]:
+    parameters: list[dict[str, Any]] = []
+    for raw in _split_top_level(text):
+        declaration = re.sub(r"\[[^\]]+\]\s*", "", raw).strip()
+        optional = "=" in declaration
+        declaration = declaration.split("=", 1)[0].strip()
+        tokens = declaration.split()
+        if len(tokens) < 2:
+            raise ValueError(f"cannot parse C# parameter declaration: {raw!r}")
+        name = tokens[-1]
+        type_name = " ".join(token for token in tokens[:-1] if token not in {"in", "out", "ref", "params", "this"})
+        parameters.append({"name": name, "type": re.sub(r"\s+", "", type_name), "optional": optional})
+    return parameters
+
+
+def _method_declarations(body: str) -> list[dict[str, Any]]:
+    declarations: list[dict[str, Any]] = []
+    method_re = re.compile(r"\b([A-Za-z_]\w*Async\w*)(\s*<[^(){};]+>)?\s*\(")
+    for match in method_re.finditer(body):
+        opening = match.end() - 1
+        closing = _closing_delimiter(body, opening)
+        if body[closing + 1:].lstrip()[:1] != ";":
+            continue
+        generic = re.sub(r"\s+", "", match.group(2) or "")
+        parameters = _parameters(body[opening + 1:closing])
+        signature = f"{match.group(1)}{generic}({','.join(parameter['type'] for parameter in parameters)})"
+        declarations.append({"name": match.group(1), "signature": signature, "parameters": parameters})
+    return declarations
 
 
 def _namespace(text: str) -> str:
@@ -135,20 +197,69 @@ def _declared_operations() -> list[dict[str, Any]]:
         for declaration in interface_re.finditer(stripped):
             interface = declaration.group(1)
             body = _block(stripped, declaration.end() - 1)
-            methods = sorted(set(re.findall(r"\b([A-Za-z_]\w*Async)\s*(?:<[^(){};]+>)?\s*\(", body)))
+            methods = sorted(_method_declarations(body), key=lambda item: item["signature"])
             for method in methods:
-                operation_id = f"{namespace}.{interface}.{method}"
+                operation_id = f"{namespace}.{interface}.{method['signature']}"
                 operations[operation_id] = {
                     "id": operation_id,
                     "surface": _surface(path),
                     "client": f"{namespace}.{interface}",
-                    "operation": method,
+                    "operation": method["name"],
+                    "signature": method["signature"],
                     "implemented": interface in implementations,
+                    "_parameters": method["parameters"],
                 }
     return [operations[key] for key in sorted(operations)]
 
 
-def _test_mappings() -> dict[tuple[str, str], list[str]]:
+def _expression_type_hint(expression: str) -> str | None:
+    expression = expression.strip()
+    if expression in {"true", "false"}:
+        return "bool"
+    if expression == '""':
+        return "string"
+    if expression.endswith(".Token") or "CancellationToken.None" in expression:
+        return "CancellationToken"
+    created = re.match(r"new\s+(?:[A-Za-z_]\w*\.)*([A-Za-z_]\w*)", expression)
+    return created.group(1) if created else None
+
+
+def _simple_type(type_name: str) -> str:
+    type_name = type_name.rstrip("?")
+    return re.sub(r"<.*", "", type_name).rsplit(".", 1)[-1]
+
+
+def _matches_arguments(operation: dict[str, Any], arguments: list[str]) -> bool:
+    parameters = operation["_parameters"]
+    if len(arguments) < sum(not parameter["optional"] for parameter in parameters) or len(arguments) > len(parameters):
+        return False
+    positional = 0
+    used: set[str] = set()
+    for argument in arguments:
+        named = re.match(r"^([A-Za-z_]\w*)\s*:\s*(.*)$", argument, re.S)
+        if named:
+            candidates = [parameter for parameter in parameters if parameter["name"] == named.group(1)]
+            if not candidates or named.group(1) in used:
+                return False
+            parameter = candidates[0]
+            expression = named.group(2)
+            used.add(parameter["name"])
+        else:
+            while positional < len(parameters) and parameters[positional]["name"] in used:
+                positional += 1
+            if positional >= len(parameters):
+                return False
+            parameter = parameters[positional]
+            expression = argument
+            used.add(parameter["name"])
+            positional += 1
+        hint = _expression_type_hint(expression)
+        if hint and hint != _simple_type(parameter["type"]):
+            return False
+    return all(parameter["optional"] or parameter["name"] in used for parameter in parameters)
+
+
+def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[str]]) -> dict[str, list[str]]:
     fixture_clients: dict[str, str] = {}
     test_files: list[Path] = []
     for root in TEST_ROOTS:
@@ -165,7 +276,22 @@ def _test_mappings() -> dict[tuple[str, str], list[str]]:
             )
         )
 
-    mappings: dict[tuple[str, str], set[str]] = defaultdict(set)
+    mappings: dict[str, set[str]] = defaultdict(set)
+    by_interface_method: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for operation in operations:
+        by_interface_method[(operation["client"].rsplit(".", 1)[-1], operation["operation"])].append(operation)
+
+    def record(interface: str, operation_name: str, arguments: list[str], test_name: str) -> None:
+        interfaces = {interface, *ancestors.get(interface, set())}
+        candidates = [
+            operation
+            for candidate_interface in interfaces
+            for operation in by_interface_method.get((candidate_interface, operation_name), [])
+            if _matches_arguments(operation, arguments)
+        ]
+        if len(candidates) == 1:
+            mappings[candidates[0]["id"]].add(test_name)
+
     method_re = re.compile(r"\bpublic\s+(?:async\s+)?Task(?:<[^;{}]+>)?\s+(\w+)\s*\([^)]*\)\s*\{")
     class_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(\w+)")
     for path, stripped in stripped_files.items():
@@ -180,42 +306,44 @@ def _test_mappings() -> dict[tuple[str, str], list[str]]:
             local_clients = {
                 variable: interface
                 for variable, interface in re.findall(
-                    r"\bvar\s+(\w+)\s*=.*?GetServices<\s*(IHonua\w*Client)\s*>",
+                    r"\b(?:var|IHonua\w*Client)\s+(\w+)\s*=\s*(?:(?!;).)*?GetServices<\s*(IHonua\w*Client)\s*>",
                     body,
                     re.S,
                 )
             }
-            for property_name, operation in re.findall(
-                r"_fixture\.(\w+)\.(\w+Async)\s*\(", body
-            ):
+            call_suffix = r"(\w*Async\w*)(?:\s*<[^(){};]+>)?\s*\("
+            for call in re.finditer(r"_fixture\.(\w+)\." + call_suffix, body):
+                property_name, operation = call.group(1), call.group(2)
                 interface = fixture_clients.get(property_name)
                 if interface:
-                    mappings[(interface, operation)].add(test_name)
-            for variable, operation in re.findall(r"\b(\w+)\.(\w+Async)\s*\(", body):
+                    closing = _closing_delimiter(body, call.end() - 1)
+                    record(interface, operation, _split_top_level(body[call.end():closing]), test_name)
+            for call in re.finditer(r"\b(\w+)\." + call_suffix, body):
+                variable, operation = call.group(1), call.group(2)
                 interface = local_clients.get(variable)
                 if interface:
-                    mappings[(interface, operation)].add(test_name)
+                    closing = _closing_delimiter(body, call.end() - 1)
+                    record(interface, operation, _split_top_level(body[call.end():closing]), test_name)
     return {key: sorted(value) for key, value in mappings.items()}
 
 
 def build_document() -> dict[str, Any]:
-    mappings = _test_mappings()
     stripped_files = {
         path: _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
         for path in sorted(SRC_ROOT.rglob("*.cs"))
     }
     ancestors = _interface_ancestors(stripped_files)
+    operations = _declared_operations()
+    mappings = _test_mappings(operations, ancestors)
     cells: list[dict[str, Any]] = []
-    for operation in _declared_operations():
+    for operation in operations:
         short_client = operation["client"].rsplit(".", 1)[-1]
         short_id = f"{short_client}.{operation['operation']}"
-        mapped_tests = set(mappings.get((short_client, operation["operation"]), []))
-        for descendant, parents in ancestors.items():
-            if short_client in parents:
-                mapped_tests.update(mappings.get((descendant, operation["operation"]), []))
+        mapped_tests = set(mappings.get(operation["id"], []))
         unseeded_tests = sorted(mapped_tests & UNSEEDED_TESTS)
         tests = sorted(mapped_tests - UNSEEDED_TESTS)
         implemented = operation.pop("implemented")
+        operation.pop("_parameters")
         if not implemented:
             status = "non-addressable"
             owner = RASTER_ISSUE if operation["surface"] == "abstractions" else TRACKING_ISSUE
