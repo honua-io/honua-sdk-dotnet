@@ -586,13 +586,19 @@ def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, di
     for path in paths:
         root = ET.parse(path).getroot()
         summary_outcomes: list[str] = []
+        infrastructure_counts: dict[str, int] = {}
         path_results: dict[str, list[str]] = defaultdict(list)
         for result in root.iter():
             element_name = result.tag.rsplit("}", 1)[-1]
             outcome = result.attrib.get("outcome", "Unknown")
             if element_name == "ResultSummary":
                 summary_outcomes.append(outcome)
-            if element_name == "RunInfo" and outcome in {"Aborted", "Error"}:
+            if element_name == "Counters":
+                infrastructure_counts = {
+                    name: int(result.attrib.get(name, "0"))
+                    for name in ("error", "timeout", "aborted", "disconnected", "inProgress", "pending")
+                }
+            if element_name == "RunInfo" and outcome == "Aborted":
                 raise ValueError(f"TRX records an infrastructure failure in {path.name}: {outcome}")
             if element_name != "UnitTestResult":
                 continue
@@ -607,6 +613,14 @@ def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, di
             raise ValueError(
                 f"TRX records an incomplete run in {path.name}: {', '.join(sorted(invalid_summaries))}"
             )
+        nonzero_infrastructure = {
+            name: count for name, count in infrastructure_counts.items() if count != 0
+        }
+        if nonzero_infrastructure:
+            details = ", ".join(
+                f"{name}={count}" for name, count in sorted(nonzero_infrastructure.items())
+            )
+            raise ValueError(f"TRX records infrastructure counters in {path.name}: {details}")
         results_by_path[path] = path_results
     return results, results_by_path
 
