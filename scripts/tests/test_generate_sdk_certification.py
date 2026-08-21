@@ -113,8 +113,22 @@ class SdkCertificationTests(unittest.TestCase):
 
     def test_paginated_operations_are_classified_for_evidence(self):
         document = MODULE.build_document()
-        names = {"QueryPagesAsync", "GetItemsPagesAsync", "GetFeaturesAsyncEnumerable"}
-        non_paginated_names = {"QueryCountAsync", "QueryExtentAsync", "ListCollectionsAsync"}
+        names = {
+            "GetFeaturesAsyncEnumerable",
+            "GetItemsPagesAsync",
+            "GetRecordsPagesAsync",
+            "PostSearchPagesAsync",
+            "QueryPagesAsync",
+            "SearchPagesAsync",
+        }
+        non_paginated_names = {
+            "GetLandingPageAsync",
+            "GetPageAsync",
+            "ListCollectionsAsync",
+            "QueryCountAsync",
+            "QueryExtentAsync",
+            "UpdatePageAsync",
+        }
         matched = [cell for cell in document["operations"] if cell["operation"] in names]
         non_paginated = [
             cell for cell in document["operations"] if cell["operation"] in non_paginated_names
