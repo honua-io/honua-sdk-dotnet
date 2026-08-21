@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -633,11 +634,20 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     results = _trx_results(args.trx)
-    evidence_hasher = hashlib.sha256()
-    for path in sorted(args.trx, key=lambda value: str(value)):
-        evidence_hasher.update(path.name.encode("utf-8"))
-        evidence_hasher.update(path.read_bytes())
-    evidence_digest = "sha256:" + evidence_hasher.hexdigest()
+    evidence_receipt = {
+        "format": "honua.sdk-dotnet.trx-bundle/v1",
+        "files": [
+            {
+                "name": path.name,
+                "content_base64": base64.b64encode(path.read_bytes()).decode("ascii"),
+            }
+            for path in sorted(args.trx, key=lambda value: str(value))
+        ],
+    }
+    evidence_bytes = json.dumps(
+        evidence_receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    evidence_digest = "sha256:" + hashlib.sha256(evidence_bytes).hexdigest()
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     observations: list[dict[str, Any]] = []
     incomplete = False
@@ -687,6 +697,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 else f"https://evidence.honua.io/data/sha256/{evidence_digest[7:]}"
             ),
             "evidence_digest": None if result == "skip" else evidence_digest,
+            "evidence_receipt": None if result == "skip" else evidence_receipt,
             "facet_results": None if result == "skip" else {
                 facet: {"result": result, "evidence_digest": evidence_digest}
                 for facet in scenario_facets
