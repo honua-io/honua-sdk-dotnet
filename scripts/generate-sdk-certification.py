@@ -49,6 +49,15 @@ MUTATION_PREFIXES = (
 )
 PAGINATION_PREFIXES = ("List", "Query", "Search", "GetItems", "GetFeatures")
 
+UNSEEDED_TESTS = frozenset(
+    {
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable",
+    }
+)
+
 
 def _strip_comments_and_strings(text: str) -> str:
     text = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
@@ -79,15 +88,45 @@ def _surface(path: Path) -> str:
     return package.removeprefix("Honua.Sdk.").replace(".", "-").lower()
 
 
+def _interface_ancestors(stripped_files: dict[Path, str]) -> dict[str, set[str]]:
+    direct: dict[str, set[str]] = {}
+    declaration = re.compile(r"\bpublic\s+interface\s+(IHonua\w*Client)\b([^\{]*)\{")
+    for stripped in stripped_files.values():
+        for match in declaration.finditer(stripped):
+            direct[match.group(1)] = set(re.findall(r"\b(IHonua\w*Client)\b", match.group(2)))
+
+    resolved: dict[str, set[str]] = {}
+
+    def visit(interface: str, visiting: set[str]) -> set[str]:
+        if interface in resolved:
+            return resolved[interface]
+        if interface in visiting:
+            raise ValueError(f"cyclic client interface inheritance involving {interface}")
+        ancestors = set(direct.get(interface, set()))
+        for parent in tuple(ancestors):
+            ancestors.update(visit(parent, visiting | {interface}))
+        resolved[interface] = ancestors
+        return ancestors
+
+    for interface in direct:
+        visit(interface, set())
+    return resolved
+
+
 def _declared_operations() -> list[dict[str, Any]]:
     source_files = sorted(SRC_ROOT.rglob("*.cs"))
-    implementations: set[str] = set()
+    direct_implementations: set[str] = set()
     stripped_files: dict[Path, str] = {}
     for path in source_files:
         stripped = _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
         stripped_files[path] = stripped
         for match in re.finditer(r"\bclass\s+\w+(?:<[^>{}]+>)?\s*:\s*([^\{]+)\{", stripped):
-            implementations.update(re.findall(r"\b(IHonua\w*Client)\b", match.group(1)))
+            direct_implementations.update(re.findall(r"\b(IHonua\w*Client)\b", match.group(1)))
+
+    ancestors = _interface_ancestors(stripped_files)
+    implementations = set(direct_implementations)
+    for interface in direct_implementations:
+        implementations.update(ancestors.get(interface, set()))
 
     operations: dict[str, dict[str, Any]] = {}
     interface_re = re.compile(r"\bpublic\s+interface\s+(IHonua\w*Client)\b[^\{]*\{")
@@ -161,11 +200,21 @@ def _test_mappings() -> dict[tuple[str, str], list[str]]:
 
 def build_document() -> dict[str, Any]:
     mappings = _test_mappings()
+    stripped_files = {
+        path: _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
+        for path in sorted(SRC_ROOT.rglob("*.cs"))
+    }
+    ancestors = _interface_ancestors(stripped_files)
     cells: list[dict[str, Any]] = []
     for operation in _declared_operations():
         short_client = operation["client"].rsplit(".", 1)[-1]
         short_id = f"{short_client}.{operation['operation']}"
-        tests = mappings.get((short_client, operation["operation"]), [])
+        mapped_tests = set(mappings.get((short_client, operation["operation"]), []))
+        for descendant, parents in ancestors.items():
+            if short_client in parents:
+                mapped_tests.update(mappings.get((descendant, operation["operation"]), []))
+        unseeded_tests = sorted(mapped_tests & UNSEEDED_TESTS)
+        tests = sorted(mapped_tests - UNSEEDED_TESTS)
         implemented = operation.pop("implemented")
         if not implemented:
             status = "non-addressable"
@@ -182,16 +231,18 @@ def build_document() -> dict[str, Any]:
         else:
             status = "gap"
             owner = TRACKING_ISSUE
-            disposition = "Concrete public SDK operation has no canonical live certification test."
+            disposition = (
+                "Canonical live test exists but its deterministic server fixture is not seeded."
+                if unseeded_tests
+                else "Concrete public SDK operation has no canonical live certification test."
+            )
             tiers = ["nightly", "release"]
 
-        facets = ["authenticated", "deterministic-seed"]
+        facets = []
         if operation["operation"].startswith(MUTATION_PREFIXES):
             facets.append("mutation")
         else:
             facets.append("read-only")
-        if operation["operation"].startswith(PAGINATION_PREFIXES):
-            facets.append("pagination")
 
         cell = {
             **operation,
@@ -200,6 +251,8 @@ def build_document() -> dict[str, Any]:
             "scenarioFacets": facets,
             "tests": tests,
         }
+        if unseeded_tests:
+            cell["unseededTests"] = unseeded_tests
         if owner:
             cell["ownerIssue"] = owner
         if disposition:
@@ -241,6 +294,7 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "sdkCommit": args.sdk_commit or os.environ.get("GITHUB_SHA"),
         "sdkVersion": args.sdk_version or "unreleased",
         "serverSourceSha": args.server_source_sha,
+        "imageSourceRevision": args.image_source_revision,
         "serverImage": args.server_image,
         "serverImageDigest": args.server_image.rsplit("@", 1)[-1] if "@" in args.server_image else None,
         "releaseCut": args.release_cut,
@@ -248,15 +302,19 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "seedRevision": args.seed_revision,
     }
     if args.tier == "release":
-        missing = [key for key, value in values.items() if key != "sdkVersion" and not value]
+        missing = [key for key, value in values.items() if not value]
         if missing:
             raise ValueError(f"release identity is missing: {', '.join(missing)}")
         if not re.fullmatch(r"[0-9a-f]{40}", args.server_source_sha or "", re.I):
             raise ValueError("release server source SHA must be a full 40-character commit")
         if args.seed_revision != args.server_source_sha:
             raise ValueError("release seed revision must exactly equal the server source SHA")
+        if args.image_source_revision != args.server_source_sha:
+            raise ValueError("verified image source revision must exactly equal the release server source SHA")
         if not re.search(r"@sha256:[0-9a-f]{64}$", args.server_image, re.I):
             raise ValueError("release server image must be immutable and addressed by sha256 digest")
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.fixture_revision or "", re.I):
+            raise ValueError("release fixture revision must be the SHA-256 of the applied fixture")
         try:
             cut = datetime.fromisoformat((args.release_cut or "").replace("Z", "+00:00"))
         except ValueError as error:
@@ -275,12 +333,15 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     for operation in document["operations"]:
         if args.tier not in operation["requiredTiers"]:
             continue
-        outcomes = [outcome for test in operation["tests"] for outcome in results.get(test, [])]
+        outcomes_by_test = {test: results.get(test, []) for test in operation["tests"]}
+        outcomes = [outcome for test_outcomes in outcomes_by_test.values() for outcome in test_outcomes]
         if operation["status"] == "gap":
             verdict = "gap"
+        elif any(not test_outcomes for test_outcomes in outcomes_by_test.values()):
+            verdict = "missing"
         elif any(outcome == "Failed" for outcome in outcomes):
             verdict = "fail"
-        elif any(outcome == "Passed" for outcome in outcomes):
+        elif all(any(outcome == "Passed" for outcome in test_outcomes) for test_outcomes in outcomes_by_test.values()):
             verdict = "pass"
         elif outcomes:
             verdict = "skip"
@@ -330,6 +391,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sdk-commit")
     parser.add_argument("--sdk-version")
     parser.add_argument("--server-source-sha")
+    parser.add_argument("--image-source-revision")
     parser.add_argument("--server-image", default="")
     parser.add_argument("--release-cut")
     parser.add_argument("--fixture-revision")

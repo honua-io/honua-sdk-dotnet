@@ -6,6 +6,7 @@ on:
     paths:
       - "src/**"
       - "tests/Honua.Sdk.ProtocolIntegration.Tests/**"
+      - "tests/Honua.Sdk.Conformance.Tests/**"
       - "scripts/generate-sdk-certification.py"
       - "contracts/sdk-certification.v1.json"
       - ".github/workflows/sdk-certification.yml"
@@ -54,7 +55,7 @@ jobs:
     timeout-minutes: 45
     services:
       postgres:
-        image: postgis/postgis:16-3.4
+        image: postgis/postgis:16-3.4@sha256:44126d872ac91993766c341e369c539e8196614321765d36a6f1bab0419a5fa5
         env:
           POSTGRES_USER: honua
           POSTGRES_PASSWORD: honua
@@ -64,6 +65,9 @@ jobs:
           --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Resolve tier and immutable identity
         id: identity
@@ -84,13 +88,22 @@ jobs:
           image="${INPUT_IMAGE:-${PINNED_SERVER_IMAGE}}"
           source_sha="${INPUT_SOURCE_SHA:-${PINNED_SERVER_SOURCE_SHA}}"
           seed_ref="${INPUT_SEED_REF:-${source_sha}}"
-          fixture_revision="${INPUT_FIXTURE_REVISION:-${seed_ref}}"
+          expected_fixture_revision="${INPUT_FIXTURE_REVISION:-}"
           release_cut="${INPUT_RELEASE_CUT:-}"
+          image_metadata="$(docker buildx imagetools inspect "${image}" --format '{{json .}}')"
+          resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
+          requested_digest="${image##*@}"
+          [[ "${requested_digest}" == "${resolved_digest}" ]] || { echo '::error::Requested image digest did not resolve exactly.'; exit 1; }
+          image_source_revision="$(jq -er '.image["linux/amd64"].config.Labels["org.opencontainers.image.revision"] // .image.config.Labels["org.opencontainers.image.revision"]' <<< "${image_metadata}")"
           if [[ "${tier}" == release ]]; then
             [[ "${image}" =~ @sha256:[0-9a-fA-F]{64}$ ]] || { echo '::error::Release image must be digest-addressed.'; exit 1; }
             [[ "${source_sha}" =~ ^[0-9a-fA-F]{40}$ ]] || { echo '::error::Release source SHA must be full length.'; exit 1; }
             [[ "${seed_ref}" == "${source_sha}" ]] || { echo '::error::Release seed revision must equal source SHA.'; exit 1; }
-            [[ -n "${release_cut}" && -n "${fixture_revision}" ]] || { echo '::error::Release cut and fixture revision are required.'; exit 1; }
+            [[ "${image_source_revision}" == "${source_sha}" ]] || { echo '::error::Image source revision does not equal release source SHA.'; exit 1; }
+            [[ -n "${release_cut}" && "${expected_fixture_revision}" =~ ^sha256:[0-9a-fA-F]{64}$ ]] || { echo '::error::Release cut and fixture SHA-256 are required.'; exit 1; }
+          elif [[ "${image_source_revision}" != "${source_sha}"* && "${source_sha}" != "${image_source_revision}"* ]]; then
+            echo '::error::Image source revision does not match the pinned source SHA.'
+            exit 1
           fi
           started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           {
@@ -98,7 +111,8 @@ jobs:
             echo "image=${image}"
             echo "source-sha=${source_sha}"
             echo "seed-ref=${seed_ref}"
-            echo "fixture-revision=${fixture_revision}"
+            echo "expected-fixture-revision=${expected_fixture_revision}"
+            echo "image-source-revision=${image_source_revision}"
             echo "release-cut=${release_cut}"
             echo "started-at=${started_at}"
           } >> "${GITHUB_OUTPUT}"
@@ -109,18 +123,40 @@ jobs:
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve SDK package version
+        id: sdk-version
+        shell: bash
+        run: |
+          version="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse("Directory.Build.props").getroot()
+          print(next(node.text for node in root.iter("HonuaSdkVersion") if node.text))
+          PY
+          )"
+          [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]] || { echo '::error::SDK version is not semantic.'; exit 1; }
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
       - name: Validate operation ledger
         run: python3 scripts/generate-sdk-certification.py --check
 
       - name: Fetch and apply exact seed
+        id: seed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEED_REF: ${{ steps.identity.outputs.seed-ref }}
+          TIER: ${{ steps.identity.outputs.tier }}
+          EXPECTED_FIXTURE_REVISION: ${{ steps.identity.outputs.expected-fixture-revision }}
           PGPASSWORD: honua
         run: |
           mkdir -p .certification
           gh api "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${SEED_REF}" \
             -H "Accept: application/vnd.github.raw" > .certification/base-schema.sql
+          fixture_revision="sha256:$(sha256sum .certification/base-schema.sql | cut -d' ' -f1)"
+          if [[ "${TIER}" == release && "${fixture_revision}" != "${EXPECTED_FIXTURE_REVISION}" ]]; then
+            echo "::error::Applied fixture digest does not match the independently pinned release fixture."
+            exit 1
+          fi
+          echo "fixture-revision=${fixture_revision}" >> "${GITHUB_OUTPUT}"
           psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
 
       - name: Start exact honua-server image
@@ -162,14 +198,23 @@ jobs:
         run: |
           mkdir -p artifacts/test-results
           filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
+          conformance_filter='FullyQualifiedName~GrpcQueryFeatures_RoundTripsCanonicalResponseShape|FullyQualifiedName~GrpcQuery_GeometryOmission_IsHonored|FullyQualifiedName~FeatureServerQuery_RoundTripsCanonicalAttributeProjection|FullyQualifiedName~OgcItems_RoundTripCanonicalPropertyProjection'
           if [[ "${TIER}" != pr ]]; then
             filter='Category=ProtocolIntegration'
+            conformance_filter='FullyQualifiedName~LiveConformanceTests'
           fi
+          code=0
           dotnet test tests/Honua.Sdk.ProtocolIntegration.Tests/Honua.Sdk.ProtocolIntegration.Tests.csproj \
             --configuration Release \
             --filter "${filter}" \
-            --logger 'trx;LogFileName=sdk-certification.trx' \
-            --results-directory artifacts/test-results
+            --logger 'trx;LogFileName=protocol-integration.trx' \
+            --results-directory artifacts/test-results || code=1
+          dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
+            --configuration Release \
+            --filter "${conformance_filter}" \
+            --logger 'trx;LogFileName=live-conformance.trx' \
+            --results-directory artifacts/test-results || code=1
+          exit "${code}"
 
       - name: Emit and enforce normalized certification evidence
         if: always()
@@ -178,17 +223,22 @@ jobs:
           SERVER_IMAGE: ${{ steps.identity.outputs.image }}
           SERVER_SOURCE_SHA: ${{ steps.identity.outputs.source-sha }}
           SEED_REF: ${{ steps.identity.outputs.seed-ref }}
-          FIXTURE_REVISION: ${{ steps.identity.outputs.fixture-revision }}
+          FIXTURE_REVISION: ${{ steps.seed.outputs.fixture-revision }}
+          IMAGE_SOURCE_REVISION: ${{ steps.identity.outputs.image-source-revision }}
+          SDK_VERSION: ${{ steps.sdk-version.outputs.version }}
           RELEASE_CUT: ${{ steps.identity.outputs.release-cut }}
           STARTED_AT: ${{ steps.identity.outputs.started-at }}
         run: |
           python3 scripts/generate-sdk-certification.py \
             --tier "${TIER}" \
-            --trx artifacts/test-results/sdk-certification.trx \
+            --trx artifacts/test-results/protocol-integration.trx \
+            --trx artifacts/test-results/live-conformance.trx \
             --evidence artifacts/evidence/sdk-certification.json \
             --started-at "${STARTED_AT}" \
             --sdk-commit "${GITHUB_SHA}" \
+            --sdk-version "${SDK_VERSION}" \
             --server-source-sha "${SERVER_SOURCE_SHA}" \
+            --image-source-revision "${IMAGE_SOURCE_REVISION}" \
             --server-image "${SERVER_IMAGE}" \
             --seed-revision "${SEED_REF}" \
             --fixture-revision "${FIXTURE_REVISION}" \

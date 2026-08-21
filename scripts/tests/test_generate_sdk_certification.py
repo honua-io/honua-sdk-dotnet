@@ -30,9 +30,10 @@ class SdkCertificationTests(unittest.TestCase):
                 sdk_commit="a" * 40,
                 sdk_version="1.0.0",
                 server_source_sha="b" * 40,
+                image_source_revision="b" * 40,
                 server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
                 release_cut="2026-01-01T00:00:00Z",
-                fixture_revision="fixture-1",
+                fixture_revision="sha256:" + "e" * 64,
                 seed_revision="d" * 40,
             ))
 
@@ -56,8 +57,48 @@ class SdkCertificationTests(unittest.TestCase):
                 tier="pr", trx=[trx], evidence=evidence, started_at=None,
                 sdk_commit="a" * 40, sdk_version="unreleased",
                 server_source_sha="b" * 40,
+                image_source_revision="b" * 40,
                 server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
                 release_cut=None, fixture_revision="fixture", seed_revision="b" * 40,
+            ), document)
+            self.assertEqual(1, result)
+
+    def test_interface_inheritance_is_resolved_transitively(self):
+        document = MODULE.build_document()
+        geocoding = [
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaGeocodingClient")
+        ]
+        self.assertTrue(geocoding)
+        self.assertTrue(all(cell["status"] != "non-addressable" for cell in geocoding))
+
+    def test_every_named_test_must_have_a_passing_result(self):
+        document = {
+            "operations": [{
+                "id": "Honua.Example.IHonuaExampleClient.GetAsync",
+                "surface": "example",
+                "operation": "GetAsync",
+                "status": "exercised",
+                "requiredTiers": ["pr"],
+                "scenarioFacets": ["read-only"],
+                "tests": ["Example.Tests.First", "Example.Tests.Second"],
+            }]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            trx = Path(directory) / "partial.trx"
+            trx.write_text(
+                '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results>'
+                '<UnitTestResult testName="Example.Tests.First" outcome="Passed" />'
+                '</Results></TestRun>',
+                encoding="utf-8",
+            )
+            evidence = Path(directory) / "evidence.json"
+            result = MODULE.write_evidence(Namespace(
+                tier="pr", trx=[trx], evidence=evidence, started_at=None,
+                sdk_commit="a" * 40, sdk_version="1.6.0",
+                server_source_sha="b" * 40, image_source_revision="b" * 40,
+                server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                release_cut=None, fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
             ), document)
             self.assertEqual(1, result)
 
