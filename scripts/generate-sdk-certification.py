@@ -647,7 +647,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             verdict = "missing"
         elif any(outcome == "Failed" for outcome in outcomes):
             verdict = "fail"
-        elif all(any(outcome == "Passed" for outcome in test_outcomes) for test_outcomes in outcomes_by_test.values()):
+        elif all(outcome == "Passed" for outcome in outcomes):
             verdict = "pass"
         elif outcomes:
             verdict = "skip"
@@ -675,7 +675,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": f"sdk-dotnet-certification@{identity['sdkCommit']}",
-            "auth_policy_revision": "anonymous-and-protected-v1",
+            "auth_policy_revision": "anonymous-public-v1",
             "evidence_uri": identity["evidenceUri"],
             "started_at": args.started_at or now,
             "completed_at": now,

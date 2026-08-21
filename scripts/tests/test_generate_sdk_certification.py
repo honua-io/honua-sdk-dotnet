@@ -79,7 +79,7 @@ class SdkCertificationTests(unittest.TestCase):
                 fragment["observations"][0]["contract_revision"],
             )
             self.assertEqual(
-                "anonymous-and-protected-v1",
+                "anonymous-public-v1",
                 fragment["observations"][0]["auth_policy_revision"],
             )
 
@@ -299,6 +299,40 @@ class SdkCertificationTests(unittest.TestCase):
                 evidence_uri="https://example.test/run/1",
             ), document)
             self.assertEqual(1, result)
+
+    def test_every_parameterized_result_must_pass(self):
+        document = {
+            "operations": [{
+                "id": "Honua.Example.IHonuaExampleClient.GetAsync",
+                "surface": "example",
+                "operation": "GetAsync",
+                "status": "exercised",
+                "requiredTiers": ["pr"],
+                "scenarioFacets": ["read-only"],
+                "tests": ["Example.Tests.Get"],
+            }]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            trx = Path(directory) / "mixed.trx"
+            trx.write_text(
+                '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results>'
+                '<UnitTestResult testName="Example.Tests.Get(first)" outcome="Passed" />'
+                '<UnitTestResult testName="Example.Tests.Get(second)" outcome="NotExecuted" />'
+                '</Results></TestRun>',
+                encoding="utf-8",
+            )
+            evidence = Path(directory) / "evidence.json"
+            result = MODULE.write_evidence(Namespace(
+                tier="pr", trx=[trx], evidence=evidence, started_at=None,
+                sdk_commit="a" * 40, sdk_version="1.6.0",
+                server_source_sha="b" * 40, image_source_revision="b" * 40,
+                server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                evidence_uri="https://example.test/run/1",
+            ), document)
+            self.assertEqual(1, result)
+            self.assertEqual("skip", json.loads(evidence.read_text(encoding="utf-8"))["observations"][0]["result"])
 
 
 if __name__ == "__main__":
