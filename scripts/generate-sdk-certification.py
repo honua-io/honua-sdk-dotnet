@@ -682,7 +682,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": f"sdk-dotnet-certification@{identity['sdkCommit']}",
             "auth_policy_revision": "anonymous-public-v1",
-            "evidence_uri": identity["evidenceUri"],
+            "evidence_uri": (
+                None if result == "skip"
+                else f"https://evidence.honua.io/data/sha256/{evidence_digest[7:]}"
+            ),
             "evidence_digest": None if result == "skip" else evidence_digest,
             "facet_results": None if result == "skip" else {
                 facet: {"result": result, "evidence_digest": evidence_digest}
