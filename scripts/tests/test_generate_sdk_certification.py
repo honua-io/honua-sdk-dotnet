@@ -114,7 +114,15 @@ class SdkCertificationTests(unittest.TestCase):
             cell for cell in operations
             if cell["client"].endswith("IHonuaFeatureEditClient") and cell["operation"] == "ApplyEditsAsync"
         )
-        self.assertEqual("exercised", apply_edits["status"])
+        self.assertEqual("gap", apply_edits["status"])
+        self.assertEqual(4, len(apply_edits["implementations"]))
+        self.assertEqual(3, len(apply_edits["missingImplementations"]))
+        feature_server = next(
+            implementation
+            for implementation in apply_edits["implementations"]
+            if implementation.endswith("HonuaFeatureServerClient")
+        )
+        self.assertTrue(apply_edits["implementationTests"][feature_server])
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()
@@ -125,6 +133,8 @@ class SdkCertificationTests(unittest.TestCase):
         )
 
         self.assertEqual("exercised", query["status"])
+        self.assertFalse(query.get("missingImplementations"))
+        self.assertTrue(all(query["implementationTests"].values()))
         self.assertIn(
             "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests."
             "SourceFacade_QueriesConfiguredFeatureProtocols",

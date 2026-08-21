@@ -26,6 +26,15 @@ OUTPUT_PATH = ROOT / "contracts" / "sdk-certification.v1.json"
 TRACKING_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/31"
 RASTER_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/294"
 
+IMPLEMENTATION_TEST_PROVIDERS = {
+    "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests."
+    "FeatureServerApplyEdits_AddUpdateDelete_RoundTrips": frozenset({"geoservices-featureserver"}),
+    "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests."
+    "SourceFacade_QueriesConfiguredFeatureProtocols": frozenset(
+        {"grpc", "geoservices-featureserver", "wfs", "ogc-features"}
+    ),
+}
+
 PR_OPERATIONS = frozenset(
     {
         "IHonuaGrpcClient.QueryFeaturesAsync",
@@ -187,18 +196,29 @@ def _interface_ancestors(stripped_files: dict[Path, str]) -> dict[str, set[str]]
 
 def _declared_operations() -> list[dict[str, Any]]:
     source_files = sorted(SRC_ROOT.rglob("*.cs"))
-    direct_implementations: set[str] = set()
+    direct_implementations: dict[str, set[str]] = defaultdict(set)
+    implementation_providers: dict[str, str] = {}
     stripped_files: dict[Path, str] = {}
     for path in source_files:
-        stripped = _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
+        source = path.read_text(encoding="utf-8", errors="replace")
+        stripped = _strip_comments_and_strings(source)
         stripped_files[path] = stripped
-        for match in re.finditer(r"\bclass\s+\w+(?:<[^>{}]+>)?\s*:\s*([^\{]+)\{", stripped):
-            direct_implementations.update(re.findall(r"\b(IHonua\w*Client)\b", match.group(1)))
+        namespace = _namespace(stripped)
+        provider = re.search(r'\bProviderName\s*=>\s*"([^"]+)"', source)
+        for match in re.finditer(r"\bclass\s+(\w+)(?:<[^>{}]+>)?\s*:\s*([^\{]+)\{", stripped):
+            implementation = f"{namespace}.{match.group(1)}"
+            interfaces = re.findall(r"\b(IHonua\w*Client)\b", match.group(2))
+            for interface in interfaces:
+                direct_implementations[interface].add(implementation)
+            if provider:
+                implementation_providers[implementation] = provider.group(1)
 
     ancestors = _interface_ancestors(stripped_files)
-    implementations = set(direct_implementations)
-    for interface in direct_implementations:
-        implementations.update(ancestors.get(interface, set()))
+    implementations: dict[str, set[str]] = defaultdict(set)
+    for interface, concrete_types in direct_implementations.items():
+        implementations[interface].update(concrete_types)
+        for ancestor in ancestors.get(interface, set()):
+            implementations[ancestor].update(concrete_types)
 
     operations: dict[str, dict[str, Any]] = {}
     interface_re = re.compile(r"\bpublic\s+interface\s+(IHonua\w*Client)\b[^\{]*\{")
@@ -216,7 +236,12 @@ def _declared_operations() -> list[dict[str, Any]]:
                     "client": f"{namespace}.{interface}",
                     "operation": method["name"],
                     "signature": method["signature"],
-                    "implemented": interface in implementations,
+                    "implemented": bool(implementations.get(interface)),
+                    "_implementations": sorted(implementations.get(interface, set())),
+                    "_implementationProviders": {
+                        implementation: implementation_providers.get(implementation)
+                        for implementation in sorted(implementations.get(interface, set()))
+                    },
                     "_parameters": method["parameters"],
                 }
     return [operations[key] for key in sorted(operations)]
@@ -269,7 +294,9 @@ def _matches_arguments(operation: dict[str, Any], arguments: list[str]) -> bool:
     return all(parameter["optional"] or parameter["name"] in used for parameter in parameters)
 
 
-def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[str]]) -> dict[str, list[str]]:
+def _test_mappings(
+    operations: list[dict[str, Any]], ancestors: dict[str, set[str]]
+) -> tuple[dict[str, list[str]], dict[str, dict[str, list[str]]]]:
     facade_delegations = {
         ("HonuaSource", "QueryAsync"): ("IHonuaFeatureQueryClient", "QueryAsync"),
     }
@@ -290,9 +317,21 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
         )
 
     mappings: dict[str, set[str]] = defaultdict(set)
+    implementation_mappings: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
     by_interface_method: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for operation in operations:
         by_interface_method[(operation["client"].rsplit(".", 1)[-1], operation["operation"])].append(operation)
+
+    def add_mapping(operation: dict[str, Any], test_name: str) -> None:
+        mappings[operation["id"]].add(test_name)
+        implementations = operation["_implementations"]
+        providers = IMPLEMENTATION_TEST_PROVIDERS.get(test_name, frozenset())
+        if len(implementations) == 1:
+            implementation_mappings[operation["id"]][implementations[0]].add(test_name)
+            return
+        for implementation in implementations:
+            if operation["_implementationProviders"].get(implementation) in providers:
+                implementation_mappings[operation["id"]][implementation].add(test_name)
 
     def record(interface: str, operation_name: str, arguments: list[str], test_name: str) -> None:
         interfaces = {interface, *ancestors.get(interface, set())}
@@ -303,7 +342,7 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
             if _matches_arguments(operation, arguments)
         ]
         if len(candidates) == 1:
-            mappings[candidates[0]["id"]].add(test_name)
+            add_mapping(candidates[0], test_name)
 
     def record_facade(interface: str, operation_name: str, test_name: str) -> None:
         interfaces = {interface, *ancestors.get(interface, set())}
@@ -313,7 +352,7 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
             for operation in by_interface_method.get((candidate_interface, operation_name), [])
         ]
         if len(candidates) == 1:
-            mappings[candidates[0]["id"]].add(test_name)
+            add_mapping(candidates[0], test_name)
 
     method_re = re.compile(r"\bpublic\s+(?:async\s+)?Task(?:<[^;{}]+>)?\s+(\w+)\s*\([^)]*\)\s*\{")
     class_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(\w+)")
@@ -356,7 +395,16 @@ def _test_mappings(operations: list[dict[str, Any]], ancestors: dict[str, set[st
                 delegation = facade_delegations.get((local_facades.get(variable, ""), operation))
                 if delegation:
                     record_facade(*delegation, test_name)
-    return {key: sorted(value) for key, value in mappings.items()}
+    return (
+        {key: sorted(value) for key, value in mappings.items()},
+        {
+            operation_id: {
+                implementation: sorted(tests)
+                for implementation, tests in sorted(by_implementation.items())
+            }
+            for operation_id, by_implementation in implementation_mappings.items()
+        },
+    )
 
 
 def build_document() -> dict[str, Any]:
@@ -366,7 +414,7 @@ def build_document() -> dict[str, Any]:
     }
     ancestors = _interface_ancestors(stripped_files)
     operations = _declared_operations()
-    mappings = _test_mappings(operations, ancestors)
+    mappings, implementation_mappings = _test_mappings(operations, ancestors)
     cells: list[dict[str, Any]] = []
     for operation in operations:
         short_client = operation["client"].rsplit(".", 1)[-1]
@@ -375,13 +423,27 @@ def build_document() -> dict[str, Any]:
         unseeded_tests = sorted(mapped_tests & UNSEEDED_TESTS)
         tests = sorted(mapped_tests - UNSEEDED_TESTS)
         implemented = operation.pop("implemented")
+        implementations = operation.pop("_implementations")
+        operation.pop("_implementationProviders")
         operation.pop("_parameters")
+        tests_by_implementation = {
+            implementation: sorted(
+                set(implementation_mappings.get(operation["id"], {}).get(implementation, []))
+                - UNSEEDED_TESTS
+            )
+            for implementation in implementations
+        }
+        missing_implementations = [
+            implementation
+            for implementation, implementation_tests in tests_by_implementation.items()
+            if not implementation_tests
+        ]
         if not implemented:
             status = "non-addressable"
             owner = RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
             disposition = "Public provider-neutral contract has no concrete Honua client implementation."
             tiers: list[str] = []
-        elif tests:
+        elif tests and not missing_implementations:
             status = "exercised"
             owner = None
             disposition = None
@@ -391,11 +453,18 @@ def build_document() -> dict[str, Any]:
         else:
             status = "gap"
             owner = TRACKING_ISSUE
-            disposition = (
-                "Canonical live test exists but its deterministic server fixture is not seeded."
-                if unseeded_tests
-                else "Concrete public SDK operation has no canonical live certification test."
-            )
+            if missing_implementations and tests:
+                disposition = (
+                    "Canonical live tests do not cover every concrete implementation: "
+                    + ", ".join(missing_implementations)
+                    + "."
+                )
+            else:
+                disposition = (
+                    "Canonical live test exists but its deterministic server fixture is not seeded."
+                    if unseeded_tests
+                    else "Concrete public SDK operation has no canonical live certification test."
+                )
             tiers = ["nightly", "release"]
 
         facets = []
@@ -412,7 +481,11 @@ def build_document() -> dict[str, Any]:
             "requiredTiers": tiers,
             "scenarioFacets": facets,
             "tests": tests,
+            "implementations": implementations,
+            "implementationTests": tests_by_implementation,
         }
+        if missing_implementations:
+            cell["missingImplementations"] = missing_implementations
         if unseeded_tests:
             cell["unseededTests"] = unseeded_tests
         if owner:

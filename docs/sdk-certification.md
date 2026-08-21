@@ -6,6 +6,9 @@ deterministically seeded Honua Server. The source-derived ledger at
 completeness. It catalogs every async member declared by a public
 `IHonua*Client` interface and fails CI when the public surface changes without a
 corresponding regenerated ledger.
+For provider-neutral contracts, the ledger also records every concrete client
+implementation and binds canonical tests to each implementation. An operation
+is exercised only when every concrete implementation has live evidence.
 
 ## Compliance tiers
 
