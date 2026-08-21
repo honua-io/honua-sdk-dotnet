@@ -72,7 +72,16 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual("skip", fragment["observations"][0]["result"])
             self.assertEqual("b" * 40, fragment["candidate"]["source_sha"])
             self.assertEqual("a" * 40, fragment["observations"][0]["producer_source_sha"])
-            self.assertEqual(["read-only"], fragment["observations"][0]["scenario_facets"])
+            self.assertEqual(["positive"], fragment["observations"][0]["scenario_facets"])
+            self.assertEqual("Honua SDK .NET", fragment["observations"][0]["canonical_client"])
+            self.assertEqual(
+                "sdk-dotnet-certification@" + "a" * 40,
+                fragment["observations"][0]["contract_revision"],
+            )
+            self.assertEqual(
+                "anonymous-and-protected-v1",
+                fragment["observations"][0]["auth_policy_revision"],
+            )
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()

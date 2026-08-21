@@ -636,8 +636,11 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         observation = {
             "surface": operation["surface"],
             "operation": operation["id"],
-            "scenario_facets": operation["scenarioFacets"],
-            "canonical_client": "Honua.Sdk.*",
+            "scenario_facets": list(dict.fromkeys(
+                "positive" if facet in {"read-only", "mutation"} else facet
+                for facet in operation["scenarioFacets"]
+            )),
+            "canonical_client": "Honua SDK .NET",
             "client_version": identity["sdkVersion"],
             "deployment_target": "local-docker",
             "result": result,
@@ -646,6 +649,8 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "producer_source_sha": identity["sdkCommit"],
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
+            "contract_revision": f"sdk-dotnet-certification@{identity['sdkCommit']}",
+            "auth_policy_revision": "anonymous-and-protected-v1",
             "evidence_uri": identity["evidenceUri"],
             "started_at": args.started_at or now,
             "completed_at": now,
