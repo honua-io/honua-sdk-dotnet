@@ -89,6 +89,11 @@ class SdkCertificationTests(unittest.TestCase):
         document = MODULE.build_document()
         operations = document["operations"]
         self.assertTrue(any(cell["operation"] == "GetFeaturesAsyncEnumerable" for cell in operations))
+        self.assertTrue(any(
+            cell["client"].endswith("IHonuaFeatureServerClient")
+            and cell["operation"] == "GetFeatureAsync"
+            for cell in operations
+        ))
         apply_edits = next(
             cell for cell in operations
             if cell["client"].endswith("IHonuaFeatureEditClient") and cell["operation"] == "ApplyEditsAsync"
@@ -99,7 +104,8 @@ class SdkCertificationTests(unittest.TestCase):
         document = MODULE.build_document()
         names = {
             "RollbackDeployOperationAsync", "RotateEncryptionKeyAsync", "ImportRasterAsync",
-            "PatchItemAsync", "RollbackAsync",
+            "PatchItemAsync", "RollbackAsync", "CommitEditSessionAsync", "StartEditSessionAsync",
+            "UnsubscribeAsync", "ReopenVersionAsync",
         }
         matched = [cell for cell in document["operations"] if cell["operation"] in names]
         self.assertEqual(names, {cell["operation"] for cell in matched})

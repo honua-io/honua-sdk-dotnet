@@ -44,9 +44,9 @@ PR_OPERATIONS = frozenset(
 
 MUTATION_PREFIXES = (
     "Add", "Apply", "Cancel", "Create", "Delete", "Deprovision", "Dismiss",
-    "Disconnect", "Execute", "Import", "Patch", "Pause", "Publish", "Remove", "Resume",
-    "Revoke", "Rollback", "Rotate", "Set", "Submit", "Synchronize", "Trigger",
-    "Unpublish", "Update", "Upload",
+    "Commit", "Disconnect", "Execute", "Import", "Patch", "Pause", "Publish", "Remove",
+    "Reopen", "Resume", "Revoke", "Rollback", "Rotate", "Set", "Start", "Submit",
+    "Synchronize", "Trigger", "Unpublish", "Unsubscribe", "Update", "Upload",
 )
 PAGINATION_PREFIXES = ("List", "Query", "Search", "GetItems", "GetFeatures")
 
@@ -131,7 +131,8 @@ def _method_declarations(body: str) -> list[dict[str, Any]]:
     for match in method_re.finditer(body):
         opening = match.end() - 1
         closing = _closing_delimiter(body, opening)
-        if body[closing + 1:].lstrip()[:1] != ";":
+        terminator = body[closing + 1:].lstrip()
+        if not terminator.startswith((";", "=>", "{")):
             continue
         generic = re.sub(r"\s+", "", match.group(2) or "")
         parameters = _parameters(body[opening + 1:closing])

@@ -5,9 +5,9 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 280,
+    "total": 281,
     "exercised": 22,
-    "gap": 240,
+    "gap": 241,
     "non-addressable": 18
   },
   "operations": [
@@ -245,7 +245,7 @@
       "status": "non-addressable",
       "requiredTiers": [],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
@@ -290,7 +290,7 @@
       "status": "non-addressable",
       "requiredTiers": [],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
@@ -416,7 +416,7 @@
       "status": "non-addressable",
       "requiredTiers": [],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
@@ -3573,6 +3573,24 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetFeatureAsync(string,int,long,FeatureServerQueryParams?,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "GetFeatureAsync",
+      "signature": "GetFeatureAsync(string,int,long,FeatureServerQueryParams?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetLayerInfoAsync(string,int,CancellationToken)",
       "surface": "geoservices",
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
@@ -4997,7 +5015,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "mutation"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
