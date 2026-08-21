@@ -253,15 +253,23 @@ def _declared_operations() -> list[dict[str, Any]]:
                     },
                     "_parameters": method["parameters"],
                 }
+    for path, stripped in stripped_files.items():
+        namespace = _namespace(stripped)
         concrete_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(Honua\w+Client)\b([^\{]*)\{")
         for declaration in concrete_re.finditer(stripped):
             concrete = declaration.group(1)
-            if re.search(r"\bIHonua\w*Client\b", declaration.group(2)):
-                continue
+            implementation = f"{namespace}.{concrete}"
+            represented_signatures = {
+                operation["signature"]
+                for operation in operations.values()
+                if implementation in operation["_implementations"]
+            }
             body = _block(stripped, declaration.end() - 1)
             for method in sorted(
                 _method_declarations(body, require_public=True), key=lambda item: item["signature"]
             ):
+                if method["signature"] in represented_signatures:
+                    continue
                 operation_id = f"{namespace}.{concrete}.{method['signature']}"
                 operations[operation_id] = {
                     "id": operation_id,
@@ -270,8 +278,10 @@ def _declared_operations() -> list[dict[str, Any]]:
                     "operation": method["name"],
                     "signature": method["signature"],
                     "implemented": True,
-                    "_implementations": [f"{namespace}.{concrete}"],
-                    "_implementationProviders": {f"{namespace}.{concrete}": None},
+                    "_implementations": [implementation],
+                    "_implementationProviders": {
+                        implementation: implementation_providers.get(implementation)
+                    },
                     "_parameters": method["parameters"],
                 }
     return [operations[key] for key in sorted(operations)]

@@ -107,6 +107,23 @@ class SdkCertificationTests(unittest.TestCase):
             {cell["operation"] for cell in geometry},
         )
 
+    def test_interface_backed_concrete_only_methods_are_cataloged(self):
+        document = MODULE.build_document()
+        operations = document["operations"]
+        expected = {
+            ("HonuaFeatureServerClient", "QueryVectorAsync"),
+            ("HonuaGrpcClient", "QueryFeaturesAsync"),
+            ("HonuaGrpcClient", "QueryFeaturesStreamAsync"),
+            ("HonuaOgcFeaturesClient", "GetItemsVectorAsync"),
+            ("HonuaWfsClient", "GetFeaturesVectorAsync"),
+        }
+        actual = {
+            (cell["client"].rsplit(".", 1)[-1], cell["operation"])
+            for cell in operations
+        }
+
+        self.assertTrue(expected <= actual, expected - actual)
+
     def test_non_raster_non_addressable_operations_use_general_owner(self):
         document = MODULE.build_document()
         non_addressable = [
