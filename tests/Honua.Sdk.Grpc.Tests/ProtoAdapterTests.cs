@@ -91,8 +91,8 @@ public class ProtoAdapterTests
         Assert.False(proto.ReturnGeometry);
         Assert.NotNull(proto.OutSr);
         Assert.Equal(4326, proto.OutSr.Wkid);
-        Assert.Equal(10, proto.ResultOffset);
-        Assert.Equal(50, proto.ResultRecordCount);
+        Assert.Equal(10, proto.ResultOffsetLong);
+        Assert.Equal(50, proto.ResultRecordCountLong);
         Assert.Equal("name ASC", proto.OrderBy);
         Assert.True(proto.ReturnDistinct);
         Assert.True(proto.ReturnCountOnly);

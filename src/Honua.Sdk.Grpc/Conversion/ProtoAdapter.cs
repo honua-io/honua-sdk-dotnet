@@ -250,7 +250,7 @@ internal static class ProtoAdapter
         };
     }
 
-    private static Models.EditError ConvertEditError(Proto.EditError error)
+    private static Models.EditError ConvertEditError(Proto.ErrorDetail error)
     {
         return new Models.EditError
         {

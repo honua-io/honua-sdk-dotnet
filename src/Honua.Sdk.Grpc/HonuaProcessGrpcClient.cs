@@ -595,7 +595,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     private static HonuaProcessError ToError(Proto.ErrorDetail error)
         => new()
         {
-            ErrorCode = error.ErrorCode,
+            ErrorCode = error.Code.ToString(System.Globalization.CultureInfo.InvariantCulture),
             Category = error.Category.ToString(),
             Message = error.Message,
             Phase = error.Phase,
