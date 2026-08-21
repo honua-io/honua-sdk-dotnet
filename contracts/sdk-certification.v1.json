@@ -176,8 +176,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -324,8 +323,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -560,8 +558,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "unseededTests": [
@@ -750,8 +747,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -769,8 +765,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -788,8 +783,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Catalog_SearchAndServiceLookup_AreReachable"
@@ -807,8 +801,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -826,8 +819,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -1019,8 +1011,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -1038,8 +1029,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -1219,8 +1209,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -1580,8 +1569,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -1671,8 +1659,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -1906,8 +1893,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2141,8 +2127,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2214,8 +2199,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2341,8 +2325,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2450,8 +2433,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2523,7 +2505,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2613,7 +2596,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2649,8 +2633,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2668,8 +2651,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2741,8 +2723,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2779,7 +2760,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2797,8 +2779,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2834,7 +2815,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2852,8 +2834,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2908,8 +2889,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2927,8 +2907,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2964,8 +2943,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -2983,8 +2961,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3272,8 +3249,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3291,8 +3267,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3400,7 +3375,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3598,7 +3574,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "mutation"
+        "mutation",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3673,8 +3650,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.Conformance.Tests.LiveConformanceTests.FeatureServerQuery_RoundTripsCanonicalAttributeProjection",
@@ -3694,8 +3670,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
@@ -3713,8 +3688,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3733,8 +3707,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
@@ -3771,8 +3744,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3790,8 +3762,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -3936,8 +3907,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.Conformance.Tests.LiveConformanceTests.GrpcQueryFeatures_RoundTripsCanonicalResponseShape",
@@ -3957,8 +3927,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4177,8 +4146,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.Conformance.Tests.LiveConformanceTests.OgcItems_RoundTripCanonicalPropertyProjection",
@@ -4216,8 +4184,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4235,7 +4202,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4273,8 +4241,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.Conformance.Tests.LiveConformanceTests.OgcItems_RoundTripCanonicalPropertyProjection",
@@ -4401,8 +4368,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4493,8 +4459,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [
         "Honua.Sdk.Conformance.Tests.LiveConformanceTests.Wfs_GetFeatures_RoundTripsCanonicalFeatureCollection",
@@ -4513,8 +4478,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4623,7 +4587,8 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only"
+        "read-only",
+        "pagination"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4659,8 +4624,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -4678,8 +4642,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
@@ -5030,8 +4993,7 @@
         "release"
       ],
       "scenarioFacets": [
-        "read-only",
-        "pagination"
+        "read-only"
       ],
       "tests": [],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",

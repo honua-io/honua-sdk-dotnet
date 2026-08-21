@@ -48,7 +48,7 @@ MUTATION_PREFIXES = (
     "Reconnect", "Reopen", "Resume", "Revoke", "Rollback", "Rotate", "Set", "Start", "Submit",
     "Subscribe", "Synchronize", "Trigger", "Unpublish", "Unsubscribe", "Update", "Upload",
 )
-PAGINATION_PREFIXES = ("List", "Query", "Search", "GetItems", "GetFeatures")
+PAGINATION_SUFFIXES = ("PageAsync", "PagesAsync", "AsyncEnumerable")
 
 UNSEEDED_TESTS = frozenset(
     {
@@ -372,7 +372,7 @@ def build_document() -> dict[str, Any]:
             facets.append("mutation")
         else:
             facets.append("read-only")
-        if operation["operation"].startswith(PAGINATION_PREFIXES):
+        if operation["operation"].endswith(PAGINATION_SUFFIXES):
             facets.append("pagination")
 
         cell = {
