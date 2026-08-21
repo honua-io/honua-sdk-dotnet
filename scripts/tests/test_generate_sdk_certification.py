@@ -140,6 +140,8 @@ class SdkCertificationTests(unittest.TestCase):
             {cell["operation"] for cell in replica},
         )
         self.assertTrue(all(cell["status"] != "non-addressable" for cell in replica))
+        unregister = next(cell for cell in replica if cell["operation"] == "UnRegisterReplicaAsync")
+        self.assertIn("mutation", unregister["scenarioFacets"])
 
     def test_semantic_signature_ignores_qualified_parameter_spelling(self):
         interface = {

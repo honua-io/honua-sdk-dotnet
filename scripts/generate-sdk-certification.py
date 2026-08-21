@@ -55,7 +55,7 @@ MUTATION_PREFIXES = (
     "Add", "Apply", "Cancel", "Connect", "Create", "Delete", "Deprovision", "Dismiss",
     "Commit", "Disconnect", "Execute", "Import", "Patch", "Pause", "Publish", "Remove",
     "Reconnect", "Reopen", "Resume", "Revoke", "Rollback", "Rotate", "Set", "Start", "Submit",
-    "Subscribe", "Synchronize", "Trigger", "Unpublish", "Unsubscribe", "Update", "Upload",
+    "Subscribe", "Synchronize", "Trigger", "Unpublish", "UnRegister", "Unsubscribe", "Update", "Upload",
 )
 PAGINATED_OPERATIONS = frozenset(
     {
