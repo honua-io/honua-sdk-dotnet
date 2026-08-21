@@ -86,7 +86,7 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
@@ -113,7 +113,7 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
@@ -140,7 +140,7 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {

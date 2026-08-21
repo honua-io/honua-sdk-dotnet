@@ -452,7 +452,7 @@ def build_document() -> dict[str, Any]:
                 tiers.insert(0, "pr")
         else:
             status = "gap"
-            owner = TRACKING_ISSUE
+            owner = RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
             if missing_implementations and tests:
                 disposition = (
                     "Canonical live tests do not cover every concrete implementation: "
