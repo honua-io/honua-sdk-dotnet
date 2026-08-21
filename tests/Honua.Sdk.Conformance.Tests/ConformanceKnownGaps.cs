@@ -11,9 +11,6 @@ namespace Honua.Sdk.Conformance.Tests;
 /// </summary>
 public static class ConformanceKnownGaps
 {
-    /// <summary>FeatureServer / OGC API Features JSONB attribute projection shape (honua-server#1238).</summary>
-    public const string FeatureServerOgcJsonbProjection = "honua-server#1238";
-
     /// <summary>Temporal field query / round-trip (honua-server#1166).</summary>
     public const string Temporal = "honua-server#1166";
 
@@ -29,7 +26,6 @@ public static class ConformanceKnownGaps
     /// </summary>
     public static IReadOnlyDictionary<string, string> All { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["featureserver-ogc-jsonb-projection"] = FeatureServerOgcJsonbProjection,
         ["temporal"] = Temporal,
         ["replica"] = Replica,
         ["analysis-list-estimate"] = AnalysisListEstimate,

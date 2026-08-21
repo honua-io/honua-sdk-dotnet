@@ -60,7 +60,6 @@ still fails. When a gap lands server-side, flip its xfail to a required check.
 
 | Server issue | Surface | Conformance impact |
 |--------------|---------|--------------------|
-| honua-server#1238 | FeatureServer / OGC API Features | JSONB attribute projection changes response shape |
 | honua-server#1166 | Temporal | temporal field query/round-trip |
 | honua-server#1167 | Replica | replica/offline sync surface |
 | honua-server#1237 | Analysis | analysis list / estimate |

@@ -372,6 +372,8 @@ def build_document() -> dict[str, Any]:
             facets.append("mutation")
         else:
             facets.append("read-only")
+        if operation["operation"].startswith(PAGINATION_PREFIXES):
+            facets.append("pagination")
 
         cell = {
             **operation,

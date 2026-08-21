@@ -154,13 +154,14 @@ Already-tracked nightly server gaps are marked known-expected-failing in the
 suite — the affected live assertions skip with an explicit `honua-server#NNNN`
 reference (never silently, never via blanket `continue-on-error`), so the job is
 green and the harness is in place while any new/untracked drift still fails:
-`#1238` (FeatureServer/OGC JSONB projection), `#1166` (temporal), `#1167`
-(replica), `#1237` (analysis list/estimate). When a gap lands server-side, drop
+`#1166` (temporal), `#1167` (replica), and `#1237` (analysis list/estimate).
+The former `#1238` FeatureServer/OGC JSONB projection gap is now a required,
+typed live assertion. When another gap lands server-side, drop
 its `knownGap` marker so the assertion becomes a required check.
 
 ### Recorded pins
 
-- Fixtures: `0.1.0-alpha.2` (`conformance/FIXTURE_VERSION` = `Geospatial.Grpc`
+- Fixtures: `0.2.0-alpha.1` (`conformance/FIXTURE_VERSION` = `Geospatial.Grpc`
   pin).
-- Server image: `ghcr.io/honua-io/honua-server@sha256:1f92ffb3e404bdd0818d55f0a1fc12a802a9fa1c4461c71dfdc4318e66913865`
-  (`nightly-86042bd`, dated `20260530`).
+- Server image: `ghcr.io/honua-io/honua-server@sha256:78e3088d64d832d3e2752c87d80bfcad201b414f4525989ca5d9a242cd5fee8a`
+  (`nightly-f897700`, dated `20260820`).

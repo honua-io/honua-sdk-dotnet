@@ -9,6 +9,7 @@ on:
       - "tests/Honua.Sdk.Conformance.Tests/**"
       - "scripts/generate-sdk-certification.py"
       - "contracts/sdk-certification.v1.json"
+      - "Directory.Packages.props"
       - ".github/workflows/sdk-certification.yml"
   schedule:
     - cron: "30 15 * * *"
@@ -87,6 +88,10 @@ jobs:
           tier="${INPUT_TIER:-pr}"
           [[ "${EVENT_NAME}" == schedule ]] && tier=nightly
           [[ "${EVENT_NAME}" == pull_request ]] && tier=pr
+          if [[ "${tier}" == release ]]; then
+            [[ -n "${INPUT_IMAGE}" ]] || { echo '::error::Release server_image input is required.'; exit 1; }
+            [[ -n "${INPUT_SOURCE_SHA}" ]] || { echo '::error::Release server_source_sha input is required.'; exit 1; }
+          fi
           image="${INPUT_IMAGE:-${PINNED_SERVER_IMAGE}}"
           source_sha="${INPUT_SOURCE_SHA:-${PINNED_SERVER_SOURCE_SHA}}"
           seed_ref="${INPUT_SEED_REF:-${source_sha}}"

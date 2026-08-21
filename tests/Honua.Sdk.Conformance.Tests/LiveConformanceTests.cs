@@ -151,5 +151,12 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         var feature = Assert.Single(items.Features ?? []);
         Assert.Equal("Feature", feature.Type);
         Assert.NotNull(feature.Properties);
+        Assert.True(feature.Properties!.TryGetValue("tags", out var tags));
+        Assert.Equal(JsonValueKind.Array, tags.ValueKind);
+        Assert.All(tags.EnumerateArray(), value => Assert.Equal(JsonValueKind.String, value.ValueKind));
+
+        Assert.True(feature.Properties.TryGetValue("numbers", out var numbers));
+        Assert.Equal(JsonValueKind.Array, numbers.ValueKind);
+        Assert.All(numbers.EnumerateArray(), value => Assert.Equal(JsonValueKind.Number, value.ValueKind));
     }
 }

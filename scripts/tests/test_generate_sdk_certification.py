@@ -111,6 +111,13 @@ class SdkCertificationTests(unittest.TestCase):
         self.assertEqual(names, {cell["operation"] for cell in matched})
         self.assertTrue(all("mutation" in cell["scenarioFacets"] for cell in matched))
 
+    def test_paginated_operations_are_classified_for_evidence(self):
+        document = MODULE.build_document()
+        names = {"QueryPagesAsync", "GetItemsPagesAsync", "GetFeaturesAsyncEnumerable"}
+        matched = [cell for cell in document["operations"] if cell["operation"] in names]
+        self.assertEqual(names, {cell["operation"] for cell in matched})
+        self.assertTrue(all("pagination" in cell["scenarioFacets"] for cell in matched))
+
     def test_every_named_test_must_have_a_passing_result(self):
         document = {
             "operations": [{
