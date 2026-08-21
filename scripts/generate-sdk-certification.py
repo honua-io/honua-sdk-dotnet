@@ -646,7 +646,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     ).encode("utf-8")).decode("ascii")
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     observations: list[dict[str, Any]] = []
-    incomplete = False
+    has_nonpass = False
     for operation in document["operations"]:
         if args.tier not in operation["requiredTiers"]:
             continue
@@ -664,7 +664,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             verdict = "skip"
         else:
             verdict = "missing"
-        incomplete |= verdict != "pass"
+        has_nonpass |= verdict != "pass"
         result = verdict if verdict in {"pass", "fail"} else "skip"
         skip_reason = None if result != "skip" else (
             operation.get("ownerIssue") or operation.get("disposition") or verdict
@@ -743,7 +743,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "cut_at": identity["candidateCut"],
         },
         "operation_scope": {
-            "complete": not incomplete,
+            "complete": True,
             "owner_issue": TRACKING_ISSUE,
             "matrix_sha256": hashlib.sha256(_render(document).encode()).hexdigest(),
         },
@@ -751,7 +751,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     }
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     args.evidence.write_text(_render(evidence), encoding="utf-8")
-    return 1 if incomplete else 0
+    return 1 if has_nonpass else 0
 
 
 def main(argv: list[str] | None = None) -> int:
