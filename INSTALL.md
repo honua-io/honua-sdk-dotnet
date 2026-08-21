@@ -151,12 +151,22 @@ for the publish workflow and versioning rules.
 
 ## Planned: nuget.org (not yet available)
 
-Stable release tags will additionally publish to nuget.org once the
+Stable release tags must publish the complete package inventory to both nuget.org and GitHub
+Packages once the
 `Geospatial.Grpc` protocol dependency has a stable public release there;
-publishing is wired into the release workflow but deliberately deferred until
-then. Once live, the default nuget.org source will be sufficient and no
+the workflow fails before build or publication when the stable dependency or `NUGET_API_KEY` secret
+is missing. Prereleases remain on authenticated GitHub Packages only. Once the
+[public Honua.Sdk package](https://www.nuget.org/packages/Honua.Sdk) is live, the default nuget.org source will be sufficient and no
 Honua-specific feed configuration will be needed. Until that happens, use the
 GitHub Packages instructions above for every version, stable or prerelease.
+
+```bash
+# Stable channel after the first public cut
+dotnet add package Honua.Sdk
+
+# Preview/internal channel
+dotnet add package Honua.Sdk --source honua --prerelease
+```
 
 ## Quick Start
 
