@@ -580,13 +580,15 @@ def _render(document: dict[str, Any]) -> str:
     return json.dumps(document, indent=2, ensure_ascii=False) + "\n"
 
 
-def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, dict[str, list[str]]]]:
+def _trx_results(
+    paths: list[Path], *, require_summary: bool = False
+) -> tuple[dict[str, list[str]], dict[Path, dict[str, list[str]]]]:
     results: dict[str, list[str]] = defaultdict(list)
     results_by_path: dict[Path, dict[str, list[str]]] = {}
     for path in paths:
         root = ET.parse(path).getroot()
         summary_outcomes: list[str] = []
-        infrastructure_counts: dict[str, int] = {}
+        counter_blocks: list[dict[str, int]] = []
         path_results: dict[str, list[str]] = defaultdict(list)
         for result in root.iter():
             element_name = result.tag.rsplit("}", 1)[-1]
@@ -594,10 +596,10 @@ def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, di
             if element_name == "ResultSummary":
                 summary_outcomes.append(outcome)
             if element_name == "Counters":
-                infrastructure_counts = {
+                counter_blocks.append({
                     name: int(result.attrib.get(name, "0"))
                     for name in ("error", "timeout", "aborted", "disconnected", "inProgress", "pending")
-                }
+                })
             if element_name == "RunInfo" and outcome == "Aborted":
                 raise ValueError(f"TRX records an infrastructure failure in {path.name}: {outcome}")
             if element_name != "UnitTestResult":
@@ -608,11 +610,16 @@ def _trx_results(paths: list[Path]) -> tuple[dict[str, list[str]], dict[Path, di
             if name:
                 results[name].append(outcome)
                 path_results[name].append(outcome)
-        invalid_summaries = set(summary_outcomes) & {"Aborted", "Error", "Timeout"}
+        if require_summary and len(summary_outcomes) != 1:
+            raise ValueError(f"TRX must contain exactly one ResultSummary in {path.name}")
+        if require_summary and len(counter_blocks) != 1:
+            raise ValueError(f"TRX must contain exactly one Counters element in {path.name}")
+        invalid_summaries = set(summary_outcomes) - {"Completed", "Failed"}
         if invalid_summaries:
             raise ValueError(
                 f"TRX records an incomplete run in {path.name}: {', '.join(sorted(invalid_summaries))}"
             )
+        infrastructure_counts = counter_blocks[0] if len(counter_blocks) == 1 else {}
         nonzero_infrastructure = {
             name: count for name, count in infrastructure_counts.items() if count != 0
         }
@@ -664,8 +671,11 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
-    results, results_by_path = _trx_results(args.trx)
-    exit_codes = getattr(args, "trx_exit_code", None)
+    supplied_exit_codes = getattr(args, "trx_exit_code", None)
+    results, results_by_path = _trx_results(
+        args.trx, require_summary=supplied_exit_codes is not None
+    )
+    exit_codes = supplied_exit_codes
     if exit_codes is None:
         exit_codes = [0] * len(args.trx)
     elif len(exit_codes) != len(args.trx):
