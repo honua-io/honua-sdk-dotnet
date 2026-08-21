@@ -47,7 +47,7 @@ class SdkCertificationTests(unittest.TestCase):
                 "operation": "GetAsync",
                 "status": "exercised",
                 "requiredTiers": ["pr"],
-                "scenarioFacets": ["read-only"],
+                "scenarioFacets": ["mutation"],
                 "tests": ["Example.Tests.Get"],
             }]
         }
@@ -72,7 +72,7 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual("skip", fragment["observations"][0]["result"])
             self.assertEqual("b" * 40, fragment["candidate"]["source_sha"])
             self.assertEqual("a" * 40, fragment["observations"][0]["producer_source_sha"])
-            self.assertEqual(["positive"], fragment["observations"][0]["scenario_facets"])
+            self.assertEqual(["mutation"], fragment["observations"][0]["scenario_facets"])
             self.assertEqual("Honua SDK .NET", fragment["observations"][0]["canonical_client"])
             self.assertEqual(
                 "sdk-dotnet-certification@" + "a" * 40,

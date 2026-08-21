@@ -662,7 +662,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "surface": operation["surface"],
             "operation": operation["id"],
             "scenario_facets": list(dict.fromkeys(
-                "positive" if facet in {"read-only", "mutation"} else facet
+                "positive" if facet == "read-only" else facet
                 for facet in operation["scenarioFacets"]
             )),
             "canonical_client": "Honua SDK .NET",
