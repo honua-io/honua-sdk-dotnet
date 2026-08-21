@@ -1,0 +1,4986 @@
+{
+  "schemaVersion": "1.0.0",
+  "generator": "scripts/generate-sdk-certification.py",
+  "sourceRepository": "honua-io/honua-sdk-dotnet",
+  "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+  "complete": false,
+  "summary": {
+    "total": 275,
+    "exercised": 29,
+    "gap": 136,
+    "non-addressable": 110
+  },
+  "operations": [
+    {
+      "id": "Honua.Sdk.Abstractions.Data.IHonuaElevationDataClient.SampleElevationAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Data.IHonuaElevationDataClient",
+      "operation": "SampleElevationAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Data.IHonuaEnrichmentDataClient.EnrichAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Data.IHonuaEnrichmentDataClient",
+      "operation": "EnrichAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Data.IHonuaEnrichmentDataClient.GetEnrichmentMetadataAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Data.IHonuaEnrichmentDataClient",
+      "operation": "GetEnrichmentMetadataAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient.GetCoverageStatisticsAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient",
+      "operation": "GetCoverageStatisticsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient.GetRasterMetadataAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient",
+      "operation": "GetRasterMetadataAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient.ReadWindowAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Data.IHonuaRasterDataClient",
+      "operation": "ReadWindowAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient.AddAttachmentAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient",
+      "operation": "AddAttachmentAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient.DeleteAttachmentAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient",
+      "operation": "DeleteAttachmentAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient.DownloadAttachmentAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient",
+      "operation": "DownloadAttachmentAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient.ListAttachmentsAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient",
+      "operation": "ListAttachmentsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient.UpdateAttachmentAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient",
+      "operation": "UpdateAttachmentAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureDescriptorClient.GetDescriptorAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureDescriptorClient",
+      "operation": "GetDescriptorAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient.ApplyEditsAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient",
+      "operation": "ApplyEditsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.CommitEditSessionAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient",
+      "operation": "CommitEditSessionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.GetEditingRulesAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient",
+      "operation": "GetEditingRulesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.RollbackEditSessionAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient",
+      "operation": "RollbackEditSessionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.StartEditSessionAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient",
+      "operation": "StartEditSessionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.ValidateEditsAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient",
+      "operation": "ValidateEditsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient.QueryAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient",
+      "operation": "QueryAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient.QueryPagesAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient",
+      "operation": "QueryPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.ConnectAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient",
+      "operation": "ConnectAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.HeartbeatAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient",
+      "operation": "HeartbeatAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.ReconnectAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient",
+      "operation": "ReconnectAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.SubscribeAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient",
+      "operation": "SubscribeAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.UnsubscribeAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient",
+      "operation": "UnsubscribeAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.FindClosestFacilityAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+      "operation": "FindClosestFacilityAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetDirectionsAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+      "operation": "GetDirectionsAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceAreaAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+      "operation": "GetServiceAreaAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceMetadataAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+      "operation": "GetServiceMetadataAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.OptimizeRouteAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+      "operation": "OptimizeRouteAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.GetSceneAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient",
+      "operation": "GetSceneAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ListScenesAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient",
+      "operation": "ListScenesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ResolveSceneAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient",
+      "operation": "ResolveSceneAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.GetTraceConfigurationsAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient",
+      "operation": "GetTraceConfigurationsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.TraceConnectedAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient",
+      "operation": "TraceConnectedAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.TraceDownstreamAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient",
+      "operation": "TraceDownstreamAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.TraceSubnetworkAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient",
+      "operation": "TraceSubnetworkAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.TraceUpstreamAsync",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient",
+      "operation": "TraceUpstreamAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/294",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.GetGroupAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "GetGroupAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.GetLayerAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "GetLayerAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.GetServiceAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "GetServiceAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Catalog_SearchAndServiceLookup_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.GetSourceDescriptorAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "GetSourceDescriptorAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.ListGroupsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "ListGroupsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.ListLayersAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "ListLayersAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.ListServicesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "ListServicesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Catalog_SearchAndServiceLookup_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.ListSourceDescriptorsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "ListSourceDescriptorsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.SearchAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient",
+      "operation": "SearchAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Geocoding.IHonuaBatchGeocodingClient.BatchGeocodeDetailedAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Geocoding.IHonuaBatchGeocodingClient",
+      "operation": "BatchGeocodeDetailedAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.BatchGeocodeAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+      "operation": "BatchGeocodeAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ForwardGeocodeAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+      "operation": "ForwardGeocodeAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ReverseGeocodeAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+      "operation": "ReverseGeocodeAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.SuggestAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+      "operation": "SuggestAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.CreateAlertRuleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "CreateAlertRuleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.CreateAlertZoneAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "CreateAlertZoneAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.DeleteAlertRuleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "DeleteAlertRuleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.DeleteAlertZoneAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "DeleteAlertZoneAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.ListAlertRulesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "ListAlertRulesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.ListAlertZonesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "ListAlertZonesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.UpdateAlertRuleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "UpdateAlertRuleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminAlertsClient.UpdateAlertZoneAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminAlertsClient",
+      "operation": "UpdateAlertZoneAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient.CheckCompatibilityAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient",
+      "operation": "CheckCompatibilityAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient.GetCapabilitiesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient",
+      "operation": "GetCapabilitiesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient.GetVersionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient",
+      "operation": "GetVersionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConfigClient.GetConfigAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConfigClient",
+      "operation": "GetConfigAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.CreateConnectionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "CreateConnectionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.DeleteConnectionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "DeleteConnectionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.GetConnectionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "GetConnectionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.ListConnectionsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "ListConnectionsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.RotateEncryptionKeyAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "RotateEncryptionKeyAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.TestConnectionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "TestConnectionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.TestDraftConnectionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "TestDraftConnectionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.UpdateConnectionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "UpdateConnectionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient.ValidateEncryptionAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminConnectionsClient",
+      "operation": "ValidateEncryptionAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminDeployClient.CreateDeployOperationAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminDeployClient",
+      "operation": "CreateDeployOperationAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminDeployClient.CreateDeployPlanAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminDeployClient",
+      "operation": "CreateDeployPlanAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminDeployClient.GetDeployOperationAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminDeployClient",
+      "operation": "GetDeployOperationAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminDeployClient.GetDeployPreflightAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminDeployClient",
+      "operation": "GetDeployPreflightAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminDeployClient.RollbackDeployOperationAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminDeployClient",
+      "operation": "RollbackDeployOperationAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminDeployClient.SubmitDeployOperationAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminDeployClient",
+      "operation": "SubmitDeployOperationAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFeatureEventsClient.ReplayFeatureEventsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFeatureEventsClient",
+      "operation": "ReplayFeatureEventsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.CreateOidcProviderAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "CreateOidcProviderAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.DeleteOidcProviderAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "DeleteOidcProviderAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.GetIdentityProvidersAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "GetIdentityProvidersAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.GetOidcProviderAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "GetOidcProviderAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.ListOidcProvidersAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "ListOidcProvidersAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.TestIdentityProviderAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "TestIdentityProviderAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.TestOidcProviderAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "TestOidcProviderAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.UpdateOidcProviderAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
+      "operation": "UpdateOidcProviderAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.DiscoverTablesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "DiscoverTablesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.ListLayersAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "ListLayersAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.PublishLayerAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "PublishLayerAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.SetLayerEnabledAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "SetLayerEnabledAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.SetServiceLayersEnabledAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "SetServiceLayersEnabledAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLicenseClient.GetLicenseEntitlementsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLicenseClient",
+      "operation": "GetLicenseEntitlementsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLicenseClient.GetLicenseStatusAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLicenseClient",
+      "operation": "GetLicenseStatusAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLicenseClient.UploadLicenseAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLicenseClient",
+      "operation": "UploadLicenseAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminManifestClient.ApplyManifestAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminManifestClient",
+      "operation": "ApplyManifestAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminManifestClient.GetManifestAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminManifestClient",
+      "operation": "GetManifestAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.CreateMetadataResourceAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "CreateMetadataResourceAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.CreateMetadataResourceWithResponseAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "CreateMetadataResourceWithResponseAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.DeleteMetadataResourceAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "DeleteMetadataResourceAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.GetMetadataResourceAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "GetMetadataResourceAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.ListMetadataResourcesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "ListMetadataResourcesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.UpdateMetadataResourceAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "UpdateMetadataResourceAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminMetadataClient.UpdateMetadataResourceWithResponseAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminMetadataClient",
+      "operation": "UpdateMetadataResourceWithResponseAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient.GetMigrationStatusAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient",
+      "operation": "GetMigrationStatusAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient.GetRecentErrorsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient",
+      "operation": "GetRecentErrorsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient.GetRecentErrorsResponseAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient",
+      "operation": "GetRecentErrorsResponseAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient.GetTelemetryStatusAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminObservabilityClient",
+      "operation": "GetTelemetryStatusAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRasterImportClient.GetSupportedRasterFormatsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRasterImportClient",
+      "operation": "GetSupportedRasterFormatsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRasterImportClient.ImportRasterAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRasterImportClient",
+      "operation": "ImportRasterAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.CreateRoleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "CreateRoleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.DeleteRoleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "DeleteRoleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.GetRoleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "GetRoleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.GetRolePermissionsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "GetRolePermissionsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.ListRolesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "ListRolesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.SetRolePermissionsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "SetRolePermissionsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminRolesClient.UpdateRoleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminRolesClient",
+      "operation": "UpdateRoleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.GetServiceSettingsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "GetServiceSettingsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.ListServicesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "ListServicesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.UpdateAccessPolicyAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "UpdateAccessPolicyAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.UpdateLayerMetadataAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "UpdateLayerMetadataAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.UpdateMapServerSettingsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "UpdateMapServerSettingsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.UpdateProtocolsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "UpdateProtocolsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.UpdateTimeInfoAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "UpdateTimeInfoAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminStreamingOperationsClient.DisconnectStreamingSubscriberAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminStreamingOperationsClient",
+      "operation": "DisconnectStreamingSubscriberAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminStreamingOperationsClient.ListStreamingSubscribersAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminStreamingOperationsClient",
+      "operation": "ListStreamingSubscribersAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminStylesClient.GetLayerStyleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminStylesClient",
+      "operation": "GetLayerStyleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminStylesClient.UpdateLayerStyleAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminStylesClient",
+      "operation": "UpdateLayerStyleAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminUsersClient.DeprovisionUserAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminUsersClient",
+      "operation": "DeprovisionUserAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminUsersClient.GetEffectivePermissionsAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminUsersClient",
+      "operation": "GetEffectivePermissionsAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminUsersClient.GetUserAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminUsersClient",
+      "operation": "GetUserAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminUsersClient.ListUsersAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminUsersClient",
+      "operation": "ListUsersAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminUsersClient.UpdateUserRolesAsync",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminUsersClient",
+      "operation": "UpdateUserRolesAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetCollectionAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetCollectionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetConformanceAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetConformanceAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetLandingPageAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetLandingPageAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetRecordAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordJsonAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetRecordJsonAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetRecordsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsJsonAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetRecordsJsonAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsPagesAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetRecordsPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.GetRecordsRawAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "GetRecordsRawAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.ListCollectionsAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "ListCollectionsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient.SearchAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Records.IHonuaOgcRecordsClient",
+      "operation": "SearchAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetCatalogAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "GetCatalogAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetCollectionAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "GetCollectionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetItemAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "GetItemAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetItemsAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "GetItemsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetItemsPagesAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "GetItemsPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.GetLandingPageAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "GetLandingPageAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.ListCollectionsAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "ListCollectionsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.PostSearchAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "PostSearchAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.PostSearchPagesAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "PostSearchPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.SearchAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "SearchAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient.SearchPagesAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacClient",
+      "operation": "SearchPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.GetItemJsonAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient",
+      "operation": "GetItemJsonAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.GetItemsJsonAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient",
+      "operation": "GetItemsJsonAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.GetItemsRawAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient",
+      "operation": "GetItemsRawAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.PostSearchJsonAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient",
+      "operation": "PostSearchJsonAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.SearchJsonAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient",
+      "operation": "SearchJsonAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient.SearchRawAsync",
+      "surface": "catalogs",
+      "client": "Honua.Sdk.Catalogs.Stac.IHonuaStacRawClient",
+      "operation": "SearchRawAsync",
+      "status": "non-addressable",
+      "requiredTiers": [],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.CreateEmbedTokenAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "CreateEmbedTokenAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.CreatePublicLinkAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "CreatePublicLinkAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.GetShareAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "GetShareAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.RevokeEmbedTokenAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "RevokeEmbedTokenAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.RevokePublicLinkAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "RevokePublicLinkAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.UpdateAccessAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "UpdateAccessAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient.ValidateDependencyClosureAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareClient",
+      "operation": "ValidateDependencyClosureAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.CreateExportDefinitionAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "CreateExportDefinitionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.DeleteExportDefinitionAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "DeleteExportDefinitionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.GetExportDefinitionAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "GetExportDefinitionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.GetExportRunAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "GetExportRunAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.GetItemTrafficSeriesAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "GetItemTrafficSeriesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.GetItemTrafficSummaryAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "GetItemTrafficSummaryAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.GetTrafficSeriesAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "GetTrafficSeriesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.GetTrafficSummaryAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "GetTrafficSummaryAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.ListExportDefinitionsAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "ListExportDefinitionsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.ListExportRunsAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "ListExportRunsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.PauseExportAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "PauseExportAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.ResumeExportAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "ResumeExportAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.TriggerExportAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "TriggerExportAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient.UpdateExportDefinitionAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareExportClient",
+      "operation": "UpdateExportDefinitionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetEligibilityAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetEligibilityAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPageAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPageAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPublicDataJsonAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPublicDataJsonAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPublicDatasetAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPublicDatasetAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPublicSchemaOrgAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPublicSchemaOrgAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPublicStacCatalogAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPublicStacCatalogAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPublicStacCollectionAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPublicStacCollectionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetPublicStacItemAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetPublicStacItemAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.GetStacPublicationAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "GetStacPublicationAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.PreviewDcatAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "PreviewDcatAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.PublishStacAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "PublishStacAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.UnpublishStacAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "UnpublishStacAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient.UpdatePageAsync",
+      "surface": "consoleshare",
+      "client": "Honua.Sdk.ConsoleShare.IHonuaConsoleShareOpenDataClient",
+      "operation": "UpdatePageAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetFeatureAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "GetFeatureAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetLayerInfoAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "GetLayerInfoAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetServiceInfoAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "GetServiceInfoAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.FeatureServerQuery_RoundTripsCanonicalAttributeProjection",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryCountAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryCountAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryExtentAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryExtentAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryIdsAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryIdsAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryPagesAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryRawAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryRawAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryStatisticsAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryStatisticsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.ValidateSqlAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "ValidateSqlAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.AddFeaturesAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+      "operation": "AddFeaturesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.ApplyEditsAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+      "operation": "ApplyEditsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.DeleteFeaturesAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+      "operation": "DeleteFeaturesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.GetEditCapabilitiesAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+      "operation": "GetEditCapabilitiesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.UpdateFeaturesAsync",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+      "operation": "UpdateFeaturesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcClient.ApplyEditsAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcClient",
+      "operation": "ApplyEditsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcClient.QueryFeaturesAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcClient",
+      "operation": "QueryFeaturesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.GrpcQueryFeatures_RoundTripsCanonicalResponseShape",
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.GrpcQuery_GeometryOmission_IsHonored",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.GrpcQuery_IsBoundedAndCanOmitGeometry"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcClient.QueryFeaturesStreamAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcClient",
+      "operation": "QueryFeaturesStreamAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.CancelJobAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "CancelJobAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.DryRunPlanAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "DryRunPlanAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.ExecutePlanAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "ExecutePlanAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.ExecutePlanStreamAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "ExecutePlanStreamAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.GetJobAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "GetJobAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.GetJobResultAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "GetJobResultAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.SubmitJobAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "SubmitJobAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient.ValidatePlanAsync",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaProcessGrpcClient",
+      "operation": "ValidatePlanAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetCollectionAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetCollectionAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetConformanceAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetConformanceAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetItemAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetItemsAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.OgcItems_RoundTripCanonicalPropertyProjection",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsPagesAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetItemsPagesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsRawAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetItemsRawAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetLandingPageAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetLandingPageAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetQueryablesAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "GetQueryablesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.ListCollectionsAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
+      "operation": "ListCollectionsAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.OgcItems_RoundTripCanonicalPropertyProjection",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.CreateItemAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient",
+      "operation": "CreateItemAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.DeleteItemAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient",
+      "operation": "DeleteItemAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.UpdateItemAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient",
+      "operation": "UpdateItemAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesPatchClient.PatchItemAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesPatchClient",
+      "operation": "PatchItemAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.GetStyleMetadataAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient",
+      "operation": "GetStyleMetadataAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.GetStylesheetAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient",
+      "operation": "GetStylesheetAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.ListStylesAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient",
+      "operation": "ListStylesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient.UpdateStyleAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Styles.IHonuaOgcStylesClient",
+      "operation": "UpdateStyleAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.DescribeFeatureTypeAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient",
+      "operation": "DescribeFeatureTypeAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetCapabilitiesAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient",
+      "operation": "GetCapabilitiesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.Wfs_GetFeatures_RoundTripsCanonicalFeatureCollection",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeatureCountAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient",
+      "operation": "GetFeatureCountAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsync",
+      "surface": "ogcfeatures",
+      "client": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient",
+      "operation": "GetFeaturesAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [
+        "Honua.Sdk.Conformance.Tests.LiveConformanceTests.Wfs_GetFeatures_RoundTripsCanonicalFeatureCollection",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.DismissJobAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "DismissJobAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetConformanceAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "GetConformanceAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetJobAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "GetJobAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetJobResultsAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "GetJobResultsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetLandingPageAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "GetLandingPageAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetProcessAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "GetProcessAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.ListJobsAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "ListJobsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.ListProcessesAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "ListProcessesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.SubmitJobAsync",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "SubmitJobAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Spec.IHonuaSpecClient.ApplyAsync",
+      "surface": "spec",
+      "client": "Honua.Sdk.Spec.IHonuaSpecClient",
+      "operation": "ApplyAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Spec.IHonuaSpecClient.CancelAsync",
+      "surface": "spec",
+      "client": "Honua.Sdk.Spec.IHonuaSpecClient",
+      "operation": "CancelAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Spec.IHonuaSpecClient.GetArtifactAsync",
+      "surface": "spec",
+      "client": "Honua.Sdk.Spec.IHonuaSpecClient",
+      "operation": "GetArtifactAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Spec.IHonuaSpecClient.PlanAsync",
+      "surface": "spec",
+      "client": "Honua.Sdk.Spec.IHonuaSpecClient",
+      "operation": "PlanAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Spec.IHonuaSpecClient.ValidateAsync",
+      "surface": "spec",
+      "client": "Honua.Sdk.Spec.IHonuaSpecClient",
+      "operation": "ValidateAsync",
+      "status": "exercised",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
+      ]
+    },
+    {
+      "id": "Honua.Sdk.Studio.Capabilities.IHonuaCapabilityManifestClient.GetManifestAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Capabilities.IHonuaCapabilityManifestClient",
+      "operation": "GetManifestAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.IHonuaStudioReportsClient.GetReportAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.IHonuaStudioReportsClient",
+      "operation": "GetReportAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.IHonuaStudioReportsClient.RenderReportAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.IHonuaStudioReportsClient",
+      "operation": "RenderReportAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CompareVersionsAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "CompareVersionsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreateContentVersionAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "CreateContentVersionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreateDraftAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "CreateDraftAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreatePublishRequestAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "CreatePublishRequestAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.DeleteDraftAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "DeleteDraftAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetDraftAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "GetDraftAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "GetPackageFamiliesAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetVersionAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "GetVersionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ListVersionsAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "ListVersionsAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only",
+        "pagination"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.PreviewPlanAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "PreviewPlanAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ReopenVersionAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "ReopenVersionAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.RollbackAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "RollbackAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.UpdateDraftAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "UpdateDraftAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "mutation"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ValidateDraftAsync",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "ValidateDraftAsync",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "authenticated",
+        "deterministic-seed",
+        "read-only"
+      ],
+      "tests": [],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    }
+  ]
+}

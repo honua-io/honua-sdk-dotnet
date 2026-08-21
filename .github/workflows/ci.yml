@@ -56,6 +56,9 @@ jobs:
         run: |
           python3 scripts/generate-sdk-coverage.py --check --summary "${GITHUB_STEP_SUMMARY}"
 
+      - name: Validate SDK certification operation ledger
+        run: python3 scripts/generate-sdk-certification.py --check
+
       - name: Upload sdk-coverage.v1.json artifact
         if: github.ref == 'refs/heads/trunk' && github.event_name == 'push'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
