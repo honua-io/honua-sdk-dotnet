@@ -42,8 +42,8 @@ The live tier boots this exact `honua-server` image via Testcontainers:
 | Pin | Value |
 |-----|-------|
 | Tag | `ghcr.io/honua-io/honua-server:nightly` |
-| Digest | `sha256:78e3088d64d832d3e2752c87d80bfcad201b414f4525989ca5d9a242cd5fee8a` |
-| Build | `nightly-f897700` (dated `20260820`, AOT/amd64+arm64 multi-arch index) |
+| Digest | `sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d` |
+| Build | `rc-cert-e3ab87c-e3ab87c` (dated `20260821`, attested RC AOT candidate) |
 
 The digest is what is actually pinned and recorded; the `:nightly` tag is a
 moving pointer and is shown only for provenance. CI pulls
