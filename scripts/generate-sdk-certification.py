@@ -598,6 +598,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "result": result,
             "skip_reason": skip_reason,
             "source_sha": identity["serverSourceSha"],
+            "producer_source_sha": identity["sdkCommit"],
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
             "evidence_uri": identity["evidenceUri"],

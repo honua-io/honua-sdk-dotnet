@@ -71,6 +71,7 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual("honua-sdk-dotnet", fragment["producer"])
             self.assertEqual("skip", fragment["observations"][0]["result"])
             self.assertEqual("b" * 40, fragment["candidate"]["source_sha"])
+            self.assertEqual("a" * 40, fragment["observations"][0]["producer_source_sha"])
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()
