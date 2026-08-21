@@ -634,20 +634,16 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     results = _trx_results(args.trx)
-    evidence_receipt = {
-        "format": "honua.sdk-dotnet.trx-bundle/v1",
-        "files": [
+    payload_base64 = base64.b64encode(json.dumps(
+        [
             {
                 "name": path.name,
                 "content_base64": base64.b64encode(path.read_bytes()).decode("ascii"),
             }
             for path in sorted(args.trx, key=lambda value: str(value))
         ],
-    }
-    evidence_bytes = json.dumps(
-        evidence_receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode("utf-8")
-    evidence_digest = "sha256:" + hashlib.sha256(evidence_bytes).hexdigest()
+        sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")).decode("ascii")
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     observations: list[dict[str, Any]] = []
     incomplete = False
@@ -677,6 +673,36 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "positive" if facet == "read-only" else facet
             for facet in operation["scenarioFacets"]
         ))
+        started_at = args.started_at or now
+        contract_revision = f"sdk-dotnet-certification@{identity['sdkCommit']}"
+        receipt_facets = {facet: result for facet in scenario_facets}
+        evidence_receipt = None if result == "skip" else {
+            "schema": "honua.certification-evidence-receipt/v1",
+            "identity": {
+                "capability_key": f"sdk-dotnet.{operation['surface']}",
+                "surface": operation["surface"],
+                "operation": operation["id"],
+                "canonical_client": "Honua SDK .NET",
+                "client_version": identity["sdkVersion"],
+                "deployment_target": "local-docker",
+                "source_sha": identity["serverSourceSha"],
+                "producer_source_sha": identity["sdkCommit"],
+                "image_digest": identity["serverImageDigest"],
+                "fixture_revision": identity["fixtureRevision"],
+                "contract_revision": contract_revision,
+                "auth_policy_revision": "anonymous-public-v1",
+                "started_at": started_at,
+                "completed_at": now,
+            },
+            "result": result,
+            "facets": receipt_facets,
+            "payload_base64": payload_base64,
+        }
+        evidence_digest = None if evidence_receipt is None else "sha256:" + hashlib.sha256(
+            json.dumps(
+                evidence_receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            ).encode("utf-8")
+        ).hexdigest()
         observation = {
             "surface": operation["surface"],
             "operation": operation["id"],
@@ -690,7 +716,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "producer_source_sha": identity["sdkCommit"],
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
-            "contract_revision": f"sdk-dotnet-certification@{identity['sdkCommit']}",
+            "contract_revision": contract_revision,
             "auth_policy_revision": "anonymous-public-v1",
             "evidence_uri": (
                 None if result == "skip"
@@ -699,10 +725,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "evidence_digest": None if result == "skip" else evidence_digest,
             "evidence_receipt": None if result == "skip" else evidence_receipt,
             "facet_results": None if result == "skip" else {
-                facet: {"result": result, "evidence_digest": evidence_digest}
+                facet: {"result": receipt_facets[facet], "evidence_digest": evidence_digest}
                 for facet in scenario_facets
             },
-            "started_at": args.started_at or now,
+            "started_at": started_at,
             "completed_at": now,
         }
         observations.append(observation)
