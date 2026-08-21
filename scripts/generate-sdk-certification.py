@@ -143,10 +143,19 @@ def _parameters(text: str) -> list[dict[str, Any]]:
     return parameters
 
 
-def _method_declarations(body: str) -> list[dict[str, Any]]:
+def _method_declarations(body: str, *, require_public: bool = False) -> list[dict[str, Any]]:
     declarations: list[dict[str, Any]] = []
     method_re = re.compile(r"\b([A-Za-z_]\w*Async\w*)(\s*<[^(){};]+>)?\s*\(")
     for match in method_re.finditer(body):
+        if require_public:
+            boundary = max(
+                body.rfind("{", 0, match.start()),
+                body.rfind("}", 0, match.start()),
+                body.rfind(";", 0, match.start()),
+            )
+            prefix = body[boundary + 1:match.start()]
+            if not re.search(r"\bpublic\s+(?:async\s+)?[^;{}()=]+\s+$", prefix):
+                continue
         opening = match.end() - 1
         closing = _closing_delimiter(body, opening)
         terminator = body[closing + 1:].lstrip()
@@ -244,6 +253,27 @@ def _declared_operations() -> list[dict[str, Any]]:
                     },
                     "_parameters": method["parameters"],
                 }
+        concrete_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(Honua\w+Client)\b([^\{]*)\{")
+        for declaration in concrete_re.finditer(stripped):
+            concrete = declaration.group(1)
+            if re.search(r"\bIHonua\w*Client\b", declaration.group(2)):
+                continue
+            body = _block(stripped, declaration.end() - 1)
+            for method in sorted(
+                _method_declarations(body, require_public=True), key=lambda item: item["signature"]
+            ):
+                operation_id = f"{namespace}.{concrete}.{method['signature']}"
+                operations[operation_id] = {
+                    "id": operation_id,
+                    "surface": _surface(path),
+                    "client": f"{namespace}.{concrete}",
+                    "operation": method["name"],
+                    "signature": method["signature"],
+                    "implemented": True,
+                    "_implementations": [f"{namespace}.{concrete}"],
+                    "_implementationProviders": {f"{namespace}.{concrete}": None},
+                    "_parameters": method["parameters"],
+                }
     return [operations[key] for key in sorted(operations)]
 
 
@@ -312,7 +342,7 @@ def _test_mappings(
         fixture_clients.update(
             (property_name, interface)
             for interface, property_name in re.findall(
-                r"\bpublic\s+(IHonua\w*Client)\s+(\w+)\s*=>", stripped
+                r"\bpublic\s+(IHonua\w*Client|Honua\w+Client)\s+(\w+)\s*=>", stripped
             )
         )
 
@@ -358,6 +388,13 @@ def _test_mappings(
     class_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(\w+)")
     for path, stripped in stripped_files.items():
         namespace = _namespace(stripped)
+        file_clients = {
+            variable: client
+            for client, variable in re.findall(
+                r"\b(?:private|protected|internal|public)\s+(?:readonly\s+)?(Honua\w+Client)\s+(\w+)",
+                stripped,
+            )
+        }
         for method_match in method_re.finditer(stripped):
             preceding = list(class_re.finditer(stripped, 0, method_match.start()))
             if not preceding:
@@ -373,6 +410,13 @@ def _test_mappings(
                     re.S,
                 )
             }
+            local_clients.update(file_clients)
+            local_clients.update({
+                variable: client
+                for variable, client in re.findall(
+                    r"\bvar\s+(\w+)\s*=\s*new\s+(Honua\w+Client)\s*\(", body
+                )
+            })
             local_facades = {
                 variable: facade
                 for facade, variable in re.findall(r"\b(Honua\w+)\s+(\w+)\s+in\b", body)
@@ -592,6 +636,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         observation = {
             "surface": operation["surface"],
             "operation": operation["id"],
+            "scenario_facets": operation["scenarioFacets"],
             "canonical_client": "Honua.Sdk.*",
             "client_version": identity["sdkVersion"],
             "deployment_target": "local-docker",

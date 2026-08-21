@@ -72,6 +72,7 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual("skip", fragment["observations"][0]["result"])
             self.assertEqual("b" * 40, fragment["candidate"]["source_sha"])
             self.assertEqual("a" * 40, fragment["observations"][0]["producer_source_sha"])
+            self.assertEqual(["read-only"], fragment["observations"][0]["scenario_facets"])
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()
@@ -81,6 +82,21 @@ class SdkCertificationTests(unittest.TestCase):
         ]
         self.assertTrue(geocoding)
         self.assertTrue(all(cell["status"] != "non-addressable" for cell in geocoding))
+
+    def test_concrete_only_typed_clients_are_cataloged(self):
+        document = MODULE.build_document()
+        operations = document["operations"]
+        image = [cell for cell in operations if cell["client"].endswith("HonuaImageServerClient")]
+        geometry = [cell for cell in operations if cell["client"].endswith("HonuaGeometryServerClient")]
+
+        self.assertEqual(
+            {"GetServiceMetadataAsync", "ExportImageAsync", "ExportImageMetadataAsync", "ComputeStatisticsHistogramsAsync", "IdentifyAsync"},
+            {cell["operation"] for cell in image},
+        )
+        self.assertEqual(
+            {"ProjectAsync", "BufferAsync", "LengthsAsync", "AreasAndLengthsAsync"},
+            {cell["operation"] for cell in geometry},
+        )
 
     def test_non_raster_non_addressable_operations_use_general_owner(self):
         document = MODULE.build_document()

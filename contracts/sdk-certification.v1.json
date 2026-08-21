@@ -5,9 +5,9 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 281,
+    "total": 290,
     "exercised": 22,
-    "gap": 241,
+    "gap": 250,
     "non-addressable": 18
   },
   "operations": [
@@ -5753,6 +5753,249 @@
       },
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.AreasAndLengthsAsync(AreasAndLengthsRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
+      "operation": "AreasAndLengthsAsync",
+      "signature": "AreasAndLengthsAsync(AreasAndLengthsRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.BufferAsync(BufferGeometriesRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
+      "operation": "BufferAsync",
+      "signature": "BufferAsync(BufferGeometriesRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.LengthsAsync(LengthsRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
+      "operation": "LengthsAsync",
+      "signature": "LengthsAsync(LengthsRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.ProjectAsync(ProjectGeometriesRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
+      "operation": "ProjectAsync",
+      "signature": "ProjectAsync(ProjectGeometriesRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ComputeStatisticsHistogramsAsync(string,IEnumerable<(stringKey,string?Value)>,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient",
+      "operation": "ComputeStatisticsHistogramsAsync",
+      "signature": "ComputeStatisticsHistogramsAsync(string,IEnumerable<(stringKey,string?Value)>,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ExportImageAsync(ExportImageRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient",
+      "operation": "ExportImageAsync",
+      "signature": "ExportImageAsync(ExportImageRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ExportImageMetadataAsync(ExportImageRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient",
+      "operation": "ExportImageMetadataAsync",
+      "signature": "ExportImageMetadataAsync(ExportImageRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.GetServiceMetadataAsync(string,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient",
+      "operation": "GetServiceMetadataAsync",
+      "signature": "GetServiceMetadataAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.IdentifyAsync(IdentifyImageRequest,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient",
+      "operation": "IdentifyAsync",
+      "signature": "IdentifyAsync(IdentifyImageRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
       ],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Concrete public SDK operation has no canonical live certification test."
