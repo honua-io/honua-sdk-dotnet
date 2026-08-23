@@ -77,7 +77,9 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         CancellationToken cancellationToken = default)
     {
         var normalizedOptions = NormalizeOptions(options);
-        var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
+        var metadata = RequiresServiceMetadata(normalizedOptions)
+            ? await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false)
+            : CatalogMetadataIndex.Empty;
         var services = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services;
         return ApplyDetailQuery(services, WithoutKindFilter(normalizedOptions), ToItem, static item => item.Service!);
     }
@@ -87,8 +89,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
-        var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
-        var services = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services;
+        var services = (await LoadServicesAsync(CatalogMetadataIndex.Empty, cancellationToken).ConfigureAwait(false)).Services;
         return services.FirstOrDefault(service => string.Equals(service.Name, serviceName, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -708,6 +709,13 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
            IsEmpty(options.Capabilities) &&
            options.SortBy is CatalogSortBy.Kind or CatalogSortBy.ServiceName;
 
+    private static bool RequiresServiceMetadata(CatalogQueryOptions options)
+        => !string.IsNullOrWhiteSpace(options.Query) ||
+           !IsEmpty(options.Tags) ||
+           !string.IsNullOrWhiteSpace(options.Owner) ||
+           !string.IsNullOrWhiteSpace(options.Namespace) ||
+           options.SortBy is CatalogSortBy.CreatedAt or CatalogSortBy.UpdatedAt;
+
     private static bool HasOnlyKind(CatalogQueryOptions options, CatalogItemKind kind)
         => options.Kinds is { Count: 1 } && options.Kinds[0] == kind;
 
@@ -1021,6 +1029,8 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
 
     private sealed class CatalogMetadataIndex
     {
+        public static CatalogMetadataIndex Empty { get; } = new([], [], [], []);
+
         private readonly Dictionary<string, MetadataResource> _services;
         private readonly Dictionary<string, MetadataResource> _layers;
 
