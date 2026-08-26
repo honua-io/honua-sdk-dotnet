@@ -178,15 +178,65 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual(observation["client_id"], observation["performed_by"])
                 self.assertTrue(observation["protocol_version"])
                 self.assertTrue(observation["protocol_profile"])
-                parsed = urlsplit(observation["request_url"])
-                self.assertIn(parsed.scheme, {"http", "https"})
-                self.assertTrue(parsed.netloc)
+                request_url = observation["request_url"]
+                if request_url is not None:
+                    parsed = urlsplit(request_url)
+                    self.assertIn(parsed.scheme, {"http", "https"})
+                    self.assertTrue(parsed.netloc)
+                    self.assertNotEqual("/api/v1", parsed.path)
                 self.assertIsInstance(observation["exercised_capabilities"], list)
                 if observation["result"] == "pass":
                     self.assertLessEqual(
                         set(observation["scenario_facets"]),
                         set(observation["exercised_capabilities"]),
                     )
+
+    def test_abstractions_request_urls_are_proved_representative_endpoints(self):
+        identity = {
+            "baseUrl": "https://candidate.test/root/",
+            "grpcBaseUrl": "https://candidate.test:8443/root/",
+            "serviceId": "places",
+            "layerId": "7",
+            "collectionId": "places",
+        }
+        cases = {
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient", "QueryAsync"):
+                "https://candidate.test/rest/services/places/FeatureServer/7/query",
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient", "ApplyEditsAsync"):
+                "https://candidate.test/rest/services/places/FeatureServer/7/applyEdits",
+            ("Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient", "GetDirectionsAsync"):
+                "https://candidate.test/rest/services/places/NAServer/Route",
+            ("Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient", "ListScenesAsync"):
+                "https://candidate.test/api/scenes",
+        }
+
+        for (client, method), expected in cases.items():
+            with self.subTest(client=client, method=method):
+                self.assertEqual(expected, MODULE._certification_request_url({
+                    "surface": "abstractions", "client": client, "operation": method,
+                }, identity))
+
+    def test_unproved_abstractions_families_have_no_request_url(self):
+        identity = {
+            "baseUrl": "https://candidate.test/root/",
+            "grpcBaseUrl": "https://candidate.test:8443/root/",
+            "serviceId": "places",
+            "layerId": "7",
+            "collectionId": "places",
+        }
+        clients_and_methods = [
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient", "ListAttachmentsAsync"),
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureDescriptorClient", "GetDescriptorAsync"),
+            ("Honua.Sdk.Abstractions.Raster.IHonuaRasterDataClient", "ReadWindowAsync"),
+            ("Honua.Sdk.Abstractions.Offline.IReplicaSyncClient", "CreateReplicaAsync"),
+            ("Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient", "OptimizeRouteAsync"),
+        ]
+
+        for client, method in clients_and_methods:
+            with self.subTest(client=client, method=method):
+                self.assertIsNone(MODULE._certification_request_url({
+                    "surface": "abstractions", "client": client, "operation": method,
+                }, identity))
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()

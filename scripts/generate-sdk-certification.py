@@ -117,7 +117,7 @@ def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str
 
 def _certification_request_url(
     operation: dict[str, Any], identity: dict[str, Any]
-) -> str:
+) -> str | None:
     """Build the operation URL from the target context recorded for the live run."""
     client = operation["client"]
     method = operation["operation"]
@@ -126,7 +126,25 @@ def _certification_request_url(
     collection = quote(identity["collectionId"], safe="")
     base_url = identity["baseUrl"]
 
-    if operation["surface"] == "grpc":
+    if operation["surface"] == "abstractions":
+        # A facade can fan out to several protocols. Record one representative endpoint
+        # that its proving integration test actually exercises; leave unproved families unset.
+        if client.endswith(".IHonuaFeatureQueryClient") and method == "QueryAsync":
+            path = f"/rest/services/{service}/FeatureServer/{layer}/query"
+        elif client.endswith(".IHonuaFeatureEditClient") and method == "ApplyEditsAsync":
+            path = f"/rest/services/{service}/FeatureServer/{layer}/applyEdits"
+        elif client.endswith(".IHonuaRoutingClient") and method in {
+            "GetServiceMetadataAsync",
+            "GetDirectionsAsync",
+            "GetServiceAreaAsync",
+            "FindClosestFacilityAsync",
+        }:
+            path = f"/rest/services/{service}/NAServer/Route"
+        elif client.endswith(".IHonuaSceneClient"):
+            path = "/api/scenes"
+        else:
+            return None
+    elif operation["surface"] == "grpc":
         service_name = "ProcessService" if "ProcessGrpc" in client else "FeatureService"
         rpc_name = method.removesuffix("Async")
         path = f"/geospatial.v1.{service_name}/{rpc_name}"
@@ -182,7 +200,6 @@ def _certification_request_url(
         }.get(method, "/api/v1/admin")
     else:
         prefixes = {
-            "abstractions": "/api/v1",
             "catalogs": "/stac",
             "consoleshare": "/api/v1/console",
             "processes": "/ogc/processes",
