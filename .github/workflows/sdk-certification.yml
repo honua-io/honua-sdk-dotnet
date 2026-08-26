@@ -265,6 +265,11 @@ jobs:
             --fixture-revision "${FIXTURE_REVISION}" \
             --candidate-cut "${{ steps.identity.outputs.candidate-cut }}" \
             --evidence-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --base-url "${HONUA_PROTOCOL_EXTERNAL_BASE_URL}" \
+            --grpc-base-url "${HONUA_PROTOCOL_GRPC_BASE_URL}" \
+            --service-id "${HONUA_PROTOCOL_SERVICE_NAME}" \
+            --layer-id "${HONUA_PROTOCOL_LAYER_ID}" \
+            --collection-id "${HONUA_PROTOCOL_OGC_COLLECTION_ID}" \
             --allow-nonpass \
             ${RELEASE_CUT:+--release-cut "${RELEASE_CUT}"}
 

@@ -15,6 +15,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urljoin, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +27,8 @@ TEST_ROOTS = (
 OUTPUT_PATH = ROOT / "contracts" / "sdk-certification.v1.json"
 TRACKING_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/31"
 RASTER_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/294"
+CERTIFICATION_CLIENT_ID = "Honua SDK .NET"
+CERTIFICATION_RUNNER_LANE = "sdk-dotnet-certification"
 
 IMPLEMENTATION_TEST_PROVIDERS = {
     "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests."
@@ -77,6 +80,122 @@ UNSEEDED_TESTS = frozenset(
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable",
     }
 )
+
+
+def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str]:
+    """Return the wire-contract version and profile exercised by an SDK operation."""
+    client = operation["client"]
+    surface = operation["surface"]
+    if surface == "grpc":
+        return "1.0", "protobuf/gRPC"
+    if "Geocoding" in client or surface == "geoservices":
+        return "11.0", "GeoServices REST"
+    if ".Wfs." in client:
+        return "2.0.0", "core"
+    if ".Styles." in client:
+        return "1.0", "OGC API - Styles core"
+    if surface == "ogcfeatures":
+        return "1.0", "OGC API - Features core"
+    if ".Records." in client:
+        return "1.0", "OGC API - Records core"
+    if ".Stac." in client:
+        return "1.0.0", "STAC core"
+    profiles = {
+        "abstractions": "provider-neutral SDK contract",
+        "admin": "Honua Admin REST",
+        "catalogs": "catalog REST",
+        "consoleshare": "Honua Console Share REST",
+        "processes": "OGC API - Processes core",
+        "spec": "Honua Spec REST",
+        "studio": "Honua Studio REST",
+    }
+    try:
+        return "1.0", profiles[surface]
+    except KeyError as error:
+        raise ValueError(f"no certification protocol context for surface {surface!r}") from error
+
+
+def _certification_request_url(
+    operation: dict[str, Any], identity: dict[str, Any]
+) -> str:
+    """Build the operation URL from the target context recorded for the live run."""
+    client = operation["client"]
+    method = operation["operation"]
+    service = quote(identity["serviceId"], safe="")
+    layer = quote(str(identity["layerId"]), safe="")
+    collection = quote(identity["collectionId"], safe="")
+    base_url = identity["baseUrl"]
+
+    if operation["surface"] == "grpc":
+        service_name = "ProcessService" if "ProcessGrpc" in client else "FeatureService"
+        rpc_name = method.removesuffix("Async")
+        path = f"/geospatial.v1.{service_name}/{rpc_name}"
+        base_url = identity["grpcBaseUrl"]
+    elif "Geocoding" in client:
+        action = {
+            "ForwardGeocodeAsync": "findAddressCandidates",
+            "ReverseGeocodeAsync": "reverseGeocode",
+            "SuggestAsync": "suggest",
+        }.get(method, "geocodeAddresses")
+        path = f"/rest/services/locator/GeocodeServer/{action}"
+    elif operation["surface"] == "geoservices":
+        if ".GeometryServer." in client:
+            path = f"/rest/services/Utilities/Geometry/GeometryServer/{method.removesuffix('Async').lower()}"
+        elif ".ImageServer." in client:
+            path = f"/rest/services/{service}/ImageServer"
+        elif ".Routing." in client:
+            path = f"/rest/services/{service}/NAServer/Route"
+        else:
+            action = {
+                "GetServiceInfoAsync": "",
+                "GetLayerInfoAsync": f"/{layer}",
+                "GetEditCapabilitiesAsync": f"/{layer}",
+                "GetFeatureAsync": f"/{layer}/query",
+                "AddFeaturesAsync": f"/{layer}/addFeatures",
+                "UpdateFeaturesAsync": f"/{layer}/updateFeatures",
+                "DeleteFeaturesAsync": f"/{layer}/deleteFeatures",
+                "ApplyEditsAsync": f"/{layer}/applyEdits",
+            }.get(method, f"/{layer}/query")
+            path = f"/rest/services/{service}/FeatureServer{action}"
+    elif ".Wfs." in client:
+        path = "/wfs"
+    elif ".Styles." in client:
+        path = "/ogc/styles"
+    elif operation["surface"] == "ogcfeatures":
+        path = {
+            "GetLandingPageAsync": "/ogc/features",
+            "GetConformanceAsync": "/ogc/features/conformance",
+            "ListCollectionsAsync": "/ogc/features/collections",
+            "GetCollectionAsync": f"/ogc/features/collections/{collection}",
+            "GetQueryablesAsync": f"/ogc/features/collections/{collection}/queryables",
+        }.get(method, f"/ogc/features/collections/{collection}/items")
+    elif ".Records." in client:
+        path = "/ogc/records"
+    elif ".Stac." in client:
+        path = "/stac"
+    elif operation["surface"] == "admin":
+        path = {
+            "ListServicesAsync": "/api/v1/admin/services/",
+            "GetServiceAsync": "/api/v1/admin/services/",
+            "GetServiceSettingsAsync": f"/api/v1/admin/services/{service}/settings",
+            "CheckCompatibilityAsync": "/api/v1/admin/capabilities",
+        }.get(method, "/api/v1/admin")
+    else:
+        prefixes = {
+            "abstractions": "/api/v1",
+            "catalogs": "/stac",
+            "consoleshare": "/api/v1/console",
+            "processes": "/ogc/processes",
+            "spec": "/api/v1/spec",
+            "studio": "/api/v1/studio",
+        }
+        path = prefixes[operation["surface"]]
+
+    request_url = urljoin(base_url.rstrip("/") + "/", path)
+    parsed = urlsplit(request_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("certification request context must use absolute HTTP(S) base URLs")
+    return request_url
 
 
 def _strip_comments_and_strings(text: str) -> str:
@@ -645,6 +764,11 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "fixtureRevision": args.fixture_revision,
         "seedRevision": args.seed_revision,
         "evidenceUri": args.evidence_uri,
+        "baseUrl": getattr(args, "base_url", None) or os.environ.get("HONUA_PROTOCOL_EXTERNAL_BASE_URL"),
+        "grpcBaseUrl": getattr(args, "grpc_base_url", None) or os.environ.get("HONUA_PROTOCOL_GRPC_BASE_URL"),
+        "serviceId": getattr(args, "service_id", None) or os.environ.get("HONUA_PROTOCOL_SERVICE_NAME", "test_service"),
+        "layerId": getattr(args, "layer_id", None) or os.environ.get("HONUA_PROTOCOL_LAYER_ID", "0"),
+        "collectionId": getattr(args, "collection_id", None) or os.environ.get("HONUA_PROTOCOL_OGC_COLLECTION_ID", "0"),
     }
     if args.tier == "release":
         missing = [key for key, value in values.items() if not value]
@@ -671,6 +795,10 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
 
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
+    for field in ("baseUrl", "grpcBaseUrl"):
+        parsed = urlsplit(identity[field] or "")
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError(f"{field} must be an absolute HTTP(S) URL")
     supplied_exit_codes = getattr(args, "trx_exit_code", None)
     results, results_by_path = _trx_results(
         args.trx, require_summary=supplied_exit_codes is not None
@@ -744,6 +872,9 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         ))
         started_at = args.started_at or now
         contract_revision = f"sdk-dotnet-certification@{identity['sdkCommit']}"
+        protocol_version, protocol_profile = _certification_protocol_context(operation)
+        request_url = _certification_request_url(operation, identity)
+        exercised_capabilities = scenario_facets if result == "pass" else []
         receipt_facets = {facet: result for facet in scenario_facets}
         evidence_receipt = None if result == "skip" else {
             "schema": "honua.certification-evidence-receipt/v1",
@@ -751,7 +882,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "capability_key": f"sdk-dotnet.{operation['surface']}",
                 "surface": operation["surface"],
                 "operation": operation["id"],
-                "canonical_client": "Honua SDK .NET",
+                "canonical_client": CERTIFICATION_CLIENT_ID,
                 "client_version": identity["sdkVersion"],
                 "deployment_target": "local-docker",
                 "source_sha": identity["serverSourceSha"],
@@ -776,7 +907,14 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "surface": operation["surface"],
             "operation": operation["id"],
             "scenario_facets": scenario_facets,
-            "canonical_client": "Honua SDK .NET",
+            "canonical_client": CERTIFICATION_CLIENT_ID,
+            "client_id": CERTIFICATION_CLIENT_ID,
+            "runner_lane": CERTIFICATION_RUNNER_LANE,
+            "protocol_version": protocol_version,
+            "protocol_profile": protocol_profile,
+            "performed_by": CERTIFICATION_CLIENT_ID,
+            "request_url": request_url,
+            "exercised_capabilities": exercised_capabilities,
             "client_version": identity["sdkVersion"],
             "deployment_target": "local-docker",
             "result": result,
@@ -843,6 +981,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fixture-revision")
     parser.add_argument("--seed-revision")
     parser.add_argument("--evidence-uri")
+    parser.add_argument("--base-url")
+    parser.add_argument("--grpc-base-url")
+    parser.add_argument("--service-id")
+    parser.add_argument("--layer-id")
+    parser.add_argument("--collection-id")
     parser.add_argument(
         "--allow-nonpass",
         action="store_true",
