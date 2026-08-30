@@ -11,16 +11,6 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!--
-      NU5104: a stable package should not depend on a prerelease package.
-      We ship stable 1.x SDK packages that consume `Geospatial.Grpc` from
-      the geospatial-grpc repo, which is still on its own prerelease
-      (`0.1.0-alpha.2`). Suppress until that dependency stabilizes — tracked in
-      honua-sdk-dotnet#264. The dependency version range is unchanged; this
-      only silences the pack-time guardrail until the protocol package has a
-      stable release.
-    -->
-    <NoWarn>$(NoWarn);NU5104</NoWarn>
     <DebugType>portable</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
