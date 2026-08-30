@@ -95,7 +95,7 @@ public class HonuaGrpcClientTests
         });
 
         Assert.Equal(2, capturedRequests.Count);
-        Assert.Equal(0, capturedRequests[0].ResultRecordCount);
+        Assert.Equal(0, capturedRequests[0].ResultRecordCountLong);
         Assert.False(capturedRequests[0].ReturnGeometry);
         Assert.True(capturedRequests[1].ReturnExtentOnly);
         Assert.NotNull(descriptor.Schema);
@@ -228,8 +228,8 @@ public class HonuaGrpcClientTests
         Assert.Equal([42L], capturedRequest.ObjectIds);
         Assert.Equal(["name"], capturedRequest.OutFields);
         Assert.False(capturedRequest.ReturnGeometry);
-        Assert.Equal(5, capturedRequest.ResultOffset);
-        Assert.Equal(10, capturedRequest.ResultRecordCount);
+        Assert.Equal(5, capturedRequest.ResultOffsetLong);
+        Assert.Equal(10, capturedRequest.ResultRecordCountLong);
         Assert.Equal("name ASC", capturedRequest.OrderBy);
         Assert.True(capturedRequest.ReturnDistinct);
         Assert.True(capturedRequest.ReturnCountOnly);
@@ -419,7 +419,7 @@ public class HonuaGrpcClientTests
         Assert.Equal("svc", capturedRequest.ServiceId);
         Assert.Equal(3, capturedRequest.LayerId);
         Assert.Equal("1=1", capturedRequest.Where);
-        Assert.Equal(10, capturedRequest.ResultRecordCount);
+        Assert.Equal(10, capturedRequest.ResultRecordCountLong);
         Assert.Equal("grpc", result.ProviderName);
         Assert.Equal("42", Assert.Single(result.Features).Id);
         Assert.Contains(FeatureCapabilities.ApplyEdits, source.Capabilities);
@@ -439,7 +439,7 @@ public class HonuaGrpcClientTests
         {
             ObjectId = 102,
             Success = false,
-            Error = new Proto.EditError { Code = 400, Message = "Update rejected" }
+            Error = new Proto.ErrorDetail { Code = 400, Message = "Update rejected" }
         });
         protoResponse.DeleteResults.Add(new Proto.EditResult { ObjectId = 103, Success = true });
 

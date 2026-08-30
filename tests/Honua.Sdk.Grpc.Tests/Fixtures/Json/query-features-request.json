@@ -16,8 +16,8 @@
     "wkid": 3857,
     "latestWkid": 3857
   },
-  "resultOffset": 5,
-  "resultRecordCount": 25,
+  "resultOffsetLong": 5,
+  "resultRecordCountLong": 25,
   "orderBy": "name ASC",
   "returnDistinct": true,
   "outStatistics": [

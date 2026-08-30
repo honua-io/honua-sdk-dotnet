@@ -171,7 +171,7 @@ public sealed class FeatureProtocolIntegrationTests(ProtocolIntegrationFixture f
                 new SourceLocator { CollectionId = _fixture.Options.OgcCollectionId })
         };
 
-        foreach (var source in sources)
+        foreach (HonuaSource source in sources)
         {
             var result = await source.QueryAsync(
                 new SourceQuery

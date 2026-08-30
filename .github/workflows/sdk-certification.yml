@@ -1,0 +1,278 @@
+name: .NET SDK Protocol Certification
+
+on:
+  pull_request:
+    branches: [trunk]
+    paths:
+      - "src/**"
+      - "tests/Honua.Sdk.ProtocolIntegration.Tests/**"
+      - "tests/Honua.Sdk.Conformance.Tests/**"
+      - "scripts/generate-sdk-certification.py"
+      - "contracts/sdk-certification.v1.json"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - ".github/workflows/sdk-certification.yml"
+  schedule:
+    - cron: "30 15 * * *"
+  workflow_dispatch:
+    inputs:
+      tier:
+        type: choice
+        options: [release, nightly, pr]
+        default: release
+        required: true
+      server_image:
+        description: "Immutable candidate image (required for release)"
+        required: false
+      server_source_sha:
+        description: "Full source commit that produced the image (required for release)"
+        required: false
+      server_seed_ref:
+        description: "Exact seed revision; must equal source SHA for release"
+        required: false
+      release_cut:
+        description: "Independently frozen ISO-8601 release cut (required for release)"
+        required: false
+      fixture_revision:
+        description: "Deterministic fixture/profile revision (required for release)"
+        required: false
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
+  PINNED_SERVER_SOURCE_SHA: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
+  HONUA_PROTOCOL_SERVICE_NAME: "test_service"
+  HONUA_PROTOCOL_LAYER_ID: "0"
+  HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
+
+permissions:
+  attestations: read
+  contents: read
+  packages: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4@sha256:44126d872ac91993766c341e369c539e8196614321765d36a6f1bab0419a5fa5
+        env:
+          POSTGRES_USER: honua
+          POSTGRES_PASSWORD: honua
+          POSTGRES_DB: honua_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+
+      - name: Resolve tier and immutable identity
+        id: identity
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TIER: ${{ inputs.tier }}
+          INPUT_IMAGE: ${{ inputs.server_image }}
+          INPUT_SOURCE_SHA: ${{ inputs.server_source_sha }}
+          INPUT_SEED_REF: ${{ inputs.server_seed_ref }}
+          INPUT_RELEASE_CUT: ${{ inputs.release_cut }}
+          INPUT_FIXTURE_REVISION: ${{ inputs.fixture_revision }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tier="${INPUT_TIER:-pr}"
+          [[ "${EVENT_NAME}" == schedule ]] && tier=nightly
+          [[ "${EVENT_NAME}" == pull_request ]] && tier=pr
+          if [[ "${tier}" == release ]]; then
+            [[ -n "${INPUT_IMAGE}" ]] || { echo '::error::Release server_image input is required.'; exit 1; }
+            [[ -n "${INPUT_SOURCE_SHA}" ]] || { echo '::error::Release server_source_sha input is required.'; exit 1; }
+          fi
+          image="${INPUT_IMAGE:-${PINNED_SERVER_IMAGE}}"
+          source_sha="${INPUT_SOURCE_SHA:-${PINNED_SERVER_SOURCE_SHA}}"
+          seed_ref="${INPUT_SEED_REF:-${source_sha}}"
+          expected_fixture_revision="${INPUT_FIXTURE_REVISION:-}"
+          release_cut="${INPUT_RELEASE_CUT:-}"
+          image_metadata="$(docker buildx imagetools inspect "${image}" --format '{{json .}}')"
+          resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
+          requested_digest="${image##*@}"
+          [[ "${requested_digest}" == "${resolved_digest}" ]] || { echo '::error::Requested image digest did not resolve exactly.'; exit 1; }
+          image_created="$(jq -er '.image["linux/amd64"].created // .image.created // .image["linux/amd64"].config.created // .image.config.created' <<< "${image_metadata}")"
+          candidate_cut="${release_cut:-${image_created}}"
+          [[ "${image}" =~ @sha256:[0-9a-f]{64}$ ]] || { echo '::error::Server image must be digest-addressed.'; exit 1; }
+          [[ "${source_sha}" =~ ^[0-9a-f]{40}$ ]] || { echo '::error::Server source SHA must be a full lowercase commit.'; exit 1; }
+          echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin >/dev/null
+          gh attestation verify "oci://${image}" \
+            --repo honua-io/honua-server \
+            --source-digest "${source_sha}" \
+            --deny-self-hosted-runners \
+            --format json > .certification-server-attestation.json
+          image_source_revision="${source_sha}"
+          if [[ "${tier}" == release ]]; then
+            [[ "${seed_ref}" == "${source_sha}" ]] || { echo '::error::Release seed revision must equal source SHA.'; exit 1; }
+            [[ -n "${release_cut}" && "${expected_fixture_revision}" =~ ^sha256:[0-9a-fA-F]{64}$ ]] || { echo '::error::Release cut and fixture SHA-256 are required.'; exit 1; }
+          fi
+          started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          {
+            echo "tier=${tier}"
+            echo "image=${image}"
+            echo "source-sha=${source_sha}"
+            echo "seed-ref=${seed_ref}"
+            echo "expected-fixture-revision=${expected_fixture_revision}"
+            echo "image-source-revision=${image_source_revision}"
+            echo "release-cut=${release_cut}"
+            echo "candidate-cut=${candidate_cut}"
+            echo "started-at=${started_at}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - uses: ./.github/actions/setup-dotnet-and-nuget
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          github-actor: ${{ github.actor }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve SDK package version
+        id: sdk-version
+        shell: bash
+        run: |
+          version="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse("Directory.Build.props").getroot()
+          print(next(node.text for node in root.iter("HonuaSdkVersion") if node.text))
+          PY
+          )"
+          [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]] || { echo '::error::SDK version is not semantic.'; exit 1; }
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate operation ledger
+        run: python3 scripts/generate-sdk-certification.py --check
+
+      - name: Fetch and apply exact seed
+        id: seed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_REF: ${{ steps.identity.outputs.seed-ref }}
+          TIER: ${{ steps.identity.outputs.tier }}
+          EXPECTED_FIXTURE_REVISION: ${{ steps.identity.outputs.expected-fixture-revision }}
+          PGPASSWORD: honua
+        run: |
+          mkdir -p .certification
+          gh api "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${SEED_REF}" \
+            -H "Accept: application/vnd.github.raw" > .certification/base-schema.sql
+          fixture_revision="sha256:$(sha256sum .certification/base-schema.sql | cut -d' ' -f1)"
+          if [[ "${TIER}" == release && "${fixture_revision}" != "${EXPECTED_FIXTURE_REVISION}" ]]; then
+            echo "::error::Applied fixture digest does not match the independently pinned release fixture."
+            exit 1
+          fi
+          echo "fixture-revision=${fixture_revision}" >> "${GITHUB_OUTPUT}"
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
+
+      - name: Start exact honua-server image
+        env:
+          SERVER_IMAGE: ${{ steps.identity.outputs.image }}
+        run: |
+          key="$(head -c 32 /dev/urandom | base64)"
+          salt="$(head -c 16 /dev/urandom | base64)"
+          docker run -d --name honua-server --network host \
+            -e ASPNETCORE_ENVIRONMENT=Development \
+            -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
+            -e Security__ConnectionEncryption__MasterKey="${key}" \
+            -e Security__ConnectionEncryption__Salt="${salt}" \
+            -e HONUA_ADMIN_PASSWORD="ci-protocol-api-key" \
+            -e Kestrel__Endpoints__Http__Url="http://+:8080" \
+            -e Kestrel__Endpoints__Http__Protocols="Http1" \
+            -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
+            -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
+            "${SERVER_IMAGE}"
+          for i in $(seq 1 60); do
+            [[ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/healthz/ready || true)" == 200 ]] && exit 0
+            sleep 3
+          done
+          docker logs honua-server || true
+          exit 1
+
+      - name: Run public SDK operations
+        id: tests
+        env:
+          TIER: ${{ steps.identity.outputs.tier }}
+          HONUA_PROTOCOL_INTEGRATION: "true"
+          HONUA_PROTOCOL_EXTERNAL_BASE_URL: "http://localhost:8080"
+          HONUA_PROTOCOL_GRPC_BASE_URL: "http://localhost:8081"
+          HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
+          HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
+          HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
+          HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
+          HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
+        shell: bash
+        run: |
+          mkdir -p artifacts/test-results
+          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
+          conformance_filter='FullyQualifiedName~GrpcQueryFeatures_RoundTripsCanonicalResponseShape|FullyQualifiedName~GrpcQuery_GeometryOmission_IsHonored|FullyQualifiedName~FeatureServerQuery_RoundTripsCanonicalAttributeProjection|FullyQualifiedName~OgcItems_RoundTripCanonicalPropertyProjection'
+          if [[ "${TIER}" != pr ]]; then
+            filter='Category=ProtocolIntegration'
+            conformance_filter='FullyQualifiedName~LiveConformanceTests'
+          fi
+          protocol_code=0
+          dotnet test tests/Honua.Sdk.ProtocolIntegration.Tests/Honua.Sdk.ProtocolIntegration.Tests.csproj \
+            --configuration Release \
+            --filter "${filter}" \
+            --logger 'trx;LogFileName=protocol-integration.trx' \
+            --results-directory artifacts/test-results || protocol_code=$?
+          conformance_code=0
+          dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
+            --configuration Release \
+            --filter "${conformance_filter}" \
+            --logger 'trx;LogFileName=live-conformance.trx' \
+            --results-directory artifacts/test-results || conformance_code=$?
+          echo "protocol_exit_code=${protocol_code}" >> "${GITHUB_OUTPUT}"
+          echo "conformance_exit_code=${conformance_code}" >> "${GITHUB_OUTPUT}"
+
+      - name: Emit and enforce normalized certification evidence
+        if: always()
+        env:
+          TIER: ${{ steps.identity.outputs.tier }}
+          SERVER_IMAGE: ${{ steps.identity.outputs.image }}
+          SERVER_SOURCE_SHA: ${{ steps.identity.outputs.source-sha }}
+          SEED_REF: ${{ steps.identity.outputs.seed-ref }}
+          FIXTURE_REVISION: ${{ steps.seed.outputs.fixture-revision }}
+          IMAGE_SOURCE_REVISION: ${{ steps.identity.outputs.image-source-revision }}
+          SDK_VERSION: ${{ steps.sdk-version.outputs.version }}
+          RELEASE_CUT: ${{ steps.identity.outputs.release-cut }}
+          STARTED_AT: ${{ steps.identity.outputs.started-at }}
+          SDK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 scripts/generate-sdk-certification.py \
+            --tier "${TIER}" \
+            --trx artifacts/test-results/protocol-integration.trx \
+            --trx artifacts/test-results/live-conformance.trx \
+            --trx-exit-code "${{ steps.tests.outputs.protocol_exit_code }}" \
+            --trx-exit-code "${{ steps.tests.outputs.conformance_exit_code }}" \
+            --evidence artifacts/evidence/sdk-certification.json \
+            --started-at "${STARTED_AT}" \
+            --sdk-commit "${SDK_COMMIT}" \
+            --sdk-version "${SDK_VERSION}" \
+            --server-source-sha "${SERVER_SOURCE_SHA}" \
+            --image-source-revision "${IMAGE_SOURCE_REVISION}" \
+            --server-image "${SERVER_IMAGE}" \
+            --seed-revision "${SEED_REF}" \
+            --fixture-revision "${FIXTURE_REVISION}" \
+            --candidate-cut "${{ steps.identity.outputs.candidate-cut }}" \
+            --evidence-uri "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --allow-nonpass \
+            ${RELEASE_CUT:+--release-cut "${RELEASE_CUT}"}
+
+      - name: Upload certification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: dotnet-sdk-${{ steps.identity.outputs.tier }}-certification-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: ${{ steps.identity.outputs.tier == 'release' && 180 || steps.identity.outputs.tier == 'nightly' && 30 || 14 }}

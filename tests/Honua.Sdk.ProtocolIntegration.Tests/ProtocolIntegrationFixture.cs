@@ -117,6 +117,7 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
     private ServiceProvider BuildServiceProvider(Uri baseUri)
     {
         var services = new ServiceCollection();
+        var grpcBaseUri = Options.GrpcBaseUri ?? baseUri;
         services.AddHonuaAdmin(options =>
         {
             options.BaseAddress = baseUri;
@@ -137,7 +138,7 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
         });
         services.AddHonuaGrpc(options =>
         {
-            options.BaseAddress = baseUri;
+            options.BaseAddress = grpcBaseUri;
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });

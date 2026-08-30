@@ -136,7 +136,7 @@ public sealed class HonuaProcessGrpcClientTests
                 JobId = "job-1",
                 Error = new Proto.ErrorDetail
                 {
-                    ErrorCode = "certificate-rejected",
+                    Code = 403,
                     Message = "Client certificate was rejected.",
                     Phase = "admission",
                     SuggestedAction = "Select a certificate for this environment."
@@ -148,7 +148,7 @@ public sealed class HonuaProcessGrpcClientTests
 
         Assert.Equal("job-1", outcome.JobId);
         Assert.Null(outcome.Result);
-        Assert.Equal("certificate-rejected", outcome.Error?.ErrorCode);
+        Assert.Equal("403", outcome.Error?.ErrorCode);
         Assert.Equal("Client certificate was rejected.", outcome.Error?.Message);
         Assert.Equal("admission", outcome.Error?.Phase);
     }
@@ -157,13 +157,13 @@ public sealed class HonuaProcessGrpcClientTests
     public async Task ValidatePlanAsync_MapsValidationIssues()
     {
         var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
-        var response = new Proto.ValidatePlanResponse { Valid = false };
+        var response = new Proto.ValidateResponse { Valid = false };
         response.Issues.Add(new Proto.PlanValidationIssue
         {
             NodeId = "buffer",
             Field = "inputs.distance",
             Message = "Distance is required.",
-            Severity = Proto.IssueSeverity.Error
+            Severity = Proto.Severity.Error
         });
         mockClient
             .Setup(c => c.ValidatePlanAsync(

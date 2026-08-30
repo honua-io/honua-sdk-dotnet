@@ -46,7 +46,7 @@ public sealed class SchemaConformanceTests
         Assert.True(proto.ReturnGeometry);
         Assert.Equal(new[] { "OBJECTID", "NAME", "AREA" }, proto.OutFields);
         Assert.Equal(4326, proto.OutSr.Wkid);
-        Assert.Equal(10, proto.ResultRecordCount);
+        Assert.Equal(10, proto.ResultRecordCountLong);
         Assert.Equal("NAME ASC", proto.OrderBy);
         Assert.Equal(Proto.SpatialRelationship.Intersects, proto.SpatialFilter.SpatialRelationship);
         Assert.NotNull(proto.SpatialFilter.Geometry);
@@ -59,7 +59,7 @@ public sealed class SchemaConformanceTests
             Where = proto.Where,
             ReturnGeometry = proto.ReturnGeometry,
             OutFields = proto.OutFields.ToList(),
-            ResultRecordCount = proto.ResultRecordCount,
+            ResultRecordCount = checked((int)proto.ResultRecordCountLong),
             OrderBy = proto.OrderBy,
         };
         var rebuilt = HonuaGrpcProtoConverter.ToProto(model);

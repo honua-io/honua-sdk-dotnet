@@ -24,8 +24,8 @@ internal static class ProtoAdapter
             LayerId = request.LayerId,
             Where = request.Where ?? "1=1",
             ReturnGeometry = request.ReturnGeometry,
-            ResultOffset = request.ResultOffset,
-            ResultRecordCount = request.ResultRecordCount ?? 0,
+            ResultOffsetLong = request.ResultOffset,
+            ResultRecordCountLong = request.ResultRecordCount ?? 0,
             OrderBy = request.OrderBy ?? string.Empty,
             ReturnDistinct = request.ReturnDistinct,
             ReturnCountOnly = request.ReturnCountOnly,
@@ -250,7 +250,7 @@ internal static class ProtoAdapter
         };
     }
 
-    private static Models.EditError ConvertEditError(Proto.EditError error)
+    private static Models.EditError ConvertEditError(Proto.ErrorDetail error)
     {
         return new Models.EditError
         {
