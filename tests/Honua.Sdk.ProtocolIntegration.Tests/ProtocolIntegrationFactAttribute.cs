@@ -8,7 +8,8 @@ public enum ProtocolIntegrationRequiredFixture
     Geocoding,
     Spec,
     Scene,
-    SpecAndScene
+    SpecAndScene,
+    FeatureServerEditEntitlement
 }
 
 [AttributeUsage(AttributeTargets.Method)]
@@ -43,6 +44,8 @@ public sealed class ProtocolIntegrationFactAttribute : FactAttribute
                 "Set HONUA_PROTOCOL_SPEC_ID to run Spec protocol integration tests.",
             ProtocolIntegrationRequiredFixture.SpecAndScene when string.IsNullOrWhiteSpace(options.SceneId) =>
                 "Set HONUA_PROTOCOL_SCENE_ID to run Scenes protocol integration tests.",
+            ProtocolIntegrationRequiredFixture.FeatureServerEditEntitlement when !options.FeatureServerEditsSupported =>
+                "The pinned candidate has no governed FeatureServer edit entitlement; see honua-sdk-dotnet#308.",
             _ => null
         };
     }

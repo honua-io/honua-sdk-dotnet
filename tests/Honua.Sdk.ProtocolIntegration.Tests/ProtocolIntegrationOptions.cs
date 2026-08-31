@@ -50,6 +50,8 @@ public sealed record ProtocolIntegrationOptions
 
     public bool DestructiveEnabled { get; init; }
 
+    public bool FeatureServerEditsSupported { get; init; }
+
     public string? SeedProfile { get; init; }
 
     public string? FeatureServerEditAddAttributesJson { get; init; }
@@ -103,6 +105,7 @@ public sealed record ProtocolIntegrationOptions
             ReverseGeocodeLatitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE"),
             ReverseGeocodeLongitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE"),
             DestructiveEnabled = ReadBoolean("HONUA_PROTOCOL_DESTRUCTIVE"),
+            FeatureServerEditsSupported = ReadBoolean("HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED"),
             SeedProfile = ReadString("HONUA_PROTOCOL_SEED_PROFILE"),
             FeatureServerEditAddAttributesJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON"),
             FeatureServerEditUpdateAttributesJson = ReadString("HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON"),

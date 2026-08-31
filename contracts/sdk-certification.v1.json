@@ -6,8 +6,8 @@
   "complete": false,
   "summary": {
     "total": 303,
-    "exercised": 22,
-    "gap": 263,
+    "exercised": 20,
+    "gap": 265,
     "non-addressable": 18
   },
   "operations": [
@@ -373,9 +373,7 @@
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -383,20 +381,22 @@
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-        ],
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [],
         "Honua.Sdk.Grpc.HonuaGrpcClient": [],
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
       "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient",
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live tests do not cover every concrete implementation: Honua.Sdk.Grpc.HonuaGrpcClient, Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient, Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient."
+      "unavailableTests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
     },
     {
       "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.CommitEditSessionAsync(FeatureEditSessionCompleteRequest,CancellationToken)",
@@ -623,7 +623,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -667,11 +667,11 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetDirectionsAsync(RouteDirectionsRequest,CancellationToken)",
@@ -697,11 +697,11 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceAreaAsync(ServiceAreaRequest,CancellationToken)",
@@ -727,11 +727,11 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceMetadataAsync(RouteServiceMetadataRequest,CancellationToken)",
@@ -757,11 +757,11 @@
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.OptimizeRouteAsync(RouteOptimizationRequest,CancellationToken)",
@@ -814,11 +814,11 @@
       "missingImplementations": [
         "Honua.Sdk.Scenes.HonuaSceneClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ListScenesAsync(HonuaSceneListRequest?,CancellationToken)",
@@ -844,11 +844,11 @@
       "missingImplementations": [
         "Honua.Sdk.Scenes.HonuaSceneClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ResolveSceneAsync(string,HonuaSceneResolveRequest?,CancellationToken)",
@@ -874,11 +874,11 @@
       "missingImplementations": [
         "Honua.Sdk.Scenes.HonuaSceneClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.GetTraceConfigurationsAsync(UtilityNetworkTraceConfigurationQuery,CancellationToken)",
@@ -1257,11 +1257,11 @@
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ForwardGeocodeAsync(string,ForwardGeocodeOptions?,CancellationToken)",
@@ -1287,11 +1287,11 @@
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ReverseGeocodeAsync(double,double,ReverseGeocodeOptions?,CancellationToken)",
@@ -1317,11 +1317,11 @@
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.SuggestAsync(string,SuggestOptions?,CancellationToken)",
@@ -1347,11 +1347,11 @@
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.HonuaAdminClient.ScanMigrationSourceAsync(MigrationInventoryScanRequest,bool,CancellationToken)",
@@ -5684,7 +5684,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
       "operation": "AddFeaturesAsync",
       "signature": "AddFeaturesAsync(string,int,IReadOnlyList<FeatureServerFeature>,bool,CancellationToken)",
-      "status": "exercised",
+      "status": "gap",
       "requiredTiers": [
         "nightly",
         "release"
@@ -5692,17 +5692,21 @@
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-        ]
-      }
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "unavailableTests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.ApplyEditsAsync(string,int,FeatureServerEditRequest,CancellationToken)",
@@ -5737,7 +5741,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
       "operation": "DeleteFeaturesAsync",
       "signature": "DeleteFeaturesAsync(string,int,IReadOnlyList<long>,bool,CancellationToken)",
-      "status": "exercised",
+      "status": "gap",
       "requiredTiers": [
         "nightly",
         "release"
@@ -5745,17 +5749,21 @@
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-        ]
-      }
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "unavailableTests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.GetEditCapabilitiesAsync(string,int,CancellationToken)",
@@ -7573,11 +7581,11 @@
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Spec.IHonuaSpecClient.CancelAsync(string,CancellationToken)",
@@ -7657,11 +7665,11 @@
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Spec.IHonuaSpecClient.ValidateAsync(SpecValidateRequest,CancellationToken)",
@@ -7687,11 +7695,11 @@
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Studio.Capabilities.IHonuaCapabilityManifestClient.GetManifestAsync(string?,string?,CancellationToken)",

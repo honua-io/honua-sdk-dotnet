@@ -27,6 +27,7 @@ TEST_ROOTS = (
 OUTPUT_PATH = ROOT / "contracts" / "sdk-certification.v1.json"
 TRACKING_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/31"
 RASTER_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/294"
+RC_FIXTURE_GAP_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/308"
 CERTIFICATION_CLIENT_ID = "Honua SDK .NET"
 CERTIFICATION_RUNNER_LANE = "sdk-dotnet-certification"
 
@@ -72,12 +73,19 @@ PAGINATED_OPERATIONS = frozenset(
     }
 )
 
-UNSEEDED_TESTS = frozenset(
+RC_UNAVAILABLE_TESTS = frozenset(
     {
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips",
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable",
+    }
+)
+
+RC_UNAVAILABLE_OPERATIONS = frozenset(
+    {
+        "Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.SubscribeAsync(FeatureStreamSubscribeRequest,CancellationToken)",
     }
 )
 
@@ -626,8 +634,8 @@ def build_document() -> dict[str, Any]:
         short_client = operation["client"].rsplit(".", 1)[-1]
         short_id = f"{short_client}.{operation['operation']}"
         mapped_tests = set(mappings.get(operation["id"], []))
-        unseeded_tests = sorted(mapped_tests & UNSEEDED_TESTS)
-        tests = sorted(mapped_tests - UNSEEDED_TESTS)
+        unavailable_tests = sorted(mapped_tests & RC_UNAVAILABLE_TESTS)
+        tests = sorted(mapped_tests - RC_UNAVAILABLE_TESTS)
         implemented = operation.pop("implemented")
         implementations = operation.pop("_implementations")
         operation.pop("_implementationProviders")
@@ -635,7 +643,7 @@ def build_document() -> dict[str, Any]:
         tests_by_implementation = {
             implementation: sorted(
                 set(implementation_mappings.get(operation["id"], {}).get(implementation, []))
-                - UNSEEDED_TESTS
+                - RC_UNAVAILABLE_TESTS
             )
             for implementation in implementations
         }
@@ -646,7 +654,11 @@ def build_document() -> dict[str, Any]:
         ]
         if not implemented:
             status = "non-addressable"
-            owner = RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
+            owner = (
+                RC_FIXTURE_GAP_ISSUE
+                if unavailable_tests or operation["id"] in RC_UNAVAILABLE_OPERATIONS
+                else RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
+            )
             disposition = "Public provider-neutral contract has no concrete Honua client implementation."
             tiers: list[str] = []
         elif tests and not missing_implementations:
@@ -658,7 +670,11 @@ def build_document() -> dict[str, Any]:
                 tiers.insert(0, "pr")
         else:
             status = "gap"
-            owner = RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
+            owner = (
+                RC_FIXTURE_GAP_ISSUE
+                if unavailable_tests or operation["id"] in RC_UNAVAILABLE_OPERATIONS
+                else RASTER_ISSUE if short_client == "IHonuaRasterDataClient" else TRACKING_ISSUE
+            )
             if missing_implementations and tests:
                 disposition = (
                     "Canonical live tests do not cover every concrete implementation: "
@@ -667,8 +683,15 @@ def build_document() -> dict[str, Any]:
                 )
             else:
                 disposition = (
-                    "Canonical live test exists but its deterministic server fixture is not seeded."
-                    if unseeded_tests
+                    (
+                        "The pinned 2026.1 candidate runs Community edition and has no immutable, "
+                        "non-secret FeatureServer edit entitlement for release certification."
+                        if any("FeatureServerApplyEdits" in test for test in unavailable_tests)
+                        else "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+                    )
+                    if unavailable_tests
+                    else "The pinned 2026.1 candidate does not expose a realtime certification transport fixture."
+                    if operation["id"] in RC_UNAVAILABLE_OPERATIONS
                     else "Concrete public SDK operation has no canonical live certification test."
                 )
             tiers = ["nightly", "release"]
@@ -692,8 +715,8 @@ def build_document() -> dict[str, Any]:
         }
         if missing_implementations:
             cell["missingImplementations"] = missing_implementations
-        if unseeded_tests:
-            cell["unseededTests"] = unseeded_tests
+        if unavailable_tests:
+            cell["unavailableTests"] = unavailable_tests
         if owner:
             cell["ownerIssue"] = owner
         if disposition:

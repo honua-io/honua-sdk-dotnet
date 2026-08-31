@@ -10,6 +10,7 @@ public sealed class ProtocolIntegrationConfigurationTests
         Assert.False(string.IsNullOrWhiteSpace(options.ServiceName));
         Assert.False(string.IsNullOrWhiteSpace(options.WfsTypeName));
         Assert.False(string.IsNullOrWhiteSpace(options.OgcCollectionId));
+        Assert.False(options.FeatureServerEditsSupported);
         Assert.Contains("apiKey=", options.ToRedactedSummary(), StringComparison.Ordinal);
         Assert.DoesNotContain(options.ApiKey ?? "not-present-api-key", options.ToRedactedSummary(), StringComparison.Ordinal);
         Assert.DoesNotContain(options.BearerToken ?? "not-present-bearer-token", options.ToRedactedSummary(), StringComparison.Ordinal);
