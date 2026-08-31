@@ -795,6 +795,9 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
     values = {
         "sdkCommit": args.sdk_commit or os.environ.get("GITHUB_SHA"),
         "sdkVersion": args.sdk_version or "unreleased",
+        "sdkPackageId": getattr(args, "sdk_package_id", None),
+        "sdkPackageDigest": getattr(args, "sdk_package_digest", None),
+        "sdkPackageSourceSha": getattr(args, "sdk_package_source_sha", None),
         "serverSourceSha": args.server_source_sha,
         "imageSourceRevision": args.image_source_revision,
         "serverImage": args.server_image,
@@ -824,6 +827,12 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
             raise ValueError("release server image must be immutable and addressed by sha256 digest")
         if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.fixture_revision or "", re.I):
             raise ValueError("release fixture revision must be the SHA-256 of the applied fixture")
+        if values["sdkPackageId"] != "Honua.Sdk":
+            raise ValueError("release client package must be Honua.Sdk")
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", values["sdkPackageDigest"] or ""):
+            raise ValueError("release client package digest must be a SHA-256")
+        if not re.fullmatch(r"[0-9a-f]{40}", values["sdkPackageSourceSha"] or ""):
+            raise ValueError("release client package source SHA must be a full commit")
         try:
             cut = datetime.fromisoformat((args.release_cut or "").replace("Z", "+00:00"))
         except ValueError as error:
@@ -962,6 +971,9 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "request_url": request_url,
             "exercised_capabilities": exercised_capabilities,
             "client_version": identity["sdkVersion"],
+            "client_package": identity["sdkPackageId"],
+            "client_package_digest": identity["sdkPackageDigest"],
+            "client_package_source_sha": identity["sdkPackageSourceSha"],
             "deployment_target": "local-docker",
             "result": result,
             "skip_reason": skip_reason,
@@ -997,6 +1009,12 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "image_digest": identity["serverImageDigest"],
             "cut_at": identity["candidateCut"],
         },
+        "client_artifact": {
+            "package_id": identity["sdkPackageId"],
+            "package_version": identity["sdkVersion"],
+            "package_digest": identity["sdkPackageDigest"],
+            "source_sha": identity["sdkPackageSourceSha"],
+        },
         "operation_scope": {
             "complete": True,
             "owner_issue": TRACKING_ISSUE,
@@ -1021,6 +1039,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--started-at")
     parser.add_argument("--sdk-commit")
     parser.add_argument("--sdk-version")
+    parser.add_argument("--sdk-package-id")
+    parser.add_argument("--sdk-package-digest")
+    parser.add_argument("--sdk-package-source-sha")
     parser.add_argument("--server-source-sha")
     parser.add_argument("--image-source-revision")
     parser.add_argument("--server-image", default="")
