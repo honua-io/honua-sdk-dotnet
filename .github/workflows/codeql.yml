@@ -46,7 +46,7 @@ jobs:
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           languages: csharp
           queries: security-and-quality
