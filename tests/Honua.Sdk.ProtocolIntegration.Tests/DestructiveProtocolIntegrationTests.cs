@@ -89,26 +89,22 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
             if (objectIdForCleanup.HasValue)
             {
                 using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                await TryDeleteAsync(objectIdForCleanup.Value, cleanup.Token).ConfigureAwait(false);
+                await DeleteForCleanupAsync(objectIdForCleanup.Value, cleanup.Token).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task TryDeleteAsync(long objectId, CancellationToken cancellationToken)
+    private async Task DeleteForCleanupAsync(long objectId, CancellationToken cancellationToken)
     {
-        try
-        {
-            await _fixture.FeatureServerEditClient.DeleteFeaturesAsync(
-                _fixture.Options.ServiceName,
-                _fixture.Options.LayerId,
-                [objectId],
-                rollbackOnFailure: true,
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Preserve the original edit failure.
-        }
+        var response = await _fixture.FeatureServerEditClient.DeleteFeaturesAsync(
+            _fixture.Options.ServiceName,
+            _fixture.Options.LayerId,
+            [objectId],
+            rollbackOnFailure: true,
+            cancellationToken).ConfigureAwait(false);
+
+        var result = Assert.Single(response.DeleteResults);
+        Assert.True(result.Success, $"FeatureServer cleanup failed. {FormatError(result.Error)}");
     }
 
     private static Dictionary<string, JsonElement> ParseAttributes(string? json, string name)

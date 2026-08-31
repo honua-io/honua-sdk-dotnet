@@ -1617,9 +1617,9 @@ public sealed class HonuaFeatureServerClient :
         return new FeatureEditResponse
         {
             ProviderName = ProviderName,
-            AddResults = response.AddResults.Select(ToFeatureEditResult).ToList(),
-            UpdateResults = response.UpdateResults.Select(ToFeatureEditResult).ToList(),
-            DeleteResults = response.DeleteResults.Select(ToFeatureEditResult).ToList(),
+            AddResults = (response.AddResults ?? []).Select(ToFeatureEditResult).ToList(),
+            UpdateResults = (response.UpdateResults ?? []).Select(ToFeatureEditResult).ToList(),
+            DeleteResults = (response.DeleteResults ?? []).Select(ToFeatureEditResult).ToList(),
         };
     }
 
