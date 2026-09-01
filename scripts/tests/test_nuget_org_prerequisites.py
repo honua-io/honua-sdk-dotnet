@@ -98,8 +98,13 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertNotIn("nuget.org publish skipped", workflow)
         self.assertNotIn("nuget-org-ready", workflow)
         self.assertIn("environment: public-nuget", workflow)
-        self.assertIn("The protected public-nuget environment is missing", workflow)
-        self.assertIn("missing+=(NUGET_API_KEY)", workflow)
+        self.assertIn(
+            "Trusted Publishing exchange produced no key; refusing a partial release",
+            workflow,
+        )
+        self.assertIn("uses: NuGet/login@", workflow)
+        self.assertIn("id-token: write", workflow)
+        self.assertNotIn("secrets.NUGET_API_KEY", workflow)
 
     def test_public_verification_precedes_the_secondary_github_feed(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -144,13 +149,16 @@ class PublishWorkflowContractTests(unittest.TestCase):
             workflow[:staging],
         )
 
-    def test_signing_credentials_are_only_read_in_the_protected_publish_job(self) -> None:
+    def test_trusted_publishing_replaces_author_signing(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         protected_environment = workflow.index("environment: public-nuget")
-        signing_secret = workflow.index("NUGET_SIGNING_CERTIFICATE_BASE64")
-        self.assertLess(protected_environment, signing_secret)
+        trusted_publishing = workflow.index("uses: NuGet/login@")
+        self.assertLess(protected_environment, trusted_publishing)
         self.assertIn("packages-input-unsigned", workflow)
-        self.assertIn("packages-signed", workflow)
+        self.assertNotIn("NUGET_SIGNING_", workflow)
+        self.assertNotIn("dotnet nuget sign", workflow)
+        self.assertNotIn("packages-signed", workflow)
+        self.assertNotIn("secrets.NUGET_API_KEY", workflow)
         self.assertNotIn("secrets: inherit", workflow)
 
     def test_symbol_coordinates_are_preflighted_and_proven_without_duplicate_acceptance(self) -> None:

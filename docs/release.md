@@ -38,20 +38,20 @@ The publish workflow builds and packs:
    `dotnet-sdk-v<PackageVersion>`.
    Example: `dotnet-sdk-v1.0.0`.
 
-Before a release tag is created, confirm the protected `public-nuget`
-environment has `NUGET_SIGNING_CERTIFICATE_BASE64` and
-`NUGET_SIGNING_PASSWORD` secrets. Stable releases additionally require a
-scoped `NUGET_API_KEY` secret. Keep all three credentials on the environment,
-not at repository scope. The pinned **stable** `Geospatial.Grpc` version must
-also be available from nuget.org. The environment must
+Before a release tag is created, configure a nuget.org **Trusted Publishing**
+policy for owner `makanikai`, repository `honua-io/honua-sdk-dotnet`, workflow
+`publish-dotnet-sdk.yml`, environment `public-nuget`, and package glob
+`Honua.Sdk*`. No long-lived `NUGET_API_KEY` or author-signing secret exists or
+may be created. The publish job uses its `id-token: write` permission and the
+pinned `NuGet/login` action to exchange its GitHub OIDC identity for a
+short-lived key; an empty exchange fails closed before any registry mutation.
+The pinned **stable** `Geospatial.Grpc` version must also be available from
+nuget.org. The environment must
 allow only selected `dotnet-sdk-v*` tags, require a reviewer, and disallow admin
 bypass. The dependency preflight runs before package construction; the
-credential is resolved only inside the protected publish job and is validated
-before any registry mutation. Repository admins can verify secret presence with
-`gh secret list --env public-nuget --repo honua-io/honua-sdk-dotnet`. The
-workflow never prints the credential. nuget.org does not expose a non-mutating
-API-key permission check, so account/package scope is finally proven by the
-first push.
+short-lived credential is resolved only inside the protected publish job and
+is validated before any registry mutation. The workflow never prints the
+credential. Account/package scope is finally proven by the first push.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects, the tag commit must be contained in `origin/trunk`, and required
@@ -94,23 +94,18 @@ previews of a future major.
   public-feed proof.
 - Prerelease versions publish to GitHub Packages only.
 - Dry runs build, inspect, and install the local packages without pushing to
-  either feed. They never access signing credentials and keep unsigned primary
+  either feed. They never invoke Trusted Publishing and keep immutable primary
   and symbol packages as workflow artifacts. The `run_staging` input can add
   staging to a dry run; staging is mandatory for every non-dry tag publish.
 
-The workflow uses the `public-nuget` environment's `NUGET_API_KEY` for
+The workflow uses the Trusted Publishing exchange's short-lived key for
 nuget.org and the job-scoped `GITHUB_TOKEN` for GitHub Packages. Build and
 package-install validation restore the stable `Geospatial.Grpc` dependency
 from nuget.org; the GitHub Packages credential is reserved for the secondary
-SDK publication target.
-Release-tag signing and verification happen only inside the protected
-`public-nuget` job and cover both primary `.nupkg` and symbol `.snupkg`
-artifacts. GitHub Packages receives that author-signed set. If the author
-certificate chains to a publicly trusted root, nuget.org receives the same set;
-otherwise it receives the immutable unsigned input and adds its own repository
-signature. Registering a publicly trusted author certificate remains a
-hardening action, not a prerequisite for nuget.org's repository-signed
-publication path.
+SDK publication target. Packages are not author-signed: nuget.org
+repository-signs every package on ingestion, while modern CA-issued
+code-signing certificates are HSM-bound and cannot be stored as base64 GitHub
+secrets. Both registries receive the same immutable build-once package payload.
 
 Every build-once primary and symbol archive is covered by a committed-run
 `SHA256SUMS`. The publish job rechecks those hashes after artifact download and

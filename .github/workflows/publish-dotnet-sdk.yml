@@ -330,9 +330,9 @@ jobs:
           if-no-files-found: error
           overwrite: true
 
-      - name: Package signing boundary notice
+      - name: Package publication boundary notice
         run: |
-          echo "::notice::Release smoke emits unsigned inputs only. Signing credentials are read later, inside the protected public-nuget environment."
+          echo "::notice::Release smoke emits immutable package inputs. Stable publication later exchanges OIDC for a short-lived nuget.org key inside the protected public-nuget environment; nuget.org repository-signs packages on ingestion."
 
       - name: Package install smoke
         shell: bash
@@ -629,7 +629,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true' }}
         shell: bash
         run: |
-          echo "Dry run complete. Built unsigned packages (signing secrets were not accessed):" >> "${GITHUB_STEP_SUMMARY}"
+          echo "Dry run complete. Built immutable packages (Trusted Publishing was not invoked):" >> "${GITHUB_STEP_SUMMARY}"
           ls -1 ./nupkgs/*.nupkg ./nupkgs/*.snupkg >> "${GITHUB_STEP_SUMMARY}"
 
   release-staging-integration:
@@ -660,15 +660,18 @@ jobs:
     permissions:
       contents: read
       packages: write
+      # Trusted Publishing exchanges this job's OIDC identity for a short-lived
+      # nuget.org key; no long-lived NUGET_API_KEY secret exists.
+      id-token: write
     steps:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - name: Download immutable unsigned package inputs
+      - name: Download immutable package inputs
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-input-unsigned
-          path: ./nupkgs-unsigned
+          path: ./nupkgs
 
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
@@ -689,93 +692,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          (cd ./nupkgs-unsigned && sha256sum --check SHA256SUMS)
+          (cd ./nupkgs && sha256sum --check SHA256SUMS)
 
-      - name: Validate protected publication credentials
+      - name: Exchange OIDC for a short-lived NuGet key (Trusted Publishing)
+        id: nuget-login
+        uses: NuGet/login@2d1146689b8cda280b9bc96326124645441f03bc # v1.2.0
+        with:
+          user: makanikai
+
+      - name: Validate Trusted Publishing exchange
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
-          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           set -euo pipefail
-          missing=()
-          [[ -n "${NUGET_SIGNING_CERTIFICATE_BASE64}" ]] || missing+=(NUGET_SIGNING_CERTIFICATE_BASE64)
-          [[ -n "${NUGET_SIGNING_PASSWORD}" ]] || missing+=(NUGET_SIGNING_PASSWORD)
-          if [[ "${PACKAGE_VERSION}" != *-* && -z "${NUGET_API_KEY}" ]]; then
-            missing+=(NUGET_API_KEY)
-          fi
-          if (( ${#missing[@]} > 0 )); then
-            echo "::error::The protected public-nuget environment is missing required publication credentials: ${missing[*]}."
+          if [[ -z "${NUGET_API_KEY}" ]]; then
+            echo "Trusted Publishing exchange produced no key; refusing a partial release." >&2
             exit 1
           fi
-
-      - name: Sign release packages inside the protected environment
-        env:
-          NUGET_SIGNING_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGNING_CERTIFICATE_BASE64 }}
-          NUGET_SIGNING_PASSWORD: ${{ secrets.NUGET_SIGNING_PASSWORD }}
-          NUGET_SIGNING_TIMESTAMP_URL: ${{ vars.NUGET_SIGNING_TIMESTAMP_URL || 'http://timestamp.digicert.com' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p ./nupkgs
-          cp ./nupkgs-unsigned/*.nupkg ./nupkgs/
-          cp ./nupkgs-unsigned/*.snupkg ./nupkgs/
-
-          cert_path="$(mktemp --suffix=.pfx)"
-          trap 'shred -u "${cert_path}" 2>/dev/null || rm -f "${cert_path}"; dotnet nuget trust remove honua-sdk-release >/dev/null 2>&1 || true' EXIT
-          echo "${NUGET_SIGNING_CERTIFICATE_BASE64}" | base64 --decode > "${cert_path}"
-
-          package_files=(./nupkgs/*.nupkg ./nupkgs/*.snupkg)
-          for package_file in "${package_files[@]}"; do
-            dotnet nuget sign "${package_file}" \
-              --certificate-path "${cert_path}" \
-              --certificate-password "${NUGET_SIGNING_PASSWORD}" \
-              --timestamper "${NUGET_SIGNING_TIMESTAMP_URL}"
-          done
-
-          nupkg_files=(./nupkgs/*.nupkg)
-          dotnet nuget trust author honua-sdk-release "${nupkg_files[0]}" --allow-untrusted-root
-          for package_file in "${package_files[@]}"; do
-            dotnet nuget verify --all "${package_file}"
-          done
-
-          (
-            cd ./nupkgs
-            sha256sum -- *.nupkg *.snupkg | sort -k2 > SHA256SUMS
-            sha256sum --check SHA256SUMS
-          )
-
-      - name: Select nuget.org artifact set
-        id: nugetorg-artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          publicly_verified=true
-          for package_file in ./nupkgs/*.nupkg ./nupkgs/*.snupkg; do
-            if ! dotnet nuget verify --all "${package_file}"; then
-              publicly_verified=false
-              break
-            fi
-          done
-
-          if [[ "${publicly_verified}" == "true" ]]; then
-            echo "set=signed" >> "${GITHUB_OUTPUT}"
-          else
-            echo "set=unsigned" >> "${GITHUB_OUTPUT}"
-            echo "::warning::The author certificate is not publicly chained. nuget.org will receive the immutable unsigned input and repository-sign it; GitHub Packages still receives the signed set."
-          fi
-
-      - name: Upload signed release package evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-signed
-          path: |
-            ./nupkgs/*.nupkg
-            ./nupkgs/*.snupkg
-            ./nupkgs/SHA256SUMS
-          if-no-files-found: error
-          retention-days: 90
-          overwrite: true
 
       - name: Preflight every immutable registry coordinate
         env:
@@ -786,15 +719,11 @@ jobs:
           mkdir -p coordinate-evidence
 
           if [[ "${PACKAGE_VERSION}" != *-* ]]; then
-            source_dir="./nupkgs"
-            if [[ "${{ steps.nugetorg-artifacts.outputs.set }}" != "signed" ]]; then
-              source_dir="./nupkgs-unsigned"
-            fi
             python scripts/check-package-coordinates.py \
               --registry-name nuget.org \
               --service-index https://api.nuget.org/v3/index.json \
               --symbol-package-base-address https://globalcdn.nuget.org/symbol-packages/ \
-              --package-dir "${source_dir}" \
+              --package-dir ./nupkgs \
               --inventory eng/shipped-packages.txt \
               --package-version "${PACKAGE_VERSION}" \
               --source-revision "${GITHUB_SHA}" \
@@ -818,12 +747,9 @@ jobs:
       - name: Publish stable packages to nuget.org
         if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          ARTIFACT_SET: ${{ steps.nugetorg-artifacts.outputs.set }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
-          if [[ "${ARTIFACT_SET}" != "signed" ]]; then
-            echo "::notice::Pushing the unsigned package set to nuget.org (author certificate is not publicly chained); nuget.org repository-signs every upload."
-          fi
+          echo "::notice::Pushing immutable package inputs; nuget.org repository-signs every upload."
           while IFS= read -r package_file; do
             [[ -n "${package_file}" ]] || continue
             dotnet nuget push "${package_file}" \
@@ -839,14 +765,10 @@ jobs:
           set -euo pipefail
           smoke_root="$(mktemp -d)"
           trap 'rm -rf "${smoke_root}"' EXIT
-          source_dir="./nupkgs"
-          if [[ "${{ steps.nugetorg-artifacts.outputs.set }}" != "signed" ]]; then
-            source_dir="./nupkgs-unsigned"
-          fi
           python scripts/check-package-coordinates.py \
             --registry-name nuget.org \
             --service-index https://api.nuget.org/v3/index.json \
-            --package-dir "${source_dir}" \
+            --package-dir ./nupkgs \
             --inventory eng/shipped-packages.txt \
             --package-version "${PACKAGE_VERSION}" \
             --source-revision "${GITHUB_SHA}" \
@@ -885,14 +807,10 @@ jobs:
       - name: Submit portable symbol packages to nuget.org
         if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         shell: bash
         run: |
           set -euo pipefail
-          source_dir="./nupkgs"
-          if [[ "${{ steps.nugetorg-artifacts.outputs.set }}" != "signed" ]]; then
-            source_dir="./nupkgs-unsigned"
-          fi
           while IFS= read -r symbol_package; do
             [[ -n "${symbol_package}" ]] || continue
             dotnet nuget push "${symbol_package}" \
@@ -905,15 +823,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          source_dir="./nupkgs"
-          if [[ "${{ steps.nugetorg-artifacts.outputs.set }}" != "signed" ]]; then
-            source_dir="./nupkgs-unsigned"
-          fi
           python scripts/check-package-coordinates.py \
             --registry-name nuget.org \
             --service-index https://api.nuget.org/v3/index.json \
             --symbol-package-base-address https://globalcdn.nuget.org/symbol-packages/ \
-            --package-dir "${source_dir}" \
+            --package-dir ./nupkgs \
             --inventory eng/shipped-packages.txt \
             --package-version "${PACKAGE_VERSION}" \
             --source-revision "${GITHUB_SHA}" \
