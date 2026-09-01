@@ -28,6 +28,7 @@ OUTPUT_PATH = ROOT / "contracts" / "sdk-certification.v1.json"
 TRACKING_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/31"
 RASTER_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/294"
 RC_FIXTURE_GAP_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/308"
+RELEASE_PROFILE_ID = "honua-sdk-dotnet-2026.1"
 CERTIFICATION_CLIENT_ID = "Honua SDK .NET"
 CERTIFICATION_RUNNER_LANE = "sdk-dotnet-certification"
 FEATURESERVER_EDIT_ENTITLEMENT_POLICY = "honua-pro-featureserver-edits-v1"
@@ -696,6 +697,12 @@ def build_document() -> dict[str, Any]:
                 )
             tiers = ["nightly", "release"]
 
+        excluded_from_release = bool(
+            unavailable_tests or operation["id"] in RC_UNAVAILABLE_OPERATIONS
+        )
+        if excluded_from_release and "release" in tiers:
+            tiers.remove("release")
+
         facets = []
         if operation["operation"].startswith(MUTATION_PREFIXES):
             facets.append("mutation")
@@ -712,6 +719,11 @@ def build_document() -> dict[str, Any]:
             "tests": tests,
             "implementations": implementations,
             "implementationTests": tests_by_implementation,
+            "releaseDenominator": (
+                "non-addressable"
+                if not implemented
+                else "excluded" if excluded_from_release else "included"
+            ),
         }
         if missing_implementations:
             cell["missingImplementations"] = missing_implementations
@@ -724,6 +736,18 @@ def build_document() -> dict[str, Any]:
         cells.append(cell)
 
     counts = {status: sum(cell["status"] == status for cell in cells) for status in ("exercised", "gap", "non-addressable")}
+    release_exclusions = [
+        {
+            "operationId": cell["id"],
+            "ownerIssue": cell["ownerIssue"],
+            "reason": cell["disposition"],
+        }
+        for cell in cells
+        if cell["releaseDenominator"] == "excluded"
+    ]
+    release_denominator = [
+        cell for cell in cells if cell["releaseDenominator"] == "included"
+    ]
     return {
         "schemaVersion": "1.0.0",
         "generator": "scripts/generate-sdk-certification.py",
@@ -731,6 +755,16 @@ def build_document() -> dict[str, Any]:
         "trackingIssue": TRACKING_ISSUE,
         "complete": counts["gap"] == 0,
         "summary": {"total": len(cells), **counts},
+        "releaseProfile": {
+            "id": RELEASE_PROFILE_ID,
+            "policy": (
+                "All concrete public client operations except the explicitly enumerated "
+                "2026.1 candidate-fixture exclusions below. Exclusions are unsupported by "
+                "this release profile, remain owned gaps, and are not passing evidence."
+            ),
+            "denominator": len(release_denominator),
+            "excluded": release_exclusions,
+        },
         "operations": cells,
     }
 
@@ -1001,6 +1035,12 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "complete": True,
             "owner_issue": TRACKING_ISSUE,
             "matrix_sha256": hashlib.sha256(_render(document).encode()).hexdigest(),
+            "release_profile": document.get("releaseProfile", {}).get("id"),
+            "denominator": document.get("releaseProfile", {}).get("denominator"),
+            "excluded_operations": [
+                exclusion["operationId"]
+                for exclusion in document.get("releaseProfile", {}).get("excluded", [])
+            ],
         },
         "observations": observations,
     }
