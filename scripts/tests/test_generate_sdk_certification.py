@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from argparse import Namespace
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "generate-sdk-certification.py"
@@ -14,6 +15,16 @@ SPEC.loader.exec_module(MODULE)
 
 
 class SdkCertificationTests(unittest.TestCase):
+    @staticmethod
+    def _request_context():
+        return {
+            "base_url": "https://candidate.test/root/",
+            "grpc_base_url": "https://candidate.test:8443/root/",
+            "service_id": "places",
+            "layer_id": "0",
+            "collection_id": "places",
+        }
+
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
         self.assertGreater(document["summary"]["total"], 0)
@@ -37,13 +48,15 @@ class SdkCertificationTests(unittest.TestCase):
                 candidate_cut="2026-01-01T00:00:00Z", evidence_uri="https://example.test/run/1",
                 fixture_revision="sha256:" + "e" * 64,
                 seed_revision="d" * 40,
+                **self._request_context(),
             ))
 
     def test_missing_required_result_fails_closed(self):
         document = {
             "operations": [{
                 "id": "Honua.Example.IHonuaExampleClient.GetAsync",
-                "surface": "example",
+                "surface": "geoservices",
+                "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
                 "operation": "GetAsync",
                 "status": "exercised",
                 "requiredTiers": ["pr"],
@@ -65,6 +78,7 @@ class SdkCertificationTests(unittest.TestCase):
                 fixture_revision="fixture", seed_revision="b" * 40,
                 evidence_uri="https://example.test/run/1",
                 allow_nonpass=True,
+                **self._request_context(),
             ), document)
             self.assertEqual(1, result)
             fragment = json.loads(evidence.read_text(encoding="utf-8"))
@@ -75,6 +89,16 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual("a" * 40, fragment["observations"][0]["producer_source_sha"])
             self.assertEqual(["mutation"], fragment["observations"][0]["scenario_facets"])
             self.assertEqual("Honua SDK .NET", fragment["observations"][0]["canonical_client"])
+            self.assertEqual("Honua SDK .NET", fragment["observations"][0]["client_id"])
+            self.assertEqual("sdk-dotnet-certification", fragment["observations"][0]["runner_lane"])
+            self.assertEqual("11.0", fragment["observations"][0]["protocol_version"])
+            self.assertEqual("GeoServices REST", fragment["observations"][0]["protocol_profile"])
+            self.assertEqual("Honua SDK .NET", fragment["observations"][0]["performed_by"])
+            self.assertEqual(
+                "https://candidate.test/rest/services/places/FeatureServer/0/query",
+                fragment["observations"][0]["request_url"],
+            )
+            self.assertEqual([], fragment["observations"][0]["exercised_capabilities"])
             self.assertEqual(
                 "sdk-dotnet-certification@" + "a" * 40,
                 fragment["observations"][0]["contract_revision"],
@@ -85,6 +109,134 @@ class SdkCertificationTests(unittest.TestCase):
             )
             self.assertIsNone(fragment["observations"][0]["evidence_digest"])
             self.assertIsNone(fragment["observations"][0]["facet_results"])
+
+    def test_pass_records_all_claimed_facets_as_exercised(self):
+        document = {
+            "operations": [{
+                "id": "Honua.Sdk.GeoServices.IHonuaFeatureServerClient.QueryAsync",
+                "surface": "geoservices",
+                "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+                "operation": "QueryAsync",
+                "status": "exercised",
+                "requiredTiers": ["pr"],
+                "scenarioFacets": ["read-only", "pagination"],
+                "tests": ["Example.Tests.Query"],
+            }]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            trx = Path(directory) / "passed.trx"
+            trx.write_text(
+                '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results>'
+                '<UnitTestResult testName="Example.Tests.Query" outcome="Passed" />'
+                '</Results></TestRun>',
+                encoding="utf-8",
+            )
+            evidence = Path(directory) / "evidence.json"
+            result = MODULE.write_evidence(Namespace(
+                tier="pr", trx=[trx], evidence=evidence, started_at=None,
+                sdk_commit="a" * 40, sdk_version="1.6.0",
+                server_source_sha="b" * 40, image_source_revision="b" * 40,
+                server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                evidence_uri="https://example.test/run/1", allow_nonpass=False,
+                **self._request_context(),
+            ), document)
+
+            observation = json.loads(evidence.read_text(encoding="utf-8"))["observations"][0]
+            self.assertEqual(0, result)
+            self.assertEqual("pass", observation["result"])
+            self.assertEqual(
+                observation["scenario_facets"], observation["exercised_capabilities"]
+            )
+
+    def test_every_observation_satisfies_truthful_identity_ingest_rules(self):
+        document = MODULE.build_document()
+        with tempfile.TemporaryDirectory() as directory:
+            trx = Path(directory) / "empty.trx"
+            trx.write_text(
+                '<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results /></TestRun>',
+                encoding="utf-8",
+            )
+            evidence = Path(directory) / "evidence.json"
+            MODULE.write_evidence(Namespace(
+                tier="nightly", trx=[trx], evidence=evidence, started_at=None,
+                sdk_commit="a" * 40, sdk_version="1.6.0",
+                server_source_sha="b" * 40, image_source_revision="b" * 40,
+                server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                **self._request_context(),
+            ), document)
+
+            fragment = json.loads(evidence.read_text(encoding="utf-8"))
+            self.assertGreater(len(fragment["observations"]), 0)
+            for observation in fragment["observations"]:
+                self.assertEqual(observation["canonical_client"], observation["client_id"])
+                self.assertEqual("sdk-dotnet-certification", observation["runner_lane"])
+                self.assertEqual(observation["client_id"], observation["performed_by"])
+                self.assertTrue(observation["protocol_version"])
+                self.assertTrue(observation["protocol_profile"])
+                request_url = observation["request_url"]
+                if request_url is not None:
+                    parsed = urlsplit(request_url)
+                    self.assertIn(parsed.scheme, {"http", "https"})
+                    self.assertTrue(parsed.netloc)
+                    self.assertNotEqual("/api/v1", parsed.path)
+                self.assertIsInstance(observation["exercised_capabilities"], list)
+                if observation["result"] == "pass":
+                    self.assertLessEqual(
+                        set(observation["scenario_facets"]),
+                        set(observation["exercised_capabilities"]),
+                    )
+
+    def test_abstractions_request_urls_are_proved_representative_endpoints(self):
+        identity = {
+            "baseUrl": "https://candidate.test/root/",
+            "grpcBaseUrl": "https://candidate.test:8443/root/",
+            "serviceId": "places",
+            "layerId": "7",
+            "collectionId": "places",
+        }
+        cases = {
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient", "QueryAsync"):
+                "https://candidate.test/rest/services/places/FeatureServer/7/query",
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient", "ApplyEditsAsync"):
+                "https://candidate.test/rest/services/places/FeatureServer/7/applyEdits",
+            ("Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient", "GetDirectionsAsync"):
+                "https://candidate.test/rest/services/places/NAServer/Route",
+            ("Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient", "ListScenesAsync"):
+                "https://candidate.test/api/scenes",
+        }
+
+        for (client, method), expected in cases.items():
+            with self.subTest(client=client, method=method):
+                self.assertEqual(expected, MODULE._certification_request_url({
+                    "surface": "abstractions", "client": client, "operation": method,
+                }, identity))
+
+    def test_unproved_abstractions_families_have_no_request_url(self):
+        identity = {
+            "baseUrl": "https://candidate.test/root/",
+            "grpcBaseUrl": "https://candidate.test:8443/root/",
+            "serviceId": "places",
+            "layerId": "7",
+            "collectionId": "places",
+        }
+        clients_and_methods = [
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient", "ListAttachmentsAsync"),
+            ("Honua.Sdk.Abstractions.Features.IHonuaFeatureDescriptorClient", "GetDescriptorAsync"),
+            ("Honua.Sdk.Abstractions.Raster.IHonuaRasterDataClient", "ReadWindowAsync"),
+            ("Honua.Sdk.Abstractions.Offline.IReplicaSyncClient", "CreateReplicaAsync"),
+            ("Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient", "OptimizeRouteAsync"),
+        ]
+
+        for client, method in clients_and_methods:
+            with self.subTest(client=client, method=method):
+                self.assertIsNone(MODULE._certification_request_url({
+                    "surface": "abstractions", "client": client, "operation": method,
+                }, identity))
 
     def test_interface_inheritance_is_resolved_transitively(self):
         document = MODULE.build_document()
@@ -275,7 +427,8 @@ class SdkCertificationTests(unittest.TestCase):
         document = {
             "operations": [{
                 "id": "Honua.Example.IHonuaExampleClient.GetAsync",
-                "surface": "example",
+                "surface": "geoservices",
+                "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
                 "operation": "GetAsync",
                 "status": "exercised",
                 "requiredTiers": ["pr"],
@@ -300,6 +453,7 @@ class SdkCertificationTests(unittest.TestCase):
                 release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
                 fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
                 evidence_uri="https://example.test/run/1",
+                **self._request_context(),
             ), document)
             self.assertEqual(1, result)
 
@@ -307,7 +461,8 @@ class SdkCertificationTests(unittest.TestCase):
         document = {
             "operations": [{
                 "id": "Honua.Example.IHonuaExampleClient.GetAsync",
-                "surface": "example",
+                "surface": "geoservices",
+                "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
                 "operation": "GetAsync",
                 "status": "exercised",
                 "requiredTiers": ["pr"],
@@ -333,6 +488,7 @@ class SdkCertificationTests(unittest.TestCase):
                 release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
                 fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
                 evidence_uri="https://example.test/run/1",
+                **self._request_context(),
             ), document)
             self.assertEqual(1, result)
             self.assertEqual("skip", json.loads(evidence.read_text(encoding="utf-8"))["observations"][0]["result"])
