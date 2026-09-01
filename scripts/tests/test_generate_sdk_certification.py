@@ -85,6 +85,8 @@ class SdkCertificationTests(unittest.TestCase):
                 tier="release",
                 sdk_commit="a" * 40,
                 sdk_version="1.0.0",
+                sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "f" * 64,
+                sdk_package_source_sha="a" * 40,
                 server_source_sha="b" * 40,
                 image_source_revision="b" * 40,
                 server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
