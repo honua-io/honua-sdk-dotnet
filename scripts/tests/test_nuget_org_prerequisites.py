@@ -161,6 +161,14 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertNotIn("secrets.NUGET_API_KEY", workflow)
         self.assertNotIn("secrets: inherit", workflow)
 
+    def test_prerelease_skips_trusted_publishing_exchange(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        login = workflow.index("- name: Exchange OIDC for a short-lived NuGet key")
+        preflight = workflow.index("- name: Preflight every immutable registry coordinate")
+        login_block = workflow[login:preflight]
+        stable_condition = "if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}"
+        self.assertEqual(2, login_block.count(stable_condition))
+
     def test_symbol_coordinates_are_preflighted_and_proven_without_duplicate_acceptance(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         preflight = workflow.index("- name: Preflight every immutable registry coordinate")

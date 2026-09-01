@@ -31,6 +31,9 @@ def package_bytes(
     payload: bytes = b"assembly",
     signature: bytes | None = None,
     repository_commit: str = SOURCE_SHA,
+    repository_type: str = "git",
+    repository_url: str = "https://github.com/honua-io/honua-sdk-dotnet",
+    signature_content_type_default: bool = False,
 ) -> bytes:
     target = BytesIO()
     with ZipFile(target, "w", compression=ZIP_DEFLATED) as archive:
@@ -38,7 +41,7 @@ def package_bytes(
             f"{package_id}.nuspec",
             "<package><metadata>"
             f"<id>{package_id}</id><version>{version}</version>"
-            f'<repository type="git" url="https://github.com/honua-io/honua-sdk-dotnet" commit="{repository_commit}" />'
+            f'<repository type="{repository_type}" url="{repository_url}" commit="{repository_commit}" />'
             "</metadata></package>",
         )
         archive.writestr("lib/net10.0/Honua.Sdk.dll", payload)
@@ -51,10 +54,16 @@ def package_bytes(
         )
         archive.writestr("package/services/metadata/core-properties/build.psmdcp", b"metadata")
         if signature is not None:
-            content_types += (
-                '<Override PartName="/.signature.p7s" '
-                'ContentType="application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml" />'
-            )
+            if signature_content_type_default:
+                content_types += (
+                    '<Default Extension="p7s" '
+                    'ContentType="application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml" />'
+                )
+            else:
+                content_types += (
+                    '<Override PartName="/.signature.p7s" '
+                    'ContentType="application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml" />'
+                )
             relationships += (
                 '<Relationship Id="signature" '
                 'Target="/package/services/digital-signature/origin.psdor" '
@@ -114,6 +123,37 @@ class PackageArchiveTests(unittest.TestCase):
         signed = MODULE.inspect_package_bytes(package_bytes(signature=b"repository-signature"))
         self.assertNotEqual(unsigned.raw_sha256, signed.raw_sha256)
         self.assertEqual(unsigned.semantic_sha256, signed.semantic_sha256)
+
+    def test_repository_signing_default_content_type_does_not_change_semantic_digest(self) -> None:
+        unsigned = MODULE.inspect_package_bytes(package_bytes())
+        signed = MODULE.inspect_package_bytes(
+            package_bytes(signature=b"repository-signature", signature_content_type_default=True)
+        )
+        self.assertEqual(unsigned.semantic_sha256, signed.semantic_sha256)
+
+    def test_local_packages_require_canonical_repository_identity(self) -> None:
+        for field, value in (
+            ("repository_type", "svn"),
+            ("repository_url", "https://github.com/example/fork"),
+        ):
+            with self.subTest(field=field):
+                directory = tempfile.TemporaryDirectory()
+                self.addCleanup(directory.cleanup)
+                path = Path(directory.name, "Honua.Sdk.1.6.1.nupkg")
+                path.write_bytes(package_bytes(**{field: value}))
+                with self.assertRaisesRegex(MODULE.CoordinateError, "repository"):
+                    MODULE.load_local_packages(Path(directory.name), ["Honua.Sdk"], "1.6.1", SOURCE_SHA)
+
+    @mock.patch.object(MODULE.time, "sleep")
+    @mock.patch.object(MODULE.urllib.request, "build_opener")
+    def test_missing_package_retries_404_before_reporting_absent(self, build_opener, sleep) -> None:
+        error = MODULE.urllib.error.HTTPError(
+            "https://example.invalid/package", 404, "Not Found", {}, None
+        )
+        build_opener.return_value.open.side_effect = [error, error, error]
+        self.assertIsNone(MODULE.fetch_registry_package("https://example.invalid/package", headers={}))
+        self.assertEqual(3, build_opener.return_value.open.call_count)
+        self.assertEqual([mock.call(2), mock.call(4)], sleep.call_args_list)
 
     def test_payload_change_changes_semantic_digest(self) -> None:
         left = MODULE.inspect_package_bytes(package_bytes(payload=b"left"))

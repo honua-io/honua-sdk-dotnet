@@ -23,6 +23,8 @@ from typing import Any
 
 
 SCHEMA = "honua.nuget-coordinate-audit/v1"
+CANONICAL_REPOSITORY_TYPE = "git"
+CANONICAL_REPOSITORY_URL = "https://github.com/honua-io/honua-sdk-dotnet"
 MAX_HTTP_BYTES = 256 * 1024 * 1024
 MAX_ARCHIVE_MEMBERS = 20_000
 MAX_ARCHIVE_UNCOMPRESSED_BYTES = 512 * 1024 * 1024
@@ -61,6 +63,8 @@ class PackageArchive:
     version: str
     raw_sha256: str
     semantic_sha256: str
+    repository_type: str | None
+    repository_url: str | None
     repository_commit: str | None
 
 
@@ -85,7 +89,10 @@ def _canonical_container_xml(name: str, payload: bytes) -> bytes:
         attributes = {key.rsplit("}", 1)[-1]: value for key, value in child.attrib.items()}
         if (
             name.lower() == "[content_types].xml"
-            and attributes.get("PartName", "").lower() == "/.signature.p7s"
+            and (
+                attributes.get("PartName", "").lower() == "/.signature.p7s"
+                or attributes.get("Extension", "").lower() == "p7s"
+            )
         ):
             continue
         if (
@@ -189,8 +196,12 @@ def inspect_package_bytes(value: bytes) -> PackageArchive:
     if version_element is None or not (version_element.text or "").strip():
         raise CoordinateError("package .nuspec has no version")
     repository_element = _metadata_element(nuspec_root, "repository")
+    repository_type = None
+    repository_url = None
     repository_commit = None
     if repository_element is not None:
+        repository_type = (repository_element.get("type") or "").strip() or None
+        repository_url = (repository_element.get("url") or "").strip() or None
         repository_commit = (repository_element.get("commit") or "").strip() or None
 
     return PackageArchive(
@@ -198,8 +209,24 @@ def inspect_package_bytes(value: bytes) -> PackageArchive:
         version=(version_element.text or "").strip(),
         raw_sha256=sha256_bytes(value),
         semantic_sha256=sha256_bytes(b"".join(sorted(semantic_records))),
+        repository_type=repository_type,
+        repository_url=repository_url,
         repository_commit=repository_commit,
     )
+
+
+def _validate_repository(package: PackageArchive, label: str) -> None:
+    if package.repository_type != CANONICAL_REPOSITORY_TYPE:
+        raise CoordinateError(
+            f"{label} repository type is {package.repository_type or '<missing>'}; "
+            f"expected {CANONICAL_REPOSITORY_TYPE}"
+        )
+    normalized_url = package.repository_url.rstrip("/") if package.repository_url else None
+    if normalized_url != CANONICAL_REPOSITORY_URL:
+        raise CoordinateError(
+            f"{label} repository URL is {package.repository_url or '<missing>'}; "
+            f"expected {CANONICAL_REPOSITORY_URL}"
+        )
 
 
 def inspect_package_file(path: Path) -> PackageArchive:
@@ -252,6 +279,7 @@ def load_local_packages(
             raise CoordinateError(
                 f"{package.package_id} has version {package.version}; expected {expected_version}"
             )
+        _validate_repository(package, package.package_id)
         if package.repository_commit != expected_source_revision:
             raise CoordinateError(
                 f"{package.package_id} repository commit is "
@@ -311,6 +339,7 @@ def load_symbol_packages(
                 f"{package.package_id} symbol package has version {package.version}; "
                 f"expected {expected_version}"
             )
+        _validate_repository(package, f"{package.package_id} symbol package")
         if package.repository_commit != expected_source_revision:
             raise CoordinateError(
                 f"{package.package_id} symbol repository commit is "
@@ -348,7 +377,11 @@ def _request_bytes(
                 return _read_bounded(response, limit=limit)
         except urllib.error.HTTPError as exc:
             if exc.code == 404 and missing_is_none:
-                return None
+                if attempt == 3:
+                    return None
+                last_error = exc
+                time.sleep(attempt * 2)
+                continue
             last_error = exc
             if exc.code not in retryable_http:
                 raise CoordinateError(f"registry request failed with HTTP {exc.code}") from exc

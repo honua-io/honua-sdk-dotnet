@@ -695,12 +695,14 @@ jobs:
           (cd ./nupkgs && sha256sum --check SHA256SUMS)
 
       - name: Exchange OIDC for a short-lived NuGet key (Trusted Publishing)
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         id: nuget-login
         uses: NuGet/login@2d1146689b8cda280b9bc96326124645441f03bc # v1.2.0
         with:
           user: makanikai
 
       - name: Validate Trusted Publishing exchange
+        if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         env:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
