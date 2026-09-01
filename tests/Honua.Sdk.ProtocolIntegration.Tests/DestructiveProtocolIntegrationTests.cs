@@ -13,7 +13,7 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
 {
     private readonly ProtocolIntegrationFixture _fixture = fixture;
 
-    [ProtocolIntegrationFact(true)]
+    [ProtocolIntegrationFact(true, ProtocolIntegrationRequiredFixture.FeatureServerEditEntitlement)]
     public async Task FeatureServerApplyEdits_AddUpdateDelete_RoundTrips()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
