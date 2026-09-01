@@ -99,10 +99,10 @@ previews of a future major.
   staging to a dry run; staging is mandatory for every non-dry tag publish.
 
 The workflow uses the `public-nuget` environment's `NUGET_API_KEY` for
-nuget.org and the job-scoped `GITHUB_TOKEN` for GitHub Packages. It restores
-GitHub-hosted dependencies such as `Geospatial.Grpc` from
-`nuget.pkg.github.com/honua-io` during build validation. Stable public publishing
-remains blocked until the same dependency version is available from nuget.org.
+nuget.org and the job-scoped `GITHUB_TOKEN` for GitHub Packages. Build and
+package-install validation restore the stable `Geospatial.Grpc` dependency
+from nuget.org; the GitHub Packages credential is reserved for the secondary
+SDK publication target.
 Release-tag signing and verification happen only inside the protected
 `public-nuget` job and cover both primary `.nupkg` and symbol `.snupkg`
 artifacts. GitHub Packages receives that author-signed set. If the author

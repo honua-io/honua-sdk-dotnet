@@ -351,21 +351,11 @@ jobs:
               <clear />
               <add key="local-sdk" value="${GITHUB_WORKSPACE}/nupkgs" />
               <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
-              <add key="github-honua" value="https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" />
             </packageSources>
-            <packageSourceCredentials>
-              <github-honua>
-                <add key="Username" value="${{ github.actor }}" />
-                <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
-              </github-honua>
-            </packageSourceCredentials>
             <packageSourceMapping>
               <packageSource key="local-sdk">
                 <package pattern="Honua.Sdk" />
                 <package pattern="Honua.Sdk.*" />
-              </packageSource>
-              <packageSource key="github-honua">
-                <package pattern="Geospatial.Grpc" />
               </packageSource>
               <packageSource key="nuget.org">
                 <package pattern="*" />

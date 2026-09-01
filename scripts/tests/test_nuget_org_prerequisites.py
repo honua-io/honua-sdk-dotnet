@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "check-nuget-org-prerequisites.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "publish-dotnet-sdk.yml"
 STAGING_WORKFLOW = ROOT / ".github" / "workflows" / "staging-integration.yml"
+NUGET_CONFIG = ROOT / "NuGet.config"
 SPEC = importlib.util.spec_from_file_location("nuget_org_prerequisites", SCRIPT)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -73,6 +74,21 @@ class NugetOrgPrerequisiteTests(unittest.TestCase):
 
 
 class PublishWorkflowContractTests(unittest.TestCase):
+    def test_public_protocol_dependency_is_not_mapped_to_github_packages(self) -> None:
+        config = NUGET_CONFIG.read_text(encoding="utf-8")
+        github_mapping = config.split('<packageSource key="github-honua">', 1)[1].split(
+            "</packageSource>", 1
+        )[0]
+        self.assertNotIn("Geospatial.Grpc", github_mapping)
+
+    def test_package_smoke_consumes_protocol_dependency_from_nuget_org_only(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        smoke = workflow.index("- name: Package install smoke")
+        upload = workflow.index("- name: Record immutable package checksums")
+        smoke_block = workflow[smoke:upload]
+        self.assertIn("https://api.nuget.org/v3/index.json", smoke_block)
+        self.assertNotIn("nuget.pkg.github.com", smoke_block)
+
     def test_stable_release_fails_before_build_when_public_prerequisites_are_missing(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         preflight = workflow.index("- name: Validate stable nuget.org prerequisites")
