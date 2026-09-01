@@ -47,6 +47,38 @@ class SdkCertificationTests(unittest.TestCase):
         self.assertTrue(all(cell["ownerIssue"] == MODULE.RC_FIXTURE_GAP_ISSUE for cell in unavailable))
         self.assertTrue(all(not cell["tests"] for cell in unavailable))
 
+    def test_2026_1_release_denominator_explicitly_partitions_every_operation(self):
+        document = MODULE.build_document()
+        operations = document["operations"]
+        profile = document["releaseProfile"]
+        exclusions = {item["operationId"]: item for item in profile["excluded"]}
+
+        self.assertEqual(MODULE.RELEASE_PROFILE_ID, profile["id"])
+        self.assertEqual(len(operations), sum(
+            cell["releaseDenominator"] in {"included", "excluded", "non-addressable"}
+            for cell in operations
+        ))
+        self.assertEqual(
+            profile["denominator"],
+            sum(cell["releaseDenominator"] == "included" for cell in operations),
+        )
+        self.assertEqual(
+            exclusions,
+            {
+                cell["id"]: {
+                    "operationId": cell["id"],
+                    "ownerIssue": cell["ownerIssue"],
+                    "reason": cell["disposition"],
+                }
+                for cell in operations
+                if cell["releaseDenominator"] == "excluded"
+            },
+        )
+        self.assertTrue(exclusions)
+        self.assertTrue(all("release" not in cell["requiredTiers"] for cell in operations if cell["id"] in exclusions))
+        self.assertTrue(all(item["ownerIssue"] == MODULE.RC_FIXTURE_GAP_ISSUE for item in exclusions.values()))
+        self.assertTrue(all(item["reason"] for item in exclusions.values()))
+
     def test_release_identity_requires_exact_image_source_seed_and_cut(self):
         with self.assertRaisesRegex(ValueError, "seed revision"):
             MODULE._identity(Namespace(
