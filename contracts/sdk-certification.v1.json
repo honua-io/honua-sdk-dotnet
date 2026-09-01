@@ -6,20 +6,15 @@
   "complete": false,
   "summary": {
     "total": 303,
-    "exercised": 20,
-    "gap": 265,
+    "exercised": 22,
+    "gap": 263,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 268,
+    "denominator": 271,
     "excluded": [
-      {
-        "operationId": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient.ApplyEditsAsync(FeatureEditRequest,CancellationToken)",
-        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
-        "reason": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
-      },
       {
         "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.FindClosestFacilityAsync(ClosestFacilityRequest,CancellationToken)",
         "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
@@ -74,16 +69,6 @@
         "operationId": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.SuggestAsync(string,SuggestOptions?,CancellationToken)",
         "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
         "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
-      },
-      {
-        "operationId": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.AddFeaturesAsync(string,int,IReadOnlyList<FeatureServerFeature>,bool,CancellationToken)",
-        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
-        "reason": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
-      },
-      {
-        "operationId": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.DeleteFeaturesAsync(string,int,IReadOnlyList<long>,bool,CancellationToken)",
-        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
-        "reason": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
       },
       {
         "operationId": "Honua.Sdk.Spec.IHonuaSpecClient.ApplyAsync(SpecDocumentRequest,CancellationToken)",
@@ -471,12 +456,15 @@
       "signature": "ApplyEditsAsync(FeatureEditRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly"
+        "nightly",
+        "release"
       ],
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -484,23 +472,21 @@
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [],
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+        ],
         "Honua.Sdk.Grpc.HonuaGrpcClient": [],
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
-      "releaseDenominator": "excluded",
+      "releaseDenominator": "included",
       "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient",
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
-      "unavailableTests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
-      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Canonical live tests do not cover every concrete implementation: Honua.Sdk.Grpc.HonuaGrpcClient, Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient, Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient."
     },
     {
       "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.CommitEditSessionAsync(FeatureEditSessionCompleteRequest,CancellationToken)",
@@ -5976,29 +5962,26 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
       "operation": "AddFeaturesAsync",
       "signature": "AddFeaturesAsync(string,int,IReadOnlyList<FeatureServerFeature>,bool,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
-        "nightly"
+        "nightly",
+        "release"
       ],
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+        ]
       },
-      "releaseDenominator": "excluded",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "unavailableTests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
-      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.ApplyEditsAsync(string,int,FeatureServerEditRequest,CancellationToken)",
@@ -6034,29 +6017,26 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
       "operation": "DeleteFeaturesAsync",
       "signature": "DeleteFeaturesAsync(string,int,IReadOnlyList<long>,bool,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
-        "nightly"
+        "nightly",
+        "release"
       ],
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+        ]
       },
-      "releaseDenominator": "excluded",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "unavailableTests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
-      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.GetEditCapabilitiesAsync(string,int,CancellationToken)",

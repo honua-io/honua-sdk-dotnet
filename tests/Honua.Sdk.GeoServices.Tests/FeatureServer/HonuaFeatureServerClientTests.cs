@@ -615,6 +615,48 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
+    public async Task ApplyEditsAsync_SharedAbstraction_TreatsNullUnrequestedResultsAsEmpty()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(req =>
+        {
+            if (req.Method == HttpMethod.Get)
+            {
+                return Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                    """{ "id": 0, "objectIdField": "OBJECTID", "capabilities": "Query,Update" }"""));
+            }
+
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse("""
+            {
+                "addResults": null,
+                "updateResults": [{ "objectId": 202, "success": true }],
+                "deleteResults": null
+            }
+            """));
+        });
+
+        var response = await ((IHonuaFeatureEditClient)client).ApplyEditsAsync(new FeatureEditRequest
+        {
+            Source = new FeatureSource { ServiceId = "svc", LayerId = 0 },
+            Updates =
+            [
+                new FeatureEditFeature
+                {
+                    ObjectId = 202,
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["NAME"] = JsonValue("Updated Park"),
+                    },
+                }
+            ],
+        });
+
+        Assert.Empty(response.AddResults);
+        Assert.Single(response.UpdateResults);
+        Assert.Empty(response.DeleteResults);
+        Assert.True(response.Succeeded);
+    }
+
+    [Fact]
     public async Task ApplyEditsAsync_SharedAbstraction_CachesObjectIdFieldPerLayer()
     {
         var metadataRequests = 0;

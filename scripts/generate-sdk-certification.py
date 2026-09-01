@@ -31,6 +31,7 @@ RC_FIXTURE_GAP_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/308"
 RELEASE_PROFILE_ID = "honua-sdk-dotnet-2026.1"
 CERTIFICATION_CLIENT_ID = "Honua SDK .NET"
 CERTIFICATION_RUNNER_LANE = "sdk-dotnet-certification"
+FEATURESERVER_EDIT_ENTITLEMENT_POLICY = "honua-pro-featureserver-edits-v1"
 
 IMPLEMENTATION_TEST_PROVIDERS = {
     "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests."
@@ -76,7 +77,6 @@ PAGINATED_OPERATIONS = frozenset(
 
 RC_UNAVAILABLE_TESTS = frozenset(
     {
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips",
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable",
@@ -950,6 +950,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         request_url = _certification_request_url(operation, identity)
         exercised_capabilities = scenario_facets if result == "pass" else []
         receipt_facets = {facet: result for facet in scenario_facets}
+        licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
+        entitlement_policy_revision = (
+            FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None
+        )
         evidence_receipt = None if result == "skip" else {
             "schema": "honua.certification-evidence-receipt/v1",
             "identity": {
@@ -965,6 +969,8 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "fixture_revision": identity["fixtureRevision"],
                 "contract_revision": contract_revision,
                 "auth_policy_revision": "api-key-protected-v1",
+                "licensed": licensed,
+                "entitlement_policy_revision": entitlement_policy_revision,
                 "started_at": started_at,
                 "completed_at": now,
             },
@@ -999,6 +1005,8 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": contract_revision,
             "auth_policy_revision": "api-key-protected-v1",
+            "licensed": licensed,
+            "entitlement_policy_revision": entitlement_policy_revision,
             "evidence_uri": (
                 None if result == "skip"
                 else f"https://evidence.honua.io/data/sha256/{evidence_digest[7:]}"

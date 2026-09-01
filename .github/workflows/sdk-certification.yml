@@ -41,10 +41,10 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:373aa1fdf1bd4153df9cb21e25e43dfc463c0e194fcac13b40a39c4bb390eb72"
-  PINNED_SERVER_SOURCE_SHA: "ac30266fbd153363bebdbed13130accc8ab0c94a"
+  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:e6db39f64cd38f88ac0cb36cff63d7ef5324ef8a0f12961f6a6583fdce35a5e2"
+  PINNED_SERVER_SOURCE_SHA: "52a56a19a266935fccc79312708b469e92ee3cbe"
   PINNED_SERVER_FIXTURE_REVISION: "sha256:97d35505c77ac4e8c2707364bd499f780cbf63e0e7152e84cd3ef4994ff42914"
-  PINNED_CANDIDATE_CUT: "2026-08-27T03:54:36Z"
+  PINNED_CANDIDATE_CUT: "2026-08-31T13:20:50.989407151Z"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -184,6 +184,7 @@ jobs:
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-server --network host \
             -e ASPNETCORE_ENVIRONMENT=Development \
+            -e Licensing__DevGrantEdition=Pro \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
@@ -210,9 +211,9 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
-          # The 2026.1 candidate is Community edition. Keep edits as an owned fail-closed gap;
-          # a 402 response is never certification evidence for a successful mutation.
-          HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "false"
+          # The server's Development-only Pro grant activates the governed
+          # editing.featureserver-edits entitlement for this local certification target.
+          HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "true"
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
         shell: bash
