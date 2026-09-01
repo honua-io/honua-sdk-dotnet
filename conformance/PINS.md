@@ -14,26 +14,24 @@ geospatial-grpc#19 (`conformance/fetch-fixtures.sh`), never copied/forked here.
 
 | Pin | Value | Source |
 |-----|-------|--------|
-| Conformance fixtures | `0.2.0-alpha.1` | `conformance/FIXTURE_VERSION` |
-| `Geospatial.Grpc` package | `0.2.0-alpha.1` | `Directory.Packages.props` (central `PackageVersion`) |
+| Conformance fixtures | `1.0.0` | `conformance/FIXTURE_VERSION` |
+| `Geospatial.Grpc` package | `1.0.0` | `Directory.Packages.props` (central `PackageVersion`) |
 
 These two **must stay equal** — a fixture set maps 1:1 to a `geospatial.v1`
 schema release, and the SDK's generated gRPC client is built against the same
 schema version. `conformance/check-version.sh` enforces the equality and the
 conformance CI job runs it before anything else.
 
-The fixtures are pulled at build time from the geospatial-grpc `v0.2.0-alpha.1`
+The fixtures are pulled at build time from the geospatial-grpc `v1.0.0`
 GitHub Release:
 
 ```bash
-conformance/fetch-fixtures.sh --version 0.2.0-alpha.1 --dest conformance/.fixtures
+conformance/fetch-fixtures.sh --version 1.0.0 --dest conformance/.fixtures
 ```
 
-The `0.2.0-alpha.1` fixture and package pins were promoted together with a
-compatible immutable server image. Promotion run
-[`32451236434`](https://github.com/honua-io/honua-sdk-dotnet/actions/runs/32451236434)
-passed schema conformance and every live gRPC, FeatureServer, WFS, and OGC API
-Features assertion before the pins were committed.
+The `1.0.0` fixture and package pins were promoted together after the public
+protocol release was receipt-verified. The immutable server compatibility pin
+below remains unchanged.
 
 ## Pinned server image
 
