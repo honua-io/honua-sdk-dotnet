@@ -18,7 +18,7 @@ on:
       - "dotnet-sdk-v*"
 
 env:
-  DOTNET_VERSION: "10.0.100"
+  DOTNET_VERSION: "10.0.400"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 

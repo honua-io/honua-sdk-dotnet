@@ -15,7 +15,7 @@ and renderer code does not belong here (see Conventions & Gotchas).
 
 ## Tech Stack
 
-- **Language/runtime:** C# on .NET 10 (`net10.0`); SDK `10.0.100` pinned in `global.json` (`rollForward: latestFeature`).
+- **Language/runtime:** C# on .NET 10 (`net10.0`); SDK `10.0.400` pinned in `global.json` (`rollForward: latestFeature`).
 - **DI/hosting:** `Microsoft.Extensions.*` 10.x; HTTP resilience via `Microsoft.Extensions.Http.Resilience`.
 - **gRPC:** `Grpc.Net.Client`, `Google.Protobuf`; generated code consumes the `Geospatial.Grpc` package (vendored protos in `third_party/geospatial-grpc/`).
 - **Geometry/CRS:** `NetTopologySuite`, `NetTopologySuite.IO.GeoJSON4STJ`, `ProjNET`.
