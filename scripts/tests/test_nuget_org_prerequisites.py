@@ -191,10 +191,10 @@ class PublishWorkflowContractTests(unittest.TestCase):
 
     def test_release_tools_and_artifacts_are_rerun_safe(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn('DOTNET_VERSION: "10.0.100"', workflow)
+        self.assertIn('DOTNET_VERSION: "10.0.400"', workflow)
         self.assertNotIn('DOTNET_VERSION: "10.0.x"', workflow)
         staging_workflow = STAGING_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn('DOTNET_VERSION: "10.0.100"', staging_workflow)
+        self.assertIn('DOTNET_VERSION: "10.0.400"', staging_workflow)
         self.assertIn("Verify pinned .NET SDK", staging_workflow)
         self.assertIn("CycloneDX --version 4.2.0", workflow)
         self.assertNotIn("CycloneDX --version 4.*", workflow)

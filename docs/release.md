@@ -57,7 +57,7 @@ The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects, the tag commit must be contained in `origin/trunk`, and required
 staging integration must pass. The workflow fails before publishing if any of
 those bindings fail. Release build and publish jobs use the exact .NET SDK
-`10.0.100` so a rerun cannot silently select a newer feature-band SDK.
+`10.0.400` so a rerun cannot silently select a newer feature-band SDK.
 
 ## Version bumps
 
