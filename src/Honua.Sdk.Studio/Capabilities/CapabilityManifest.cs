@@ -239,6 +239,15 @@ public sealed record CapabilityEntry
     /// <summary>Capability category.</summary>
     public string? Category { get; init; }
 
+    /// <summary>
+    /// Server-owned governance lifecycle (for example <c>Implemented</c>, <c>Preview</c>,
+    /// or <c>Experimental</c>). Unknown future values are preserved verbatim.
+    /// </summary>
+    public required string Lifecycle { get; init; }
+
+    /// <summary>Whether server governance requires explicit opt-in before use.</summary>
+    public required bool OptInRequired { get; init; }
+
     /// <summary>Whether the server implements the capability at all.</summary>
     public bool Supported { get; init; }
 

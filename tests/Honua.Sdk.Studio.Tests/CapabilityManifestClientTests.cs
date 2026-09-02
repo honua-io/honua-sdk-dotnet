@@ -43,10 +43,12 @@ public sealed class CapabilityManifestClientTests
             "publicationFamilies": ["map"]
           },
           "capabilities": [
-            { "id": "studio.map", "category": "studio", "supported": true, "available": true },
+            { "id": "studio.map", "category": "studio", "lifecycle": "Implemented", "optInRequired": false, "supported": true, "available": true },
             {
               "id": "studio.ai.generate",
               "category": "studio",
+              "lifecycle": "Preview",
+              "optInRequired": true,
               "supported": true,
               "available": false,
               "reasonCode": "entitlement-inactive",
@@ -54,6 +56,15 @@ public sealed class CapabilityManifestClientTests
               "entitlementKeys": ["ai.generation"],
               "minimumEdition": "enterprise",
               "messageKey": "capability.ai.disabled"
+            },
+            {
+              "id": "provider.snowflake",
+              "category": "provider",
+              "lifecycle": "Experimental",
+              "optInRequired": true,
+              "supported": true,
+              "available": false,
+              "reasonCode": "configuration-disabled"
             }
           ],
           "transports": {
@@ -121,7 +132,7 @@ public sealed class CapabilityManifestClientTests
         Assert.Equal("acme", manifest.Scope?.TenantId);
         Assert.Equal("1.9.0", manifest.Server?.ServerVersion);
         Assert.Equal(42, manifest.Environment?.Revision);
-        Assert.Equal(2, manifest.Capabilities.Count);
+        Assert.Equal(3, manifest.Capabilities.Count);
         Assert.Equal("application/json", manifest.Links.Single().MediaType);
 
         // Query helpers (parity with the JS getCapability / hasCapability helpers).
@@ -140,6 +151,16 @@ public sealed class CapabilityManifestClientTests
         // A representative limit round-trips.
         Assert.Equal(2000, manifest.Limits?.Query?.MaxRecordCount);
         Assert.False(manifest.Policies?.Entitlements.Single().Active);
+
+        var implemented = manifest.GetCapability("studio.map");
+        Assert.Equal("Implemented", implemented?.Lifecycle);
+        Assert.False(implemented?.OptInRequired);
+        var preview = manifest.GetCapability("studio.ai.generate");
+        Assert.Equal("Preview", preview?.Lifecycle);
+        Assert.True(preview?.OptInRequired);
+        var experimental = manifest.GetCapability("provider.snowflake");
+        Assert.Equal("Experimental", experimental?.Lifecycle);
+        Assert.True(experimental?.OptInRequired);
     }
 
     [Fact]
@@ -167,7 +188,7 @@ public sealed class CapabilityManifestClientTests
             {
               "schemaVersion": "honua.capability_manifest.v1",
               "issuedAt": "2026-07-01T12:00:00Z",
-              "capabilities": [ { "id": "studio.map", "supported": true, "available": true, "futureField": 7 } ],
+              "capabilities": [ { "id": "studio.map", "lifecycle": "FutureLifecycle", "optInRequired": false, "supported": true, "available": true, "futureField": 7 } ],
               "somethingNew": { "nested": true }
             }
             """;
@@ -177,6 +198,24 @@ public sealed class CapabilityManifestClientTests
         var manifest = await client.GetManifestAsync();
 
         Assert.True(manifest.IsAvailable("studio.map"));
+        Assert.Equal("FutureLifecycle", manifest.GetCapability("studio.map")?.Lifecycle);
+    }
+
+    [Theory]
+    [InlineData("\"optInRequired\": false,")]
+    [InlineData("\"lifecycle\": \"Preview\",")]
+    public async Task GetManifestAsync_MissingGovernanceField_ThrowsContractException(string remainingField)
+    {
+        var json = $$"""
+            {
+              "schemaVersion": "honua.capability_manifest.v1",
+              "capabilities": [ { "id": "studio.map", {{remainingField}} "supported": true, "available": true } ]
+            }
+            """;
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaCapabilityManifestClient(http);
+
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetManifestAsync());
     }
 
     [Fact]
