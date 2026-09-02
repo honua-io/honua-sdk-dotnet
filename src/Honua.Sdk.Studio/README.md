@@ -130,7 +130,10 @@ if (manifest.HasPackageFamily("dashboard")) { /* show the dashboard family */ }
 ```
 
 `GetCapability(id)` returns the full `CapabilityEntry` (`Supported`, `Available`,
-`ReasonCode`, `EntitlementKey`, `MinimumEdition`, …). The manifest also carries
+`Lifecycle`, `OptInRequired`, `ReasonCode`, `EntitlementKey`, `MinimumEdition`, …).
+`Lifecycle` and `OptInRequired` are required, server-owned governance fields;
+unknown lifecycle strings are preserved, while a missing field is treated as
+contract drift rather than silently defaulting to GA or no opt-in. The manifest also carries
 scope, server/environment info, transports, limits, and entitlement policy.
 
 ## Studio package lifecycle
