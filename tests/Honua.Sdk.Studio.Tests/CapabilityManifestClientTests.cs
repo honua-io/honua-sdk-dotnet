@@ -219,6 +219,30 @@ public sealed class CapabilityManifestClientTests
     }
 
     [Fact]
+    public async Task GetManifestAsync_NullLifecycle_ThrowsContractException()
+    {
+        const string json = """
+            {
+              "schemaVersion": "honua.capability_manifest.v1",
+              "capabilities": [ { "id": "studio.map", "lifecycle": null, "optInRequired": false, "supported": true, "available": true } ]
+            }
+            """;
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaCapabilityManifestClient(http);
+
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetManifestAsync());
+    }
+
+    [Fact]
+    public void CapabilityEntry_GovernanceFieldsRemainSourceCompatible()
+    {
+        var entry = new CapabilityEntry { Id = "studio.map" };
+
+        Assert.Equal(string.Empty, entry.Lifecycle);
+        Assert.False(entry.OptInRequired);
+    }
+
+    [Fact]
     public async Task GetManifestAsync_ProblemResponse_ThrowsApiException()
     {
         using var http = CreateHttpClient(_ => JsonResponse(
