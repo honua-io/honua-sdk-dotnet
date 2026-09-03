@@ -707,6 +707,7 @@ public class HonuaGrpcClientTests
 
         var client = new HonuaGrpcClient(mockClient.Object);
 
+        var itemCount = 0;
         async Task Run()
         {
             await foreach (var _ in client.QueryFeaturesStreamAsync(new Models.QueryFeaturesRequest
@@ -715,11 +716,13 @@ public class HonuaGrpcClientTests
                 LayerId = 0
             }))
             {
+                itemCount++;
             }
         }
 
         var ex = await Assert.ThrowsAsync<HonuaGrpcException>(Run);
 
+        Assert.Equal(0, itemCount);
         Assert.Equal("stream-123", ex.FailureReceipt?.CorrelationId);
     }
 
