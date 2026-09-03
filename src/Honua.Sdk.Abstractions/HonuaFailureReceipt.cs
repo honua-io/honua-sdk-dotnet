@@ -197,29 +197,28 @@ public static class HonuaFailureReceiptFactory
 
     private static List<HonuaFieldFailure> ParseFieldErrors(JsonElement? source, JsonElement? root)
     {
-        JsonElement errors;
+        JsonElement? errors = null;
         if (source is { ValueKind: JsonValueKind.Array } sourceArray)
         {
             errors = sourceArray;
         }
         else if (source is { } sourceObject && sourceObject.ValueKind == JsonValueKind.Object &&
-            sourceObject.TryGetProperty("errors", out errors))
+            sourceObject.TryGetProperty("errors", out JsonElement sourceErrors))
         {
+            errors = sourceErrors;
         }
-        else if (root is { } rootObject && rootObject.TryGetProperty("errors", out errors))
+        else if (root is { } rootObject && rootObject.TryGetProperty("errors", out JsonElement rootErrors))
         {
-        }
-        else
-        {
-            return [];
+            errors = rootErrors;
         }
 
+        if (errors is not { } errorsElement) return [];
+
         List<HonuaFieldFailure> failures = [];
-        if (errors.ValueKind == JsonValueKind.Array)
+        if (errorsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (JsonElement item in errors.EnumerateArray())
+            foreach (JsonElement item in errorsElement.EnumerateArray().Where(item => item.ValueKind == JsonValueKind.Object))
             {
-                if (item.ValueKind != JsonValueKind.Object) continue;
                 failures.Add(new HonuaFieldFailure
                 {
                     Code = GetString(item, "code"),
@@ -231,17 +230,13 @@ public static class HonuaFailureReceiptFactory
                 });
             }
         }
-        else if (errors.ValueKind == JsonValueKind.Object)
+        else if (errorsElement.ValueKind == JsonValueKind.Object)
         {
-            foreach (JsonProperty field in errors.EnumerateObject())
+            foreach (JsonProperty field in errorsElement.EnumerateObject().Where(field => field.Value.ValueKind == JsonValueKind.Array))
             {
-                if (field.Value.ValueKind != JsonValueKind.Array) continue;
-                foreach (JsonElement message in field.Value.EnumerateArray())
+                foreach (JsonElement message in field.Value.EnumerateArray().Where(message => message.ValueKind == JsonValueKind.String))
                 {
-                    if (message.ValueKind == JsonValueKind.String)
-                    {
-                        failures.Add(new HonuaFieldFailure { FieldId = field.Name, Path = field.Name, Message = message.GetString() });
-                    }
+                    failures.Add(new HonuaFieldFailure { FieldId = field.Name, Path = field.Name, Message = message.GetString() });
                 }
             }
         }
@@ -283,27 +278,12 @@ public static class HonuaFailureReceiptFactory
     private static string? First(HttpHeaders headers, string key) =>
         headers.TryGetValues(key, out IEnumerable<string>? values) ? values.FirstOrDefault() : null;
 
-    private static string? FirstHeader(HttpHeaders headers, params string[] keys)
-    {
-        foreach (string key in keys)
-        {
-            string? value = First(headers, key);
-            if (!string.IsNullOrWhiteSpace(value)) return value;
-        }
-
-        return null;
-    }
+    private static string? FirstHeader(HttpHeaders headers, params string[] keys) =>
+        keys.Select(key => First(headers, key)).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
 
     private static string? First(IReadOnlyDictionary<string, IReadOnlyList<string>> metadata, params string[] keys)
-    {
-        foreach (string key in keys)
-        {
-            if (metadata.TryGetValue(key, out IReadOnlyList<string>? values) && values.Count > 0 && values[0] is { Length: > 0 } value)
-                return value;
-        }
-
-        return null;
-    }
+        => keys.Select(key => metadata.TryGetValue(key, out IReadOnlyList<string>? values) && values.Count > 0 ? values[0] : null)
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
 
     private static string? GetString(JsonElement? element, string propertyName) =>
         element is { ValueKind: JsonValueKind.Object } value &&
