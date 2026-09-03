@@ -144,13 +144,15 @@ public static class HonuaFailureReceiptFactory
         string? declaredKind = First(trailing, "honua-error-kind") ?? First(initial, "honua-error-kind");
         HonuaFailureKind kind = ParseKind(declaredKind) ?? ClassifyGrpc(protocolCode);
         string code = First(trailing, "honua-error-code") ?? First(initial, "honua-error-code") ?? DefaultCode(kind);
-        bool retryable = ParseBoolean(First(trailing, "honua-error-retryable") ?? First(initial, "honua-error-retryable"))
+        bool retryable = ParseBoolean(
+            First(trailing, "honua-retryable", "honua-error-retryable") ??
+            First(initial, "honua-retryable", "honua-error-retryable"))
             ?? IsGrpcRetryable(protocolCode);
         TimeSpan? retryAfter = ParseRetryAfter(
             First(trailing, "retry-after") ?? First(initial, "retry-after"));
         string? correlationId =
-            First(trailing, "x-correlation-id", "honua-request-id", "x-request-id") ??
-            First(initial, "x-correlation-id", "honua-request-id", "x-request-id");
+            First(trailing, "x-correlation-id", "honua-request-id", "x-request-id", "honua-correlation-id") ??
+            First(initial, "x-correlation-id", "honua-request-id", "x-request-id", "honua-correlation-id");
         string? structuredErrors =
             First(trailing, "honua-error-details") ?? First(initial, "honua-error-details");
 
@@ -379,7 +381,7 @@ public static class HonuaFailureReceiptFactory
         HonuaFailureKind.NotFound => "resource_not_found",
         HonuaFailureKind.Validation => "validation_failed",
         HonuaFailureKind.Conflict => "resource_conflict",
-        HonuaFailureKind.Throttled => "rate_limited",
+        HonuaFailureKind.Throttled => "rate_limit_exceeded",
         HonuaFailureKind.Unavailable => "service_unavailable",
         _ => "unknown_failure"
     };

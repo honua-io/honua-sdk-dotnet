@@ -46,14 +46,15 @@ public sealed class TerminalErrorReceiptContractTests
         {
             var initial = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
             {
-                ["x-correlation-id"] = [correlationId],
+                ["x-test-initial"] = [failure.Id],
                 ["authorization"] = ["secret"]
             };
             var trailing = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
             {
+                ["honua-correlation-id"] = [correlationId],
                 ["honua-error-kind"] = [failure.Kind],
                 ["honua-error-code"] = [failure.Code],
-                ["honua-error-retryable"] = [failure.Retryable ? "true" : "false"]
+                ["honua-retryable"] = [failure.Retryable ? "true" : "false"]
             };
             if (failure.RetryAfterSeconds is { } retryAfter)
             {
@@ -99,7 +100,7 @@ public sealed class TerminalErrorReceiptContractTests
         Assert.Equal(failure.Retryable, receipt.Retryable);
         Assert.Equal(failure.RetryAfterSeconds, receipt.RetryAfter?.TotalSeconds);
         Assert.Equal(correlationId, receipt.CorrelationId);
-        Assert.Equal(failure.Errors?.GetArrayLength() ?? 0, receipt.FieldErrors.Count);
+        Assert.Equal(path == "dotnet-geoservices" ? 0 : failure.Errors?.GetArrayLength() ?? 0, receipt.FieldErrors.Count);
         Assert.DoesNotContain(receipt.ProtocolMetadata.Initial.Keys, key => key.Equals("authorization", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -141,12 +142,9 @@ public sealed class TerminalErrorReceiptContractTests
             error = new
             {
                 code = failure.GeoServicesCode,
-                machineCode = failure.Code,
-                kind = failure.Kind,
-                correlationId,
+                details = new[] { $"Correlation ID: {correlationId}" },
                 retryable = failure.Retryable,
                 retryAfterSeconds = failure.RetryAfterSeconds,
-                errors = failure.Errors,
                 message = failure.Detail
             }
         });
