@@ -4,6 +4,7 @@
 using Honua.Sdk.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Polly.Timeout;
 
 namespace Honua.Sdk.Internal.Http;
 
@@ -57,6 +58,12 @@ internal static class HonuaRestHttpClientRegistration
                 HonuaHttpHandlerDefaults.CreateNoRedirectPrimaryHandler);
         }
 
+        // Normalize failures without an HTTP response so callers can use the documented
+        // catch (HonuaException) boundary. Register this before the resilience pipeline
+        // so it is the outer handler: transient failures remain visible to Polly for
+        // retries, and the terminal failure is normalized for callers.
+        httpBuilder.AddHttpMessageHandler(() => new HonuaTransportExceptionHandler());
+
         if (options.EnableRetry)
         {
             httpBuilder.AddStandardResilienceHandler(resilience =>
@@ -81,11 +88,6 @@ internal static class HonuaRestHttpClientRegistration
                 }
             });
         }
-
-        // Normalize failures without an HTTP response so callers can use the documented
-        // catch (HonuaException) boundary. This is outside the resilience pipeline, allowing
-        // transient failures to be retried before normalization.
-        httpBuilder.AddHttpMessageHandler(() => new HonuaTransportExceptionHandler());
 
         return httpBuilder;
     }
@@ -114,7 +116,7 @@ internal static class HonuaRestHttpClientRegistration
 
         private static bool IsTransportFailure(Exception exception, CancellationToken cancellationToken)
             => exception is HttpRequestException
-                || exception.GetType().FullName == "Polly.Timeout.TimeoutRejectedException"
+                || exception is TimeoutRejectedException
                 || exception is TaskCanceledException && !cancellationToken.IsCancellationRequested;
     }
 }

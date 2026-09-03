@@ -38,6 +38,45 @@ public sealed class HonuaRestHttpClientRegistrationTests
     }
 
     [Fact]
+    public async Task ConfigureHonuaRestHttpClient_RetriesTransportFailuresBeforeNormalization()
+    {
+        var handler = new TransportFailureHandler(failuresBeforeSuccess: 2);
+        var options = new TestClientOptions
+        {
+            PrimaryHttpMessageHandlerFactory = () => handler,
+        };
+
+        using var provider = BuildProvider(options, configureRetry: null);
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        using var response = await client.GetAsync(
+            new Uri("https://example.test/collections"), CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(3, handler.Attempts);
+    }
+
+    [Fact]
+    public async Task ConfigureHonuaRestHttpClient_WhenTransportRetriesAreExhausted_NormalizesFailure()
+    {
+        var handler = new TransportFailureHandler(failuresBeforeSuccess: int.MaxValue);
+        var options = new TestClientOptions
+        {
+            MaxRetryAttempts = 3,
+            PrimaryHttpMessageHandlerFactory = () => handler,
+        };
+
+        using var provider = BuildProvider(options, configureRetry: null);
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        var exception = await Assert.ThrowsAsync<HonuaTransportException>(() =>
+            client.GetAsync(new Uri("https://example.test/collections"), CancellationToken.None));
+
+        Assert.Equal(options.MaxRetryAttempts, handler.Attempts);
+        Assert.IsType<HttpRequestException>(exception.InnerException);
+    }
+
+    [Fact]
     public async Task ConfigureHonuaRestHttpClient_WhenRetriesAreExhausted_UsesConfiguredTotalAttempts()
     {
         var handler = new CountingHandler(failuresBeforeSuccess: int.MaxValue);
@@ -170,6 +209,28 @@ public sealed class HonuaRestHttpClientRegistrationTests
                 ? HttpStatusCode.ServiceUnavailable
                 : HttpStatusCode.OK;
             return Task.FromResult(new HttpResponseMessage(status));
+        }
+    }
+
+    private sealed class TransportFailureHandler : HttpMessageHandler
+    {
+        private readonly int _failuresBeforeSuccess;
+        private int _attempts;
+
+        public TransportFailureHandler(int failuresBeforeSuccess) => _failuresBeforeSuccess = failuresBeforeSuccess;
+
+        public int Attempts => _attempts;
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var attempt = Interlocked.Increment(ref _attempts);
+            if (attempt <= _failuresBeforeSuccess)
+            {
+                throw new HttpRequestException("simulated transport failure");
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }
     }
 }
