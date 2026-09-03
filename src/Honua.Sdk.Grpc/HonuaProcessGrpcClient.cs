@@ -106,7 +106,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -132,7 +132,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -160,7 +160,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -188,7 +188,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
 
         using (call)
@@ -207,7 +207,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
                 }
                 catch (RpcException ex)
                 {
-                    throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+                    throw HonuaGrpcException.FromRpcException(ex);
                 }
 
                 yield return ToExecutionEvent(current);
@@ -244,7 +244,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -265,7 +265,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -286,7 +286,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -312,7 +312,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 

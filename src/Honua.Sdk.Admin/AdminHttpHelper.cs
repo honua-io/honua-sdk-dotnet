@@ -20,7 +20,7 @@ internal static class AdminHttpHelper
         {
             if (inspectGeoServicesErrorEnvelope)
             {
-                EnsureGeoServicesEnvelopeSucceeded(response.StatusCode, body);
+                EnsureGeoServicesEnvelopeSucceeded(response, body);
             }
 
             return Task.CompletedTask;
@@ -29,7 +29,11 @@ internal static class AdminHttpHelper
         var message = TryExtractErrorMessage(body, preferGeoServicesError: inspectGeoServicesErrorEnvelope) ??
             response.ReasonPhrase ??
             fallbackMessage;
-        throw new HonuaAdminApiException(response.StatusCode, message, body);
+        throw new HonuaAdminApiException(
+            response.StatusCode,
+            message,
+            body,
+            HonuaFailureReceiptFactory.FromHttpResponse(response, body));
     }
 
     public static void EnsureEnvelopeSucceeded(HttpResponseMessage response, string body)
@@ -51,7 +55,11 @@ internal static class AdminHttpHelper
                 success.ValueKind == JsonValueKind.False)
             {
                 var message = TryExtractErrorMessage(body) ?? "API response indicated failure.";
-                throw new HonuaAdminApiException(response.StatusCode, message, body);
+                throw new HonuaAdminApiException(
+                    response.StatusCode,
+                    message,
+                    body,
+                    HonuaFailureReceiptFactory.FromHttpResponse(response, body));
             }
         }
         catch (JsonException)
@@ -103,7 +111,7 @@ internal static class AdminHttpHelper
             : null;
     }
 
-    private static void EnsureGeoServicesEnvelopeSucceeded(HttpStatusCode statusCode, string body)
+    private static void EnsureGeoServicesEnvelopeSucceeded(HttpResponseMessage response, string body)
     {
         if (string.IsNullOrWhiteSpace(body))
         {
@@ -121,15 +129,21 @@ internal static class AdminHttpHelper
             }
 
             var message = TryGetString(errorElement, "message") ?? "Geocoding service returned an error.";
-            var responseStatus = statusCode;
+            var responseStatus = response.StatusCode;
+            int? protocolCode = null;
             if (errorElement.TryGetProperty("code", out var codeProperty) &&
                 codeProperty.TryGetInt32(out var errorCode) &&
                 errorCode is >= 100 and <= 599)
             {
+                protocolCode = errorCode;
                 responseStatus = (HttpStatusCode)errorCode;
             }
 
-            throw new HonuaAdminApiException(responseStatus, message, body);
+            throw new HonuaAdminApiException(
+                responseStatus,
+                message,
+                body,
+                HonuaFailureReceiptFactory.FromHttpResponse(response, body, protocolCode));
         }
         catch (JsonException)
         {

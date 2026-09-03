@@ -1,1 +1,2 @@
 #nullable enable
+override Honua.Sdk.Admin.Exceptions.HonuaAdminApiException.FailureReceipt.get -> Honua.Sdk.Abstractions.HonuaFailureReceipt?

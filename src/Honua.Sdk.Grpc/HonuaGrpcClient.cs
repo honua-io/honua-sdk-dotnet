@@ -204,7 +204,7 @@ public sealed class HonuaGrpcClient :
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -247,7 +247,7 @@ public sealed class HonuaGrpcClient :
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(ex);
         }
     }
 
@@ -318,7 +318,7 @@ public sealed class HonuaGrpcClient :
                 }
                 catch (RpcException ex)
                 {
-                    throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+                    throw HonuaGrpcException.FromRpcException(ex);
                 }
 
                 var page = ProtoAdapter.FromProtoPage(protoPage);

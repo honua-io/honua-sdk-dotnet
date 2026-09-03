@@ -68,6 +68,9 @@ public sealed class HonuaFeatureServerException : Honua.Sdk.Abstractions.HonuaEx
     /// </summary>
     public string? ResponseBody { get; }
 
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaFailureReceipt? FailureReceipt { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class.
     /// </summary>
@@ -77,12 +80,24 @@ public sealed class HonuaFeatureServerException : Honua.Sdk.Abstractions.HonuaEx
         string? responseBody = null,
         int? geoServicesErrorCode = null,
         IReadOnlyList<string>? details = null)
+        : this(statusCode, message, responseBody, geoServicesErrorCode, details, null)
+    {
+    }
+
+    internal HonuaFeatureServerException(
+        HttpStatusCode statusCode,
+        string message,
+        string? responseBody,
+        int? geoServicesErrorCode,
+        IReadOnlyList<string>? details,
+        Honua.Sdk.Abstractions.HonuaFailureReceipt? failureReceipt)
         : base(message)
     {
         StatusCode = statusCode;
         ResponseBody = responseBody;
         GeoServicesErrorCode = geoServicesErrorCode;
         Details = details;
+        FailureReceipt = failureReceipt;
     }
 
     /// <summary>
