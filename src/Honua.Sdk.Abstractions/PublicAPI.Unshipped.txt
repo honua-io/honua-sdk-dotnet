@@ -1,4 +1,7 @@
 #nullable enable
 Honua.Sdk.Abstractions.HonuaTransportException
-Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string!, System.Exception!, int? httpStatus = null) -> void
+Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException() -> void
+Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! message) -> void
+Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! message, System.Exception! innerException, int? httpStatus = null) -> void
 override Honua.Sdk.Abstractions.HonuaTransportException.HttpStatus.get -> int?

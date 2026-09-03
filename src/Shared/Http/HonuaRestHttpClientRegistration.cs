@@ -106,7 +106,7 @@ internal static class HonuaRestHttpClientRegistration
             }
             catch (Exception ex) when (IsTransportFailure(ex, cancellationToken))
             {
-                var status = ex is HttpRequestException { StatusCode: { } code } ? (int)code : null;
+                var status = ex is HttpRequestException { StatusCode: { } code } ? (int?)code : null;
                 throw new HonuaTransportException(
                     $"REST request failed before receiving a response: {ex.Message}", ex, status);
             }
