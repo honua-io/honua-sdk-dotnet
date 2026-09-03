@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.6.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.2...dotnet-sdk-v1.6.3) (2026-09-03)
+
+
+### Bug Fixes
+
+* **http:** normalize transport and problem responses ([#332](https://github.com/honua-io/honua-sdk-dotnet/issues/332)) ([a07d918](https://github.com/honua-io/honua-sdk-dotnet/commit/a07d918ee121668029fea6b4e8106fe8cb3daae1))
+
 ## [1.6.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.0...dotnet-sdk-v1.6.1) (2026-08-24)
 
 
