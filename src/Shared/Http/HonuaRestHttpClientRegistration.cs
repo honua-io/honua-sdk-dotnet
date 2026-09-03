@@ -82,6 +82,39 @@ internal static class HonuaRestHttpClientRegistration
             });
         }
 
+        // Normalize failures without an HTTP response so callers can use the documented
+        // catch (HonuaException) boundary. This is outside the resilience pipeline, allowing
+        // transient failures to be retried before normalization.
+        httpBuilder.AddHttpMessageHandler(() => new HonuaTransportExceptionHandler());
+
         return httpBuilder;
+    }
+
+    private sealed class HonuaTransportExceptionHandler : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (HonuaException)
+            {
+                throw;
+            }
+            catch (Exception ex) when (IsTransportFailure(ex, cancellationToken))
+            {
+                var status = ex is HttpRequestException { StatusCode: { } code } ? (int)code : null;
+                throw new HonuaTransportException(
+                    $"REST request failed before receiving a response: {ex.Message}", ex, status);
+            }
+        }
+
+        private static bool IsTransportFailure(Exception exception, CancellationToken cancellationToken)
+            => exception is HttpRequestException
+                || exception.GetType().FullName == "Polly.Timeout.TimeoutRejectedException"
+                || exception is TaskCanceledException && !cancellationToken.IsCancellationRequested;
     }
 }
