@@ -239,6 +239,29 @@ public sealed class HonuaProcessGrpcClientTests
         Assert.Equal("process", status.Type);
     }
 
+    [Fact]
+    public async Task GetJobAsync_RpcException_RetainsInitialResponseMetadata()
+    {
+        var rpcException = new RpcException(
+            new Status(StatusCode.Unavailable, "Job service unavailable"),
+            new Metadata { { "honua-error-code", "job_store_busy" } });
+        var initialMetadata = new Metadata { { "x-correlation-id", "job-request-123" } };
+        var mockClient = new Mock<Proto.ProcessService.ProcessServiceClient>();
+        mockClient
+            .Setup(c => c.GetJobAsync(
+                It.IsAny<Proto.GetJobRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateFaultedAsyncUnaryCall<Proto.GetJobResponse>(rpcException, initialMetadata));
+        var client = new HonuaProcessGrpcClient(mockClient.Object, new Metadata());
+
+        var ex = await Assert.ThrowsAsync<HonuaGrpcException>(() => client.GetJobAsync("job-1"));
+
+        Assert.Equal("job-request-123", ex.FailureReceipt?.CorrelationId);
+        Assert.Equal("job_store_busy", ex.FailureReceipt?.Code);
+    }
+
     private static HonuaAnalysisPlan CreatePlan()
         => new()
         {
@@ -269,6 +292,14 @@ public sealed class HonuaProcessGrpcClientTests
             Task.FromResult(new Metadata()),
             () => Status.DefaultSuccess,
             () => new Metadata(),
+            () => { });
+
+    private static AsyncUnaryCall<T> CreateFaultedAsyncUnaryCall<T>(RpcException exception, Metadata initialMetadata)
+        => new(
+            Task.FromException<T>(exception),
+            Task.FromResult(initialMetadata),
+            () => exception.Status,
+            () => exception.Trailers,
             () => { });
 
     private static AsyncServerStreamingCall<T> CreateAsyncServerStreamingCall<T>(IEnumerable<T> responses)

@@ -627,6 +627,37 @@ public class HonuaGrpcClientTests
     }
 
     [Fact]
+    public async Task QueryFeaturesAsync_RpcException_RetainsInitialResponseMetadata()
+    {
+        var rpcException = new RpcException(
+            new Status(StatusCode.Unavailable, "Layer unavailable"),
+            new Metadata { { "honua-error-code", "server_busy" } });
+        var initialMetadata = new Metadata
+        {
+            { "x-correlation-id", "request-123" },
+            { "honua-error-kind", "unavailable" }
+        };
+
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesAsync(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateFaultedAsyncUnaryCall<Proto.QueryFeaturesResponse>(rpcException, initialMetadata));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        var ex = await Assert.ThrowsAsync<HonuaGrpcException>(() => client.QueryFeaturesAsync(
+            new Models.QueryFeaturesRequest { ServiceId = "test-svc", LayerId = 0 }));
+
+        Assert.Equal("request-123", ex.FailureReceipt?.CorrelationId);
+        Assert.Equal("server_busy", ex.FailureReceipt?.Code);
+        Assert.Equal("unavailable", ex.FailureReceipt?.ProtocolMetadata.Initial["honua-error-kind"][0]);
+    }
+
+    [Fact]
     public async Task QueryFeaturesStreamAsync_RpcException_WrappedInHonuaGrpcException()
     {
         var rpcException = new RpcException(new Status(StatusCode.Unavailable, "Stream unavailable"));
@@ -658,6 +689,38 @@ public class HonuaGrpcClientTests
 
         Assert.Equal(StatusCode.Unavailable, ex.StatusCode);
         Assert.Contains("Stream unavailable", ex.Message);
+    }
+
+    [Fact]
+    public async Task QueryFeaturesStreamAsync_RpcException_RetainsInitialResponseMetadata()
+    {
+        var rpcException = new RpcException(new Status(StatusCode.Unavailable, "Stream unavailable"));
+        var initialMetadata = new Metadata { { "x-request-id", "stream-123" } };
+        var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
+        mockClient
+            .Setup(c => c.QueryFeaturesStream(
+                It.IsAny<Proto.QueryFeaturesRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateFaultedAsyncServerStreamingCall<Proto.FeaturePage>(rpcException, initialMetadata));
+
+        var client = new HonuaGrpcClient(mockClient.Object);
+
+        async Task Run()
+        {
+            await foreach (var _ in client.QueryFeaturesStreamAsync(new Models.QueryFeaturesRequest
+            {
+                ServiceId = "test-svc",
+                LayerId = 0
+            }))
+            {
+            }
+        }
+
+        var ex = await Assert.ThrowsAsync<HonuaGrpcException>(Run);
+
+        Assert.Equal("stream-123", ex.FailureReceipt?.CorrelationId);
     }
 
     [Fact]
@@ -957,6 +1020,14 @@ public class HonuaGrpcClientTests
             () => { });
     }
 
+    private static AsyncUnaryCall<T> CreateFaultedAsyncUnaryCall<T>(RpcException exception, Metadata initialMetadata)
+        => new(
+            Task.FromException<T>(exception),
+            Task.FromResult(initialMetadata),
+            () => exception.Status,
+            () => exception.Trailers,
+            () => { });
+
     private static string? GetMetadataValue(Metadata metadata, string key)
         => metadata.FirstOrDefault(entry => entry.Key == key)?.Value;
 
@@ -980,12 +1051,12 @@ public class HonuaGrpcClientTests
             () => { });
     }
 
-    private static AsyncServerStreamingCall<T> CreateFaultedAsyncServerStreamingCall<T>(RpcException exception)
+    private static AsyncServerStreamingCall<T> CreateFaultedAsyncServerStreamingCall<T>(RpcException exception, Metadata? initialMetadata = null)
     {
         var stream = new ThrowingAsyncStreamReader<T>(exception);
         return new AsyncServerStreamingCall<T>(
             stream,
-            Task.FromResult(new Metadata()),
+            Task.FromResult(initialMetadata ?? new Metadata()),
             () => exception.Status,
             () => new Metadata(),
             () => { });

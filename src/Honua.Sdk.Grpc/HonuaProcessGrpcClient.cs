@@ -90,14 +90,16 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(plan);
 
+        AsyncUnaryCall<Proto.ValidateResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("ValidatePlan", cancellationToken).ConfigureAwait(false);
-            var response = await _client.ValidatePlanAsync(
+            call = _client.ValidatePlanAsync(
                 new Proto.ValidatePlanRequest { Plan = ToProtoPlan(plan) },
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return new HonuaProcessPlanValidationResult
             {
                 Valid = response.Valid,
@@ -106,7 +108,9 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -115,14 +119,16 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(plan);
 
+        AsyncUnaryCall<Proto.DryRunResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("DryRunPlan", cancellationToken).ConfigureAwait(false);
-            var response = await _client.DryRunPlanAsync(
+            call = _client.DryRunPlanAsync(
                 new Proto.DryRunPlanRequest { Plan = ToProtoPlan(plan) },
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return new HonuaProcessDryRunResult
             {
                 Valid = response.Valid,
@@ -132,7 +138,9 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -144,10 +152,11 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(plan);
 
+        AsyncUnaryCall<Proto.ExecutePlanResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("ExecutePlan", cancellationToken).ConfigureAwait(false);
-            var response = await _client.ExecutePlanAsync(
+            call = _client.ExecutePlanAsync(
                 new Proto.ExecutePlanRequest
                 {
                     Plan = ToProtoPlan(plan),
@@ -156,11 +165,14 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return ToExecutionOutcome(response.JobId, response.OutcomeCase, response.Result, response.Error);
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -207,7 +219,9 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
                 }
                 catch (RpcException ex)
                 {
-                    throw HonuaGrpcException.FromRpcException(ex);
+                    throw HonuaGrpcException.FromRpcException(
+                        ex,
+                        await HonuaGrpcException.TryGetInitialMetadataAsync(call.ResponseHeadersAsync).ConfigureAwait(false));
                 }
 
                 yield return ToExecutionEvent(current);
@@ -223,10 +237,11 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(plan);
 
+        AsyncUnaryCall<Proto.SubmitJobResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("SubmitJob", cancellationToken).ConfigureAwait(false);
-            var response = await _client.SubmitJobAsync(
+            call = _client.SubmitJobAsync(
                 new Proto.SubmitJobRequest
                 {
                     Plan = ToProtoPlan(plan),
@@ -235,6 +250,7 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return new HonuaProcessJobStatus
             {
                 JobId = response.JobId,
@@ -244,7 +260,9 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -253,19 +271,23 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         EnsureJobId(jobId);
 
+        AsyncUnaryCall<Proto.GetJobResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("GetJob", cancellationToken).ConfigureAwait(false);
-            var response = await _client.GetJobAsync(
+            call = _client.GetJobAsync(
                 new Proto.GetJobRequest { JobId = jobId },
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return ToJobStatus(response.JobId, response.State, response.Progress);
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -274,19 +296,23 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         EnsureJobId(jobId);
 
+        AsyncUnaryCall<Proto.GetJobResultResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("GetJobResult", cancellationToken).ConfigureAwait(false);
-            var response = await _client.GetJobResultAsync(
+            call = _client.GetJobResultAsync(
                 new Proto.GetJobResultRequest { JobId = jobId },
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return ToExecutionOutcome(response.JobId, response.OutcomeCase, response.Result, response.Error);
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -295,14 +321,16 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
     {
         EnsureJobId(jobId);
 
+        AsyncUnaryCall<Proto.CancelJobResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("CancelJob", cancellationToken).ConfigureAwait(false);
-            var response = await _client.CancelJobAsync(
+            call = _client.CancelJobAsync(
                 new Proto.CancelJobRequest { JobId = jobId },
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var response = await call.ResponseAsync.ConfigureAwait(false);
             return new HonuaProcessJobStatus
             {
                 JobId = response.JobId,
@@ -312,7 +340,9 @@ public sealed class HonuaProcessGrpcClient : IHonuaProcessGrpcClient, IDisposabl
         }
         catch (RpcException ex)
         {
-            throw HonuaGrpcException.FromRpcException(ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 

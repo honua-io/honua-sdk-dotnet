@@ -129,4 +129,25 @@ public sealed class HonuaGrpcException : Honua.Sdk.Abstractions.HonuaException
             pair => (IReadOnlyList<string>)pair.Value,
             StringComparer.OrdinalIgnoreCase);
     }
+
+    internal static async Task<Metadata?> TryGetInitialMetadataAsync(Task<Metadata>? responseHeaders)
+    {
+        if (responseHeaders is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await responseHeaders.ConfigureAwait(false);
+        }
+        catch (RpcException)
+        {
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
+    }
 }

@@ -109,7 +109,8 @@ public static class HonuaFailureReceiptFactory
         int classificationStatus = protocolCode ?? (int)response.StatusCode;
         HonuaFailureKind kind = ParseKind(GetString(source, "kind")) ?? ClassifyHttp(classificationStatus, (int)response.StatusCode);
         string code = GetString(source, "machineCode") ?? GetString(source, "code") ?? DefaultCode(kind);
-        bool retryable = GetBoolean(source, "retryable") ?? IsHttpRetryable(classificationStatus);
+        bool retryable = GetBoolean(source, "retryable") ??
+            (IsHttpRetryable(classificationStatus) || IsHttpRetryable((int)response.StatusCode));
         TimeSpan? retryAfter = GetSeconds(source, "retryAfterSeconds") ?? ParseRetryAfter(response.Headers.RetryAfter);
         string? correlationId = GetString(source, "correlationId") ?? GetString(root, "correlationId") ??
             FirstHeader(response.Headers, "X-Correlation-ID", "Honua-Request-Id", "X-Request-Id");

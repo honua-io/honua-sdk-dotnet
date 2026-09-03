@@ -132,11 +132,13 @@ internal static class AdminHttpHelper
             var responseStatus = response.StatusCode;
             int? protocolCode = null;
             if (errorElement.TryGetProperty("code", out var codeProperty) &&
-                codeProperty.TryGetInt32(out var errorCode) &&
-                errorCode is >= 100 and <= 599)
+                codeProperty.TryGetInt32(out var errorCode))
             {
                 protocolCode = errorCode;
-                responseStatus = (HttpStatusCode)errorCode;
+                if (errorCode is >= 100 and <= 599)
+                {
+                    responseStatus = (HttpStatusCode)errorCode;
+                }
             }
 
             throw new HonuaAdminApiException(
