@@ -42,6 +42,16 @@ public sealed class HonuaProblemDetailsParserTests
     }
 
     [Fact]
+    public void TryParse_UnrelatedJsonObject_ReturnsFalse()
+    {
+        Assert.False(
+            HonuaProblemDetailsParser.TryParse(
+                "{ \"success\": false, \"message\": \"Service not found\" }",
+                out var problem));
+        Assert.Null(problem);
+    }
+
+    [Fact]
     public void ResolveMessage_PrefersDetailThenTitleThenFallback()
     {
         var message = HonuaProblemDetailsParser.ResolveMessage(

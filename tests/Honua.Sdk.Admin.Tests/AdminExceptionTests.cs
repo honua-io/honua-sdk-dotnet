@@ -41,6 +41,18 @@ public sealed class AdminExceptionTests
     }
 
     [Fact]
+    public void ApiException_AdminEnvelope_UsesMessageInProblemDetails()
+    {
+        var ex = new HonuaAdminApiException(
+            HttpStatusCode.NotFound,
+            "Service 'x' not found",
+            "{\"success\":false,\"message\":\"Service 'x' not found\"}");
+
+        Assert.Equal("Service 'x' not found", ex.ProblemDetails!.Detail);
+        Assert.Equal((int)HttpStatusCode.NotFound, ex.ProblemDetails.Status);
+    }
+
+    [Fact]
     public void ApiException_Status_WithInner_PreservesInner()
     {
         var inner = new HttpRequestException();

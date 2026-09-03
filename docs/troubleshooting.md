@@ -95,9 +95,9 @@ outside that range fail at options assignment time for every package, including
 
 ### Unsafe HTTP methods aren't retried
 
-Intentional. `Retry.DisableForUnsafeHttpMethods()` is set across every REST client to avoid
-duplicate writes. If you need POST/PUT/DELETE retries for an idempotent endpoint, register a
-custom resilience pipeline on the `HttpClient` after `AddHonua*`.
+Intentional for the default REST policy. GeoServices additionally retries `PUT`, `DELETE`, and
+the idempotent POST `/query` fallback according to its protocol-specific policy. If you need a
+different policy, register a custom resilience pipeline on the `HttpClient` after `AddHonua*`.
 
 ---
 
