@@ -1,1 +1,4 @@
 #nullable enable
+Honua.Sdk.Abstractions.HonuaTransportException
+Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string!, System.Exception!, int? httpStatus = null) -> void
+override Honua.Sdk.Abstractions.HonuaTransportException.HttpStatus.get -> int?

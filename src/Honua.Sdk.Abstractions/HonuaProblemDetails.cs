@@ -59,7 +59,17 @@ public static class HonuaProblemDetailsParser
         try
         {
             problem = JsonSerializer.Deserialize(body, HonuaAbstractionsJsonContext.Default.HonuaProblemDetails);
-            return problem is not null;
+            // A successful deserialize is not enough: unknown members are ignored, so an
+            // unrelated object such as an Admin {success,message} envelope would otherwise be
+            // reported as an empty RFC 7807 document.
+            if (problem is null || problem.Type is null && problem.Title is null && problem.Status is null
+                && problem.Detail is null && problem.Instance is null)
+            {
+                problem = null;
+                return false;
+            }
+
+            return true;
         }
         catch (JsonException)
         {
