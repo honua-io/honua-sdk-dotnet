@@ -603,13 +603,48 @@ jobs:
 
           popd >/dev/null
 
+      - name: Lock public install smoke dependencies before publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          smoke_root="$(mktemp -d)"
+          trap 'rm -rf "${smoke_root}"' EXIT
+          mkdir -p ./nupkgs/smoke-locks
+          cat > "${smoke_root}/NuGet.config" <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <clear />
+              <add key="local-sdk" value="${GITHUB_WORKSPACE}/nupkgs" />
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+            </packageSources>
+            <packageSourceMapping>
+              <packageSource key="local-sdk"><package pattern="Honua.Sdk" /><package pattern="Honua.Sdk.*" /></packageSource>
+              <packageSource key="nuget.org"><package pattern="*" /></packageSource>
+            </packageSourceMapping>
+          </configuration>
+          EOF
+          for package_id in Honua.Sdk Honua.Sdk.Admin Honua.Sdk.Grpc; do
+            project_dir="${smoke_root}/${package_id}"
+            dotnet new console --name "${package_id}.Smoke" --framework net10.0 --output "${project_dir}" --no-restore
+            project_file="${project_dir}/${package_id}.Smoke.csproj"
+            dotnet add "${project_file}" package "${package_id}" --version "${PACKAGE_VERSION}" --no-restore
+            # Resolve and build the exact local release inputs once. The public
+            # install below must reuse these versions and NuGet content hashes.
+            dotnet build "${project_file}" --configuration Release \
+              -p:RestorePackagesWithLockFile=true \
+              -p:RestorePackagesPath="${smoke_root}/packages" \
+              -p:RestoreConfigFile="${smoke_root}/NuGet.config"
+            cp "${project_dir}/packages.lock.json" "./nupkgs/smoke-locks/${package_id}.packages.lock.json"
+          done
+
       - name: Record immutable package checksums
         shell: bash
         run: |
           set -euo pipefail
           (
             cd ./nupkgs
-            sha256sum -- *.nupkg *.snupkg | sort -k2 > SHA256SUMS
+            sha256sum -- *.nupkg *.snupkg smoke-locks/*.packages.lock.json | sort -k2 > SHA256SUMS
             sha256sum --check SHA256SUMS
           )
 
@@ -619,6 +654,7 @@ jobs:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-input-unsigned
           path: |
             ./nupkgs/*.nupkg
+            ./nupkgs/smoke-locks/*.packages.lock.json
             ./nupkgs/*.snupkg
             ./nupkgs/SHA256SUMS
           if-no-files-found: error
@@ -791,11 +827,13 @@ jobs:
 
           for package_id in Honua.Sdk Honua.Sdk.Admin Honua.Sdk.Grpc; do
             project_dir="${smoke_root}/${package_id}"
-            dotnet new console --framework net10.0 --output "${project_dir}" --no-restore
+            dotnet new console --name "${package_id}.Smoke" --framework net10.0 --output "${project_dir}" --no-restore
             project_file="$(find "${project_dir}" -maxdepth 1 -name '*.csproj' -print -quit)"
             test -n "${project_file}"
             dotnet add "${project_file}" package "${package_id}" --version "${PACKAGE_VERSION}" --no-restore
-            dotnet restore "${project_file}" --configfile "${smoke_root}/NuGet.config" --no-cache --force-evaluate
+            cp "./nupkgs/smoke-locks/${package_id}.packages.lock.json" "${project_dir}/packages.lock.json"
+            dotnet restore "${project_file}" --configfile "${smoke_root}/NuGet.config" \
+              --packages "${smoke_root}/packages" --no-cache --locked-mode
             dotnet build "${project_file}" --configuration Release --no-restore
           done
 
