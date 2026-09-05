@@ -1,0 +1,7 @@
+name: Honua SDK source analysis
+
+# C# paths-ignore requires no-build extraction. Keep source, tests, and examples
+# in scope while excluding compiler output; do not disable any query rules.
+paths-ignore:
+  - '**/obj/**'
+  - '**/generated/**'
