@@ -626,8 +626,8 @@ jobs:
           EOF
           for package_id in Honua.Sdk Honua.Sdk.Admin Honua.Sdk.Grpc; do
             project_dir="${smoke_root}/${package_id}"
-            dotnet new console --framework net10.0 --output "${project_dir}" --no-restore
-            project_file="${project_dir}/${package_id}.csproj"
+            dotnet new console --name "${package_id}.Smoke" --framework net10.0 --output "${project_dir}" --no-restore
+            project_file="${project_dir}/${package_id}.Smoke.csproj"
             dotnet add "${project_file}" package "${package_id}" --version "${PACKAGE_VERSION}" --no-restore
             # Resolve and build the exact local release inputs once. The public
             # install below must reuse these versions and NuGet content hashes.
@@ -827,7 +827,7 @@ jobs:
 
           for package_id in Honua.Sdk Honua.Sdk.Admin Honua.Sdk.Grpc; do
             project_dir="${smoke_root}/${package_id}"
-            dotnet new console --framework net10.0 --output "${project_dir}" --no-restore
+            dotnet new console --name "${package_id}.Smoke" --framework net10.0 --output "${project_dir}" --no-restore
             project_file="$(find "${project_dir}" -maxdepth 1 -name '*.csproj' -print -quit)"
             test -n "${project_file}"
             dotnet add "${project_file}" package "${package_id}" --version "${PACKAGE_VERSION}" --no-restore
