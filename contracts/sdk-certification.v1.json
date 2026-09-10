@@ -5,9 +5,9 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 303,
+    "total": 317,
     "exercised": 22,
-    "gap": 263,
+    "gap": 277,
     "non-addressable": 18
   },
   "operations": [
@@ -1354,11 +1354,362 @@
       "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
     },
     {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.CancelGeoservicesImportJobAsync(string,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "CancelGeoservicesImportJobAsync",
+      "signature": "CancelGeoservicesImportJobAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.CancelMigrationRunAsync(string,string?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "CancelMigrationRunAsync",
+      "signature": "CancelMigrationRunAsync(string,string?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.DiscoverGeoservicesServiceAsync(GeoservicesDiscoverRequest,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "DiscoverGeoservicesServiceAsync",
+      "signature": "DiscoverGeoservicesServiceAsync(GeoservicesDiscoverRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.GetGeoservicesImportJobStatusAsync(string,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "GetGeoservicesImportJobStatusAsync",
+      "signature": "GetGeoservicesImportJobStatusAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.GetMigrationBatchAsync(string,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "GetMigrationBatchAsync",
+      "signature": "GetMigrationBatchAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.GetMigrationRunAsync(string,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "GetMigrationRunAsync",
+      "signature": "GetMigrationRunAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.GetMigrationRunEvidencePackAsync(string,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "GetMigrationRunEvidencePackAsync",
+      "signature": "GetMigrationRunEvidencePackAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.GetMigrationRunReconciliationScorecardAsync(string,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "GetMigrationRunReconciliationScorecardAsync",
+      "signature": "GetMigrationRunReconciliationScorecardAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.ListGeoservicesImportJobsAsync(CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "ListGeoservicesImportJobsAsync",
+      "signature": "ListGeoservicesImportJobsAsync(CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.ListMigrationRunsAsync(MigrationRunListQuery?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "ListMigrationRunsAsync",
+      "signature": "ListMigrationRunsAsync(MigrationRunListQuery?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.Admin.HonuaAdminClient.ScanMigrationSourceAsync(MigrationInventoryScanRequest,bool,CancellationToken)",
       "surface": "admin",
       "client": "Honua.Sdk.Admin.HonuaAdminClient",
       "operation": "ScanMigrationSourceAsync",
       "signature": "ScanMigrationSourceAsync(MigrationInventoryScanRequest,bool,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.StartGeoservicesImportAsync(GeoservicesStartImportRequest,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "StartGeoservicesImportAsync",
+      "signature": "StartGeoservicesImportAsync(GeoservicesStartImportRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.StartMigrationBatchAsync(MigrationBatchStartRequest,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "StartMigrationBatchAsync",
+      "signature": "StartMigrationBatchAsync(MigrationBatchStartRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.HonuaAdminClient.WaitForGeoservicesImportJobAsync(string,TimeSpan?,TimeSpan?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.HonuaAdminClient",
+      "operation": "WaitForGeoservicesImportJobAsync",
+      "signature": "WaitForGeoservicesImportJobAsync(string,TimeSpan?,TimeSpan?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",
@@ -5458,6 +5809,33 @@
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
       }
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAllFeaturesByObjectIdBatchesAsync(string,int,FeatureServerQueryParams,int,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryAllFeaturesByObjectIdBatchesAsync",
+      "signature": "QueryAllFeaturesByObjectIdBatchesAsync(string,int,FeatureServerQueryParams,int,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAsync(string,int,FeatureServerQueryParams,CancellationToken)",
