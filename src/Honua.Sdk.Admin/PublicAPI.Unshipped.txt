@@ -1,5 +1,4 @@
 #nullable enable
-=======
 Honua.Sdk.Admin.Exceptions.HonuaAdminApiException.RetryAfter.get -> System.TimeSpan?
 Honua.Sdk.Admin.Exceptions.HonuaAdminApiException.RetryAfter.init -> void
 Honua.Sdk.Admin.HonuaAdminClient.CancelGeoservicesImportJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesImportCancelResponse!>!
