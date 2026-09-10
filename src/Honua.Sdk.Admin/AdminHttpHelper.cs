@@ -33,7 +33,32 @@ internal static class AdminHttpHelper
             response.StatusCode,
             message,
             body,
-            HonuaFailureReceiptFactory.FromHttpResponse(response, body));
+            HonuaFailureReceiptFactory.FromHttpResponse(response, body))
+        {
+            RetryAfter = TryGetRetryAfter(response)
+        };
+    }
+
+    private static TimeSpan? TryGetRetryAfter(HttpResponseMessage response)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        if (retryAfter is null)
+        {
+            return null;
+        }
+
+        if (retryAfter.Delta is TimeSpan delta)
+        {
+            return delta;
+        }
+
+        if (retryAfter.Date is DateTimeOffset date)
+        {
+            var remaining = date - DateTimeOffset.UtcNow;
+            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+        }
+
+        return null;
     }
 
     public static void EnsureEnvelopeSucceeded(HttpResponseMessage response, string body)

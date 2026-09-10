@@ -74,6 +74,13 @@ public sealed class HonuaAdminApiException : Honua.Sdk.Abstractions.HonuaExcepti
     public override Honua.Sdk.Abstractions.HonuaFailureReceipt? FailureReceipt { get; }
 
     /// <summary>
+    /// The server's <c>Retry-After</c> delay, when the response carried one (for example a 429 or a
+    /// 503 while distributed job coordination is temporarily unavailable). Null when the response did
+    /// not include a <c>Retry-After</c> header.
+    /// </summary>
+    public TimeSpan? RetryAfter { get; init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HonuaAdminApiException"/> class.
     /// </summary>
     /// <param name="statusCode">The HTTP status code returned by the server.</param>
