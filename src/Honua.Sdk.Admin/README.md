@@ -72,6 +72,88 @@ var replay = await events.ReplayFeatureEventsAsync(
     cancellationToken);
 ```
 
+## GeoServices/migration import lifecycle
+
+Discover an ArcGIS service, queue a single-layer import, and wait for it to
+reach a terminal status without ever risking a duplicate import on retry:
+
+```csharp
+using Honua.Sdk.Admin.Models;
+
+var admin = provider.GetRequiredService<IHonuaAdminClient>();
+
+var discovered = await admin.DiscoverGeoservicesServiceAsync(new GeoservicesDiscoverRequest
+{
+    ServiceUrl = "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+    Credentials = new GeoservicesCredentialDescriptor
+    {
+        Mode = "token",
+        AccessTokenSecretReference = "secret://arcgis/token"
+    }
+});
+
+var job = await admin.StartGeoservicesImportAsync(new GeoservicesStartImportRequest
+{
+    ServiceUrl = discovered.ServiceUrl,
+    LayerId = discovered.Layers[0].Id,
+    TableName = "parcels",
+    TargetSrid = 4326,
+    AutoPublish = true
+});
+
+// Reconnects to the job by polling status only; safe to call again after a
+// client restart because it never re-invokes StartGeoservicesImportAsync.
+var terminal = await admin.WaitForGeoservicesImportJobAsync(job.JobId);
+
+if (terminal.Status is GeoservicesImportStatus.NeedsReview)
+{
+    var findings = terminal.ReconciliationArtifact!.Reasons;
+    Console.WriteLine($"Import needs review: {string.Join("; ", findings)}");
+}
+```
+
+Import several dependency-ordered layers as one resumable batch, and poll its
+rolled-up status plus per-child job ids:
+
+```csharp
+var batch = await admin.StartMigrationBatchAsync(new MigrationBatchStartRequest
+{
+    SourceKind = "arcgis-geoservices-rest",
+    Layers =
+    [
+        new MigrationBatchLayerSpec
+        {
+            SourceResourceId = "res:parcels",
+            ServiceUrl = discovered.ServiceUrl,
+            LayerId = 0,
+            TableName = "parcels"
+        },
+        new MigrationBatchLayerSpec
+        {
+            SourceResourceId = "res:zoning",
+            ServiceUrl = discovered.ServiceUrl,
+            LayerId = 1,
+            TableName = "zoning",
+            DependsOn = ["res:parcels"]
+        }
+    ]
+});
+
+var status = await admin.GetMigrationBatchAsync(batch.BatchId);
+foreach (var child in status.Children)
+{
+    Console.WriteLine($"{child.SourceResourceId}: {child.Status} (job {child.JobId})");
+}
+```
+
+Independently, retrieve a migration run's signed reconciliation scorecard once
+the run (recorded separately by the migration engine) completes:
+
+```csharp
+var scorecard = await admin.GetMigrationRunReconciliationScorecardAsync(runId);
+Console.WriteLine($"Data reconciliation verdict: {scorecard.Verdict}");
+```
+
 ## Console control-plane contracts
 
 The Admin package includes the stable Console P0 control-plane surface used by
