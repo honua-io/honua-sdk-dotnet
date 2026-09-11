@@ -1,3 +1,9 @@
+---
+type: index
+title: "What this repository owns"
+description: "The official .NET client libraries and shared abstractions this repo ships, and where each surface lives across the Honua.Sdk package family."
+tags: [sdk, dotnet, surfaces]
+---
 # Honua .NET SDK Feature Map
 
 This repository owns official .NET client libraries and shared host-neutral contracts.

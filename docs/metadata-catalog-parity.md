@@ -1,3 +1,9 @@
+---
+type: reference
+title: "Metadata and catalog parity"
+description: "The stable, non-UI metadata and catalog reads this repo exposes, and how they line up with the server surfaces behind them."
+tags: [metadata, catalog, parity]
+---
 # Metadata And Catalog Reads
 
 This repo exposes stable, non-UI metadata/catalog reads through protocol-specific

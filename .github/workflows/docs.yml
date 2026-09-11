@@ -31,6 +31,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
+      # OKF bundle gate. docs/okf-bundle.v1.json declares which markdown is
+      # product documentation; every page inside that boundary must carry valid
+      # Open Knowledge Format v0.2 frontmatter. Runs before the site build so a
+      # page that lands untyped fails here rather than shipping.
+      # See agent-delivery-spec WS9.
+      - name: Validate OKF documentation bundle
+        run: python3 scripts/check-okf-bundle.py
+
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:

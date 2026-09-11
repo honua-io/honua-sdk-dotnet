@@ -1,3 +1,9 @@
+---
+type: index
+title: "Honua .NET SDK documentation"
+description: "What this docs directory holds and in what order to read it, from the quickstart through the per-surface guides to the hosted API reference."
+tags: [sdk, dotnet, navigation]
+---
 # Honua .NET SDK documentation
 
 > Hosted API reference: <https://honua-io.github.io/honua-sdk-dotnet/> (deployed from `trunk` via `.github/workflows/docs.yml`).

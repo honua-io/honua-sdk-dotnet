@@ -1,3 +1,9 @@
+---
+type: concept
+title: "Offline sync core"
+description: "How the abstractions package models disconnected work and replica sync, and which pieces a field application has to supply itself."
+tags: [offline, sync, field]
+---
 # Offline sync core
 
 `Honua.Sdk.Abstractions` (through its `Honua.Sdk.Offline.Abstractions`

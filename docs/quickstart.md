@@ -1,3 +1,10 @@
+---
+type: guide
+title: "Install the SDK and make your first call"
+description: "Two paths: a 60-second single-package hello, and a seven-step tour registering every client through dependency injection. Includes the GitHub Packages feed setup the packages require."
+resource: "https://nuget.pkg.github.com/honua-io/index.json"
+tags: [quickstart, dotnet, dependency-injection]
+---
 # Quickstart
 
 This page has two paths:

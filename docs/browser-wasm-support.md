@@ -1,3 +1,9 @@
+---
+type: reference
+title: "Browser and WASM support matrix"
+description: "What this SDK considers browser-supported, which packages work under WebAssembly, and which surfaces are unavailable there."
+tags: [browser, wasm, blazor]
+---
 # Browser And WebAssembly Support
 
 This matrix defines what `honua-sdk-dotnet` considers browser-safe today. The

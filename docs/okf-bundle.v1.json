@@ -1,0 +1,65 @@
+{
+  "version": "honua.okf-bundle/v1",
+  "description": "Which honua-sdk-dotnet markdown is part of the Open Knowledge Format bundle, and which is deliberately not. Consumed by scripts/check-okf-bundle.py.",
+  "spec": {
+    "name": "Open Knowledge Format",
+    "version": "0.2",
+    "url": "https://github.com/GoogleCloudPlatform/open-knowledge-format",
+    "note": "One markdown file is one concept; the file path is the concept's identity; relative markdown links are the graph edges. `type` is the only required frontmatter field."
+  },
+  "program": "https://github.com/honua-io/agent-delivery-spec/tree/trunk/.specifica/okf-knowledge-graph-agent-effective-docs",
+  "workstream": "WS9 — the other nine repositories. honua-sdk-dotnet is third, after geospatial-grpc and honua-sdk-python.",
+  "root": "docs",
+  "conceptTypes": {
+    "index": "A section entry point. Enumerates what the directory holds so a reader or agent can choose before opening.",
+    "concept": "What a thing is and how it fits. No procedure.",
+    "guide": "A task someone performs, start to finish.",
+    "reference": "Lookup material: surfaces, options, contracts, matrices."
+  },
+  "excludedDirs": [
+    {
+      "path": "docs/internal",
+      "why": "Its own README says it plainly: these are written for contributors and cross-repo maintainers, covering backlog, contract harmonization, transport ownership and release cadence. One of them is labelled a historical planning snapshot. None of it is documentation about using the SDK."
+    }
+  ],
+  "excludedFiles": [
+    {
+      "path": "docs/release.md",
+      "why": "How maintainers cut a release from the shared version source in Directory.Build.props. Release mechanics, not consumption."
+    },
+    {
+      "path": "docs/sdk-certification.md",
+      "why": "The certification lane that proves public SDK operations against a server. CI apparatus; its output is the evidence, not this page."
+    },
+    {
+      "path": "docs/staging-integration.md",
+      "why": "How the staging suite is configured and what it needs from the deployed fixture. Contributor and platform-maintainer coordination."
+    },
+    {
+      "path": "docs/protocol-integration-tests.md",
+      "why": "The SDK-side Testcontainers suite, skipped by default. Describes this repository's own tests rather than anything a consumer calls."
+    },
+    {
+      "path": "docs/public-api-approval.md",
+      "why": "The checked-in public-API approval files every shipped project carries and how to update them. A contributor workflow enforced by an analyzer."
+    },
+    {
+      "path": "docs/capability-coverage.md",
+      "why": "Prose around contracts/sdk-coverage.v1.json, this SDK's producer snapshot for honua-server's cross-product capability matrix. Generated evidence feeding another repository's gate, the same reason honua-server excludes docs/gis."
+    },
+    {
+      "path": "docs/demo-suite.md",
+      "why": "Tracks issue #128, a .NET-first demo suite that does not exist yet. A plan for documentation rather than documentation; it joins the bundle when the suite it describes ships."
+    }
+  ],
+  "includedFiles": [],
+  "rejectedFields": {
+    "timestamp": "Not an OKF field in any version. The trust family spells the build stamp `generated`. Rejected by name here so the v0.1-shaped mistake honua-site shipped until 2026-09-10 cannot spread into this bundle."
+  },
+  "dateFields": [
+    "generated",
+    "verified",
+    "stale_after"
+  ],
+  "boundaryNote": "This repo had already drawn the line once, in docs/internal — that directory's own README says it is for contributors and cross-repo maintainers. The seven additional exclusions are the same kind of page that simply never moved there: release mechanics, CI lanes, the SDK's own test suites, a generated coverage snapshot, and a demo suite that is still an issue rather than a suite."
+}
