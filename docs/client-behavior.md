@@ -1,3 +1,9 @@
+---
+type: reference
+title: "Cross-cutting client behaviour"
+description: "What applies to every client regardless of protocol: timeouts, retries, cancellation, header propagation and error mapping."
+tags: [transport, retries, timeouts, errors]
+---
 # Client Behavior
 
 This page documents the cross-cutting behavior that applies to the Honua SDK

@@ -1,3 +1,9 @@
+---
+type: reference
+title: "Compatibility policy"
+description: "The two contracts this SDK treats separately - the public API surface and the server protocol - and what counts as a breaking change to each."
+tags: [compatibility, versioning, policy]
+---
 # Compatibility Policy
 
 This SDK treats compatibility as two separate contracts: server compatibility

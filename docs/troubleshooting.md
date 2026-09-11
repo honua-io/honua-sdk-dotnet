@@ -1,3 +1,9 @@
+---
+type: guide
+title: "When integration does not work"
+description: "The failures readers actually hit when wiring the SDK into an application, listed by symptom before cause."
+tags: [troubleshooting, errors]
+---
 # Troubleshooting
 
 Common issues and how to fix them when integrating the Honua .NET SDK.

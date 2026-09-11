@@ -1,3 +1,10 @@
+---
+type: reference
+title: "API reference"
+description: "Where the hosted DocFX reference lives and how it is organised, for readers who want type-level detail rather than task-level guidance."
+resource: "https://honua-io.github.io/honua-sdk-dotnet/"
+tags: [api-reference, docfx]
+---
 # API reference
 
 ## Hosted reference

@@ -1,3 +1,9 @@
+---
+type: guide
+title: "Authenticate a client"
+description: "Static credentials for simple deployments and provider delegates for dynamic ones: API keys, bearer tokens, and request-aware access tokens."
+tags: [auth, api-key, oidc]
+---
 # Authentication
 
 Honua SDK clients accept static credentials for simple deployments, provider

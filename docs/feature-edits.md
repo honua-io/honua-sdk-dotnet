@@ -1,3 +1,9 @@
+---
+type: guide
+title: "Read and write features"
+description: "Reads and writes are separate SDK surfaces with different guarantees. How to perform edits, and what the server enforces on the way through."
+tags: [features, edits, applyedits]
+---
 # Feature Edits
 
 Feature reads and feature writes are separate SDK surfaces. Read/query clients

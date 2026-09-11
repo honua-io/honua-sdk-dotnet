@@ -1,3 +1,9 @@
+---
+type: guide
+title: "Analyse geometry locally"
+description: "Honua.Sdk.Geometry runs in-process, so these operations need no server round trip. What it computes and where its limits are."
+tags: [geometry, local, analysis]
+---
 # Geometry analysis
 
 `Honua.Sdk.Geometry` is the local, in-process geometry layer of the SDK.

@@ -1,3 +1,9 @@
+---
+type: guide
+title: "Author a geoprocessing process"
+description: "Writing Honua GP processes against the SDK: the contract a process implements, how parameters are declared, and how results are returned."
+tags: [geoprocessing, authoring]
+---
 # Process authoring & ArcObjects-GP migration
 
 This guide covers authoring Honua geoprocessing (GP) processes in C# with the

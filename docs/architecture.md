@@ -1,3 +1,9 @@
+---
+type: concept
+title: "How the packages relate"
+description: "A one-page map of the Honua.Sdk package family: which package owns which surface, what depends on what, and why the abstractions package sits underneath."
+tags: [architecture, packages]
+---
 # Architecture overview
 
 A one-page map of how the Honua .NET SDK packages relate. Use this when

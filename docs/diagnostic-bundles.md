@@ -1,3 +1,9 @@
+---
+type: guide
+title: "Collect a support bundle"
+description: "honua doctor builds a bounded, sanitized artifact locally and uploads nothing. What it gathers, what it redacts, and what to send."
+tags: [support, diagnostics, doctor]
+---
 # Sanitized diagnostic bundles (`honua doctor`)
 
 `honua doctor` creates a local, bounded support artifact and never uploads it

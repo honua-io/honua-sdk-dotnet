@@ -1,3 +1,9 @@
+---
+type: reference
+title: "Compatibility debt carried into 2.0"
+description: "What remains publicly incompatible and why, so a consumer planning an upgrade knows before starting rather than during."
+tags: [migration, breaking-changes]
+---
 # Planned 2.0 API cleanup
 
 This page records compatibility debt that remains public during the stable 1.x
