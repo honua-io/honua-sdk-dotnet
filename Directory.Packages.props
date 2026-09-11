@@ -33,10 +33,6 @@
     <PackageVersion Include="ProjNET" Version="2.1.0" />
   </ItemGroup>
 
-  <ItemGroup Label="SourceLink (debug stepping)">
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-  </ItemGroup>
-
   <ItemGroup Label="API approval">
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
   </ItemGroup>

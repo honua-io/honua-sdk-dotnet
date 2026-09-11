@@ -23,11 +23,23 @@
   <!--
     SourceLink embeds repository/commit metadata into PDBs so consumers can step
     from published symbols (.snupkg) into the exact GitHub source. PublishRepositoryUrl
-    and EmbedUntrackedSources above are already set; the package reference below is
-    what actually emits the SourceLink data.
+    and EmbedUntrackedSources above are what turn it on.
+
+    There is deliberately NO Microsoft.SourceLink.GitHub PackageReference here. Since
+    .NET 8 the SDK ships SourceLink itself and imports it automatically —
+    Microsoft.NET.Sdk.SourceLink.props imports Microsoft.Build.Tasks.Git,
+    Microsoft.SourceLink.Common and the per-host packages out of the SDK — and it
+    guards that import with:
+
+        <SuppressImplicitGitSourceLink Condition="'$(PkgMicrosoft_SourceLink_Common)' != ''">true</SuppressImplicitGitSourceLink>
+
+    So referencing the package does not add SourceLink, it *replaces* the SDK's copy
+    with the referenced one. This repo pinned 8.0.0, which pulled
+    Microsoft.Build.Tasks.Git 8.0.0 and its advisory (GHSA-23fw-v26w-5fgq); with
+    TreatWarningsAsErrors that turned NU1902 into a build break across every project.
+    Dropping the reference removes the vulnerable transitive and restores the SDK's
+    own, patched SourceLink. Do not add it back to "fix" source stepping — that is
+    what reintroduces the advisory.
   -->
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-  </ItemGroup>
 
 </Project>
