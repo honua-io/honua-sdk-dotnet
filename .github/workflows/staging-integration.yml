@@ -76,7 +76,7 @@ jobs:
           {
             echo "## Staging Integration Preflight"
             echo
-            echo "The staging suite is not configured. Missing: `${missing[*]}`."
+            echo "The staging suite is not configured. Missing: \`${missing[*]}\`."
             echo
             echo "SDK maintainers own the workflow and tests. Honua Server/platform maintainers own the deployed fixture and the GitHub \`staging\` environment values. See \`docs/staging-integration.md\`."
           } >> "${GITHUB_STEP_SUMMARY}"
