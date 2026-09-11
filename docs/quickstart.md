@@ -19,8 +19,13 @@ This page has two paths:
 
 ## Prerequisites
 
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
-- A running Honua server (default: `https://localhost:5001`)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) **10.0.400 or later**
+  (`global.json` pins the band; 10.0.100 does not satisfy it)
+- A running Honua server. If you do not have one, the
+  [honua-server quickstart](https://github.com/honua-io/honua-server/blob/trunk/docs/get-started/quickstart.md)
+  brings one up with Docker Compose in a few minutes. Note the ports: HTTP is **8080** and
+  gRPC is HTTP/2 cleartext on **8081**. Pointing a gRPC client at the HTTP port fails at
+  runtime with `HTTP_1_1_REQUIRED`, so the samples below use `http://localhost:8081`.
 - The authenticated Honua GitHub Packages feed configured as a source named
   `honua` — the packages are **not yet on nuget.org**, so every
   `dotnet add package` below fails with `NU1101` until the feed is set up.
@@ -34,9 +39,16 @@ Single package, single async call. Replace the URL with your Honua server.
 ```bash
 dotnet new console -n HonuaHello
 cd HonuaHello
-dotnet add package Honua.Sdk.Grpc --source honua
+dotnet add package Honua.Sdk.Grpc --version 1.6.0 \
+  --source "https://nuget.pkg.github.com/honua-io/index.json"
 dotnet add package Microsoft.Extensions.Hosting
 ```
+
+> **Use the full feed URL, not a `--source honua` alias.** The alias can degrade to a
+> filesystem-path lookup (`NU1301`) within a session, and the failure reads as though the
+> package does not exist. Pinning `--version` is optional — an unversioned add resolves to
+> the newest published version, currently **1.6.0** — but pinning keeps a later release from
+> silently changing what you built against.
 
 ```csharp
 // Program.cs
@@ -47,7 +59,7 @@ using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Grpc.Models;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("https://localhost:5001"));
+builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("http://localhost:8081"));
 
 using var host = builder.Build();
 var grpc = host.Services.GetRequiredService<IHonuaGrpcClient>();
@@ -87,11 +99,12 @@ address -- all printed to the console.
 dotnet new console -n HonuaDemo
 cd HonuaDemo
 
-# Core packages this quickstart uses (feed setup: see Prerequisites above):
-dotnet add package Honua.Sdk.Grpc --source honua           # gRPC FeatureService + native ProcessService jobs
-dotnet add package Honua.Sdk.Abstractions --source honua   # shared query abstraction
-dotnet add package Honua.Sdk.Admin --source honua          # Admin + Geocoding REST
-dotnet add package Honua.Sdk.OgcFeatures --source honua    # OGC API Features + WFS 2.0
+# Core packages this quickstart uses (feed setup: see Prerequisites above).
+# --version is optional here; pinned so this page stays reproducible.
+dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source honua           # gRPC FeatureService + native ProcessService jobs
+dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source honua   # shared query abstraction
+dotnet add package Honua.Sdk.Admin --version 1.6.0 --source honua          # Admin + Geocoding REST
+dotnet add package Honua.Sdk.OgcFeatures --version 1.6.0 --source honua    # OGC API Features + WFS 2.0
 
 # Generic Host for dependency injection
 dotnet add package Microsoft.Extensions.Hosting
@@ -121,10 +134,11 @@ you take this path.
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Honua.Sdk;
+using Honua.Sdk.Grpc.Extensions;   // AddHonuaGrpc
 
 var builder = Host.CreateApplicationBuilder(args);
 
-var serverUri = new Uri("https://localhost:5001");
+var serverUri = new Uri("http://localhost:8080");
 
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
@@ -134,6 +148,12 @@ builder.Services.AddHonua(o =>
 {
     o.BaseAddress = serverUri;
 });
+
+// honua-server serves the HTTP protocols on 8080 and gRPC as HTTP/2 cleartext
+// on 8081, so one BaseAddress cannot reach both. AddHonua delegates to
+// AddHonuaGrpc internally, so registering it again here wins for the gRPC client.
+// Without this, gRPC calls fail at runtime with HTTP_1_1_REQUIRED.
+builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("http://localhost:8081"));
 
 builder.Services.AddHostedService<DemoWorker>();
 
@@ -157,7 +177,7 @@ using Honua.Sdk.OgcFeatures.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-var serverUri = new Uri("https://localhost:5001");
+var serverUri = new Uri("http://localhost:8080");
 
 // gRPC client -- used for feature queries and native ProcessService jobs.
 // BaseAddress is preferred for parity with the REST clients; Address (string)
@@ -467,8 +487,18 @@ Every read/query protocol client also registers `IHonuaFeatureQueryClient`.
 Inject `IEnumerable<IHonuaFeatureQueryClient>` when application code should
 switch providers without changing query code:
 
+> **Adding this using breaks Step 3 unless you alias.** `QueryFeaturesRequest` is declared
+> in both `Honua.Sdk.Grpc.Models` (imported in Step 2) and
+> `Honua.Sdk.Abstractions.Features`, so every bare use from Step 3 becomes `CS0104:
+> ambiguous reference`. Pin the one you mean:
+>
+> ```csharp
+> using QueryFeaturesRequest = Honua.Sdk.Grpc.Models.QueryFeaturesRequest;
+> ```
+
 ```csharp
 using Honua.Sdk.Abstractions.Features;
+using QueryFeaturesRequest = Honua.Sdk.Grpc.Models.QueryFeaturesRequest;
 
 public sealed class DemoWorker(
     IHonuaGrpcClient grpcClient,

@@ -129,10 +129,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Honua.Sdk;
 using Honua.Sdk.Grpc;
+using Honua.Sdk.Grpc.Extensions;   // AddHonuaGrpc
 using Honua.Sdk.Grpc.Models;
 
 var builder = Host.CreateApplicationBuilder(args);
-var serverUri = new Uri("https://localhost:5001");
+var serverUri = new Uri("http://localhost:8080");
 
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
@@ -144,6 +145,12 @@ builder.Services.AddHonua(o =>
     o.BaseAddress = serverUri;
     // o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
 });
+
+// honua-server serves the HTTP protocols on 8080 and gRPC as HTTP/2 cleartext
+// on 8081, so one BaseAddress cannot reach both. AddHonua delegates to
+// AddHonuaGrpc internally, so registering it again here wins for the gRPC client.
+// Without this, gRPC calls fail at runtime with HTTP_1_1_REQUIRED.
+builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("http://localhost:8081"));
 
 using var host = builder.Build();
 var grpc = host.Services.GetRequiredService<IHonuaGrpcClient>();
