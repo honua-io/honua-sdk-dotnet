@@ -37,11 +37,11 @@ dotnet add package Honua.Sdk.Grpc --version 1.6.0 \
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
-> Two things that bite here. **Pass `--version`**: an unversioned
-> `dotnet add package` against this feed reports `There are no versions available for the
-> package`, even when it is correctly authenticated and populated. And **prefer the full
-> feed URL** over a `--source honua` alias, which can degrade to a filesystem-path lookup
-> (`NU1301`) within a session. 1.6.0 is the newest published version.
+> **Use the full feed URL, not a `--source honua` alias.** The alias can degrade to a
+> filesystem-path lookup (`NU1301`) within a session, and the failure reads as though the
+> package does not exist. Pinning `--version` is optional — an unversioned add resolves to
+> the newest published version, currently **1.6.0** — but pinning keeps a later release from
+> silently changing what you built against.
 
 ```csharp
 // Program.cs
@@ -93,8 +93,7 @@ dotnet new console -n HonuaDemo
 cd HonuaDemo
 
 # Core packages this quickstart uses (feed setup: see Prerequisites above).
-# --version is required: unversioned adds against this feed report
-# "There are no versions available for the package".
+# --version is optional here; pinned so this page stays reproducible.
 dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source honua           # gRPC FeatureService + native ProcessService jobs
 dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source honua   # shared query abstraction
 dotnet add package Honua.Sdk.Admin --version 1.6.0 --source honua          # Admin + Geocoding REST
