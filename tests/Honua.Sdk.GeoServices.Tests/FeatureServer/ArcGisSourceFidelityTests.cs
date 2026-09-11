@@ -293,7 +293,7 @@ public sealed class ArcGisSourceFidelityTests
     {
         var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
         var inner = new DisposalTrackingHandler();
-        var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
 
         Assert.Equal(0, inner.DisposeCount);
         handler.Dispose();
@@ -346,8 +346,11 @@ public sealed class ArcGisSourceFidelityTests
     {
         public int DisposeCount { get; private set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
 
         protected override void Dispose(bool disposing)
         {
