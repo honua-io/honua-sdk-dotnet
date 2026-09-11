@@ -16,6 +16,14 @@ env:
   DOTNET_VERSION: "10.0.400"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
+  # Ephemeral-mode pins. Kept in step with conformance.yml, which certifies the
+  # same image; see conformance/PINS.md.
+  EPHEMERAL_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
+  EPHEMERAL_HONUA_SERVER_SEED_REF: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
+  # Identifiers seeded by honua-server tests/seed/base-schema.sql.
+  EPHEMERAL_SERVICE_NAME: "test_service"
+  EPHEMERAL_LAYER_ID: "0"
+  EPHEMERAL_OGC_COLLECTION_ID: "0"
 
 permissions:
   contents: read
@@ -28,6 +36,7 @@ jobs:
     environment: staging
     outputs:
       configured: ${{ steps.validate-config.outputs.configured }}
+      mode: ${{ steps.validate-config.outputs.mode }}
     env:
       HONUA_STAGING_BASE_URL: ${{ vars.HONUA_STAGING_BASE_URL }}
       HONUA_STAGING_API_KEY: ${{ secrets.HONUA_STAGING_API_KEY }}
@@ -64,6 +73,7 @@ jobs:
 
           if (( ${#missing[@]} == 0 )); then
             echo "configured=true" >> "${GITHUB_OUTPUT}"
+            echo "mode=external" >> "${GITHUB_OUTPUT}"
             {
               echo "## Staging Integration Preflight"
               echo
@@ -72,31 +82,52 @@ jobs:
             exit 0
           fi
 
-          echo "configured=false" >> "${GITHUB_OUTPUT}"
+          # No deployed staging environment. Rather than blocking the release -
+          # which is what happened to dotnet-sdk-v1.6.1 and v1.6.2, silently -
+          # run the same read-only suite against a hermetic server booted from
+          # the pinned image and honua-server's own seed.
+          echo "configured=true" >> "${GITHUB_OUTPUT}"
+          echo "mode=ephemeral" >> "${GITHUB_OUTPUT}"
           {
             echo "## Staging Integration Preflight"
             echo
-            echo "The staging suite is not configured. Missing: `${missing[*]}`."
+            echo "Mode: \`ephemeral\` - no deployed staging environment is configured."
+            echo "Unset: \`${missing[*]}\`."
             echo
-            echo "SDK maintainers own the workflow and tests. Honua Server/platform maintainers own the deployed fixture and the GitHub \`staging\` environment values. See \`docs/staging-integration.md\`."
+            echo "The suite will run against a digest-pinned honua-server booted in CI and seeded"
+            echo "from \`tests/seed/base-schema.sql\`. This checks the published SDK against the"
+            echo "published server image; it does **not** exercise a real deployment."
+            echo
+            echo "To test a real deployment instead, set the values in the \`staging\` environment"
+            echo "and this job switches to \`external\` automatically. See \`docs/staging-integration.md\`."
           } >> "${GITHUB_STEP_SUMMARY}"
-
-          if [[ "${WORKFLOW_EVENT}" == "schedule" ]]; then
-            echo "::notice::Skipping the scheduled staging suite because its GitHub environment is not configured. Missing: ${missing[*]}. See docs/staging-integration.md."
-            exit 0
-          fi
-
-          echo "::error::Staging configuration is required for ${WORKFLOW_EVENT} runs. Missing: ${missing[*]}."
-          exit 1
 
   staging-integration:
     name: Staging Read-Only Integration
     needs: staging-preflight
     if: ${{ needs.staging-preflight.outputs.configured == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     environment: staging
+    services:
+      # Only used when mode == 'ephemeral'. Mirrors conformance.yml so both
+      # lanes certify against the same database shape.
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: honua
+          POSTGRES_PASSWORD: honua
+          POSTGRES_DB: honua_test
+          POSTGIS_GDAL_ENABLED_DRIVERS: ENABLE_ALL
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
+      STAGING_MODE: ${{ needs.staging-preflight.outputs.mode }}
       HONUA_STAGING_BASE_URL: ${{ vars.HONUA_STAGING_BASE_URL }}
       HONUA_STAGING_API_KEY: ${{ secrets.HONUA_STAGING_API_KEY }}
       HONUA_STAGING_BEARER_TOKEN: ${{ secrets.HONUA_STAGING_BEARER_TOKEN }}
@@ -142,6 +173,78 @@ jobs:
             exit 1
           fi
 
+      # Ephemeral mode: seed a database from honua-server's own base schema and
+      # boot the pinned image against it, then point the suite at localhost.
+      # A configured `staging` environment skips all of this.
+      - name: Seed and boot an ephemeral Honua server
+        if: ${{ needs.staging-preflight.outputs.mode == 'ephemeral' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PGPASSWORD: honua
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p .staging
+          gh api \
+            "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${EPHEMERAL_HONUA_SERVER_SEED_REF}" \
+            -H "Accept: application/vnd.github.raw" > .staging/base-schema.sql
+          test -s .staging/base-schema.sql
+
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .staging/base-schema.sql
+
+          key="$(head -c 32 /dev/urandom | base64)"
+          salt="$(head -c 16 /dev/urandom | base64)"
+          docker run -d --name honua-staging --network host \
+            -e ASPNETCORE_ENVIRONMENT=Development \
+            -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
+            -e Security__ConnectionEncryption__MasterKey="${key}" \
+            -e Security__ConnectionEncryption__Salt="${salt}" \
+            -e HONUA_ADMIN_PASSWORD="ci-admin-password" \
+            -e Kestrel__Endpoints__Http__Url="http://+:8080" \
+            -e Kestrel__Endpoints__Http__Protocols="Http1" \
+            -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
+            -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
+            "${EPHEMERAL_HONUA_SERVER_IMAGE}"
+
+          code=""
+          for i in $(seq 1 60); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/healthz/ready || true)"
+            [ "$code" = "200" ] && { echo "ready after $((i*3))s"; break; }
+            sleep 3
+          done
+          if [ "${code}" != "200" ]; then
+            echo "::error::ephemeral honua-server did not become ready"
+            docker logs honua-staging || true
+            exit 1
+          fi
+
+          # Read the WFS type name off the running server rather than pinning a
+          # literal, so a seed change cannot leave the gate asserting a name that
+          # no longer exists.
+          caps="$(curl -sf "http://localhost:8080/ogc/services/${EPHEMERAL_SERVICE_NAME}/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities")"
+          typename="$(printf '%s' "$caps" | grep -oPm1 '(?<=<wfs:Name>)[^<]+' || true)"
+          if [ -z "$typename" ]; then
+            typename="$(printf '%s' "$caps" | grep -oPm1 '(?<=<Name>)[^<]+' || true)"
+          fi
+          if [ -z "$typename" ]; then
+            echo "::error::could not read a WFS type name from GetCapabilities"
+            printf '%s' "$caps" | head -c 2000
+            exit 1
+          fi
+          echo "resolved WFS type name: ${typename}"
+
+          {
+            echo "HONUA_STAGING_BASE_URL=http://localhost:8080"
+            echo "HONUA_STAGING_API_KEY=ci-admin-password"
+            echo "HONUA_STAGING_SERVICE_NAME=${EPHEMERAL_SERVICE_NAME}"
+            echo "HONUA_STAGING_LAYER_ID=${EPHEMERAL_LAYER_ID}"
+            echo "HONUA_STAGING_OGC_COLLECTION_ID=${EPHEMERAL_OGC_COLLECTION_ID}"
+            echo "HONUA_STAGING_WFS_TYPENAME=${typename}"
+            echo "HONUA_STAGING_SERVER_IMAGE=${EPHEMERAL_HONUA_SERVER_IMAGE}"
+            echo "HONUA_STAGING_SEED_PROFILE=base-schema@${EPHEMERAL_HONUA_SERVER_SEED_REF}"
+          } >> "${GITHUB_ENV}"
+
       - name: Configure GitHub Packages
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
@@ -156,6 +259,13 @@ jobs:
             /p:EnforceCodeStyleInBuild=true \
             --logger "trx;LogFileName=${TEST_RESULTS_FILE}" \
             --results-directory "${TEST_RESULTS_DIR}"
+
+      - name: Stop the ephemeral server
+        if: ${{ always() && needs.staging-preflight.outputs.mode == 'ephemeral' }}
+        shell: bash
+        run: |
+          docker logs honua-staging > "${TEST_RESULTS_DIR:-.}/honua-staging.log" 2>&1 || true
+          docker rm -f honua-staging || true
 
       - name: Write staging summary
         if: always()
