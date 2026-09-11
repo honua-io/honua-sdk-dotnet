@@ -76,20 +76,30 @@ public sealed class ArcGisSourceCredentialHandler : DelegatingHandler
 {
     private readonly ArcGisSourceCredential _credential;
 
+    // The default transport this handler created itself (null when the caller supplied one). This
+    // handler owns it and disposes it in Dispose(bool).
+    private readonly HttpClientHandler? _ownedInnerHandler;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ArcGisSourceCredentialHandler"/> class.
     /// </summary>
     /// <param name="credential">The credential to apply to every outgoing request.</param>
-    /// <param name="innerHandler">Optional inner handler. Defaults to a new <see cref="HttpClientHandler"/>.</param>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Reliability",
-        "CA2000:Dispose objects before losing scope",
-        Justification = "DelegatingHandler takes ownership of the inner handler passed to its base constructor and disposes it.")]
+    /// <param name="innerHandler">
+    /// Optional inner handler. Defaults to a new <see cref="HttpClientHandler"/> owned by this handler.
+    /// As with any <see cref="DelegatingHandler"/>, the inner handler is disposed with this handler.
+    /// </param>
     public ArcGisSourceCredentialHandler(ArcGisSourceCredential credential, HttpMessageHandler? innerHandler = null)
-        : base(innerHandler ?? new HttpClientHandler())
     {
         ArgumentNullException.ThrowIfNull(credential);
         _credential = credential;
+
+        if (innerHandler is null)
+        {
+            _ownedInnerHandler = new HttpClientHandler();
+            innerHandler = _ownedInnerHandler;
+        }
+
+        InnerHandler = innerHandler;
     }
 
     /// <inheritdoc />
@@ -138,6 +148,17 @@ public sealed class ArcGisSourceCredentialHandler : DelegatingHandler
         }
 
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _ownedInnerHandler?.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     private static Uri AppendQueryParameter(Uri uri, string name, string value)

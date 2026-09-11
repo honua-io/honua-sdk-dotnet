@@ -273,6 +273,36 @@ public sealed class ArcGisSourceFidelityTests
     }
 
     [Fact]
+    public async Task ArcGisSourceCredentialHandler_DefaultInnerHandler_IsDisposedWithHandler()
+    {
+        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
+        HttpClientHandler inner;
+        using (var handler = new ArcGisSourceCredentialHandler(credential))
+        {
+            inner = Assert.IsType<HttpClientHandler>(handler.InnerHandler);
+        }
+
+        // A disposed HttpClientHandler rejects sends; a live one would attempt the request.
+        using var invoker = new HttpMessageInvoker(inner, disposeHandler: false);
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://source.example.com/");
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => invoker.SendAsync(request, CancellationToken.None));
+    }
+
+    [Fact]
+    public void ArcGisSourceCredentialHandler_SuppliedInnerHandler_IsDisposedExactlyOnce()
+    {
+        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
+        var inner = new DisposalTrackingHandler();
+        var handler = new ArcGisSourceCredentialHandler(credential, inner);
+
+        Assert.Equal(0, inner.DisposeCount);
+        handler.Dispose();
+        handler.Dispose();
+
+        Assert.Equal(1, inner.DisposeCount);
+    }
+
+    [Fact]
     public async Task ErrorEnvelope_On200Response_CapturesRetryAfter()
     {
         var client = TestHelpers.CreateFeatureServerClient(req =>
@@ -310,6 +340,24 @@ public sealed class ArcGisSourceFidelityTests
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => Task.FromResult(handler(request));
+    }
+
+    private sealed class DisposalTrackingHandler : HttpMessageHandler
+    {
+        public int DisposeCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DisposeCount++;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }
 
