@@ -1,7 +1,7 @@
 # Honua .NET SDK
 
 [![.NET SDK CI](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml)
-[![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://honua-io.github.io/honua-sdk-dotnet/)
+[![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
@@ -27,7 +27,7 @@ sharing one options/auth/resilience pattern.
 |---|---|
 | Current version | 1.6.2 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
 | Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
-| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is planned but deliberately deferred until the `Geospatial.Grpc` protocol dependency has a stable public release there. |
+| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is unblocked on the dependency side — `Geospatial.Grpc 1.0.0` is public there — and now waits on the release gate fixed in [#347](https://github.com/honua-io/honua-sdk-dotnet/pull/347). |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
 | License | [Apache 2.0](LICENSE) |
 
@@ -63,9 +63,13 @@ schedulers, and display renderers stay out of SDK core.
 
 ## Install
 
-Packages are not yet on nuget.org: stable release tags will publish there once
-the `Geospatial.Grpc` protocol dependency has a stable public release. Until
-then, all packages (stable and preview) install from the authenticated GitHub
+Packages are not yet on nuget.org. The dependency that was blocking it is no
+longer blocking: `Geospatial.Grpc 1.0.0` is public on nuget.org, and this
+repository's own nuget.org preflight passes against it. What remains is the
+release gate — `dotnet-sdk-v1.6.1` and `v1.6.2` are both tagged and both runs
+failed on an unconfigured staging environment, which
+[#347](https://github.com/honua-io/honua-sdk-dotnet/pull/347) fixes. Until that
+lands, all packages (stable and preview) install from the authenticated GitHub
 Packages feed. Follow [INSTALL.md](INSTALL.md) to add the `honua` source with a
 GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
 
@@ -273,9 +277,11 @@ third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc s
 
 ## Documentation
 
-- **[Hosted API reference](https://honua-io.github.io/honua-sdk-dotnet/)** --
-  full DocFX-generated reference for every public type and member, deployed
-  from `trunk`
+- **Hosted API reference** -- a full DocFX reference for every public type and
+  member. **Not published yet:** the site builds on every push, but the deploy
+  steps are gated on the `DEPLOY_GITHUB_PAGES` repository variable, which is
+  unset ([#292](https://github.com/honua-io/honua-sdk-dotnet/issues/292)). Build
+  it locally with `docfx docs/docfx.json --serve` until that is turned on.
 - **[Documentation index](docs/README.md)** -- every getting-started,
   capability, and operations guide in one place
 - **[Quickstart](docs/quickstart.md)** -- 60-second hello-features, then a
