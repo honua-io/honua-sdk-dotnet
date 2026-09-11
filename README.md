@@ -27,7 +27,7 @@ sharing one options/auth/resilience pattern.
 |---|---|
 | Current version | 1.6.2 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
 | Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
-| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is unblocked on the dependency side — `Geospatial.Grpc 1.0.0` is public there — and now waits on the release gate fixed in [#347](https://github.com/honua-io/honua-sdk-dotnet/pull/347). |
+| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is unblocked on both counts it used to wait on: `Geospatial.Grpc 1.0.0` is public there, and the release gate that failed every stable tag now runs against an ephemeral server (#347). What remains is a nuget.org Trusted Publishing policy and a release tag. |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
 | License | [Apache 2.0](LICENSE) |
 
@@ -65,12 +65,12 @@ schedulers, and display renderers stay out of SDK core.
 
 Packages are not yet on nuget.org. The dependency that was blocking it is no
 longer blocking: `Geospatial.Grpc 1.0.0` is public on nuget.org, and this
-repository's own nuget.org preflight passes against it. What remains is the
-release gate — `dotnet-sdk-v1.6.1` and `v1.6.2` are both tagged and both runs
-failed on an unconfigured staging environment, which
-[#347](https://github.com/honua-io/honua-sdk-dotnet/pull/347) fixes. Until that
-lands, all packages (stable and preview) install from the authenticated GitHub
-Packages feed. Follow [INSTALL.md](INSTALL.md) to add the `honua` source with a
+repository's own nuget.org preflight passes against it. The release gate that
+failed `dotnet-sdk-v1.6.1` and `v1.6.2` — an unconfigured staging environment —
+is fixed: that suite now boots its own server when no deployment is configured.
+What remains is a nuget.org Trusted Publishing policy for the `Honua.Sdk*`
+package IDs and a release tag. Until then, all packages (stable and preview)
+install from the authenticated GitHub Packages feed. Follow [INSTALL.md](INSTALL.md) to add the `honua` source with a
 GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
 
 ```bash
