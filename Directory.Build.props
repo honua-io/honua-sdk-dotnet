@@ -23,8 +23,19 @@
   <!--
     SourceLink embeds repository/commit metadata into PDBs so consumers can step
     from published symbols (.snupkg) into the exact GitHub source. PublishRepositoryUrl
-    and EmbedUntrackedSources above are already set; the package reference below is
-    what actually emits the SourceLink data.
+    and EmbedUntrackedSources above are what turn it on.
+
+    The reference below does NOT add SourceLink — since .NET 8 the SDK ships it and
+    imports it automatically, and Microsoft.NET.Sdk.SourceLink.props guards that import
+    with `SuppressImplicitGitSourceLink` when a Microsoft.SourceLink package is
+    referenced. So referencing it *replaces* the SDK's maintained copy with the pinned
+    one, which is why pinning 8.0.0 pulled Microsoft.Build.Tasks.Git 8.0.0 and its
+    advisory (GHSA-23fw-v26w-5fgq) into every restore until #344 bumped it.
+
+    Keeping the reference therefore means tracking SDK bands by hand for a component
+    the SDK already maintains. Dropping it entirely is the other option and removes the
+    dependency from the advisory surface — verified to still emit SourceLink, since the
+    SDK's own copy takes over. Left as a deliberate choice rather than an accident.
   -->
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
