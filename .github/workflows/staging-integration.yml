@@ -193,6 +193,14 @@ jobs:
 
           psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .staging/base-schema.sql
 
+          # The suite drives every protocol - REST, OGC, GeoServices and gRPC -
+          # from one HONUA_STAGING_BASE_URL, because that is what an external
+          # deployment presents behind a single ingress. The ephemeral
+          # container's HTTP endpoint therefore has to speak both protocols:
+          # with Http1 alone the gRPC client cannot negotiate h2c on 8080 and
+          # every gRPC test fails with HTTP_1_1_REQUIRED. The dedicated 8081
+          # listener stays for parity with production, where gRPC is its own
+          # endpoint.
           key="$(head -c 32 /dev/urandom | base64)"
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-staging --network host \
@@ -202,7 +210,7 @@ jobs:
             -e Security__ConnectionEncryption__Salt="${salt}" \
             -e HONUA_ADMIN_PASSWORD="ci-admin-password" \
             -e Kestrel__Endpoints__Http__Url="http://+:8080" \
-            -e Kestrel__Endpoints__Http__Protocols="Http1" \
+            -e Kestrel__Endpoints__Http__Protocols="Http1AndHttp2" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
             -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
             "${EPHEMERAL_HONUA_SERVER_IMAGE}"
