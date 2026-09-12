@@ -112,23 +112,23 @@ Pick the packages that match your transport / workload:
 
 ```bash
 # Umbrella / meta — easiest single install
-dotnet add package Honua.Sdk --source honua
+dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json
 
 # Or pick narrower packages individually:
-dotnet add package Honua.Sdk.Abstractions --source honua
-dotnet add package Honua.Sdk.Offline --source honua
-dotnet add package Honua.Sdk.Grpc --source honua
-dotnet add package Honua.Sdk.Geometry --source honua
-dotnet add package Honua.Sdk.Admin --source honua
-dotnet add package Honua.Sdk.Processes --source honua
-dotnet add package Honua.Sdk.Spec --source honua
-dotnet add package Honua.Sdk.Studio --source honua
-dotnet add package Honua.Sdk.ConsoleShare --source honua
-dotnet add package Honua.Sdk.Field --source honua
-dotnet add package Honua.Sdk.GeoServices --source honua
-dotnet add package Honua.Sdk.Scenes --source honua
-dotnet add package Honua.Sdk.OgcFeatures --source honua
-dotnet add package Honua.Sdk.Catalogs --source honua
+dotnet add package Honua.Sdk.Abstractions --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Offline --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Grpc --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Geometry --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Admin --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Processes --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Spec --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Studio --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.ConsoleShare --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Field --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.GeoServices --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Scenes --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.OgcFeatures --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
 ```
 
 ### 3. Install the CLI tool
@@ -166,7 +166,7 @@ GitHub Packages instructions above for every version, stable or prerelease.
 dotnet add package Honua.Sdk
 
 # Preview/internal channel
-dotnet add package Honua.Sdk --source honua --prerelease
+dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json --prerelease
 ```
 
 ## Quick Start

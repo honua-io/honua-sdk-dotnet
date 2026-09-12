@@ -40,7 +40,7 @@ Single package, single async call. Replace the URL with your Honua server.
 dotnet new console -n HonuaHello
 cd HonuaHello
 dotnet add package Honua.Sdk.Grpc --version 1.6.0 \
-  --source "https://nuget.pkg.github.com/honua-io/index.json"
+  --source https://nuget.pkg.github.com/honua-io/index.json
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
@@ -103,12 +103,10 @@ cd HonuaDemo
 # Pass the feed URL, not the --name alias: the alias can degrade to a
 # filesystem lookup (NU1301) that reads as though the package does not exist.
 # --version is optional here; pinned so this page stays reproducible.
-FEED="https://nuget.pkg.github.com/honua-io/index.json"
-
-dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source "$FEED"          # gRPC FeatureService + native ProcessService jobs
-dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source "$FEED"  # shared query abstraction
-dotnet add package Honua.Sdk.Admin --version 1.6.0 --source "$FEED"         # Admin + Geocoding REST
-dotnet add package Honua.Sdk.OgcFeatures --version 1.6.0 --source "$FEED"   # OGC API Features + WFS 2.0
+dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json          # gRPC FeatureService + native ProcessService jobs
+dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json  # shared query abstraction
+dotnet add package Honua.Sdk.Admin --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json         # Admin + Geocoding REST
+dotnet add package Honua.Sdk.OgcFeatures --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json   # OGC API Features + WFS 2.0
 
 # Generic Host for dependency injection
 dotnet add package Microsoft.Extensions.Hosting
@@ -131,7 +129,7 @@ flags or their package-specific `AddHonua*` extensions.
 The recommended path is the **umbrella** `AddHonua` registration from the
 `Honua.Sdk` meta package: one call configures every enabled sub-package with a
 shared base address, auth, and retry / timeout policy. Add
-`dotnet add package Honua.Sdk --source "$FEED"` to the install step above (which defines `FEED`) when
+`dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json` to the install step above when
 you take this path.
 
 ```csharp
@@ -327,10 +325,9 @@ catalog and the caller should discover standards-facing metadata records instead
 of operator/control-plane inventory. First install and register the package:
 
 ```bash
-# The feed URL, not the --name alias: the alias can degrade to a filesystem
+# The feed URL, not a --name alias: the alias can degrade to a filesystem
 # lookup (NU1301) whose error reads as though the package does not exist.
-FEED="https://nuget.pkg.github.com/honua-io/index.json"
-dotnet add package Honua.Sdk.Catalogs --source "$FEED"
+dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
 ```
 
 ```csharp
@@ -357,10 +354,9 @@ asset search semantics instead of Records metadata records. First install and
 register the package:
 
 ```bash
-# The feed URL, not the --name alias: the alias can degrade to a filesystem
+# The feed URL, not a --name alias: the alias can degrade to a filesystem
 # lookup (NU1301) whose error reads as though the package does not exist.
-FEED="https://nuget.pkg.github.com/honua-io/index.json"
-dotnet add package Honua.Sdk.Catalogs --source "$FEED"
+dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
 ```
 
 ```csharp
