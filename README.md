@@ -75,7 +75,9 @@ GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
 
 ```bash
 # Easiest: install the umbrella to get every Honua.Sdk.* package at once.
-dotnet add package Honua.Sdk --source honua
+# Pass the feed URL rather than the --name alias: the alias can degrade to a
+# filesystem lookup (NU1301) whose error reads as though the package is missing.
+dotnet add package Honua.Sdk --source "https://nuget.pkg.github.com/honua-io/index.json"
 ```
 
 Channel policy is explicit and fail-closed: the first stable tag after the public dependency is
@@ -92,20 +94,23 @@ dotnet add package Honua.Sdk
 <summary>Want narrower dependencies? Install per-package instead.</summary>
 
 ```bash
-dotnet add package Honua.Sdk.Abstractions --source honua
-dotnet add package Honua.Sdk.Offline --source honua
-dotnet add package Honua.Sdk.Grpc --source honua
-dotnet add package Honua.Sdk.Admin --source honua
-dotnet add package Honua.Sdk.Processes --source honua
-dotnet add package Honua.Sdk.Spec --source honua
-dotnet add package Honua.Sdk.Studio --source honua
-dotnet add package Honua.Sdk.ConsoleShare --source honua
-dotnet add package Honua.Sdk.Field --source honua
-dotnet add package Honua.Sdk.Geometry --source honua
-dotnet add package Honua.Sdk.GeoServices --source honua
-dotnet add package Honua.Sdk.Scenes --source honua
-dotnet add package Honua.Sdk.OgcFeatures --source honua
-dotnet add package Honua.Sdk.Catalogs --source honua
+# The feed URL, not the --name alias: the alias can degrade to a filesystem
+# lookup (NU1301) whose error reads as though the package does not exist.
+FEED="https://nuget.pkg.github.com/honua-io/index.json"
+dotnet add package Honua.Sdk.Abstractions --source "$FEED"
+dotnet add package Honua.Sdk.Offline --source "$FEED"
+dotnet add package Honua.Sdk.Grpc --source "$FEED"
+dotnet add package Honua.Sdk.Admin --source "$FEED"
+dotnet add package Honua.Sdk.Processes --source "$FEED"
+dotnet add package Honua.Sdk.Spec --source "$FEED"
+dotnet add package Honua.Sdk.Studio --source "$FEED"
+dotnet add package Honua.Sdk.ConsoleShare --source "$FEED"
+dotnet add package Honua.Sdk.Field --source "$FEED"
+dotnet add package Honua.Sdk.Geometry --source "$FEED"
+dotnet add package Honua.Sdk.GeoServices --source "$FEED"
+dotnet add package Honua.Sdk.Scenes --source "$FEED"
+dotnet add package Honua.Sdk.OgcFeatures --source "$FEED"
+dotnet add package Honua.Sdk.Catalogs --source "$FEED"
 ```
 
 </details>

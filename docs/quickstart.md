@@ -100,11 +100,15 @@ dotnet new console -n HonuaDemo
 cd HonuaDemo
 
 # Core packages this quickstart uses (feed setup: see Prerequisites above).
+# Pass the feed URL, not the --name alias: the alias can degrade to a
+# filesystem lookup (NU1301) that reads as though the package does not exist.
 # --version is optional here; pinned so this page stays reproducible.
-dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source honua           # gRPC FeatureService + native ProcessService jobs
-dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source honua   # shared query abstraction
-dotnet add package Honua.Sdk.Admin --version 1.6.0 --source honua          # Admin + Geocoding REST
-dotnet add package Honua.Sdk.OgcFeatures --version 1.6.0 --source honua    # OGC API Features + WFS 2.0
+FEED="https://nuget.pkg.github.com/honua-io/index.json"
+
+dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source "$FEED"          # gRPC FeatureService + native ProcessService jobs
+dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source "$FEED"  # shared query abstraction
+dotnet add package Honua.Sdk.Admin --version 1.6.0 --source "$FEED"         # Admin + Geocoding REST
+dotnet add package Honua.Sdk.OgcFeatures --version 1.6.0 --source "$FEED"   # OGC API Features + WFS 2.0
 
 # Generic Host for dependency injection
 dotnet add package Microsoft.Extensions.Hosting
@@ -127,7 +131,7 @@ flags or their package-specific `AddHonua*` extensions.
 The recommended path is the **umbrella** `AddHonua` registration from the
 `Honua.Sdk` meta package: one call configures every enabled sub-package with a
 shared base address, auth, and retry / timeout policy. Add
-`dotnet add package Honua.Sdk --source honua` to the install step above when
+`dotnet add package Honua.Sdk --source "$FEED"` to the install step above (which defines `FEED`) when
 you take this path.
 
 ```csharp
@@ -323,7 +327,10 @@ catalog and the caller should discover standards-facing metadata records instead
 of operator/control-plane inventory. First install and register the package:
 
 ```bash
-dotnet add package Honua.Sdk.Catalogs --source honua
+# The feed URL, not the --name alias: the alias can degrade to a filesystem
+# lookup (NU1301) whose error reads as though the package does not exist.
+FEED="https://nuget.pkg.github.com/honua-io/index.json"
+dotnet add package Honua.Sdk.Catalogs --source "$FEED"
 ```
 
 ```csharp
@@ -350,7 +357,10 @@ asset search semantics instead of Records metadata records. First install and
 register the package:
 
 ```bash
-dotnet add package Honua.Sdk.Catalogs --source honua
+# The feed URL, not the --name alias: the alias can degrade to a filesystem
+# lookup (NU1301) whose error reads as though the package does not exist.
+FEED="https://nuget.pkg.github.com/honua-io/index.json"
+dotnet add package Honua.Sdk.Catalogs --source "$FEED"
 ```
 
 ```csharp
