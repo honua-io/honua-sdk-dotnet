@@ -39,6 +39,13 @@ jobs:
       - name: Validate OKF documentation bundle
         run: python3 scripts/check-okf-bundle.py
 
+      # SUMMARY.md is GitBook's table of contents, derived from the same
+      # boundary the gate above checks. A page added to the bundle and not the
+      # TOC - or the reverse - fails here rather than shipping a contents page
+      # that disagrees with the bundle.
+      - name: Verify the GitBook table of contents is derived
+        run: python3 scripts/generate-summary.py --check
+
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
