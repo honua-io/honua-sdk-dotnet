@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.6.4](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.3...dotnet-sdk-v1.6.4) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** pin NuGet/login to a SHA that exists ([#360](https://github.com/honua-io/honua-sdk-dotnet/issues/360)) ([45c4bef](https://github.com/honua-io/honua-sdk-dotnet/commit/45c4bef8c54e45c93d8f5d3d493cfa25ca4f5fca))
+
 ## [1.6.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.2...dotnet-sdk-v1.6.3) (2026-09-12)
 
 
