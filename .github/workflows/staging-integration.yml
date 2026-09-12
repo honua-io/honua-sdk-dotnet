@@ -193,14 +193,14 @@ jobs:
 
           psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .staging/base-schema.sql
 
-          # The suite drives every protocol - REST, OGC, GeoServices and gRPC -
-          # from one HONUA_STAGING_BASE_URL, because that is what an external
-          # deployment presents behind a single ingress. The ephemeral
-          # container's HTTP endpoint therefore has to speak both protocols:
-          # with Http1 alone the gRPC client cannot negotiate h2c on 8080 and
-          # every gRPC test fails with HTTP_1_1_REQUIRED. The dedicated 8081
-          # listener stays for parity with production, where gRPC is its own
-          # endpoint.
+          # Two plaintext endpoints, and the gRPC one has to be its own.
+          # Kestrel's Http1AndHttp2 negotiates via ALPN, which requires TLS, so
+          # on a plaintext port it serves HTTP/1.1 and a gRPC call fails with
+          # HTTP_1_1_REQUIRED. h2c therefore needs a dedicated Http2 endpoint,
+          # which 8081 is - and the suite has to be pointed at it, which is what
+          # HONUA_STAGING_GRPC_BASE_URL below does. An external deployment needs
+          # no such split: TLS at the ingress lets ALPN carry gRPC on the same
+          # origin, so that variable stays unset there and defaults to the base.
           key="$(head -c 32 /dev/urandom | base64)"
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-staging --network host \
@@ -210,7 +210,7 @@ jobs:
             -e Security__ConnectionEncryption__Salt="${salt}" \
             -e HONUA_ADMIN_PASSWORD="ci-admin-password" \
             -e Kestrel__Endpoints__Http__Url="http://+:8080" \
-            -e Kestrel__Endpoints__Http__Protocols="Http1AndHttp2" \
+            -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
             -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
             "${EPHEMERAL_HONUA_SERVER_IMAGE}"
@@ -252,6 +252,7 @@ jobs:
 
           {
             echo "HONUA_STAGING_BASE_URL=http://localhost:8080"
+            echo "HONUA_STAGING_GRPC_BASE_URL=http://localhost:8081"
             echo "HONUA_STAGING_API_KEY=ci-admin-password"
             echo "HONUA_STAGING_SERVICE_NAME=${EPHEMERAL_SERVICE_NAME}"
             echo "HONUA_STAGING_LAYER_ID=${EPHEMERAL_LAYER_ID}"
