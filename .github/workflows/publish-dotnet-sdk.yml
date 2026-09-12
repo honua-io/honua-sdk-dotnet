@@ -697,7 +697,7 @@ jobs:
       - name: Exchange OIDC for a short-lived NuGet key (Trusted Publishing)
         if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}
         id: nuget-login
-        uses: NuGet/login@2d1146689b8cda280b9bc96326124645441f03bc # v1.2.0
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         with:
           user: makanikai
 
