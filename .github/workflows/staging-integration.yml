@@ -222,13 +222,21 @@ jobs:
           # Read the WFS type name off the running server rather than pinning a
           # literal, so a seed change cannot leave the gate asserting a name that
           # no longer exists.
-          caps="$(curl -sf "http://localhost:8080/ogc/services/${EPHEMERAL_SERVICE_NAME}/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities")"
+          #
+          # WFS is served at the ROOT `/wfs`, not under
+          # `/ogc/services/{serviceId}/`. WMS, WMTS and WCS are service-scoped;
+          # WFS is not, and asking for the scoped path returns 404 -- which
+          # `curl -sf` reports as exit 22 with no body, so the failure reads as
+          # "the server is broken" rather than "that route does not exist".
+          # See honua-server docs/reference/protocols/wms-wfs-wcs-wmts.md.
+          caps="$(curl -sf "http://localhost:8080/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities")"
           typename="$(printf '%s' "$caps" | grep -oPm1 '(?<=<wfs:Name>)[^<]+' || true)"
           if [ -z "$typename" ]; then
             typename="$(printf '%s' "$caps" | grep -oPm1 '(?<=<Name>)[^<]+' || true)"
           fi
           if [ -z "$typename" ]; then
-            echo "::error::could not read a WFS type name from GetCapabilities"
+            status="$(curl -s -o /dev/null -w '%{http_code}'               "http://localhost:8080/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities" || true)"
+            echo "::error::could not read a WFS type name from GetCapabilities (HTTP ${status})"
             printf '%s' "$caps" | head -c 2000
             exit 1
           fi
