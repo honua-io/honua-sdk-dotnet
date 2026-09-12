@@ -56,6 +56,12 @@ for entry in "${entries[@]}"; do
     fail "${package_id} is missing its package README."
   fi
 
+  # Install commands must name the authenticated GitHub Packages feed by URL:
+  # the packages are not on nuget.org yet, so a bare `dotnet add package`
+  # fails with NU1101, and a `--source honua` alias can degrade to a
+  # filesystem-path lookup (NU1301) whose error also reads as though the
+  # package does not exist. The old wording said this and then pinned the
+  # alias anyway. Superseded comment follows:
   # Install commands must name the authenticated GitHub Packages feed: the
   # packages are not on nuget.org yet, so a bare `dotnet add package` (or a
   # `dotnet tool install` without --add-source) fails with NU1101. The docs
@@ -77,9 +83,9 @@ for entry in "${entries[@]}"; do
     if [[ ! -f "${package_dir}/PublicAPI.Unshipped.txt" ]]; then
       fail "${package_id} is missing PublicAPI.Unshipped.txt."
     fi
-    grep -Fxq "dotnet add package ${package_id} --source honua" "${ROOT}/README.md" \
+    grep -Fxq "dotnet add package ${package_id} --source https://nuget.pkg.github.com/honua-io/index.json" "${ROOT}/README.md" \
       || fail "README.md install commands are missing ${package_id}."
-    grep -Fxq "dotnet add package ${package_id} --source honua" "${ROOT}/INSTALL.md" \
+    grep -Fxq "dotnet add package ${package_id} --source https://nuget.pkg.github.com/honua-io/index.json" "${ROOT}/INSTALL.md" \
       || fail "INSTALL.md install commands are missing ${package_id}."
   fi
 

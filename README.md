@@ -75,7 +75,9 @@ GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
 
 ```bash
 # Easiest: install the umbrella to get every Honua.Sdk.* package at once.
-dotnet add package Honua.Sdk --source honua
+# Pass the feed URL rather than the --name alias: the alias can degrade to a
+# filesystem lookup (NU1301) whose error reads as though the package is missing.
+dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json
 ```
 
 Channel policy is explicit and fail-closed: the first stable tag after the public dependency is
@@ -92,20 +94,22 @@ dotnet add package Honua.Sdk
 <summary>Want narrower dependencies? Install per-package instead.</summary>
 
 ```bash
-dotnet add package Honua.Sdk.Abstractions --source honua
-dotnet add package Honua.Sdk.Offline --source honua
-dotnet add package Honua.Sdk.Grpc --source honua
-dotnet add package Honua.Sdk.Admin --source honua
-dotnet add package Honua.Sdk.Processes --source honua
-dotnet add package Honua.Sdk.Spec --source honua
-dotnet add package Honua.Sdk.Studio --source honua
-dotnet add package Honua.Sdk.ConsoleShare --source honua
-dotnet add package Honua.Sdk.Field --source honua
-dotnet add package Honua.Sdk.Geometry --source honua
-dotnet add package Honua.Sdk.GeoServices --source honua
-dotnet add package Honua.Sdk.Scenes --source honua
-dotnet add package Honua.Sdk.OgcFeatures --source honua
-dotnet add package Honua.Sdk.Catalogs --source honua
+# The feed URL, not a --name alias: the alias can degrade to a filesystem
+# lookup (NU1301) whose error reads as though the package does not exist.
+dotnet add package Honua.Sdk.Abstractions --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Offline --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Grpc --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Admin --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Processes --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Spec --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Studio --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.ConsoleShare --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Field --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Geometry --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.GeoServices --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Scenes --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.OgcFeatures --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
 ```
 
 </details>
