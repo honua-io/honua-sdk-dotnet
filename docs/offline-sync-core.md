@@ -2,6 +2,7 @@
 type: concept
 title: "Offline sync core"
 description: "How the abstractions package models disconnected work and replica sync, and which pieces a field application has to supply itself."
+resource: "honua://capability/fieldops.offline-sync"
 tags: [offline, sync, field]
 ---
 # Offline sync core

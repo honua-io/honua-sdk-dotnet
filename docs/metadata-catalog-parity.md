@@ -2,6 +2,7 @@
 type: reference
 title: "Metadata and catalog parity"
 description: "The stable, non-UI metadata and catalog reads this repo exposes, and how they line up with the server surfaces behind them."
+resource: "honua://capability/discovery.capability-manifest"
 tags: [metadata, catalog, parity]
 ---
 # Metadata And Catalog Reads

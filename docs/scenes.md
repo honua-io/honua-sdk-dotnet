@@ -2,6 +2,7 @@
 type: guide
 title: "Discover and open 3D scenes"
 description: "Portable scene discovery and opening through Honua.Sdk.Scenes, for clients rendering 3D content."
+resource: "honua://capability/scene.catalog"
 tags: [scenes, 3d]
 ---
 # Scene Metadata And Packages

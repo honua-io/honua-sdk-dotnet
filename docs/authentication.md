@@ -2,6 +2,7 @@
 type: guide
 title: "Authenticate a client"
 description: "Static credentials for simple deployments and provider delegates for dynamic ones: API keys, bearer tokens, and request-aware access tokens."
+resource: "honua://capability/identity.oidc"
 tags: [auth, api-key, oidc]
 ---
 # Authentication

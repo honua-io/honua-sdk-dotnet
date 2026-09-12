@@ -2,6 +2,7 @@
 type: guide
 title: "Analyse geometry locally"
 description: "Honua.Sdk.Geometry runs in-process, so these operations need no server round trip. What it computes and where its limits are."
+resource: "honua://capability/serve.geoservices-geometry-service"
 tags: [geometry, local, analysis]
 ---
 # Geometry analysis

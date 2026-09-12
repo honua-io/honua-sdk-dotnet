@@ -2,6 +2,7 @@
 type: index
 title: "Honua .NET SDK documentation"
 description: "What this docs directory holds and in what order to read it, from the quickstart through the per-surface guides to the hosted API reference."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [sdk, dotnet, navigation]
 ---
 # Honua .NET SDK documentation

@@ -2,6 +2,7 @@
 type: reference
 title: "Cross-cutting client behaviour"
 description: "What applies to every client regardless of protocol: timeouts, retries, cancellation, header propagation and error mapping."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [transport, retries, timeouts, errors]
 ---
 # Client Behavior

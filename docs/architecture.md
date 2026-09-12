@@ -2,6 +2,7 @@
 type: concept
 title: "How the packages relate"
 description: "A one-page map of the Honua.Sdk package family: which package owns which surface, what depends on what, and why the abstractions package sits underneath."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [architecture, packages]
 ---
 # Architecture overview

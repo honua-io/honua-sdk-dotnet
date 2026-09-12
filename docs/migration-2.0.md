@@ -2,6 +2,7 @@
 type: reference
 title: "Compatibility debt carried into 2.0"
 description: "What remains publicly incompatible and why, so a consumer planning an upgrade knows before starting rather than during."
+resource: "https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/CHANGELOG.md"
 tags: [migration, breaking-changes]
 ---
 # Planned 2.0 API cleanup
