@@ -2,6 +2,7 @@
 type: reference
 title: "Compatibility policy"
 description: "The two contracts this SDK treats separately - the public API surface and the server protocol - and what counts as a breaking change to each."
+resource: "https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/eng/api-approval"
 tags: [compatibility, versioning, policy]
 ---
 # Compatibility Policy

@@ -2,6 +2,7 @@
 type: reference
 title: "Plugin contracts"
 description: "The host-neutral plugin interfaces in Honua.Sdk.Abstractions.Plugins, for extending a host without depending on its runtime."
+resource: "honua://capability/plugin.sdk"
 tags: [plugins, extensibility]
 ---
 # Plugin contracts

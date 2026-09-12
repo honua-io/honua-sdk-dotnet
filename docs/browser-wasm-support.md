@@ -2,6 +2,7 @@
 type: reference
 title: "Browser and WASM support matrix"
 description: "What this SDK considers browser-supported, which packages work under WebAssembly, and which surfaces are unavailable there."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [browser, wasm, blazor]
 ---
 # Browser And WebAssembly Support

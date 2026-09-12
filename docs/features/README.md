@@ -2,6 +2,7 @@
 type: index
 title: "What this repository owns"
 description: "The official .NET client libraries and shared abstractions this repo ships, and where each surface lives across the Honua.Sdk package family."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [sdk, dotnet, surfaces]
 ---
 # Honua .NET SDK Feature Map

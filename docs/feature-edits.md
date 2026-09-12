@@ -2,6 +2,7 @@
 type: guide
 title: "Read and write features"
 description: "Reads and writes are separate SDK surfaces with different guarantees. How to perform edits, and what the server enforces on the way through."
+resource: "honua://capability/editing.featureserver-edits"
 tags: [features, edits, applyedits]
 ---
 # Feature Edits

@@ -2,6 +2,7 @@
 type: guide
 title: "Evaluate geofences"
 description: "The host-neutral geofence evaluator in Honua.Sdk.Geometry: defining zones, evaluating positions, and how it relates to server-side alerting."
+resource: "honua://capability/alerts.enter-exit"
 tags: [geofencing, geometry, alerts]
 ---
 # Geofencing
