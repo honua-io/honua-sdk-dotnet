@@ -247,6 +247,15 @@ jobs:
               echo "No previous dotnet-sdk-v* tag found; using HEAD~1 as the API compatibility baseline."
               baseline_ref="HEAD~1"
             fi
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            tag_ref="$(git tag --points-at "${GITHUB_SHA}" --list 'dotnet-sdk-v*' | head -n1)"
+            if [[ -n "${tag_ref}" ]]; then
+              baseline_ref="$(git describe --tags --abbrev=0 --match 'dotnet-sdk-v*' "${tag_ref}^" 2>/dev/null || true)"
+              if [[ -z "${baseline_ref}" ]]; then
+                echo "No previous dotnet-sdk-v* tag found for ${tag_ref}; using HEAD~1 as baseline."
+                baseline_ref="HEAD~1"
+              fi
+            fi
           fi
 
           scripts/validate-api-compat.sh "${baseline_ref}"
