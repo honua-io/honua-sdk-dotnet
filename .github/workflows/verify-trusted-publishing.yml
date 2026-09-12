@@ -1,0 +1,53 @@
+name: Verify Trusted Publishing
+
+# Answers one question, on demand, without publishing anything: will nuget.org
+# accept this repository's OIDC token and hand back a short-lived key?
+#
+# It exists because that question was previously unanswerable except by pushing
+# a release tag. The publish job is gated on
+# `startsWith(github.ref, 'refs/tags/dotnet-sdk-v')`, so no dry run reaches the
+# exchange - and `dotnet-sdk-v*` tags are immutable and must match the package
+# version, so a tag whose publish fails cannot be retried. A misconfigured
+# trusted-publishing policy therefore costs a version number to discover.
+# dotnet-sdk-v1.6.3 was lost that way.
+#
+# This runs the exact exchange the release uses: same action, same pinned SHA,
+# same `user`, and the same `public-nuget` environment, so the environment claim
+# in the OIDC token is the one a real release presents. It stops there. No
+# package is built, pushed, or signed.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Exchange OIDC for a NuGet key and stop
+    runs-on: ubuntu-latest
+    # Must match the publish job. The environment name is part of the OIDC
+    # subject claim, so verifying under a different one would prove nothing.
+    environment: public-nuget
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Exchange OIDC for a short-lived NuGet key (Trusted Publishing)
+        id: nuget-login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: makanikai
+
+      - name: Report the verdict
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          set -euo pipefail
+          # Never echo the key. Length alone distinguishes "exchanged" from
+          # "silently empty", which is the failure the release guards against.
+          if [[ -z "${NUGET_API_KEY}" ]]; then
+            echo "::error::Trusted Publishing produced no key. A release tag pushed now would fail at the same step and burn that version."
+            exit 1
+          fi
+          echo "::notice::Trusted Publishing is configured correctly: nuget.org returned a key (${#NUGET_API_KEY} characters). Safe to cut a release."
