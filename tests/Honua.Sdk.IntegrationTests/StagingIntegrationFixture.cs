@@ -64,7 +64,7 @@ public sealed class StagingIntegrationFixture : IAsyncLifetime, IDisposable
         });
         services.AddHonuaGrpc(options =>
         {
-            options.BaseAddress = Options.BaseUri;
+            options.BaseAddress = Options.GrpcBaseUri;
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });
