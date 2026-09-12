@@ -2,6 +2,15 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.6.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.2...dotnet-sdk-v1.6.3) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** ask the ephemeral server for WFS at the route it actually serves ([#355](https://github.com/honua-io/honua-sdk-dotnet/issues/355))
+* **ci:** point the staging gRPC client at the h2c endpoint ([#357](https://github.com/honua-io/honua-sdk-dotnet/issues/357))
+* stop the install steps from using the feed alias they warn against ([#353](https://github.com/honua-io/honua-sdk-dotnet/issues/353))
+
 ## [1.6.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.0...dotnet-sdk-v1.6.1) (2026-08-24)
 
 
