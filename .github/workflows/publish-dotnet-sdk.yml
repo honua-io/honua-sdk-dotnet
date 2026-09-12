@@ -790,7 +790,11 @@ jobs:
           EOF
 
           for package_id in Honua.Sdk Honua.Sdk.Admin Honua.Sdk.Grpc; do
-            project_dir="${smoke_root}/${package_id}"
+            # The directory leaf becomes the project name, so naming it after the
+            # package makes the consumer reference itself: NU1108 Cycle detected,
+            # Honua.Sdk -> Honua.Sdk. Prefix it so the consumer can never share an
+            # identity with the package it is meant to consume.
+            project_dir="${smoke_root}/consume-$(printf %s "${package_id}" | tr . -)"
             dotnet new console --framework net10.0 --output "${project_dir}" --no-restore
             project_file="$(find "${project_dir}" -maxdepth 1 -name '*.csproj' -print -quit)"
             test -n "${project_file}"
