@@ -5,3 +5,63 @@ Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! m
 Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! message, System.Exception! innerException) -> void
 Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! message, System.Exception! innerException, int? httpStatus = null) -> void
 override Honua.Sdk.Abstractions.HonuaTransportException.HttpStatus.get -> int?
+Honua.Sdk.Abstractions.HonuaException.CorrelationId.get -> string?
+Honua.Sdk.Abstractions.HonuaException.FailureKind.get -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaException.FieldErrors.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.HonuaFieldFailure!>!
+Honua.Sdk.Abstractions.HonuaException.MachineCode.get -> string?
+Honua.Sdk.Abstractions.HonuaException.ProtocolMetadata.get -> Honua.Sdk.Abstractions.HonuaProtocolMetadata!
+Honua.Sdk.Abstractions.HonuaException.Retryable.get -> bool
+Honua.Sdk.Abstractions.HonuaException.RetryAfter.get -> System.TimeSpan?
+Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Authentication = 1 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Authorization = 2 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Conflict = 5 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.NotFound = 3 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Throttled = 6 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Unavailable = 7 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Unknown = 0 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureKind.Validation = 4 -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureReceipt
+Honua.Sdk.Abstractions.HonuaFailureReceipt.Code.get -> string?
+Honua.Sdk.Abstractions.HonuaFailureReceipt.Code.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.CorrelationId.get -> string?
+Honua.Sdk.Abstractions.HonuaFailureReceipt.CorrelationId.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.FieldErrors.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.HonuaFieldFailure!>!
+Honua.Sdk.Abstractions.HonuaFailureReceipt.FieldErrors.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.HonuaFailureReceipt() -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.Kind.get -> Honua.Sdk.Abstractions.HonuaFailureKind
+Honua.Sdk.Abstractions.HonuaFailureReceipt.Kind.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.ProtocolCode.get -> string?
+Honua.Sdk.Abstractions.HonuaFailureReceipt.ProtocolCode.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.ProtocolMetadata.get -> Honua.Sdk.Abstractions.HonuaProtocolMetadata!
+Honua.Sdk.Abstractions.HonuaFailureReceipt.ProtocolMetadata.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.Retryable.get -> bool
+Honua.Sdk.Abstractions.HonuaFailureReceipt.Retryable.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.RetryAfter.get -> System.TimeSpan?
+Honua.Sdk.Abstractions.HonuaFailureReceipt.RetryAfter.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceipt.TransportStatus.get -> int?
+Honua.Sdk.Abstractions.HonuaFailureReceipt.TransportStatus.init -> void
+Honua.Sdk.Abstractions.HonuaFailureReceiptFactory
+Honua.Sdk.Abstractions.HonuaFieldFailure
+Honua.Sdk.Abstractions.HonuaFieldFailure.Code.get -> string?
+Honua.Sdk.Abstractions.HonuaFieldFailure.Code.init -> void
+Honua.Sdk.Abstractions.HonuaFieldFailure.FieldId.get -> string?
+Honua.Sdk.Abstractions.HonuaFieldFailure.FieldId.init -> void
+Honua.Sdk.Abstractions.HonuaFieldFailure.HonuaFieldFailure() -> void
+Honua.Sdk.Abstractions.HonuaFieldFailure.ItemIndex.get -> int?
+Honua.Sdk.Abstractions.HonuaFieldFailure.ItemIndex.init -> void
+Honua.Sdk.Abstractions.HonuaFieldFailure.Message.get -> string?
+Honua.Sdk.Abstractions.HonuaFieldFailure.Message.init -> void
+Honua.Sdk.Abstractions.HonuaFieldFailure.Path.get -> string?
+Honua.Sdk.Abstractions.HonuaFieldFailure.Path.init -> void
+Honua.Sdk.Abstractions.HonuaFieldFailure.Severity.get -> string?
+Honua.Sdk.Abstractions.HonuaFieldFailure.Severity.init -> void
+Honua.Sdk.Abstractions.HonuaProtocolMetadata
+Honua.Sdk.Abstractions.HonuaProtocolMetadata.HonuaProtocolMetadata() -> void
+Honua.Sdk.Abstractions.HonuaProtocolMetadata.Initial.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>!
+Honua.Sdk.Abstractions.HonuaProtocolMetadata.Initial.init -> void
+Honua.Sdk.Abstractions.HonuaProtocolMetadata.Trailing.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>!
+Honua.Sdk.Abstractions.HonuaProtocolMetadata.Trailing.init -> void
+static Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromGrpc(int protocolCode, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>? initialMetadata, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>? trailingMetadata) -> Honua.Sdk.Abstractions.HonuaFailureReceipt!
+static Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(System.Net.Http.HttpResponseMessage! response, string? body, int? protocolCode = null) -> Honua.Sdk.Abstractions.HonuaFailureReceipt!
+virtual Honua.Sdk.Abstractions.HonuaException.FailureReceipt.get -> Honua.Sdk.Abstractions.HonuaFailureReceipt?

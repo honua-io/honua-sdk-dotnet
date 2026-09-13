@@ -191,6 +191,7 @@ public sealed class HonuaGeocodingClientTests
 
         Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
         Assert.Equal("Geocode token expired", ex.Message);
+        Assert.Equal("4001", ex.FailureReceipt?.ProtocolCode);
     }
 
     [Fact]

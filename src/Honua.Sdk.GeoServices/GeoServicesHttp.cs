@@ -46,7 +46,7 @@ internal static class GeoServicesHttp
     {
         if (response.IsSuccessStatusCode)
         {
-            if (!string.IsNullOrWhiteSpace(body) && TryExtractGeoServicesError(body, response.StatusCode) is { } error)
+            if (!string.IsNullOrWhiteSpace(body) && TryExtractGeoServicesError(body, response) is { } error)
             {
                 throw error;
             }
@@ -55,10 +55,16 @@ internal static class GeoServicesHttp
         }
 
         var errorMessage = TryExtractErrorMessage(body) ?? response.ReasonPhrase ?? "GeoServices request failed";
-        throw new HonuaFeatureServerException(response.StatusCode, errorMessage, body);
+        throw new HonuaFeatureServerException(
+            response.StatusCode,
+            errorMessage,
+            body,
+            null,
+            null,
+            failureReceipt: Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body));
     }
 
-    internal static HonuaFeatureServerException? TryExtractGeoServicesError(string body, HttpStatusCode fallbackStatus)
+    internal static HonuaFeatureServerException? TryExtractGeoServicesError(string body, HttpResponseMessage response)
     {
         try
         {
@@ -72,7 +78,7 @@ internal static class GeoServicesHttp
             var message = "GeoServices returned an error.";
             int? geoServicesCode = null;
             IReadOnlyList<string>? details = null;
-            var httpCode = fallbackStatus;
+            var httpCode = response.StatusCode;
             if (errorElement.TryGetProperty("message", out var msgProp) &&
                 msgProp.ValueKind == JsonValueKind.String)
             {
@@ -83,7 +89,7 @@ internal static class GeoServicesHttp
                 codeProp.TryGetInt32(out var errorCode))
             {
                 geoServicesCode = errorCode;
-                httpCode = MapErrorCodeToStatus(errorCode, fallbackStatus);
+                httpCode = MapErrorCodeToStatus(errorCode, response.StatusCode);
             }
 
             if (errorElement.TryGetProperty("details", out var detailsProp) &&
@@ -101,7 +107,13 @@ internal static class GeoServicesHttp
                 details = detailList;
             }
 
-            return new HonuaFeatureServerException(httpCode, message, body, geoServicesCode, details);
+            return new HonuaFeatureServerException(
+                httpCode,
+                message,
+                body,
+                geoServicesCode,
+                details,
+                Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body, geoServicesCode));
         }
         catch (JsonException)
         {
