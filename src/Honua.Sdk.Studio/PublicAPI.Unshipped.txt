@@ -1,1 +1,5 @@
 #nullable enable
+Honua.Sdk.Studio.Capabilities.CapabilityEntry.Lifecycle.get -> string!
+Honua.Sdk.Studio.Capabilities.CapabilityEntry.Lifecycle.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityEntry.OptInRequired.get -> bool
+Honua.Sdk.Studio.Capabilities.CapabilityEntry.OptInRequired.init -> void
