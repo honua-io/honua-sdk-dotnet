@@ -10,7 +10,7 @@ namespace Honua.Sdk.Conformance.Tests;
 public sealed class TerminalErrorReceiptContractTests
 {
     private static readonly Manifest Contract = JsonSerializer.Deserialize<Manifest>(
-        File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "terminal-error-receipts.v1.json")),
+        File.ReadAllText(Path.Join(AppContext.BaseDirectory, "Fixtures", "terminal-error-receipts.v1.json")),
         new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
 
     public static TheoryData<string, FailureClass> DotNetCells()
