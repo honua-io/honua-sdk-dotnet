@@ -1,2 +1,10 @@
 #nullable enable
 override Honua.Sdk.Admin.Exceptions.HonuaAdminApiException.FailureReceipt.get -> Honua.Sdk.Abstractions.HonuaFailureReceipt?
+Honua.Sdk.Admin.Models.FeatureChangeEvent.AuditId.get -> string?
+Honua.Sdk.Admin.Models.FeatureChangeEvent.AuditId.init -> void
+Honua.Sdk.Admin.Models.FeatureChangeEvent.CorrelationId.get -> string?
+Honua.Sdk.Admin.Models.FeatureChangeEvent.CorrelationId.init -> void
+Honua.Sdk.Admin.Models.FeatureChangeEvent.OperationInstanceId.get -> string?
+Honua.Sdk.Admin.Models.FeatureChangeEvent.OperationInstanceId.init -> void
+Honua.Sdk.Admin.Models.FeatureChangeEvent.ProposalId.get -> string?
+Honua.Sdk.Admin.Models.FeatureChangeEvent.ProposalId.init -> void
