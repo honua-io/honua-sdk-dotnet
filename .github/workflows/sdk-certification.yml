@@ -41,8 +41,10 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
-  PINNED_SERVER_SOURCE_SHA: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
+  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:373aa1fdf1bd4153df9cb21e25e43dfc463c0e194fcac13b40a39c4bb390eb72"
+  PINNED_SERVER_SOURCE_SHA: "ac30266fbd153363bebdbed13130accc8ab0c94a"
+  PINNED_SERVER_FIXTURE_REVISION: "sha256:97d35505c77ac4e8c2707364bd499f780cbf63e0e7152e84cd3ef4994ff42914"
+  PINNED_CANDIDATE_CUT: "2026-08-27T03:54:36Z"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -98,8 +100,8 @@ jobs:
           image="${INPUT_IMAGE:-${PINNED_SERVER_IMAGE}}"
           source_sha="${INPUT_SOURCE_SHA:-${PINNED_SERVER_SOURCE_SHA}}"
           seed_ref="${INPUT_SEED_REF:-${source_sha}}"
-          expected_fixture_revision="${INPUT_FIXTURE_REVISION:-}"
-          release_cut="${INPUT_RELEASE_CUT:-}"
+          expected_fixture_revision="${INPUT_FIXTURE_REVISION:-${PINNED_SERVER_FIXTURE_REVISION}}"
+          release_cut="${INPUT_RELEASE_CUT:-${PINNED_CANDIDATE_CUT}}"
           image_metadata="$(docker buildx imagetools inspect "${image}" --format '{{json .}}')"
           resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
           requested_digest="${image##*@}"
@@ -208,6 +210,9 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
+          # The 2026.1 candidate is Community edition. Keep edits as an owned fail-closed gap;
+          # a 402 response is never certification evidence for a successful mutation.
+          HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "false"
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
         shell: bash

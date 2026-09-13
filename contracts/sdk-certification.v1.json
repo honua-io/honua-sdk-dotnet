@@ -6,9 +6,101 @@
   "complete": false,
   "summary": {
     "total": 303,
-    "exercised": 22,
-    "gap": 263,
+    "exercised": 20,
+    "gap": 265,
     "non-addressable": 18
+  },
+  "releaseProfile": {
+    "id": "honua-sdk-dotnet-2026.1",
+    "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
+    "denominator": 268,
+    "excluded": [
+      {
+        "operationId": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient.ApplyEditsAsync(FeatureEditRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.FindClosestFacilityAsync(ClosestFacilityRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetDirectionsAsync(RouteDirectionsRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceAreaAsync(ServiceAreaRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceMetadataAsync(RouteServiceMetadataRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.GetSceneAsync(string,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ListScenesAsync(HonuaSceneListRequest?,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ResolveSceneAsync(string,HonuaSceneResolveRequest?,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.BatchGeocodeAsync(IReadOnlyList<string>,BatchGeocodeOptions?,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ForwardGeocodeAsync(string,ForwardGeocodeOptions?,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ReverseGeocodeAsync(double,double,ReverseGeocodeOptions?,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.SuggestAsync(string,SuggestOptions?,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.AddFeaturesAsync(string,int,IReadOnlyList<FeatureServerFeature>,bool,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
+      },
+      {
+        "operationId": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.DeleteFeaturesAsync(string,int,IReadOnlyList<long>,bool,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
+      },
+      {
+        "operationId": "Honua.Sdk.Spec.IHonuaSpecClient.ApplyAsync(SpecDocumentRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Spec.IHonuaSpecClient.PlanAsync(SpecDocumentRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      },
+      {
+        "operationId": "Honua.Sdk.Spec.IHonuaSpecClient.ValidateAsync(SpecValidateRequest,CancellationToken)",
+        "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+        "reason": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
+      }
+    ]
   },
   "operations": [
     {
@@ -25,6 +117,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -42,6 +135,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -59,6 +153,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -83,6 +178,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient"
       ],
@@ -110,6 +206,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient"
       ],
@@ -137,6 +234,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerRasterDataClient"
       ],
@@ -170,6 +268,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -206,6 +305,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -242,6 +342,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -278,6 +379,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -314,6 +416,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -350,6 +453,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -367,15 +471,12 @@
       "signature": "ApplyEditsAsync(FeatureEditRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -383,20 +484,23 @@
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-        ],
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [],
         "Honua.Sdk.Grpc.HonuaGrpcClient": [],
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient",
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live tests do not cover every concrete implementation: Honua.Sdk.Grpc.HonuaGrpcClient, Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient, Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient."
+      "unavailableTests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
     },
     {
       "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureEditingRulesClient.CommitEditSessionAsync(FeatureEditSessionCompleteRequest,CancellationToken)",
@@ -412,6 +516,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -429,6 +534,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -446,6 +552,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -463,6 +570,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -480,6 +588,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -519,7 +628,8 @@
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.SourceFacade_QueriesConfiguredFeatureProtocols"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient.QueryPagesAsync(FeatureQueryRequest,CancellationToken)",
@@ -549,6 +659,7 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [],
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
         "Honua.Sdk.Grpc.HonuaGrpcClient",
@@ -572,6 +683,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -589,6 +701,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -606,6 +719,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -623,7 +737,8 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "releaseDenominator": "non-addressable",
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
     {
@@ -640,6 +755,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -651,8 +767,7 @@
       "signature": "FindClosestFacilityAsync(ClosestFacilityRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -664,14 +779,15 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetDirectionsAsync(RouteDirectionsRequest,CancellationToken)",
@@ -681,8 +797,7 @@
       "signature": "GetDirectionsAsync(RouteDirectionsRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -694,14 +809,15 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceAreaAsync(ServiceAreaRequest,CancellationToken)",
@@ -711,8 +827,7 @@
       "signature": "GetServiceAreaAsync(ServiceAreaRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -724,14 +839,15 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.GetServiceMetadataAsync(RouteServiceMetadataRequest,CancellationToken)",
@@ -741,8 +857,7 @@
       "signature": "GetServiceMetadataAsync(RouteServiceMetadataRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -754,14 +869,15 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.OptimizeRouteAsync(RouteOptimizationRequest,CancellationToken)",
@@ -784,6 +900,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
@@ -798,8 +915,7 @@
       "signature": "GetSceneAsync(string,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -811,14 +927,15 @@
       "implementationTests": {
         "Honua.Sdk.Scenes.HonuaSceneClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Scenes.HonuaSceneClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ListScenesAsync(HonuaSceneListRequest?,CancellationToken)",
@@ -828,8 +945,7 @@
       "signature": "ListScenesAsync(HonuaSceneListRequest?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -841,14 +957,15 @@
       "implementationTests": {
         "Honua.Sdk.Scenes.HonuaSceneClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Scenes.HonuaSceneClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient.ResolveSceneAsync(string,HonuaSceneResolveRequest?,CancellationToken)",
@@ -858,8 +975,7 @@
       "signature": "ResolveSceneAsync(string,HonuaSceneResolveRequest?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -871,14 +987,15 @@
       "implementationTests": {
         "Honua.Sdk.Scenes.HonuaSceneClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Scenes.HonuaSceneClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Abstractions.UtilityNetworks.IHonuaUtilityNetworkTraceClient.GetTraceConfigurationsAsync(UtilityNetworkTraceConfigurationQuery,CancellationToken)",
@@ -894,6 +1011,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -911,6 +1029,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -928,6 +1047,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -945,6 +1065,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -962,6 +1083,7 @@
       "tests": [],
       "implementations": [],
       "implementationTests": {},
+      "releaseDenominator": "non-addressable",
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Public provider-neutral contract has no concrete Honua client implementation."
     },
@@ -986,6 +1108,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1013,6 +1136,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1043,7 +1167,8 @@
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Catalog_SearchAndServiceLookup_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.GetSourceDescriptorAsync(string,string,CancellationToken)",
@@ -1066,6 +1191,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1093,6 +1219,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1120,6 +1247,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1150,7 +1278,8 @@
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Catalog_SearchAndServiceLookup_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Admin.Catalog.IHonuaCatalogClient.ListSourceDescriptorsAsync(CatalogQueryOptions?,CancellationToken)",
@@ -1173,6 +1302,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1200,6 +1330,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Catalog.HonuaCatalogClient"
       ],
@@ -1227,6 +1358,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
@@ -1241,8 +1373,7 @@
       "signature": "BatchGeocodeAsync(IReadOnlyList<string>,BatchGeocodeOptions?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -1254,14 +1385,15 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ForwardGeocodeAsync(string,ForwardGeocodeOptions?,CancellationToken)",
@@ -1271,8 +1403,7 @@
       "signature": "ForwardGeocodeAsync(string,ForwardGeocodeOptions?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -1284,14 +1415,15 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.ReverseGeocodeAsync(double,double,ReverseGeocodeOptions?,CancellationToken)",
@@ -1301,8 +1433,7 @@
       "signature": "ReverseGeocodeAsync(double,double,ReverseGeocodeOptions?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -1314,14 +1445,15 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient.SuggestAsync(string,SuggestOptions?,CancellationToken)",
@@ -1331,8 +1463,7 @@
       "signature": "SuggestAsync(string,SuggestOptions?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -1344,14 +1475,15 @@
       "implementationTests": {
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Admin.Geocoding.HonuaGeocodingClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Admin.HonuaAdminClient.ScanMigrationSourceAsync(MigrationInventoryScanRequest,bool,CancellationToken)",
@@ -1374,6 +1506,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1401,6 +1534,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1428,6 +1562,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1455,6 +1590,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1482,6 +1618,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1509,6 +1646,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1536,6 +1674,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1563,6 +1702,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1590,6 +1730,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1620,7 +1761,8 @@
         "Honua.Sdk.Admin.HonuaAdminClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.AdminCompatibility_AndServiceSettings_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient.GetCapabilitiesAsync(CancellationToken)",
@@ -1643,6 +1785,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1670,6 +1813,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1697,6 +1841,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1724,6 +1869,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1751,6 +1897,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1778,6 +1925,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1805,6 +1953,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1832,6 +1981,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1859,6 +2009,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1886,6 +2037,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1913,6 +2065,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1940,6 +2093,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1967,6 +2121,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -1994,6 +2149,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2021,6 +2177,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2048,6 +2205,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2075,6 +2233,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2102,6 +2261,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2129,6 +2289,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2156,6 +2317,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2183,6 +2345,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2210,6 +2373,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2237,6 +2401,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2264,6 +2429,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2291,6 +2457,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2318,6 +2485,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2345,6 +2513,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2372,6 +2541,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2399,6 +2569,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2426,6 +2597,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2453,6 +2625,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2480,6 +2653,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2507,6 +2681,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2534,6 +2709,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2561,6 +2737,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2588,6 +2765,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2615,6 +2793,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2642,6 +2821,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2669,6 +2849,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2696,6 +2877,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2723,6 +2905,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2750,6 +2933,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2777,6 +2961,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2804,6 +2989,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2831,6 +3017,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2858,6 +3045,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2885,6 +3073,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2912,6 +3101,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2939,6 +3129,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2966,6 +3157,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -2993,6 +3185,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3020,6 +3213,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3047,6 +3241,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3074,6 +3269,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3101,6 +3297,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3128,6 +3325,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3155,6 +3353,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3182,6 +3381,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3209,6 +3409,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3236,6 +3437,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3266,7 +3468,8 @@
         "Honua.Sdk.Admin.HonuaAdminClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.AdminCompatibility_AndServiceSettings_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.ListServicesAsync(CancellationToken)",
@@ -3289,6 +3492,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3316,6 +3520,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3343,6 +3548,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3370,6 +3576,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3397,6 +3604,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3424,6 +3632,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3451,6 +3660,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3478,6 +3688,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3505,6 +3716,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3532,6 +3744,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3559,6 +3772,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3586,6 +3800,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3613,6 +3828,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3640,6 +3856,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3667,6 +3884,7 @@
       "implementationTests": {
         "Honua.Sdk.Admin.HonuaAdminClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
@@ -3694,6 +3912,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3721,6 +3940,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3748,6 +3968,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3775,6 +3996,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3802,6 +4024,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3829,6 +4052,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3856,6 +4080,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3884,6 +4109,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3911,6 +4137,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3938,6 +4165,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3965,6 +4193,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"
       ],
@@ -3992,6 +4221,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4019,6 +4249,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4046,6 +4277,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4073,6 +4305,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4101,6 +4334,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4128,6 +4362,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4155,6 +4390,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4182,6 +4418,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4210,6 +4447,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4237,6 +4475,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4265,6 +4504,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4292,6 +4532,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4319,6 +4560,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4346,6 +4588,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4373,6 +4616,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4400,6 +4644,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4427,6 +4672,7 @@
       "implementationTests": {
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Catalogs.Stac.HonuaStacClient"
       ],
@@ -4454,6 +4700,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4481,6 +4728,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4508,6 +4756,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4535,6 +4784,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4562,6 +4812,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4589,6 +4840,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4616,6 +4868,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareClient"
       ],
@@ -4643,6 +4896,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4670,6 +4924,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4697,6 +4952,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4724,6 +4980,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4751,6 +5008,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4778,6 +5036,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4805,6 +5064,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4832,6 +5092,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4859,6 +5120,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4886,6 +5148,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4913,6 +5176,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4940,6 +5204,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4967,6 +5232,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -4994,6 +5260,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareExportClient"
       ],
@@ -5021,6 +5288,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5048,6 +5316,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5075,6 +5344,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5102,6 +5372,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5129,6 +5400,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5156,6 +5428,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5183,6 +5456,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5210,6 +5484,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5237,6 +5512,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5264,6 +5540,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5291,6 +5568,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5318,6 +5596,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5345,6 +5624,7 @@
       "implementationTests": {
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
       ],
@@ -5372,6 +5652,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5399,6 +5680,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5430,7 +5712,8 @@
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetServiceInfoAsync(string,CancellationToken)",
@@ -5457,7 +5740,8 @@
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -5486,7 +5770,8 @@
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.FeatureServerQuery_RoundTripsCanonicalAttributeProjection",
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryCountAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -5513,7 +5798,8 @@
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryExtentAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -5536,6 +5822,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5567,7 +5854,8 @@
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryPagesAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -5591,6 +5879,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5618,6 +5907,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5645,6 +5935,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5672,6 +5963,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5684,25 +5976,29 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
       "operation": "AddFeaturesAsync",
       "signature": "AddFeaturesAsync(string,int,IReadOnlyList<FeatureServerFeature>,bool,CancellationToken)",
-      "status": "exercised",
+      "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-        ]
-      }
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+      },
+      "releaseDenominator": "excluded",
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "unavailableTests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.ApplyEditsAsync(string,int,FeatureServerEditRequest,CancellationToken)",
@@ -5725,6 +6021,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5737,25 +6034,29 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
       "operation": "DeleteFeaturesAsync",
       "signature": "DeleteFeaturesAsync(string,int,IReadOnlyList<long>,bool,CancellationToken)",
-      "status": "exercised",
+      "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "mutation"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
-        ]
-      }
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+      },
+      "releaseDenominator": "excluded",
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "unavailableTests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate runs Community edition and has no immutable, non-secret FeatureServer edit entitlement for release certification."
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.GetEditCapabilitiesAsync(string,int,CancellationToken)",
@@ -5778,6 +6079,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5805,6 +6107,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
@@ -5832,6 +6135,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
@@ -5859,6 +6163,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
@@ -5886,6 +6191,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
@@ -5913,6 +6219,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
@@ -5940,6 +6247,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
       ],
@@ -5967,6 +6275,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
       ],
@@ -5994,6 +6303,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
       ],
@@ -6021,6 +6331,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
       ],
@@ -6048,6 +6359,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient"
       ],
@@ -6075,6 +6387,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
@@ -6102,6 +6415,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
@@ -6129,6 +6443,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
@@ -6156,6 +6471,7 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.GeoServices.Routing.HonuaRoutingClient"
       ],
@@ -6183,6 +6499,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaGrpcClient"
       ],
@@ -6218,7 +6535,8 @@
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.GrpcQuery_GeometryOmission_IsHonored",
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.GrpcQuery_IsBoundedAndCanOmitGeometry"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Grpc.IHonuaGrpcClient.QueryFeaturesStreamAsync(QueryFeaturesRequest,CancellationToken)",
@@ -6241,6 +6559,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaGrpcClient"
       ],
@@ -6268,6 +6587,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6295,6 +6615,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6322,6 +6643,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6349,6 +6671,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6376,6 +6699,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6403,6 +6727,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6430,6 +6755,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6457,6 +6783,7 @@
       "implementationTests": {
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Grpc.HonuaProcessGrpcClient"
       ],
@@ -6484,6 +6811,7 @@
       "implementationTests": {
         "Honua.Sdk.Offline.ReplicaSyncClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Offline.ReplicaSyncClient"
       ],
@@ -6511,6 +6839,7 @@
       "implementationTests": {
         "Honua.Sdk.Offline.ReplicaSyncClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Offline.ReplicaSyncClient"
       ],
@@ -6538,6 +6867,7 @@
       "implementationTests": {
         "Honua.Sdk.Offline.ReplicaSyncClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Offline.ReplicaSyncClient"
       ],
@@ -6565,6 +6895,7 @@
       "implementationTests": {
         "Honua.Sdk.Offline.ReplicaSyncClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Offline.ReplicaSyncClient"
       ],
@@ -6592,6 +6923,7 @@
       "implementationTests": {
         "Honua.Sdk.Offline.ReplicaSyncClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Offline.ReplicaSyncClient"
       ],
@@ -6619,6 +6951,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6650,7 +6983,8 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetConformanceAsync(CancellationToken)",
@@ -6673,6 +7007,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6704,7 +7039,8 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsAsync(string,OgcItemsParams?,CancellationToken)",
@@ -6733,7 +7069,8 @@
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.OgcItems_RoundTripCanonicalPropertyProjection",
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsPagesAsync(string,OgcItemsParams?,CancellationToken)",
@@ -6757,6 +7094,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6784,6 +7122,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6811,6 +7150,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6842,7 +7182,8 @@
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.ListCollectionsAsync(CancellationToken)",
@@ -6871,7 +7212,8 @@
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.OgcItems_RoundTripCanonicalPropertyProjection",
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.OgcCollections_Items_Queryables_AndSingleItem_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesEditClient.CreateItemAsync(string,OgcFeature,CancellationToken)",
@@ -6894,6 +7236,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6921,6 +7264,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6948,6 +7292,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -6975,6 +7320,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
@@ -7002,6 +7348,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient"
       ],
@@ -7029,6 +7376,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient"
       ],
@@ -7056,6 +7404,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient"
       ],
@@ -7083,6 +7432,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Styles.HonuaOgcStylesClient"
       ],
@@ -7110,6 +7460,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
@@ -7140,7 +7491,8 @@
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetCapabilitiesAsync(CancellationToken)",
@@ -7168,7 +7520,8 @@
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.Wfs_GetFeatures_RoundTripsCanonicalFeatureCollection",
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeatureCountAsync(string,string?,CancellationToken)",
@@ -7194,7 +7547,8 @@
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": [
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsync(GetFeaturesRequest,CancellationToken)",
@@ -7222,7 +7576,8 @@
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.Wfs_GetFeatures_RoundTripsCanonicalFeatureCollection",
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.WfsCapabilities_DescribeFeatureType_GetFeature_AndCount_AreReachable"
         ]
-      }
+      },
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsync<TResult>(GetFeaturesRequest,IWfsOutputFormatHandler<TResult>,CancellationToken)",
@@ -7245,6 +7600,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
@@ -7273,6 +7629,7 @@
       "implementationTests": {
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
@@ -7300,6 +7657,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7327,6 +7685,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7354,6 +7713,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7381,6 +7741,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7408,6 +7769,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7435,6 +7797,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7462,6 +7825,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7489,6 +7853,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7516,6 +7881,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7543,6 +7909,7 @@
       "implementationTests": {
         "Honua.Sdk.Processes.HonuaProcessesClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
@@ -7557,8 +7924,7 @@
       "signature": "ApplyAsync(SpecDocumentRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "mutation"
@@ -7570,14 +7936,15 @@
       "implementationTests": {
         "Honua.Sdk.Spec.HonuaSpecClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Spec.IHonuaSpecClient.CancelAsync(string,CancellationToken)",
@@ -7600,6 +7967,7 @@
       "implementationTests": {
         "Honua.Sdk.Spec.HonuaSpecClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
@@ -7627,6 +7995,7 @@
       "implementationTests": {
         "Honua.Sdk.Spec.HonuaSpecClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
@@ -7641,8 +8010,7 @@
       "signature": "PlanAsync(SpecDocumentRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -7654,14 +8022,15 @@
       "implementationTests": {
         "Honua.Sdk.Spec.HonuaSpecClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Spec.IHonuaSpecClient.ValidateAsync(SpecValidateRequest,CancellationToken)",
@@ -7671,8 +8040,7 @@
       "signature": "ValidateAsync(SpecValidateRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
-        "nightly",
-        "release"
+        "nightly"
       ],
       "scenarioFacets": [
         "read-only"
@@ -7684,14 +8052,15 @@
       "implementationTests": {
         "Honua.Sdk.Spec.HonuaSpecClient": []
       },
+      "releaseDenominator": "excluded",
       "missingImplementations": [
         "Honua.Sdk.Spec.HonuaSpecClient"
       ],
-      "unseededTests": [
+      "unavailableTests": [
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable"
       ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Canonical live test exists but its deterministic server fixture is not seeded."
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/308",
+      "disposition": "The pinned 2026.1 candidate does not provision this deterministic release fixture."
     },
     {
       "id": "Honua.Sdk.Studio.Capabilities.IHonuaCapabilityManifestClient.GetManifestAsync(string?,string?,CancellationToken)",
@@ -7714,6 +8083,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Capabilities.HonuaCapabilityManifestClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Capabilities.HonuaCapabilityManifestClient"
       ],
@@ -7741,6 +8111,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.HonuaStudioReportsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.HonuaStudioReportsClient"
       ],
@@ -7768,6 +8139,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.HonuaStudioReportsClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.HonuaStudioReportsClient"
       ],
@@ -7795,6 +8167,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7822,6 +8195,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7849,6 +8223,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7876,6 +8251,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7903,6 +8279,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7930,6 +8307,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7957,6 +8335,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -7984,6 +8363,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -8011,6 +8391,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -8038,6 +8419,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -8065,6 +8447,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -8092,6 +8475,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -8119,6 +8503,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
@@ -8146,6 +8531,7 @@
       "implementationTests": {
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
       },
+      "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],

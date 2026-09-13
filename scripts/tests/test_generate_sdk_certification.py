@@ -35,6 +35,50 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertIn("ownerIssue", cell)
                 self.assertIn("disposition", cell)
 
+    def test_rc_unavailable_surfaces_are_owned_by_release_gate(self):
+        document = MODULE.build_document()
+        unavailable = [
+            cell for cell in document["operations"]
+            if cell.get("unavailableTests") or cell["id"] in MODULE.RC_UNAVAILABLE_OPERATIONS
+        ]
+
+        self.assertTrue(unavailable)
+        self.assertTrue(all(cell["status"] in {"gap", "non-addressable"} for cell in unavailable))
+        self.assertTrue(all(cell["ownerIssue"] == MODULE.RC_FIXTURE_GAP_ISSUE for cell in unavailable))
+        self.assertTrue(all(not cell["tests"] for cell in unavailable))
+
+    def test_2026_1_release_denominator_explicitly_partitions_every_operation(self):
+        document = MODULE.build_document()
+        operations = document["operations"]
+        profile = document["releaseProfile"]
+        exclusions = {item["operationId"]: item for item in profile["excluded"]}
+
+        self.assertEqual(MODULE.RELEASE_PROFILE_ID, profile["id"])
+        self.assertEqual(len(operations), sum(
+            cell["releaseDenominator"] in {"included", "excluded", "non-addressable"}
+            for cell in operations
+        ))
+        self.assertEqual(
+            profile["denominator"],
+            sum(cell["releaseDenominator"] == "included" for cell in operations),
+        )
+        self.assertEqual(
+            exclusions,
+            {
+                cell["id"]: {
+                    "operationId": cell["id"],
+                    "ownerIssue": cell["ownerIssue"],
+                    "reason": cell["disposition"],
+                }
+                for cell in operations
+                if cell["releaseDenominator"] == "excluded"
+            },
+        )
+        self.assertTrue(exclusions)
+        self.assertTrue(all("release" not in cell["requiredTiers"] for cell in operations if cell["id"] in exclusions))
+        self.assertTrue(all(item["ownerIssue"] == MODULE.RC_FIXTURE_GAP_ISSUE for item in exclusions.values()))
+        self.assertTrue(all(item["reason"] for item in exclusions.values()))
+
     def test_release_identity_requires_exact_image_source_seed_and_cut(self):
         with self.assertRaisesRegex(ValueError, "seed revision"):
             MODULE._identity(Namespace(
@@ -328,7 +372,11 @@ class SdkCertificationTests(unittest.TestCase):
             for cell in non_addressable
         ))
         self.assertTrue(all(
-            cell["ownerIssue"] == MODULE.TRACKING_ISSUE
+            cell["ownerIssue"] == (
+                MODULE.RC_FIXTURE_GAP_ISSUE
+                if cell["id"] in MODULE.RC_UNAVAILABLE_OPERATIONS
+                else MODULE.TRACKING_ISSUE
+            )
             for cell in non_addressable
         ))
 
@@ -360,13 +408,14 @@ class SdkCertificationTests(unittest.TestCase):
         )
         self.assertEqual("gap", apply_edits["status"])
         self.assertEqual(4, len(apply_edits["implementations"]))
-        self.assertEqual(3, len(apply_edits["missingImplementations"]))
+        self.assertEqual(4, len(apply_edits["missingImplementations"]))
         feature_server = next(
             implementation
             for implementation in apply_edits["implementations"]
             if implementation.endswith("HonuaFeatureServerClient")
         )
-        self.assertTrue(apply_edits["implementationTests"][feature_server])
+        self.assertFalse(apply_edits["implementationTests"][feature_server])
+        self.assertEqual(MODULE.RC_FIXTURE_GAP_ISSUE, apply_edits["ownerIssue"])
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()
