@@ -56,22 +56,21 @@ for entry in "${entries[@]}"; do
     fail "${package_id} is missing its package README."
   fi
 
-  # Install commands must name the authenticated GitHub Packages feed by URL:
-  # the packages are not on nuget.org yet, so a bare `dotnet add package`
-  # fails with NU1101, and a `--source honua` alias can degrade to a
-  # filesystem-path lookup (NU1301) whose error also reads as though the
-  # package does not exist. The old wording said this and then pinned the
-  # alias anyway. Superseded comment follows:
-  # Install commands must name the authenticated GitHub Packages feed: the
-  # packages are not on nuget.org yet, so a bare `dotnet add package` (or a
-  # `dotnet tool install` without --add-source) fails with NU1101. The docs
-  # must ship the feed-qualified form until nuget.org publishing starts.
+  # Every package must have a copy-pasteable install command in both files.
+  #
+  # This used to require the feed-qualified form, because the packages were on
+  # the authenticated GitHub Packages feed only and a bare `dotnet add package`
+  # failed with NU1101. They are on nuget.org now - all sixteen ids - so the
+  # bare form is the one that works and the feed-qualified one is the trap: it
+  # sends a reader to mint a classic PAT to reach a package that installs
+  # anonymously. The gate follows the packages.
+  #
+  # Prereleases still publish to GitHub Packages only, which is why that feed
+  # keeps a section in INSTALL.md - but it is not what these commands should be.
   if [[ "${is_tool}" == "true" ]]; then
     # Tool packages ship an executable, not a referenceable library API, so
     # they carry no PublicAPI approval files and install via `dotnet tool`.
-    # `dotnet tool install` never reads a repository NuGet.config, so the
-    # feed must be passed explicitly with --add-source.
-    tool_install="dotnet tool install --global ${package_id} --add-source https://nuget.pkg.github.com/honua-io/index.json"
+    tool_install="dotnet tool install --global ${package_id}"
     grep -Fxq "${tool_install}" "${ROOT}/README.md" \
       || fail "README.md tool install command is missing ${package_id}."
     grep -Fxq "${tool_install}" "${ROOT}/INSTALL.md" \
@@ -83,9 +82,9 @@ for entry in "${entries[@]}"; do
     if [[ ! -f "${package_dir}/PublicAPI.Unshipped.txt" ]]; then
       fail "${package_id} is missing PublicAPI.Unshipped.txt."
     fi
-    grep -Fxq "dotnet add package ${package_id} --source https://nuget.pkg.github.com/honua-io/index.json" "${ROOT}/README.md" \
+    grep -Fxq "dotnet add package ${package_id}" "${ROOT}/README.md" \
       || fail "README.md install commands are missing ${package_id}."
-    grep -Fxq "dotnet add package ${package_id} --source https://nuget.pkg.github.com/honua-io/index.json" "${ROOT}/INSTALL.md" \
+    grep -Fxq "dotnet add package ${package_id}" "${ROOT}/INSTALL.md" \
       || fail "INSTALL.md install commands are missing ${package_id}."
   fi
 
