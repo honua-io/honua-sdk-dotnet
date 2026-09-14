@@ -72,6 +72,13 @@ public sealed class HonuaFeatureServerException : Honua.Sdk.Abstractions.HonuaEx
     public override Honua.Sdk.Abstractions.HonuaFailureReceipt? FailureReceipt { get; }
 
     /// <summary>
+    /// The server's <c>Retry-After</c> delay, when the response carried one (for example a 429
+    /// throttling response or a 503 while the source is temporarily unavailable). Null when the
+    /// response did not include a <c>Retry-After</c> header.
+    /// </summary>
+    public TimeSpan? RetryAfter { get; init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class.
     /// </summary>
     public HonuaFeatureServerException(

@@ -1,4 +1,4 @@
-// Copyright (c) Honua. All rights reserved.
+﻿// Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net.Http.Headers;
@@ -75,7 +75,6 @@ public sealed record ArcGisSourceCredential
 public sealed class ArcGisSourceCredentialHandler : DelegatingHandler
 {
     private readonly ArcGisSourceCredential _credential;
-
     // The default transport this handler created itself (null when the caller supplied one). This
     // handler owns it and disposes it in Dispose(bool).
     private readonly HttpClientHandler? _ownedInnerHandler;

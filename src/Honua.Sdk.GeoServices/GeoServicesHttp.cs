@@ -1,4 +1,4 @@
-// Copyright (c) Honua. All rights reserved.
+﻿// Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
@@ -61,7 +61,32 @@ internal static class GeoServicesHttp
             body,
             null,
             null,
-            failureReceipt: Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body));
+            failureReceipt: Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body))
+        {
+            RetryAfter = TryGetRetryAfter(response)
+        };
+    }
+
+    private static TimeSpan? TryGetRetryAfter(HttpResponseMessage response)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        if (retryAfter is null)
+        {
+            return null;
+        }
+
+        if (retryAfter.Delta is TimeSpan delta)
+        {
+            return delta;
+        }
+
+        if (retryAfter.Date is DateTimeOffset date)
+        {
+            var remaining = date - DateTimeOffset.UtcNow;
+            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+        }
+
+        return null;
     }
 
     internal static HonuaFeatureServerException? TryExtractGeoServicesError(string body, HttpResponseMessage response)
@@ -113,7 +138,10 @@ internal static class GeoServicesHttp
                 body,
                 geoServicesCode,
                 details,
-                Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body, geoServicesCode));
+                Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body, geoServicesCode))
+            {
+                RetryAfter = TryGetRetryAfter(response)
+            };
         }
         catch (JsonException)
         {
@@ -124,9 +152,8 @@ internal static class GeoServicesHttp
     /// <summary>
     /// Maps a GeoServices <c>error.code</c> to an <see cref="HttpStatusCode"/> only when it is a
     /// valid HTTP status (100-599). GeoServices codes are an independent code space (e.g. 1000,
-    /// 4001) and must not be blindly cast — doing so produces nonsensical <see cref="HttpStatusCode"/>
-    /// values that break consumers branching on status for retry/auth. Out-of-range codes keep the
-    /// transport status; the Esri code is still exposed via <c>GeoServicesErrorCode</c>.
+    /// 4001) and must not be blindly cast — doing so produces nonsensical <see cref="HttpStatusCode"/>.
+    /// Out-of-range codes keep the transport status; the Esri code is still exposed via <c>GeoServicesErrorCode</c>.
     /// </summary>
     internal static HttpStatusCode MapErrorCodeToStatus(int errorCode, HttpStatusCode transportStatus)
         => errorCode is >= 100 and <= 599 ? (HttpStatusCode)errorCode : transportStatus;
