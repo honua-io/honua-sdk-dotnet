@@ -66,7 +66,6 @@ internal static class GeoServicesHttp
 
     internal static HonuaFeatureServerException? TryExtractGeoServicesError(string body, HttpResponseMessage response)
     {
-        var fallbackStatus = response.StatusCode;
         try
         {
             using var doc = JsonDocument.Parse(body);
