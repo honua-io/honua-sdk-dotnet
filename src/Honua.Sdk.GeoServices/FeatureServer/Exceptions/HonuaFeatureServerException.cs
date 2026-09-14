@@ -76,7 +76,7 @@ public sealed class HonuaFeatureServerException : Honua.Sdk.Abstractions.HonuaEx
     /// throttling response or a 503 while the source is temporarily unavailable). Null when the
     /// response did not include a <c>Retry-After</c> header.
     /// </summary>
-    public TimeSpan? RetryAfter { get; init; }
+    public new TimeSpan? RetryAfter { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaFeatureServerException"/> class.
