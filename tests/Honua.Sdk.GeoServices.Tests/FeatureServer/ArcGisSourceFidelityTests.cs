@@ -1,4 +1,4 @@
-// Copyright (c) Honua. All rights reserved.
+﻿// Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
@@ -19,8 +19,7 @@ namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 /// object-ID-batched paging, int64/GUID/null-geometry preservation, Z/M round-tripping, coded-value
 /// domain preservation, ArcGIS token/basic/bearer credential handling, and 429 Retry-After capture.
 /// Fixtures are hand-written raw JSON matching the real ArcGIS REST wire format (per the acceptance
-/// criteria's "distinguish true preservation from source metadata merely being recognized"), with
-/// independently computed expected values, not a serialize/deserialize snapshot of SDK output.
+/// criteria's "distinguish true preservation from source metadata merely being recognized"), with/// independently computed expected values, not a serialize/deserialize snapshot of SDK output.
 /// </summary>
 public sealed class ArcGisSourceFidelityTests
 {
@@ -42,7 +41,7 @@ public sealed class ArcGisSourceFidelityTests
             {
                 idsRequests.Add(query);
                 return Task.FromResult(TestHelpers.CreateRawJsonResponse(
-                    $$"""{ "objectIdFieldName": "OBJECTID", "objectIds": [{{string.Join(",", allIds)}}] }"""));
+                    $$"""{ "objectIdFieldName": "OBJECTID", "objectIds": [{{string.Join(",", allIds)}}] }""");
             }
 
             var decoded = Uri.UnescapeDataString(query);
@@ -52,7 +51,7 @@ public sealed class ArcGisSourceFidelityTests
 
             var features = requestedIds.Select(id => $$"""{ "attributes": { "OBJECTID": {{id}} } }""");
             return Task.FromResult(TestHelpers.CreateRawJsonResponse(
-                $$"""{ "objectIdFieldName": "OBJECTID", "features": [{{string.Join(",", features)}}] }"""));
+                $$"""{ "objectIdFieldName": "OBJECTID", "features": [{{string.Join(",", features)}}] }""");
         });
 
         var seenIds = new List<long>();
@@ -78,7 +77,7 @@ public sealed class ArcGisSourceFidelityTests
     {
         IHonuaFeatureServerClient client = TestHelpers.CreateFeatureServerClient(req =>
             Task.FromResult(TestHelpers.CreateRawJsonResponse(
-                """{ "objectIdFieldName": "OBJECTID", "objectIds": [] }""")));
+                """{ "objectIdFieldName": "OBJECTID", "objectIds": [] }"""));
 
         var pages = new List<FeatureServerQueryResponse>();
         await foreach (var page in client.QueryAllFeaturesByObjectIdBatchesAsync("parks", 0, new FeatureServerQueryParams()))
@@ -138,7 +137,7 @@ public sealed class ArcGisSourceFidelityTests
     }
 
     [Fact]
-    public void PointGeometry_WithZAndM_RoundTripsExactOrdinates()
+    public void PointGeometry_WithZAndMRoundTripsExactOrdinates()
     {
         // Independently computed ordinates: z=125.5 (an arbitrary elevation), m=42.0 (an arbitrary
         // route measure). Neither is derivable from x/y, so a lossy converter that drops Z/M would
@@ -173,7 +172,7 @@ public sealed class ArcGisSourceFidelityTests
                 ]
               }
             }
-            """;
+            ";
 
         var field = JsonSerializer.Deserialize<FeatureServerField>(fieldJson, GeoServicesTestJsonOptions.CamelCase)!;
 
