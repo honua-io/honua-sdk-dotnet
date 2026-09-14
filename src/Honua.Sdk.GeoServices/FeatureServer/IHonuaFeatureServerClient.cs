@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Runtime.CompilerServices;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 namespace Honua.Sdk.GeoServices.FeatureServer;
 
@@ -124,4 +125,63 @@ public interface IHonuaFeatureServerClient
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The raw HTTP response message.</returns>
     Task<HttpResponseMessage> QueryRawAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Performs a complete, duplicate-free feature retrieval using stable object-ID batching rather
+    /// than <c>resultOffset</c>-based paging. First collects every matching object ID via
+    /// <see cref="QueryIdsAsync"/> (unbounded by <c>maxRecordCount</c> per the ArcGIS REST contract),
+    /// then queries features in stable batches drawn from that id set. Termination and completeness
+    /// therefore do not depend on the source advertising <c>supportsPagination</c> or honoring
+    /// <c>resultOffset</c>: a source that ignores <c>resultOffset</c> (and would otherwise re-serve
+    /// page one forever, or silently truncate a <see cref="QueryPagesAsync(string, int, FeatureServerQueryParams, CancellationToken)"/>
+    /// walk to a single page) cannot produce a duplicate or a missed record here, because every batch
+    /// is addressed by explicit object IDs rather than an offset the server is free to disregard.
+    /// Implemented entirely in terms of <see cref="QueryIdsAsync"/> and <see cref="QueryAsync"/>, so
+    /// every implementation of this interface gets a correct default without extra work.
+    /// </summary>
+    /// <param name="serviceId">The service identifier.</param>
+    /// <param name="layerId">The layer ID within the service.</param>
+    /// <param name="query">
+    /// Query parameters (filters, output fields, geometry/SR options). <c>ObjectIds</c>,
+    /// <c>ResultOffset</c>, <c>ResultRecordCount</c>, <c>ReturnIdsOnly</c>, <c>ReturnCountOnly</c>, and
+    /// <c>ReturnExtentOnly</c> are overwritten per batch and should be left unset.
+    /// </param>
+    /// <param name="batchSize">
+    /// Object IDs per batch. Defaults to 1000; pass the layer's advertised <c>maxRecordCount</c> (or
+    /// lower) when known, since a batch larger than the source's transfer limit is not guaranteed to
+    /// return every requested id in one response.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>
+    /// An async enumerable of query response batches. Every object id returned by
+    /// <see cref="QueryIdsAsync"/> is covered by exactly one batch (including a smaller final batch),
+    /// so the total feature count across all batches equals the id count with no gaps or repeats.
+    /// </returns>
+    async IAsyncEnumerable<FeatureServerQueryResponse> QueryAllFeaturesByObjectIdBatchesAsync(
+        string serviceId,
+        int layerId,
+        FeatureServerQueryParams query,
+        int batchSize = 1000,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceId);
+        ArgumentNullException.ThrowIfNull(query);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(batchSize, 0);
+
+        var objectIds = await QueryIdsAsync(serviceId, layerId, query, cancellationToken).ConfigureAwait(false);
+        for (var offset = 0; offset < objectIds.Count; offset += batchSize)
+        {
+            var batch = objectIds.Skip(offset).Take(batchSize).ToArray();
+            var batchQuery = query with
+            {
+                ObjectIds = batch,
+                ResultOffset = null,
+                ResultRecordCount = null,
+                ReturnIdsOnly = null,
+                ReturnCountOnly = null,
+                ReturnExtentOnly = null
+            };
+            yield return await QueryAsync(serviceId, layerId, batchQuery, cancellationToken).ConfigureAwait(false);
+        }
+    }
 }

@@ -1,2 +1,33 @@
 #nullable enable
+Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.Basic = 2 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.Bearer = 3 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.None = 0 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.Token = 1 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential!
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.ArcGisSourceCredential() -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.BearerToken.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.BearerToken.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.BearerTokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.BearerTokenProvider.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Equals(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? other) -> bool
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Mode.get -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Mode.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Password.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Password.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Token.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Token.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.TokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.TokenProvider.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Username.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Username.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredentialHandler
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredentialHandler.ArcGisSourceCredentialHandler(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential! credential, System.Net.Http.HttpMessageHandler? innerHandler = null) -> void
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAllFeaturesByObjectIdBatchesAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, int batchSize = 1000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Equals(object? obj) -> bool
+override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.GetHashCode() -> int
+override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.ToString() -> string!
 override Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.FailureReceipt.get -> Honua.Sdk.Abstractions.HonuaFailureReceipt?
+static Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.operator !=(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? left, Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.operator ==(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? left, Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? right) -> bool
