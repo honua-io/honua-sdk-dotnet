@@ -2,7 +2,7 @@
 type: guide
 title: "Install the SDK and make your first call"
 description: "Two paths: a 60-second single-package hello, and a seven-step tour registering every client through dependency injection. Includes the GitHub Packages feed setup the packages require."
-resource: "https://nuget.pkg.github.com/honua-io/index.json"
+resource: "https://www.nuget.org/packages/Honua.Sdk/"
 tags: [quickstart, dotnet, dependency-injection]
 ---
 # Quickstart
@@ -26,11 +26,6 @@ This page has two paths:
   brings one up with Docker Compose in a few minutes. Note the ports: HTTP is **8080** and
   gRPC is HTTP/2 cleartext on **8081**. Pointing a gRPC client at the HTTP port fails at
   runtime with `HTTP_1_1_REQUIRED`, so the samples below use `http://localhost:8081`.
-- The authenticated Honua GitHub Packages feed configured as a source named
-  `honua` — the packages are **not yet on nuget.org**, so every
-  `dotnet add package` below fails with `NU1101` until the feed is set up.
-  One-time setup (GitHub classic PAT with `read:packages`):
-  [INSTALL.md](../INSTALL.md#install-from-github-packages-current-channel)
 
 ## 60-second hello-features
 
@@ -39,16 +34,15 @@ Single package, single async call. Replace the URL with your Honua server.
 ```bash
 dotnet new console -n HonuaHello
 cd HonuaHello
-dotnet add package Honua.Sdk.Grpc --version 1.6.0 \
-  --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Grpc \
+ 
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
-> **Use the full feed URL, not a `--source honua` alias.** The alias can degrade to a
-> filesystem-path lookup (`NU1301`) within a session, and the failure reads as though the
-> package does not exist. Pinning `--version` is optional — an unversioned add resolves to
-> the newest published version, currently **1.6.0** — but pinning keeps a later release from
-> silently changing what you built against.
+> The current release is **1.6.4**. An unversioned `dotnet add package` resolves to the
+> newest published version; pin `--version` when you want a later release not to change what
+> you built against. Prereleases are on GitHub Packages only - see
+> [INSTALL.md](../INSTALL.md#prereleases-and-the-github-packages-mirror).
 
 ```csharp
 // Program.cs
@@ -103,10 +97,10 @@ cd HonuaDemo
 # Pass the feed URL, not the --name alias: the alias can degrade to a
 # filesystem lookup (NU1301) that reads as though the package does not exist.
 # --version is optional here; pinned so this page stays reproducible.
-dotnet add package Honua.Sdk.Grpc --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json          # gRPC FeatureService + native ProcessService jobs
-dotnet add package Honua.Sdk.Abstractions --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json  # shared query abstraction
-dotnet add package Honua.Sdk.Admin --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json         # Admin + Geocoding REST
-dotnet add package Honua.Sdk.OgcFeatures --version 1.6.0 --source https://nuget.pkg.github.com/honua-io/index.json   # OGC API Features + WFS 2.0
+dotnet add package Honua.Sdk.Grpc          # gRPC FeatureService + native ProcessService jobs
+dotnet add package Honua.Sdk.Abstractions  # shared query abstraction
+dotnet add package Honua.Sdk.Admin         # Admin + Geocoding REST
+dotnet add package Honua.Sdk.OgcFeatures   # OGC API Features + WFS 2.0
 
 # Generic Host for dependency injection
 dotnet add package Microsoft.Extensions.Hosting
@@ -129,7 +123,7 @@ flags or their package-specific `AddHonua*` extensions.
 The recommended path is the **umbrella** `AddHonua` registration from the
 `Honua.Sdk` meta package: one call configures every enabled sub-package with a
 shared base address, auth, and retry / timeout policy. Add
-`dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json` to the install step above when
+`dotnet add package Honua.Sdk` to the install step above when
 you take this path.
 
 ```csharp
@@ -327,7 +321,7 @@ of operator/control-plane inventory. First install and register the package:
 ```bash
 # The feed URL, not a --name alias: the alias can degrade to a filesystem
 # lookup (NU1301) whose error reads as though the package does not exist.
-dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Catalogs
 ```
 
 ```csharp
@@ -356,7 +350,7 @@ register the package:
 ```bash
 # The feed URL, not a --name alias: the alias can degrade to a filesystem
 # lookup (NU1301) whose error reads as though the package does not exist.
-dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Catalogs
 ```
 
 ```csharp

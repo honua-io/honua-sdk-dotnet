@@ -63,30 +63,11 @@ schedulers, and display renderers stay out of SDK core.
 
 ## Install
 
-Packages are not yet on nuget.org. The dependency that was blocking it is no
-longer blocking: `Geospatial.Grpc 1.0.0` is public on nuget.org, and this
-repository's own nuget.org preflight passes against it. The release gate that
-failed `dotnet-sdk-v1.6.1` and `v1.6.2` — an unconfigured staging environment —
-is fixed: that suite now boots its own server when no deployment is configured.
-What remains is a nuget.org Trusted Publishing policy for the `Honua.Sdk*`
-package IDs and a release tag. Until then, all packages (stable and preview)
-install from the authenticated GitHub Packages feed. Follow [INSTALL.md](INSTALL.md) to add the `honua` source with a
-GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
+Every `Honua.Sdk*` package is on
+[nuget.org](https://www.nuget.org/packages/Honua.Sdk/) and installs anonymously:
 
 ```bash
-# Easiest: install the umbrella to get every Honua.Sdk.* package at once.
-# Pass the feed URL rather than the --name alias: the alias can degrade to a
-# filesystem lookup (NU1301) whose error reads as though the package is missing.
-dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json
-```
-
-Channel policy is explicit and fail-closed: the first stable tag after the public dependency is
-available must publish the complete package inventory to both nuget.org and GitHub Packages, or the
-release fails. Prereleases remain on GitHub Packages only. Once
-[Honua.Sdk appears on nuget.org](https://www.nuget.org/packages/Honua.Sdk), stable users can use the
-standard command with no Honua feed configuration:
-
-```bash
+# Easiest: the umbrella pulls in every Honua.Sdk.* package.
 dotnet add package Honua.Sdk
 ```
 
@@ -94,32 +75,33 @@ dotnet add package Honua.Sdk
 <summary>Want narrower dependencies? Install per-package instead.</summary>
 
 ```bash
-# The feed URL, not a --name alias: the alias can degrade to a filesystem
-# lookup (NU1301) whose error reads as though the package does not exist.
-dotnet add package Honua.Sdk.Abstractions --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Offline --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Grpc --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Admin --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Processes --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Spec --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Studio --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.ConsoleShare --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Field --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Geometry --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.GeoServices --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Scenes --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.OgcFeatures --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
+dotnet add package Honua.Sdk.Abstractions
+dotnet add package Honua.Sdk.Offline
+dotnet add package Honua.Sdk.Grpc
+dotnet add package Honua.Sdk.Admin
+dotnet add package Honua.Sdk.Processes
+dotnet add package Honua.Sdk.Spec
+dotnet add package Honua.Sdk.Studio
+dotnet add package Honua.Sdk.ConsoleShare
+dotnet add package Honua.Sdk.Field
+dotnet add package Honua.Sdk.Geometry
+dotnet add package Honua.Sdk.GeoServices
+dotnet add package Honua.Sdk.Scenes
+dotnet add package Honua.Sdk.OgcFeatures
+dotnet add package Honua.Sdk.Catalogs
 ```
 
 </details>
 
-Install the support-safe diagnostics tool separately. `dotnet tool install`
-does not read a repository `NuGet.config`, so pass the feed explicitly (the
-credentials configured in [INSTALL.md](INSTALL.md) are matched by source URL):
+Channel policy is explicit and fail-closed: a stable tag must publish the
+complete package inventory to both nuget.org and GitHub Packages, or the release
+fails. **Prereleases stay on the authenticated GitHub Packages feed only** - see
+[INSTALL.md](INSTALL.md#prereleases-and-the-github-packages-mirror) if you need one.
+
+Install the support-safe diagnostics tool separately:
 
 ```bash
-dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli
 honua doctor --help
 ```
 

@@ -24,14 +24,10 @@ shape drifts.
 
 ## Install and capture
 
-The tool ships on the authenticated Honua GitHub Packages feed (not yet on
-nuget.org). `dotnet tool install` does not read a repository `NuGet.config`,
-so pass the feed with `--add-source`; the feed credentials must already be
-configured as described in
-[INSTALL.md](../INSTALL.md#install-from-github-packages-current-channel):
+The tool is on nuget.org and installs anonymously:
 
 ```bash
-dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli
 ```
 
 Capture the last failing HTTP exchange in a local JSON file. The input may

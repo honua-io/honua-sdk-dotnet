@@ -26,22 +26,53 @@
 - .NET 10.0 SDK or later
 - A running Honua Server instance
 
-## Install from GitHub Packages (current channel)
+## Install
 
-All Honua .NET SDK releases — stable `1.x` and prerelease alike — are currently
-published to the authenticated Honua GitHub Packages feed
-(`https://nuget.pkg.github.com/honua-io/index.json`) only. Nothing is on
-nuget.org yet, so a bare `dotnet add package Honua.Sdk*` fails with `NU1101`;
-see [Planned: nuget.org](#planned-nugetorg-not-yet-available) below. Dry runs
-publish to neither feed; maintainers can inspect their package artifacts on the
-corresponding GitHub Actions run.
+Every `Honua.Sdk*` package is on [nuget.org](https://www.nuget.org/packages/Honua.Sdk/)
+and installs anonymously. No feed, no token, no package-source mapping:
 
-### 1. Authenticate to the feed
+```bash
+# Umbrella / meta - easiest single install
+dotnet add package Honua.Sdk
+
+# Or pick narrower packages individually:
+dotnet add package Honua.Sdk.Abstractions
+dotnet add package Honua.Sdk.Offline
+dotnet add package Honua.Sdk.Grpc
+dotnet add package Honua.Sdk.Geometry
+dotnet add package Honua.Sdk.Admin
+dotnet add package Honua.Sdk.Processes
+dotnet add package Honua.Sdk.Spec
+dotnet add package Honua.Sdk.Studio
+dotnet add package Honua.Sdk.ConsoleShare
+dotnet add package Honua.Sdk.Field
+dotnet add package Honua.Sdk.GeoServices
+dotnet add package Honua.Sdk.Scenes
+dotnet add package Honua.Sdk.OgcFeatures
+dotnet add package Honua.Sdk.Catalogs
+```
+
+The CLI is a .NET tool:
+
+```bash
+dotnet tool install --global Honua.Sdk.Cli
+honua doctor --help
+```
+
+All SDK packages share one package version from `Directory.Build.props`, so an
+unversioned add resolves them consistently. Release tags are
+`dotnet-sdk-v<PackageVersion>`; see [Release and NuGet Publishing](docs/release.md)
+for the publish workflow and versioning rules.
+
+## Prereleases, and the GitHub Packages mirror
+
+Stable releases publish to both nuget.org and GitHub Packages. **Prereleases go
+to GitHub Packages only**, so that is the one case where the authenticated feed
+is necessary.
 
 The GitHub Packages NuGet endpoint requires authentication even for public
-packages. Create a GitHub **classic** personal access token with the
-`read:packages` scope (the NuGet endpoint does not accept fine-grained tokens),
-then add the source:
+packages, and accepts only a **classic** personal access token with the
+`read:packages` scope - fine-grained tokens are rejected:
 
 ```bash
 dotnet nuget add source "https://nuget.pkg.github.com/honua-io/index.json" \
@@ -49,125 +80,21 @@ dotnet nuget add source "https://nuget.pkg.github.com/honua-io/index.json" \
   --username YOUR_GITHUB_USERNAME \
   --password YOUR_GITHUB_PAT \
   --store-password-in-clear-text
+
+dotnet add package Honua.Sdk --prerelease \
+  --source https://nuget.pkg.github.com/honua-io/index.json
 ```
 
 `--store-password-in-clear-text` is required on Linux and macOS, where NuGet
 cannot encrypt stored passwords; it writes the PAT into your user-level
-`NuGet.config` in plain text. Keep the token scoped to `read:packages` only,
-and on shared or CI machines prefer an environment-substituted `NuGet.config`
-committed next to your solution instead:
+`NuGet.config` in plain text. Keep the token scoped to `read:packages`, and on
+shared or CI machines prefer an environment-substituted `NuGet.config` beside
+your solution. Pass the full feed URL rather than a `--name honua` alias: the
+alias can degrade to a filesystem-path lookup (`NU1301`) within a session, and
+the failure reads as though the package does not exist.
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="honua" value="https://nuget.pkg.github.com/honua-io/index.json" />
-  </packageSources>
-  <packageSourceCredentials>
-    <honua>
-      <add key="Username" value="%GITHUB_USERNAME%" />
-      <add key="ClearTextPassword" value="%GITHUB_TOKEN%" />
-    </honua>
-  </packageSourceCredentials>
-</configuration>
-```
-
-If your `NuGet.config` uses `<packageSourceMapping>` (this repository's own
-`NuGet.config` does), the Honua patterns — including the `Geospatial.Grpc`
-protocol dependency — must map to the Honua source or restore will fail even
-with credentials in place:
-
-```xml
-<packageSourceMapping>
-  <packageSource key="nuget.org">
-    <package pattern="*" />
-  </packageSource>
-  <packageSource key="honua">
-    <package pattern="Honua.Sdk" />
-    <package pattern="Honua.Sdk.*" />
-    <package pattern="Geospatial.Grpc" />
-  </packageSource>
-</packageSourceMapping>
-```
-
-To restore this repository itself, its `NuGet.config` already defines the feed
-as `github-honua`; supply your credentials with:
-
-```bash
-dotnet nuget update source github-honua \
-  --username YOUR_GITHUB_USERNAME \
-  --password YOUR_GITHUB_PAT \
-  --store-password-in-clear-text
-```
-
-The SDK gRPC and Geometry packages currently depend on the generated
-`Geospatial.Grpc` protocol package from GitHub Packages; no sibling repo should
-copy protocol source files to satisfy that dependency. The Geometry dependency
-is retained for 1.x compatibility and is scheduled to move to a protocol
-adapter package in the next major release.
-
-### 2. Install packages
-
-Pick the packages that match your transport / workload:
-
-```bash
-# Umbrella / meta — easiest single install
-dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json
-
-# Or pick narrower packages individually:
-dotnet add package Honua.Sdk.Abstractions --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Offline --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Grpc --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Geometry --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Admin --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Processes --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Spec --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Studio --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.ConsoleShare --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Field --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.GeoServices --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Scenes --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.OgcFeatures --source https://nuget.pkg.github.com/honua-io/index.json
-dotnet add package Honua.Sdk.Catalogs --source https://nuget.pkg.github.com/honua-io/index.json
-```
-
-### 3. Install the CLI tool
-
-Install `Honua.Sdk.Cli` as a global .NET tool rather than an application
-dependency. `dotnet tool install` does not read a repository `NuGet.config`,
-so the feed must be passed explicitly with `--add-source`, and the feed
-credentials must already be configured for that source URL (step 1 above
-stores them in your user-level NuGet config):
-
-```bash
-dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
-honua doctor --help
-```
-
-All SDK packages share one package version from `Directory.Build.props`.
-Release tags use `dotnet-sdk-v<PackageVersion>`, for example
-`dotnet-sdk-v1.0.0`. See [Release and NuGet Publishing](docs/release.md)
-for the publish workflow and versioning rules.
-
-## Planned: nuget.org (not yet available)
-
-Stable release tags must publish the complete package inventory to both nuget.org and GitHub
-Packages once the
-`Geospatial.Grpc` protocol dependency has a stable public release there;
-the workflow fails before build when that public dependency is missing and
-fails before registry mutation when the protected `public-nuget` environment's
-`NUGET_API_KEY` is missing. Prereleases remain on authenticated GitHub Packages only. Once the
-[public Honua.Sdk package](https://www.nuget.org/packages/Honua.Sdk) is live, the default nuget.org source will be sufficient and no
-Honua-specific feed configuration will be needed. Until that happens, use the
-GitHub Packages instructions above for every version, stable or prerelease.
-
-```bash
-# Stable channel after the first public cut
-dotnet add package Honua.Sdk
-
-# Preview/internal channel
-dotnet add package Honua.Sdk --source https://nuget.pkg.github.com/honua-io/index.json --prerelease
-```
+Dry runs publish to neither feed; their artifacts are attached to the
+corresponding GitHub Actions run.
 
 ## Quick Start
 
