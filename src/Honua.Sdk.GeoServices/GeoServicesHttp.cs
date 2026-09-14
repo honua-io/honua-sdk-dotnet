@@ -61,32 +61,7 @@ internal static class GeoServicesHttp
             body,
             null,
             null,
-            failureReceipt: Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body))
-        {
-            RetryAfter = TryGetRetryAfter(response)
-        };
-    }
-
-    private static TimeSpan? TryGetRetryAfter(HttpResponseMessage response)
-    {
-        var retryAfter = response.Headers.RetryAfter;
-        if (retryAfter is null)
-        {
-            return null;
-        }
-
-        if (retryAfter.Delta is TimeSpan delta)
-        {
-            return delta;
-        }
-
-        if (retryAfter.Date is DateTimeOffset date)
-        {
-            var remaining = date - DateTimeOffset.UtcNow;
-            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
-        }
-
-        return null;
+            failureReceipt: Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body));
     }
 
     internal static HonuaFeatureServerException? TryExtractGeoServicesError(string body, HttpResponseMessage response)
@@ -139,10 +114,7 @@ internal static class GeoServicesHttp
                 body,
                 geoServicesCode,
                 details,
-                Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body, geoServicesCode))
-            {
-                RetryAfter = TryGetRetryAfter(response)
-            };
+                Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(response, body, geoServicesCode));
         }
         catch (JsonException)
         {
