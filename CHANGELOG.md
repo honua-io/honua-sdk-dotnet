@@ -2,6 +2,31 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.7.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.4...dotnet-sdk-v1.7.0) (2026-09-14)
+
+
+### Features
+
+* **admin:** typed GeoServices/migration import lifecycle client ([#342](https://github.com/honua-io/honua-sdk-dotnet/issues/342)) ([9af4d40](https://github.com/honua-io/honua-sdk-dotnet/commit/9af4d40259084056e6c903791bb48c0c1cea3234))
+* **errors:** expose terminal failure receipts ([#333](https://github.com/honua-io/honua-sdk-dotnet/issues/333)) ([#335](https://github.com/honua-io/honua-sdk-dotnet/issues/335)) ([d92efe9](https://github.com/honua-io/honua-sdk-dotnet/commit/d92efe92c1a6c8b8542aff7ab486d9391cdd8b07))
+* **geoservices:** close source-client fidelity and completeness gaps for ArcGIS import ([#343](https://github.com/honua-io/honua-sdk-dotnet/issues/343)) ([0d2a5ea](https://github.com/honua-io/honua-sdk-dotnet/commit/0d2a5ea8d7859ea670fab49e69d1f8d2a09d7524))
+
+
+### Bug Fixes
+
+* **capabilities:** preserve lifecycle governance fields ([#330](https://github.com/honua-io/honua-sdk-dotnet/issues/330)) ([28c4a03](https://github.com/honua-io/honua-sdk-dotnet/commit/28c4a03156636ff800f2d1c79e76c15cd4df69b8))
+* **ci:** dispatch the publish after release-please cuts a tag ([#367](https://github.com/honua-io/honua-sdk-dotnet/issues/367)) ([4b87045](https://github.com/honua-io/honua-sdk-dotnet/commit/4b87045220b3946dd492717db0cb634d3cbcbd0b))
+* **ci:** stop the publish smoke test referencing itself ([#364](https://github.com/honua-io/honua-sdk-dotnet/issues/364)) ([1f2f8a6](https://github.com/honua-io/honua-sdk-dotnet/commit/1f2f8a6bda0dfd01b6be6aed2985a82a1b5c6e21))
+* preserve governed lineage in feature events ([#334](https://github.com/honua-io/honua-sdk-dotnet/issues/334)) ([#336](https://github.com/honua-io/honua-sdk-dotnet/issues/336)) ([bcbddb7](https://github.com/honua-io/honua-sdk-dotnet/commit/bcbddb798b618872f3aeb8d4e432121f2ab074fb))
+* **security:** exclude generated CodeQL sources and lock release smoke restore ([#337](https://github.com/honua-io/honua-sdk-dotnet/issues/337)) ([49007ec](https://github.com/honua-io/honua-sdk-dotnet/commit/49007ec27649efb31d34fb1edf3f77f9e2d1165c))
+* use Path.Join for the conformance fixture path ([#368](https://github.com/honua-io/honua-sdk-dotnet/issues/368)) ([5dc8374](https://github.com/honua-io/honua-sdk-dotnet/commit/5dc8374cd980973528cb0204b451747b47bb9afa))
+
+
+### Documentation
+
+* **admin:** correct the service-protocol list from 5 values to 19 ([#345](https://github.com/honua-io/honua-sdk-dotnet/issues/345)) ([49160ba](https://github.com/honua-io/honua-sdk-dotnet/commit/49160baa07fd94dd7f47c33844256834374cc75d))
+* nuget.org is the current channel, not a plan ([#369](https://github.com/honua-io/honua-sdk-dotnet/issues/369)) ([ef90ce2](https://github.com/honua-io/honua-sdk-dotnet/commit/ef90ce273fb218244eef32ab60c0937f30c8f865))
+
 ## [1.6.4](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.3...dotnet-sdk-v1.6.4) (2026-09-12)
 
 
