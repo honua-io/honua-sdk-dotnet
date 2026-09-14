@@ -79,6 +79,10 @@ public sealed class ArcGisSourceCredentialHandler : DelegatingHandler
     // handler owns it and disposes it in Dispose(bool).
     private readonly HttpClientHandler? _ownedInnerHandler;
 
+    // The default transport this handler created itself (null when the caller supplied one). This
+    // handler owns it and disposes it in Dispose(bool).
+    private readonly HttpClientHandler? _ownedInnerHandler;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ArcGisSourceCredentialHandler"/> class.
     /// </summary>
