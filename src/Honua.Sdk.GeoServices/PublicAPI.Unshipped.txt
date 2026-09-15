@@ -27,6 +27,44 @@ Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredentialHandler.ArcGisSourceCr
 Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.RetryAfter.get -> System.TimeSpan?
 Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.RetryAfter.init -> void
 Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAllFeaturesByObjectIdBatchesAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, int batchSize = 1000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.AdditionalProperties.set -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdditionalProperties.set -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdvancedQueryCapabilities.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdvancedQueryCapabilities.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.DrawingInfo.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.DrawingInfo.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.HasM.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.HasM.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.HasZ.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.HasZ.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Relationships.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Relationships.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Subtypes.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Subtypes.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SupportsPagination.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SupportsPagination.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Type.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Type.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.TypeIdField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.TypeIdField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Types.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.Types.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.AdditionalProperties.set -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnM.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnM.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnZ.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnZ.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.AdditionalProperties.set -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Tables.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary!>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Tables.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.AdditionalProperties.set -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.TimeExtent.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerTimeInfo.TimeExtent.init -> void
 override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Equals(object? obj) -> bool
 override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.GetHashCode() -> int
 override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.ToString() -> string!

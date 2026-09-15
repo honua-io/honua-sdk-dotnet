@@ -24,6 +24,18 @@ public sealed record FeatureServerQueryParams
     /// <summary>Whether to return geometry (default: true).</summary>
     public bool? ReturnGeometry { get; init; }
 
+    /// <summary>
+    /// Whether to return Z values. Sources omit Z unless it is requested, so an import that
+    /// must preserve Z sets this to <see langword="true"/>.
+    /// </summary>
+    public bool? ReturnZ { get; init; }
+
+    /// <summary>
+    /// Whether to return M values. Sources omit M unless it is requested, so an import that
+    /// must preserve M sets this to <see langword="true"/>.
+    /// </summary>
+    public bool? ReturnM { get; init; }
+
     /// <summary>Output format.</summary>
     public FeatureServerFormat? Format { get; init; }
 

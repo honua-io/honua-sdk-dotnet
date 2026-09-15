@@ -7,6 +7,8 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Http;
@@ -477,9 +479,36 @@ public sealed class HonuaFeatureServerClient :
 
         var currentQuery = query;
         var pageCount = 0;
+        HashSet<long>? yieldedObjectIds = null;
+        byte[]? previousPageFingerprint = null;
         while (pageCount < MaxAutoPages)
         {
             var page = await QueryAsync(serviceId, layerId, currentQuery, cancellationToken).ConfigureAwait(false);
+
+            // A source that ignores or repeats resultOffset (real Esri-compat behavior, e.g. a
+            // layer without supportsPagination) re-serves records already yielded. Detect that
+            // BEFORE yielding, so a caller never observes duplicates, and fail explicitly rather
+            // than looping or silently truncating the result.
+            var pageObjectIds = ReadPageObjectIds(page, currentQuery);
+            if (pageObjectIds is not null)
+            {
+                yieldedObjectIds ??= [];
+                if (pageObjectIds.Any(objectId => !yieldedObjectIds.Add(objectId)))
+                {
+                    throw CreateRepeatedPageException(currentQuery);
+                }
+            }
+            else
+            {
+                var fingerprint = FingerprintPage(page);
+                if (previousPageFingerprint is not null && fingerprint.AsSpan().SequenceEqual(previousPageFingerprint))
+                {
+                    throw CreateRepeatedPageException(currentQuery);
+                }
+
+                previousPageFingerprint = fingerprint;
+            }
+
             yield return page;
 
             // Evaluate the continuation signal BEFORE the empty-page check so a non-final
@@ -495,8 +524,7 @@ public sealed class HonuaFeatureServerClient :
                 ? page.ObjectIds?.Count ?? 0
                 : page.Features?.Count ?? 0;
 
-            // A non-advancing cursor means the server ignored resultOffset (real Esri-compat
-            // behavior) and would re-yield page 1 forever. Stop rather than loop on duplicates.
+            // An empty page cannot advance the cursor; stop rather than re-request it.
             if (returnedCount == 0)
             {
                 yield break;
@@ -718,6 +746,63 @@ public sealed class HonuaFeatureServerClient :
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize edit response.", body);
     }
 
+    private static IReadOnlyList<long>? ReadPageObjectIds(FeatureServerQueryResponse page, FeatureServerQueryParams query)
+    {
+        if (query.ReturnIdsOnly is true)
+        {
+            return page.ObjectIds;
+        }
+
+        if (string.IsNullOrEmpty(page.ObjectIdFieldName) || page.Features is null)
+        {
+            return null;
+        }
+
+        var objectIds = new List<long>(page.Features.Count);
+        foreach (var feature in page.Features)
+        {
+            if (feature.Attributes is null
+                || !feature.Attributes.TryGetValue(page.ObjectIdFieldName, out var value)
+                || !value.TryGetInt64(out var objectId))
+            {
+                return null;
+            }
+
+            objectIds.Add(objectId);
+        }
+
+        return objectIds;
+    }
+
+    private static byte[] FingerprintPage(FeatureServerQueryResponse page)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var objectId in page.ObjectIds ?? [])
+        {
+            hash.AppendData(Encoding.UTF8.GetBytes(objectId.ToString(CultureInfo.InvariantCulture) + ","));
+        }
+
+        foreach (var feature in page.Features ?? [])
+        {
+            foreach (var (name, value) in feature.Attributes ?? [])
+            {
+                hash.AppendData(Encoding.UTF8.GetBytes(name));
+                hash.AppendData(Encoding.UTF8.GetBytes(value.GetRawText()));
+            }
+
+            hash.AppendData(Encoding.UTF8.GetBytes(feature.Geometry?.GetRawText() ?? "null"));
+            hash.AppendData("\n"u8);
+        }
+
+        return hash.GetHashAndReset();
+    }
+
+    private static InvalidOperationException CreateRepeatedPageException(FeatureServerQueryParams query) =>
+        new(
+            $"The source re-served records already returned at resultOffset {query.ResultOffset ?? 0}; it ignores or repeats " +
+            "resultOffset, so offset paging cannot complete without duplicates. " +
+            "Use QueryAllFeaturesByObjectIdBatchesAsync for sources without reliable pagination.");
+
     private static List<(string Key, string? Value)> BuildQueryParams(FeatureServerQueryParams query)
     {
         var parameters = new List<(string Key, string? Value)>
@@ -737,6 +822,12 @@ public sealed class HonuaFeatureServerClient :
 
         if (query.ReturnGeometry.HasValue)
             parameters.Add(("returnGeometry", query.ReturnGeometry.Value ? "true" : "false"));
+
+        if (query.ReturnZ.HasValue)
+            parameters.Add(("returnZ", query.ReturnZ.Value ? "true" : "false"));
+
+        if (query.ReturnM.HasValue)
+            parameters.Add(("returnM", query.ReturnM.Value ? "true" : "false"));
 
         if (query.ResultOffset.HasValue)
             parameters.Add(("resultOffset", query.ResultOffset.Value.ToString(CultureInfo.InvariantCulture)));

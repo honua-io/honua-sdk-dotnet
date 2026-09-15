@@ -1,0 +1,43 @@
+PASS     package.published-bytes: Honua.Sdk.GeoServices 1.7.1-cert341 (assembly 1.7.1.0, informational 1.7.1-cert341+a880a3813dc16b1d3cb1892be9f38658a14dac82) from local:/home/mike/honua-io/lane-341-run/local-packages; nupkg sha512 matches the expected package hash; loaded assembly sha256 a129f2747c40d82c44b88fef81c11da72ff35ee93a84894c7dc44db8ade59540 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package
+PASS     discovery.service-layers: service lists layer 1 'source_sites'
+PASS     discovery.service-tables: every source JSON path under $.tables survives the typed model
+PASS     metadata.service.lossless-roundtrip: every source JSON path under $ survives the typed model
+PASS     metadata.layer.lossless-roundtrip: every source JSON path under $ survives the typed model
+PASS     metadata.layer.drawing-info: every source JSON path under $.drawingInfo survives the typed model
+PASS     metadata.layer.relationships: every source JSON path under $.relationships survives the typed model
+PASS     metadata.layer.time-info: every source JSON path under $.timeInfo survives the typed model
+PASS     metadata.layer.pagination-capabilities: every source JSON path under $.supportsPagination survives the typed model; every source JSON path under $.advancedQueryCapabilities survives the typed model
+PASS     metadata.field.lossless-roundtrip: every source JSON path under $.fields survives the typed model
+PASS     schema.object-id-field: objectIdField = objectid
+PASS     schema.field-types: 9 field types match the source contract
+PASS     schema.domain: coded-value domain SiteStatus preserved with every code/name pair
+PASS     data.count-and-ids: count 25; 25 object IDs equal the fixture set
+FAIL     data.int64-precision: row 1 big_counter: expected 9007199254740992, got 9007199254740993
+PASS     data.guid: 3 attribute value(s) preserved exactly
+PASS     data.null-versus-empty: 8 attribute value(s) preserved exactly
+PASS     data.temporal: 6 attribute value(s) preserved exactly
+PASS     data.numeric-and-coded: 10 attribute value(s) preserved exactly
+PASS     geometry.null-versus-present: null geometry stays null and present geometries stay objects
+PASS     geometry.z-m: 12 X/Y/Z/M ordinate(s) preserved exactly; typed ReturnZ/ReturnM requested
+PASS     paging.exceeded-transfer-limit: a 10-record window over 25 rows reports exceededTransferLimit=true with 10 features
+PASS     paging.offset-pages: 3 page(s), 3 request(s), 25 record(s) yielded, 0 duplicate(s), 0 omitted; terminated with the complete ordered set
+PASS     paging.object-id-batches: 4 batch(es) of <=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set
+PASS     paging.offset-ignoring-source.offset-pages: 1 page(s), 2 request(s), 10 record(s) yielded, 0 duplicate(s), 15 omitted; failed explicitly with InvalidOperationException before yielding a duplicate
+PASS     paging.offset-ignoring-source.object-id-batches: 4 batch(es) of <=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set
+PASS     auth.none-rejected: HonuaFeatureServerException http=499 esriCode=499
+PASS     auth.api-key: count 25; GET /rest/services/cert341_source/FeatureServer/1/query token-param=False authorization=none x-api-key=True
+PASS     auth.token: count 25 over https; 2 request(s) all carried [token-param=True authorization=none x-api-key=False]
+PASS     auth.bearer: count 25 over https; 2 request(s) all carried [token-param=False authorization=Bearer x-api-key=False]
+PASS     auth.basic: count 25 over http; 2 request(s) all carried [token-param=False authorization=Basic x-api-key=False]
+PASS     auth.invalid-token: HonuaFeatureServerException http=498 esriCode=498 details=3
+PASS     auth.basic-rejected: HonuaFeatureServerException http=401
+PASS     errors.http200-envelope.missing-layer: HonuaFeatureServerException http=404 esriCode=404 details=3
+PASS     errors.http200-envelope.invalid-where: HonuaFeatureServerException http=400 esriCode=400 details=4
+PASS     transport.injected-primary-handler: both requests traversed the injected primary handler: GET /rest/services/cert341_source/FeatureServer token-param=False authorization=none x-api-key=True | GET /rest/services/cert341_source/FeatureServer/1 token-param=False authorization=none x-api-key=True
+PASS     transport.cancellation: OperationCanceledException after the first page; no further request was sent
+PASS     transport.bounded-streaming: raw query content is a forward-only network stream (BrotliStream)
+PASS     transport.retry-after-429: HonuaFeatureServerException http=429 RetryAfter=00:00:01 after 2 attempt(s)
+RELEASED data.attachments: The pinned candidate advertises hasAttachments only for a resource annotated honua.io/attachments=true with attachment uploads wired; no supported admin publish or metadata operation sets that annotation, so a live attachment source cannot be authored without patching the compiled metadata snapshot. SDK attachment list/download coverage stays in Honua.Sdk.GeoServices.Tests.
+RELEASED schema.subtypes: The pinned candidate has no supported authoring path for subtypes/types on a published layer (admin field configuration accepts codedValue domains only), so the live source cannot emit them. SDK preservation of raw subtype JSON is covered by the metadata round-trip cells once a source emits them.
+RELEASED geometry.true-curves: The pinned candidate advertises supportsTrueCurve=false and never emits curvePaths/curveRings for a published layer, so a live curve source is not available.
+summary: pass=38 fail=1 released=3
