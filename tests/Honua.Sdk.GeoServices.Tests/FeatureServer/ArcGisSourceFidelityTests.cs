@@ -292,8 +292,8 @@ public sealed class ArcGisSourceFidelityTests
     public void ArcGisSourceCredentialHandler_SuppliedInnerHandler_IsDisposedExactlyOnce()
     {
         var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
-        var inner = new DisposalTrackingHandler();
-        var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var inner = new DisposalTrackingHandler();
+        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
 
         Assert.Equal(0, inner.DisposeCount);
         handler.Dispose();

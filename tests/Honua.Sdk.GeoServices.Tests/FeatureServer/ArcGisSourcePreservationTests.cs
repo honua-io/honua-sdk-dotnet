@@ -122,12 +122,12 @@ public sealed class ArcGisSourcePreservationTests
         Assert.Equal("Residential", layer.Types!.Value[0].GetProperty("name").GetString());
         Assert.Equal(1, layer.Subtypes!.Value[0].GetProperty("defaultValues").GetProperty("ZONE").GetInt32());
         Assert.Equal("PARCEL_GUID", layer.Relationships!.Value[0].GetProperty("keyField").GetString());
-        Assert.Equal(3, layer.Relationships.Value[0].GetProperty("relatedTableId").GetInt32());
+        Assert.Equal(3, layer.Relationships!.Value[0].GetProperty("relatedTableId").GetInt32());
         Assert.Equal(
             "$feature.NAME",
             layer.DrawingInfo!.Value.GetProperty("labelingInfo")[0].GetProperty("labelExpressionInfo").GetProperty("expression").GetString());
         Assert.Equal(1577836800000L, layer.TimeInfo!.TimeExtent!.Value[0].GetInt64());
-        Assert.Equal(JsonValueKind.Null, layer.TimeInfo.TimeExtent.Value[1].ValueKind);
+        Assert.Equal(JsonValueKind.Null, layer.TimeInfo!.TimeExtent!.Value[1].ValueKind);
         Assert.Equal("esriTimeUnitsDays", layer.TimeInfo.AdditionalProperties!["timeIntervalUnits"].GetString());
         Assert.Equal("sqlTypeOther", layer.Fields![0].AdditionalProperties!["sqlType"].GetString());
         Assert.Equal("PARCEL_GUID", layer.Fields[1].AdditionalProperties!["modelName"].GetString());

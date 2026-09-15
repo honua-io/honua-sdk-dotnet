@@ -311,6 +311,11 @@ internal sealed class SourceImportCertification
         var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "(none)";
         var packageVersion = assembly.GetName().Version;
         var version = _args.Required("package-version");
+        if (Path.IsPathRooted(version) || version.Contains(Path.DirectorySeparatorChar) || version.Contains(Path.AltDirectorySeparatorChar))
+        {
+            throw new CellFailure($"--package-version '{version}' is not a safe path segment");
+        }
+
         var packageDirectory = Path.Combine(Path.GetFullPath(_args.Required("packages-root")), "honua.sdk.geoservices", version.ToLowerInvariant());
         var hashFile = Path.Combine(packageDirectory, $"honua.sdk.geoservices.{version.ToLowerInvariant()}.nupkg.sha512");
         if (!File.Exists(hashFile))
