@@ -534,13 +534,13 @@ internal sealed class SourceImportCertification
             var response = await client.QueryAsync(
                 _serviceName,
                 _layerId,
-                new FeatureServerQueryParams
+                RequestZm(new FeatureServerQueryParams
                 {
                     ObjectIds = rowIds,
                     OutFields = "*",
                     ReturnGeometry = true,
                     OrderByFields = "objectid",
-                },
+                }),
                 Timeout()).ConfigureAwait(false);
             var rows = new Dictionary<long, FeatureServerFeature>();
             foreach (var feature in response.Features ?? [])
@@ -556,6 +556,19 @@ internal sealed class SourceImportCertification
                 ? rows
                 : throw new CellFailure($"rows [{string.Join(",", missing)}] were not returned");
         }
+    }
+
+    // Sources omit Z/M unless returnZ/returnM is requested. Packages that expose the typed
+    // ReturnZ/ReturnM query parameters get them set; older packages cannot request Z/M at all,
+    // which geometry.z-m reports. Reflection keeps one consumer compilable against both.
+    private static readonly PropertyInfo? ReturnZProperty = typeof(FeatureServerQueryParams).GetProperty("ReturnZ");
+    private static readonly PropertyInfo? ReturnMProperty = typeof(FeatureServerQueryParams).GetProperty("ReturnM");
+
+    private static FeatureServerQueryParams RequestZm(FeatureServerQueryParams query)
+    {
+        ReturnZProperty?.SetValue(query, true);
+        ReturnMProperty?.SetValue(query, true);
+        return query;
     }
 
     private async Task<string> AttributesAsync(params string[] names)
@@ -667,9 +680,12 @@ internal sealed class SourceImportCertification
             }
         }
 
+        var requestable = ReturnZProperty is not null && ReturnMProperty is not null
+            ? "typed ReturnZ/ReturnM requested"
+            : "this package has no typed ReturnZ/ReturnM query parameter, so Z/M cannot be requested";
         return mismatches.Count == 0
-            ? $"{compared} X/Y/Z/M ordinate(s) preserved exactly"
-            : throw new CellFailure($"{mismatches.Count} ordinate(s) lost through the typed query API: {string.Join("; ", mismatches)}");
+            ? $"{compared} X/Y/Z/M ordinate(s) preserved exactly; {requestable}"
+            : throw new CellFailure($"{mismatches.Count} ordinate(s) lost through the typed query API ({requestable}): {string.Join("; ", mismatches)}");
     }
 
     // ── Paging ──────────────────────────────────────────────────────────

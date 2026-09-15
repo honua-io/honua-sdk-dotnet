@@ -44,3 +44,18 @@ surface, operation, SDK version, exact deployment target, scenario facets,
 required tier, verdict, tests, and owned disposition. A gap, unowned skip,
 missing result, identity mismatch, or observed failure can never be converted
 to a passing cell.
+
+## Source-import certification
+
+`certification/geoservices-source-import/` certifies lossless ArcGIS
+service/layer import through the installed `Honua.Sdk.GeoServices` package, for
+[honua-sdk-dotnet#341](https://github.com/honua-io/honua-sdk-dotnet/issues/341).
+Unlike the operation ledger, it treats the digest-pinned candidate as a live
+ArcGIS REST *source*. A versioned fixture is published through the supported
+admin API, and a consumer restores the SDK from nuget.org by version.
+
+Metadata cells require every member of the source's own JSON to survive the
+typed model. Data cells compare decoded values with an oracle written by hand
+from the fixture. A negative-control run with a corrupted oracle must fail. See
+the [directory README](../certification/geoservices-source-import/README.md)
+for the cells, released cells and run instructions.

@@ -1,0 +1,280 @@
+{
+  "schema": "honua-sdk-dotnet.source-import-certification.v1",
+  "issue": "https://github.com/honua-io/honua-sdk-dotnet/issues/341",
+  "generatedAt": "2026-09-15T08:49:46.3478845\u002B00:00",
+  "fixtureVersion": "source-import-fixture.v1",
+  "negativeControl": true,
+  "package": {
+    "id": "Honua.Sdk.GeoServices",
+    "version": "1.7.0",
+    "source": "https://api.nuget.org/v3/index.json",
+    "nupkgSha512": "x87Yqro\u002BTTepk5omlTcylozDtrGOAL9x3BzfUZ1wQXyvBLWb4D8GIhgthHeOFywByukTyHI\u002BKFVIcrBc7ToTIA==",
+    "informationalVersion": "1.7.0\u002Bda3deb14e694b77478051aec2e0da04fab415afc"
+  },
+  "source": {
+    "image": "ghcr.io/honua-io/honua-server@sha256:29974ee7b722e3ae15c3b891024e5e70800f412188aeccf5ec3d32d9dac675c1",
+    "sourceSha": "548b7a5263da5a3f2381eb43f232687cdf92b0bf",
+    "service": "cert341_source",
+    "layerId": 1
+  },
+  "summary": {
+    "pass": 28,
+    "fail": 11,
+    "released": 3,
+    "verdict": "not-certified"
+  },
+  "cells": [
+    {
+      "id": "package.published-bytes",
+      "criterion": "AC6 normal versioned PackageReference from the published package",
+      "verdict": "pass",
+      "detail": "Honua.Sdk.GeoServices 1.7.0 (assembly 1.7.0.0, informational 1.7.0\u002Bda3deb14e694b77478051aec2e0da04fab415afc) from https://api.nuget.org/v3/index.json; nupkg sha512 matches the expected package hash; loaded assembly sha256 6170dc872b61bde165d21a084ead714ee0e283fb08c05bc981b8d2a0b03af6e1 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package"
+    },
+    {
+      "id": "discovery.service-layers",
+      "criterion": "AC1 service/layer discovery",
+      "verdict": "pass",
+      "detail": "service lists layer 1 \u0027source_sites\u0027"
+    },
+    {
+      "id": "discovery.service-tables",
+      "criterion": "AC1 table discovery",
+      "verdict": "fail",
+      "detail": "1 source JSON path(s) lost by the typed model: $.tables: dropped"
+    },
+    {
+      "id": "metadata.service.lossless-roundtrip",
+      "criterion": "AC2 service metadata preserved",
+      "verdict": "fail",
+      "detail": "16 source JSON path(s) lost by the typed model: $.serviceName: dropped; $.layers[0].defaultVisibility: dropped; $.layers[0].type: dropped; $.layers[0].geometryType: dropped; $.tables: dropped; $.units: dropped; $.supportsAdvancedQueries: dropped; $.supportsStatistics: dropped; $.hasGeometryProperties: dropped; $.objectIdField: dropped; $.fields: dropped; $.relationships: dropped; $.allowGeometryUpdates: dropped; $.syncEnabled: dropped; $.isDataVersioned: dropped; $.supportsBranchVersioning: dropped"
+    },
+    {
+      "id": "metadata.layer.lossless-roundtrip",
+      "criterion": "AC2 layer metadata preserved",
+      "verdict": "fail",
+      "detail": "69 source JSON path(s) lost by the typed model: $.type: dropped; $.copyrightText: dropped; $.fields[0].sqlType: dropped; $.fields[0].visible: dropped; $.fields[0].canSort: dropped; $.fields[0].displayName: dropped; $.fields[1].sqlType: dropped; $.fields[1].visible: dropped; $.fields[1].canSort: dropped; $.fields[1].displayName: dropped; $.fields[2].sqlType: dropped; $.fields[2].visible: dropped; $.fields[2].canSort: dropped; $.fields[2].displayName: dropped; $.fields[3].sqlType: dropped; $.fields[3].visible: dropped; $.fields[3].canSort: dropped; $.fields[3].displayName: dropped; $.fields[4].sqlType: dropped; $.fields[4].visible: dropped; $.fields[4].canSort: dropped; $.fields[4].displayName: dropped; $.fields[5].sqlType: dropped; $.fields[5].visible: dropped; $.fields[5].canSort: dropped; $.fields[5].displayName: dropped; $.fields[6].sqlType: dropped; $.fields[6].visible: dropped; $.fields[6].canSort: dropped; $.fields[6].displayName: dropped; $.fields[7].sqlType: dropped; $.fields[7].visible: dropped; $.fields[7].canSort: dropped; $.fields[7].displayName: dropped; $.fields[8].sqlType: dropped; $.fields[8].visible: dropped; $.fields[8].canSort: dropped; $.fields[8].displayName: dropped; $.fields[9].sqlType: dropped; $.fields[9].visible: dropped"
+    },
+    {
+      "id": "metadata.layer.drawing-info",
+      "criterion": "AC2 drawingInfo/labels preserved",
+      "verdict": "fail",
+      "detail": "1 source JSON path(s) lost by the typed model: $.drawingInfo: dropped"
+    },
+    {
+      "id": "metadata.layer.relationships",
+      "criterion": "AC2 relationship keys preserved",
+      "verdict": "fail",
+      "detail": "1 source JSON path(s) lost by the typed model: $.relationships: dropped"
+    },
+    {
+      "id": "metadata.layer.time-info",
+      "criterion": "AC2 temporal metadata preserved",
+      "verdict": "fail",
+      "detail": "1 source JSON path(s) lost by the typed model: $.timeInfo.timeExtent: dropped"
+    },
+    {
+      "id": "metadata.layer.pagination-capabilities",
+      "criterion": "AC3 supportsPagination/advancedQueryCapabilities preserved",
+      "verdict": "fail",
+      "detail": "1 source JSON path(s) lost by the typed model: $.supportsPagination: dropped"
+    },
+    {
+      "id": "metadata.field.lossless-roundtrip",
+      "criterion": "AC2 field metadata preserved",
+      "verdict": "fail",
+      "detail": "40 source JSON path(s) lost by the typed model: $.fields[0].sqlType: dropped; $.fields[0].visible: dropped; $.fields[0].canSort: dropped; $.fields[0].displayName: dropped; $.fields[1].sqlType: dropped; $.fields[1].visible: dropped; $.fields[1].canSort: dropped; $.fields[1].displayName: dropped; $.fields[2].sqlType: dropped; $.fields[2].visible: dropped; $.fields[2].canSort: dropped; $.fields[2].displayName: dropped; $.fields[3].sqlType: dropped; $.fields[3].visible: dropped; $.fields[3].canSort: dropped; $.fields[3].displayName: dropped; $.fields[4].sqlType: dropped; $.fields[4].visible: dropped; $.fields[4].canSort: dropped; $.fields[4].displayName: dropped; $.fields[5].sqlType: dropped; $.fields[5].visible: dropped; $.fields[5].canSort: dropped; $.fields[5].displayName: dropped; $.fields[6].sqlType: dropped; $.fields[6].visible: dropped; $.fields[6].canSort: dropped; $.fields[6].displayName: dropped; $.fields[7].sqlType: dropped; $.fields[7].visible: dropped; $.fields[7].canSort: dropped; $.fields[7].displayName: dropped; $.fields[8].sqlType: dropped; $.fields[8].visible: dropped; $.fields[8].canSort: dropped; $.fields[8].displayName: dropped; $.fields[9].sqlType: dropped; $.fields[9].visible: dropped; $.fields[9].canSort: dropped; $.fields[9].displayName: dropped"
+    },
+    {
+      "id": "schema.object-id-field",
+      "criterion": "AC1 schema: object ID field",
+      "verdict": "pass",
+      "detail": "objectIdField = objectid"
+    },
+    {
+      "id": "schema.field-types",
+      "criterion": "AC1/AC2 schema: field types",
+      "verdict": "pass",
+      "detail": "9 field types match the source contract"
+    },
+    {
+      "id": "schema.domain",
+      "criterion": "AC2 fields/defaults/domains",
+      "verdict": "pass",
+      "detail": "coded-value domain SiteStatus preserved with every code/name pair"
+    },
+    {
+      "id": "data.count-and-ids",
+      "criterion": "AC1 count/IDs",
+      "verdict": "pass",
+      "detail": "count 25; 25 object IDs equal the fixture set"
+    },
+    {
+      "id": "data.int64-precision",
+      "criterion": "AC2 int64 precision",
+      "verdict": "fail",
+      "detail": "row 1 big_counter: expected 9007199254740992, got 9007199254740993"
+    },
+    {
+      "id": "data.guid",
+      "criterion": "AC2 GUIDs preserved",
+      "verdict": "pass",
+      "detail": "3 attribute value(s) preserved exactly"
+    },
+    {
+      "id": "data.null-versus-empty",
+      "criterion": "AC2 null versus empty values",
+      "verdict": "pass",
+      "detail": "8 attribute value(s) preserved exactly"
+    },
+    {
+      "id": "data.temporal",
+      "criterion": "AC2 temporal types",
+      "verdict": "pass",
+      "detail": "6 attribute value(s) preserved exactly"
+    },
+    {
+      "id": "data.numeric-and-coded",
+      "criterion": "AC2 numeric and domain-coded values",
+      "verdict": "pass",
+      "detail": "10 attribute value(s) preserved exactly"
+    },
+    {
+      "id": "geometry.null-versus-present",
+      "criterion": "AC2 null versus empty geometries",
+      "verdict": "pass",
+      "detail": "null geometry stays null and present geometries stay objects"
+    },
+    {
+      "id": "geometry.z-m",
+      "criterion": "AC2 Z/M preserved through the typed query API",
+      "verdict": "fail",
+      "detail": "8 ordinate(s) lost through the typed query API: row 1 z: expected 125.5, got (dropped); row 1 m: expected 42.0, got (dropped); row 3 z: expected -3.25, got (dropped); row 3 m: expected 0.5, got (dropped); row 101 z: expected 1, got (dropped); row 101 m: expected 10, got (dropped); row 122 z: expected 22, got (dropped); row 122 m: expected 220, got (dropped)"
+    },
+    {
+      "id": "paging.exceeded-transfer-limit",
+      "criterion": "AC3 transfer limits",
+      "verdict": "pass",
+      "detail": "a 10-record window over 25 rows reports exceededTransferLimit=true with 10 features"
+    },
+    {
+      "id": "paging.offset-pages",
+      "criterion": "AC3 supportsPagination source: termination, no duplicates/omissions",
+      "verdict": "pass",
+      "detail": "3 page(s), 3 request(s), 25 record(s) yielded, 0 duplicate(s), 0 omitted; terminated with the complete ordered set"
+    },
+    {
+      "id": "paging.object-id-batches",
+      "criterion": "AC3 stable ID batching",
+      "verdict": "pass",
+      "detail": "4 batch(es) of \u003C=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set"
+    },
+    {
+      "id": "paging.offset-ignoring-source.offset-pages",
+      "criterion": "AC3 repeated/ignored offsets: termination, no duplicates/omissions",
+      "verdict": "fail",
+      "detail": "100 page(s), 100 request(s), 1000 record(s) yielded, 990 duplicate(s), 15 omitted; terminal=InvalidOperationException"
+    },
+    {
+      "id": "paging.offset-ignoring-source.object-id-batches",
+      "criterion": "AC3 repeated/ignored offsets: stable ID batching",
+      "verdict": "pass",
+      "detail": "4 batch(es) of \u003C=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set"
+    },
+    {
+      "id": "auth.none-rejected",
+      "criterion": "AC4 protected source without credentials fails explicitly",
+      "verdict": "pass",
+      "detail": "HonuaFeatureServerException http=499 esriCode=499"
+    },
+    {
+      "id": "auth.api-key",
+      "criterion": "AC4 Honua API key",
+      "verdict": "pass",
+      "detail": "count 25; GET /rest/services/cert341_source/FeatureServer/1/query token-param=False authorization=none x-api-key=True"
+    },
+    {
+      "id": "auth.token",
+      "criterion": "AC4 ArcGIS token credential handler",
+      "verdict": "pass",
+      "detail": "count 25 over https; 2 request(s) all carried [token-param=True authorization=none x-api-key=False]"
+    },
+    {
+      "id": "auth.bearer",
+      "criterion": "AC4 bearer credential handler",
+      "verdict": "pass",
+      "detail": "count 25 over https; 2 request(s) all carried [token-param=False authorization=Bearer x-api-key=False]"
+    },
+    {
+      "id": "auth.basic",
+      "criterion": "AC4 basic credential handler",
+      "verdict": "pass",
+      "detail": "count 25 over http; 2 request(s) all carried [token-param=False authorization=Basic x-api-key=False]"
+    },
+    {
+      "id": "auth.invalid-token",
+      "criterion": "AC4 HTTP-200 Esri error envelope for an invalid token",
+      "verdict": "pass",
+      "detail": "HonuaFeatureServerException http=498 esriCode=498 details=3"
+    },
+    {
+      "id": "auth.basic-rejected",
+      "criterion": "AC4 wrong basic password fails explicitly",
+      "verdict": "pass",
+      "detail": "HonuaFeatureServerException http=401"
+    },
+    {
+      "id": "errors.http200-envelope.missing-layer",
+      "criterion": "AC4 HTTP-200 Esri error envelope",
+      "verdict": "pass",
+      "detail": "HonuaFeatureServerException http=404 esriCode=404 details=3"
+    },
+    {
+      "id": "errors.http200-envelope.invalid-where",
+      "criterion": "AC4 HTTP-200 Esri error envelope",
+      "verdict": "pass",
+      "detail": "HonuaFeatureServerException http=400 esriCode=400 details=4"
+    },
+    {
+      "id": "transport.injected-primary-handler",
+      "criterion": "AC4 injectable HTTP transport",
+      "verdict": "pass",
+      "detail": "both requests traversed the injected primary handler: GET /rest/services/cert341_source/FeatureServer token-param=False authorization=none x-api-key=True | GET /rest/services/cert341_source/FeatureServer/1 token-param=False authorization=none x-api-key=True"
+    },
+    {
+      "id": "transport.cancellation",
+      "criterion": "AC4 cancellation preserved mid-enumeration",
+      "verdict": "pass",
+      "detail": "OperationCanceledException after the first page; no further request was sent"
+    },
+    {
+      "id": "transport.bounded-streaming",
+      "criterion": "AC4 raw query response is streamed, not buffered",
+      "verdict": "pass",
+      "detail": "raw query content is a forward-only network stream (BrotliStream)"
+    },
+    {
+      "id": "transport.retry-after-429",
+      "criterion": "AC4 429 Retry-After",
+      "verdict": "pass",
+      "detail": "HonuaFeatureServerException http=429 RetryAfter=00:00:01 after 2 attempt(s)"
+    },
+    {
+      "id": "data.attachments",
+      "criterion": "released",
+      "verdict": "released",
+      "detail": "The pinned candidate advertises hasAttachments only for a resource annotated honua.io/attachments=true with attachment uploads wired; no supported admin publish or metadata operation sets that annotation, so a live attachment source cannot be authored without patching the compiled metadata snapshot. SDK attachment list/download coverage stays in Honua.Sdk.GeoServices.Tests."
+    },
+    {
+      "id": "schema.subtypes",
+      "criterion": "released",
+      "verdict": "released",
+      "detail": "The pinned candidate has no supported authoring path for subtypes/types on a published layer (admin field configuration accepts codedValue domains only), so the live source cannot emit them. SDK preservation of raw subtype JSON is covered by the metadata round-trip cells once a source emits them."
+    },
+    {
+      "id": "geometry.true-curves",
+      "criterion": "released",
+      "verdict": "released",
+      "detail": "The pinned candidate advertises supportsTrueCurve=false and never emits curvePaths/curveRings for a published layer, so a live curve source is not available."
+    }
+  ]
+}

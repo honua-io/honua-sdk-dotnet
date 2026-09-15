@@ -208,10 +208,12 @@ else
   catalog="$(curl -sS --compressed "https://api.nuget.org/v3/registration5-gz-semver2/honua.sdk.geoservices/$SDK_PACKAGE_VERSION.json" | jq -er .catalogEntry)"
   published_hash="$(curl -sS "$catalog" | jq -er .packageHash)"
 fi
+# Per-run intermediate output keeps concurrent runs (and package versions) from sharing obj/.
+intermediate=(-p:BaseIntermediateOutputPath="$WORK_DIR/obj/" -p:MSBuildProjectExtensionsPath="$WORK_DIR/obj/")
 NUGET_PACKAGES="$packages" dotnet restore "$consumer/SourceImportCertification.csproj" \
-  --configfile "$nuget_config" -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION"
+  --configfile "$nuget_config" -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION" "${intermediate[@]}"
 NUGET_PACKAGES="$packages" dotnet build "$consumer/SourceImportCertification.csproj" -c Release --no-restore \
-  -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION" -o "$WORK_DIR/consumer-$SDK_PACKAGE_VERSION"
+  -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION" "${intermediate[@]}" -o "$WORK_DIR/consumer-$SDK_PACKAGE_VERSION"
 
 run_consumer() {
   dotnet "$WORK_DIR/consumer-$SDK_PACKAGE_VERSION/SourceImportCertification.dll" \
