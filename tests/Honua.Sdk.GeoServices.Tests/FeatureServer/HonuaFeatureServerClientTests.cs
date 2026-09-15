@@ -1147,10 +1147,11 @@ public class HonuaFeatureServerClientTests
     }
 
     [Fact]
-    public async Task QueryPagesAsync_ServerIgnoresOffset_StopsAtMaxAutoPagesWithoutInfiniteLoop()
+    public async Task QueryPagesAsync_ServerIgnoresOffset_FailsBeforeYieldingDuplicatePages()
     {
         // Adversarial server: always returns the same page-1 with exceededTransferLimit=true,
-        // ignoring resultOffset. Must terminate at the MaxAutoPages cap (100), not loop forever.
+        // ignoring resultOffset. The repeated page must be detected on the second request and
+        // fail explicitly, never yielding duplicates and never looping.
         var callCount = 0;
         var client = TestHelpers.CreateFeatureServerClient(_ =>
         {
@@ -1173,8 +1174,39 @@ public class HonuaFeatureServerClientTests
             }
         });
 
-        // Bounded by MaxAutoPages (100): exactly 100 pages are yielded before the cap throws,
-        // proving the loop terminates instead of running forever on duplicates.
+        Assert.Single(pages);
+        Assert.Equal(2, callCount);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_EndlessDistinctPages_StopsAtMaxAutoPagesWithoutInfiniteLoop()
+    {
+        // A server that keeps reporting exceededTransferLimit=true with genuinely new records
+        // must still terminate at the MaxAutoPages cap (100) instead of running forever.
+        var callCount = 0;
+        var client = TestHelpers.CreateFeatureServerClient(request =>
+        {
+            callCount++;
+            var offset = System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query)["resultOffset"] ?? "0";
+            var json = $$"""
+            {
+                "objectIdFieldName": "ID",
+                "features": [{ "attributes": { "ID": {{offset}} } }],
+                "exceededTransferLimit": true
+            }
+            """;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<FeatureServerQueryResponse>();
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var page in client.QueryPagesAsync("svc", 0, new FeatureServerQueryParams { Where = "1=1" }))
+            {
+                pages.Add(page);
+            }
+        });
+
         Assert.Equal(100, pages.Count);
         Assert.Equal(100, callCount);
     }

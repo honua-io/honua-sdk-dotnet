@@ -87,6 +87,9 @@ public interface IHonuaFeatureServerClient
     /// <summary>
     /// Executes a feature query with automatic paging via <see cref="IAsyncEnumerable{T}"/>.
     /// Advances <c>ResultOffset</c> automatically and stops when the server indicates no more records.
+    /// A source that ignores or repeats <c>resultOffset</c> is detected before any duplicate record is
+    /// yielded and fails with <see cref="InvalidOperationException"/>; use
+    /// <see cref="QueryAllFeaturesByObjectIdBatchesAsync"/> for such sources.
     /// </summary>
     /// <param name="serviceId">The service identifier.</param>
     /// <param name="layerId">The layer ID within the service.</param>

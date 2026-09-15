@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -245,9 +246,12 @@ internal sealed class SourceImportCertification
                 chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
                 chain.ChainPolicy.CustomTrustStore.Add(root);
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                foreach (var element in presentedChain?.ChainElements ?? [])
+                if (presentedChain is not null)
                 {
-                    chain.ChainPolicy.ExtraStore.Add(element.Certificate);
+                    foreach (var element in presentedChain.ChainElements)
+                    {
+                        chain.ChainPolicy.ExtraStore.Add(element.Certificate);
+                    }
                 }
 
                 return chain.Build(certificate);
@@ -306,29 +310,42 @@ internal sealed class SourceImportCertification
         var assembly = typeof(HonuaFeatureServerClient).Assembly;
         var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "(none)";
         var packageVersion = assembly.GetName().Version;
-        var packagesRoot = Path.GetFullPath(_args.Required("packages-root"));
-        var location = Path.GetFullPath(assembly.Location);
-        if (!location.StartsWith(packagesRoot, StringComparison.Ordinal))
-        {
-            throw new CellFailure($"Honua.Sdk.GeoServices loaded from '{location}', not from the restored package cache '{packagesRoot}'.");
-        }
-
         var version = _args.Required("package-version");
-        var hashFile = Path.Combine(packagesRoot, "honua.sdk.geoservices", version, $"honua.sdk.geoservices.{version}.nupkg.sha512");
+        var packageDirectory = Path.Combine(Path.GetFullPath(_args.Required("packages-root")), "honua.sdk.geoservices", version.ToLowerInvariant());
+        var hashFile = Path.Combine(packageDirectory, $"honua.sdk.geoservices.{version.ToLowerInvariant()}.nupkg.sha512");
         if (!File.Exists(hashFile))
         {
             throw new CellFailure($"restored package hash '{hashFile}' is missing");
         }
 
         var restoredHash = File.ReadAllText(hashFile).Trim();
-        var publishedHash = _args.Required("expected-nupkg-sha512");
-        if (!string.Equals(restoredHash, publishedHash, StringComparison.Ordinal))
+        var expectedHash = _args.Required("expected-nupkg-sha512");
+        if (!string.Equals(restoredHash, expectedHash, StringComparison.Ordinal))
         {
-            throw new CellFailure($"restored nupkg sha512 {restoredHash} does not match the nuget.org catalog packageHash {publishedHash}");
+            throw new CellFailure($"restored nupkg sha512 {restoredHash} does not match the expected package hash {expectedHash}");
+        }
+
+        // The consumer runs from its build output, so the loaded assembly is a copy. Bind it
+        // to the restored package by content, which also rules out a ProjectReference build.
+        var packagedAssemblies = Directory.EnumerateFiles(Path.Combine(packageDirectory, "lib"), "Honua.Sdk.GeoServices.dll", SearchOption.AllDirectories)
+            .Select(path => (Path: path, Hash: FileSha256(path)))
+            .ToArray();
+        var loadedHash = FileSha256(assembly.Location);
+        var match = packagedAssemblies.FirstOrDefault(candidate => candidate.Hash == loadedHash);
+        if (match.Path is null)
+        {
+            throw new CellFailure($"loaded Honua.Sdk.GeoServices.dll sha256 {loadedHash} matches no assembly inside the restored package [{string.Join(", ", packagedAssemblies.Select(a => $"{a.Path}={a.Hash}"))}]");
         }
 
         return Task.FromResult(
-            $"Honua.Sdk.GeoServices {version} (assembly {packageVersion}, informational {informational}) loaded from the nuget.org restore; nupkg sha512 matches the catalog packageHash");
+            $"Honua.Sdk.GeoServices {version} (assembly {packageVersion}, informational {informational}) from {_args.Required("package-source")}; " +
+            $"nupkg sha512 matches the expected package hash; loaded assembly sha256 {loadedHash} equals {Path.GetRelativePath(packageDirectory, match.Path)} in the restored package");
+    }
+
+    private static string FileSha256(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Convert.ToHexStringLower(SHA256.HashData(stream));
     }
 
     // ── Discovery and metadata ──────────────────────────────────────────
@@ -980,7 +997,7 @@ internal sealed class SourceImportCertification
             {
                 ["id"] = "Honua.Sdk.GeoServices",
                 ["version"] = _args.Required("package-version"),
-                ["source"] = "https://api.nuget.org/v3/index.json",
+                ["source"] = _args.Required("package-source"),
                 ["nupkgSha512"] = _args.Required("expected-nupkg-sha512"),
                 ["informationalVersion"] = typeof(HonuaFeatureServerClient).Assembly
                     .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
