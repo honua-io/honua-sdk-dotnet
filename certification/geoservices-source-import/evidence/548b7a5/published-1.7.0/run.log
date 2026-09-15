@@ -1,0 +1,43 @@
+PASS     package.published-bytes: Honua.Sdk.GeoServices 1.7.0 (assembly 1.7.0.0, informational 1.7.0+da3deb14e694b77478051aec2e0da04fab415afc) from https://api.nuget.org/v3/index.json; nupkg sha512 matches the expected package hash; loaded assembly sha256 6170dc872b61bde165d21a084ead714ee0e283fb08c05bc981b8d2a0b03af6e1 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package
+PASS     discovery.service-layers: service lists layer 1 'source_sites'
+FAIL     discovery.service-tables: 1 source JSON path(s) lost by the typed model: $.tables: dropped
+FAIL     metadata.service.lossless-roundtrip: 16 source JSON path(s) lost by the typed model: $.serviceName: dropped; $.layers[0].defaultVisibility: dropped; $.layers[0].type: dropped; $.layers[0].geometryType: dropped; $.tables: dropped; $.units: dropped; $.supportsAdvancedQueries: dropped; $.supportsStatistics: dropped; $.hasGeometryProperties: dropped; $.objectIdField: dropped; $.fields: dropped; $.relationships: dropped; $.allowGeometryUpdates: dropped; $.syncEnabled: dropped; $.isDataVersioned: dropped; $.supportsBranchVersioning: dropped
+FAIL     metadata.layer.lossless-roundtrip: 69 source JSON path(s) lost by the typed model: $.type: dropped; $.copyrightText: dropped; $.fields[0].sqlType: dropped; $.fields[0].visible: dropped; $.fields[0].canSort: dropped; $.fields[0].displayName: dropped; $.fields[1].sqlType: dropped; $.fields[1].visible: dropped; $.fields[1].canSort: dropped; $.fields[1].displayName: dropped; $.fields[2].sqlType: dropped; $.fields[2].visible: dropped; $.fields[2].canSort: dropped; $.fields[2].displayName: dropped; $.fields[3].sqlType: dropped; $.fields[3].visible: dropped; $.fields[3].canSort: dropped; $.fields[3].displayName: dropped; $.fields[4].sqlType: dropped; $.fields[4].visible: dropped; $.fields[4].canSort: dropped; $.fields[4].displayName: dropped; $.fields[5].sqlType: dropped; $.fields[5].visible: dropped; $.fields[5].canSort: dropped; $.fields[5].displayName: dropped; $.fields[6].sqlType: dropped; $.fields[6].visible: dropped; $.fields[6].canSort: dropped; $.fields[6].displayName: dropped; $.fields[7].sqlType: dropped; $.fields[7].visible: dropped; $.fields[7].canSort: dropped; $.fields[7].displayName: dropped; $.fields[8].sqlType: dropped; $.fields[8].visible: dropped; $.fields[8].canSort: dropped; $.fields[8].displayName: dropped; $.fields[9].sqlType: dropped; $.fields[9].visible: dropped
+FAIL     metadata.layer.drawing-info: 1 source JSON path(s) lost by the typed model: $.drawingInfo: dropped
+FAIL     metadata.layer.relationships: 1 source JSON path(s) lost by the typed model: $.relationships: dropped
+FAIL     metadata.layer.time-info: 1 source JSON path(s) lost by the typed model: $.timeInfo.timeExtent: dropped
+FAIL     metadata.layer.pagination-capabilities: 1 source JSON path(s) lost by the typed model: $.supportsPagination: dropped
+FAIL     metadata.field.lossless-roundtrip: 40 source JSON path(s) lost by the typed model: $.fields[0].sqlType: dropped; $.fields[0].visible: dropped; $.fields[0].canSort: dropped; $.fields[0].displayName: dropped; $.fields[1].sqlType: dropped; $.fields[1].visible: dropped; $.fields[1].canSort: dropped; $.fields[1].displayName: dropped; $.fields[2].sqlType: dropped; $.fields[2].visible: dropped; $.fields[2].canSort: dropped; $.fields[2].displayName: dropped; $.fields[3].sqlType: dropped; $.fields[3].visible: dropped; $.fields[3].canSort: dropped; $.fields[3].displayName: dropped; $.fields[4].sqlType: dropped; $.fields[4].visible: dropped; $.fields[4].canSort: dropped; $.fields[4].displayName: dropped; $.fields[5].sqlType: dropped; $.fields[5].visible: dropped; $.fields[5].canSort: dropped; $.fields[5].displayName: dropped; $.fields[6].sqlType: dropped; $.fields[6].visible: dropped; $.fields[6].canSort: dropped; $.fields[6].displayName: dropped; $.fields[7].sqlType: dropped; $.fields[7].visible: dropped; $.fields[7].canSort: dropped; $.fields[7].displayName: dropped; $.fields[8].sqlType: dropped; $.fields[8].visible: dropped; $.fields[8].canSort: dropped; $.fields[8].displayName: dropped; $.fields[9].sqlType: dropped; $.fields[9].visible: dropped; $.fields[9].canSort: dropped; $.fields[9].displayName: dropped
+PASS     schema.object-id-field: objectIdField = objectid
+PASS     schema.field-types: 9 field types match the source contract
+PASS     schema.domain: coded-value domain SiteStatus preserved with every code/name pair
+PASS     data.count-and-ids: count 25; 25 object IDs equal the fixture set
+PASS     data.int64-precision: 5 attribute value(s) preserved exactly
+PASS     data.guid: 3 attribute value(s) preserved exactly
+PASS     data.null-versus-empty: 8 attribute value(s) preserved exactly
+PASS     data.temporal: 6 attribute value(s) preserved exactly
+PASS     data.numeric-and-coded: 10 attribute value(s) preserved exactly
+PASS     geometry.null-versus-present: null geometry stays null and present geometries stay objects
+FAIL     geometry.z-m: 8 ordinate(s) lost through the typed query API (this package has no typed ReturnZ/ReturnM query parameter, so Z/M cannot be requested): row 1 z: expected 125.5, got (dropped); row 1 m: expected 42.0, got (dropped); row 3 z: expected -3.25, got (dropped); row 3 m: expected 0.5, got (dropped); row 101 z: expected 1, got (dropped); row 101 m: expected 10, got (dropped); row 122 z: expected 22, got (dropped); row 122 m: expected 220, got (dropped)
+PASS     paging.exceeded-transfer-limit: a 10-record window over 25 rows reports exceededTransferLimit=true with 10 features
+PASS     paging.offset-pages: 3 page(s), 3 request(s), 25 record(s) yielded, 0 duplicate(s), 0 omitted; terminated with the complete ordered set
+PASS     paging.object-id-batches: 4 batch(es) of <=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set
+FAIL     paging.offset-ignoring-source.offset-pages: 100 page(s), 100 request(s), 1000 record(s) yielded, 990 duplicate(s), 15 omitted; terminal=InvalidOperationException
+PASS     paging.offset-ignoring-source.object-id-batches: 4 batch(es) of <=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set
+PASS     auth.none-rejected: HonuaFeatureServerException http=499 esriCode=499
+PASS     auth.api-key: count 25; GET /rest/services/cert341_source/FeatureServer/1/query token-param=False authorization=none x-api-key=True
+PASS     auth.token: count 25 over https; 2 request(s) all carried [token-param=True authorization=none x-api-key=False]
+PASS     auth.bearer: count 25 over https; 2 request(s) all carried [token-param=False authorization=Bearer x-api-key=False]
+PASS     auth.basic: count 25 over http; 2 request(s) all carried [token-param=False authorization=Basic x-api-key=False]
+PASS     auth.invalid-token: HonuaFeatureServerException http=498 esriCode=498 details=3
+PASS     auth.basic-rejected: HonuaFeatureServerException http=401
+PASS     errors.http200-envelope.missing-layer: HonuaFeatureServerException http=404 esriCode=404 details=3
+PASS     errors.http200-envelope.invalid-where: HonuaFeatureServerException http=400 esriCode=400 details=4
+PASS     transport.injected-primary-handler: both requests traversed the injected primary handler: GET /rest/services/cert341_source/FeatureServer token-param=False authorization=none x-api-key=True | GET /rest/services/cert341_source/FeatureServer/1 token-param=False authorization=none x-api-key=True
+PASS     transport.cancellation: OperationCanceledException after the first page; no further request was sent
+PASS     transport.bounded-streaming: raw query content is a forward-only network stream (BrotliStream)
+PASS     transport.retry-after-429: HonuaFeatureServerException http=429 RetryAfter=00:00:01 after 2 attempt(s)
+RELEASED data.attachments: The pinned candidate advertises hasAttachments only for a resource annotated honua.io/attachments=true with attachment uploads wired; no supported admin publish or metadata operation sets that annotation, so a live attachment source cannot be authored without patching the compiled metadata snapshot. SDK attachment list/download coverage stays in Honua.Sdk.GeoServices.Tests.
+RELEASED schema.subtypes: The pinned candidate has no supported authoring path for subtypes/types on a published layer (admin field configuration accepts codedValue domains only), so the live source cannot emit them. SDK preservation of raw subtype JSON is covered by the metadata round-trip cells once a source emits them.
+RELEASED geometry.true-curves: The pinned candidate advertises supportsTrueCurve=false and never emits curvePaths/curveRings for a published layer, so a live curve source is not available.
+summary: pass=29 fail=10 released=3

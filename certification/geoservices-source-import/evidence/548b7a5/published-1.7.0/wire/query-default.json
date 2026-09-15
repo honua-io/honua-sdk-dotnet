@@ -1,0 +1,215 @@
+{
+  "displayFieldName": "site_guid",
+  "exceededTransferLimit": false,
+  "features": [
+    {
+      "attributes": {
+        "amount": 1.5,
+        "big_counter": 9007199254740993,
+        "inspected_at": 1767323045678,
+        "install_date": 1767312000000,
+        "name": "alpha",
+        "note": "",
+        "objectid": 1,
+        "site_guid": "6f1c2a4e-0b7d-4c1e-9a55-3e2f4b6d8c01",
+        "status_code": 1
+      },
+      "geometry": {
+        "x": -122.41,
+        "y": 37.77
+      }
+    },
+    {
+      "attributes": {
+        "amount": null,
+        "big_counter": null,
+        "inspected_at": null,
+        "install_date": null,
+        "name": null,
+        "note": null,
+        "objectid": 2,
+        "site_guid": null,
+        "status_code": null
+      },
+      "geometry": null
+    },
+    {
+      "attributes": {
+        "amount": 0.1,
+        "big_counter": -9223372036854775807,
+        "inspected_at": -1000,
+        "install_date": -2208988800000,
+        "name": "",
+        "note": "x",
+        "objectid": 3,
+        "site_guid": "a0b1c2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
+        "status_code": 2
+      },
+      "geometry": {
+        "x": -122.4,
+        "y": 37.78
+      }
+    },
+    {
+      "attributes": {
+        "amount": 0.25,
+        "big_counter": 4611686018427387905,
+        "inspected_at": null,
+        "install_date": null,
+        "name": "row-1",
+        "note": null,
+        "objectid": 101,
+        "site_guid": null,
+        "status_code": 2
+      },
+      "geometry": {
+        "x": -122.449,
+        "y": 37.751
+      }
+    },
+    {
+      "attributes": {
+        "amount": 5.5,
+        "big_counter": 4611686018427387926,
+        "inspected_at": null,
+        "install_date": null,
+        "name": "row-22",
+        "note": null,
+        "objectid": 122,
+        "site_guid": null,
+        "status_code": 2
+      },
+      "geometry": {
+        "x": -122.428,
+        "y": 37.772
+      }
+    }
+  ],
+  "fields": [
+    {
+      "alias": "objectid",
+      "canSort": true,
+      "displayName": "objectid",
+      "editable": false,
+      "name": "objectid",
+      "nullable": false,
+      "sqlType": "BIGINT",
+      "type": "esriFieldTypeOID",
+      "visible": true
+    },
+    {
+      "alias": "site_guid",
+      "canSort": true,
+      "displayName": "site_guid",
+      "editable": true,
+      "name": "site_guid",
+      "nullable": true,
+      "sqlType": "UUID",
+      "type": "esriFieldTypeGUID",
+      "visible": true
+    },
+    {
+      "alias": "name",
+      "canSort": true,
+      "displayName": "name",
+      "editable": true,
+      "length": 256,
+      "name": "name",
+      "nullable": true,
+      "sqlType": "TEXT",
+      "type": "esriFieldTypeString",
+      "visible": true
+    },
+    {
+      "alias": "note",
+      "canSort": true,
+      "displayName": "note",
+      "editable": true,
+      "length": 256,
+      "name": "note",
+      "nullable": true,
+      "sqlType": "TEXT",
+      "type": "esriFieldTypeString",
+      "visible": true
+    },
+    {
+      "alias": "inspected_at",
+      "canSort": true,
+      "displayName": "inspected_at",
+      "editable": true,
+      "name": "inspected_at",
+      "nullable": true,
+      "sqlType": "TIMESTAMP WITH TIME ZONE",
+      "type": "esriFieldTypeDate",
+      "visible": true
+    },
+    {
+      "alias": "install_date",
+      "canSort": true,
+      "displayName": "install_date",
+      "editable": true,
+      "name": "install_date",
+      "nullable": true,
+      "sqlType": "DATE",
+      "type": "esriFieldTypeDate",
+      "visible": true
+    },
+    {
+      "alias": "amount",
+      "canSort": true,
+      "displayName": "amount",
+      "editable": true,
+      "name": "amount",
+      "nullable": true,
+      "sqlType": "DOUBLE PRECISION",
+      "type": "esriFieldTypeDouble",
+      "visible": true
+    },
+    {
+      "alias": "Status",
+      "canSort": true,
+      "displayName": "Status",
+      "domain": {
+        "codedValues": [
+          {
+            "code": 1,
+            "name": "Active"
+          },
+          {
+            "code": 2,
+            "name": "Retired"
+          },
+          {
+            "code": 3,
+            "name": "Planned"
+          }
+        ],
+        "name": "SiteStatus",
+        "type": "codedValue"
+      },
+      "editable": true,
+      "name": "status_code",
+      "nullable": true,
+      "sqlType": "INTEGER",
+      "type": "esriFieldTypeInteger",
+      "visible": true
+    },
+    {
+      "alias": "big_counter",
+      "canSort": true,
+      "displayName": "big_counter",
+      "editable": true,
+      "name": "big_counter",
+      "nullable": true,
+      "sqlType": "BIGINT",
+      "type": "esriFieldTypeBigInteger",
+      "visible": true
+    }
+  ],
+  "geometryType": "esriGeometryPoint",
+  "objectIdFieldName": "objectid",
+  "spatialReference": {
+    "latestWkid": 4326,
+    "wkid": 4326
+  }
+}
