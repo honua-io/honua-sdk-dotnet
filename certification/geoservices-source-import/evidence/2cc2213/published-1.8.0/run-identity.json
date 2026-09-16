@@ -1,0 +1,9 @@
+{
+  "serverImage": "ghcr.io/honua-io/honua-server@sha256:61e06ef3a94d00e4c8fc57ce93e008a5e31b2dcf1da5deb22781fdd42d2d4e51",
+  "runningImageId": "sha256:61e06ef3a94d00e4c8fc57ce93e008a5e31b2dcf1da5deb22781fdd42d2d4e51",
+  "serverSourceSha": "2cc221388ea47d78c29e79eaee62737e4c792351",
+  "sdkPackageVersion": "1.8.0",
+  "sdkPackageSource": "https://api.nuget.org/v3/index.json",
+  "nupkgSha512": "m5wSCMoUrZfYXwe1ZOgriyhdt5FLF1/HKznobE+lARDy7mBWefE11kxQYGUjy2YU+03y4gtdnCc5u8oWkpsaQw==",
+  "certificationExit": 0
+}

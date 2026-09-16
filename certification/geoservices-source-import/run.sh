@@ -12,7 +12,7 @@
 # Environment:
 #   WORK_DIR             scratch directory (key ring, package cache, Caddy files); required
 #   OUT_DIR              receipt/wire output directory; required
-#   SDK_PACKAGE_VERSION  published Honua.Sdk.GeoServices version (default 1.7.0)
+#   SDK_PACKAGE_VERSION  published Honua.Sdk.GeoServices version (default 1.8.0)
 #   SERVER_IMAGE         digest-pinned candidate image
 #   SERVER_SOURCE_SHA    source commit of SERVER_IMAGE
 #   PREFIX               container/network name prefix (default c341)
@@ -26,9 +26,9 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${WORK_DIR:?set WORK_DIR to a scratch directory on real disk}"
 OUT_DIR="${OUT_DIR:?set OUT_DIR to the evidence output directory}"
-SDK_PACKAGE_VERSION="${SDK_PACKAGE_VERSION:-1.7.0}"
-SERVER_IMAGE="${SERVER_IMAGE:-ghcr.io/honua-io/honua-server@sha256:29974ee7b722e3ae15c3b891024e5e70800f412188aeccf5ec3d32d9dac675c1}"
-SERVER_SOURCE_SHA="${SERVER_SOURCE_SHA:-548b7a5263da5a3f2381eb43f232687cdf92b0bf}"
+SDK_PACKAGE_VERSION="${SDK_PACKAGE_VERSION:-1.8.0}"
+SERVER_IMAGE="${SERVER_IMAGE:-ghcr.io/honua-io/honua-server@sha256:61e06ef3a94d00e4c8fc57ce93e008a5e31b2dcf1da5deb22781fdd42d2d4e51}"
+SERVER_SOURCE_SHA="${SERVER_SOURCE_SHA:-2cc221388ea47d78c29e79eaee62737e4c792351}"
 P="${PREFIX:-c341}"
 SUBNET="${SUBNET_PREFIX:-172.31.241}"
 PP="${PORT_PREFIX:-28}"
