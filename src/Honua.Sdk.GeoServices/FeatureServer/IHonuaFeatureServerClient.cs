@@ -55,6 +55,22 @@ public interface IHonuaFeatureServerClient
         => throw new NotSupportedException("This implementation does not support FeatureServer read-by-id.");
 
     /// <summary>
+    /// Lists attachment metadata for a batch of features with one layer <c>queryAttachments</c> request,
+    /// instead of one <c>/{objectId}/attachments</c> request per feature.
+    /// </summary>
+    /// <param name="serviceId">The service identifier.</param>
+    /// <param name="layerId">The layer ID within the service.</param>
+    /// <param name="objectIds">Parent feature object IDs. An empty list returns no groups without a request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Attachment metadata grouped by parent object ID; features without attachments have no group.</returns>
+    Task<FeatureServerAttachmentGroupsResponse> QueryAttachmentsAsync(
+        string serviceId,
+        int layerId,
+        IReadOnlyList<long> objectIds,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("This implementation does not support FeatureServer queryAttachments.");
+
+    /// <summary>
     /// Executes a count-only query, returning the number of matching features.
     /// </summary>
     /// <param name="serviceId">The service identifier.</param>

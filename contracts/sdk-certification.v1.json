@@ -5,9 +5,9 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 317,
+    "total": 318,
     "exercised": 22,
-    "gap": 277,
+    "gap": 278,
     "non-addressable": 18
   },
   "operations": [
@@ -5865,6 +5865,33 @@
           "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
         ]
       }
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAttachmentsAsync(string,int,IReadOnlyList<long>,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+      "operation": "QueryAttachmentsAsync",
+      "signature": "QueryAttachmentsAsync(string,int,IReadOnlyList<long>,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryCountAsync(string,int,FeatureServerQueryParams,CancellationToken)",
