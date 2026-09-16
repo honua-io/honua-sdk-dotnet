@@ -301,7 +301,7 @@ internal sealed class SourceImportCertification
         return JsonNode.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false))!;
     }
 
-    private static CancellationToken Timeout() => new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token;
+    private static CancellationTokenSource Timeout() => new(TimeSpan.FromMinutes(2));
 
     // ── Package ─────────────────────────────────────────────────────────
 
@@ -360,7 +360,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var service = await client.GetServiceInfoAsync(_serviceName, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var service = await client.GetServiceInfoAsync(_serviceName, timeout.Token).ConfigureAwait(false);
             var expectedName = _oracle["layerName"]!.GetValue<string>();
             if (service.Layers?.Any(layer => layer.Id == _layerId && layer.Name == expectedName) != true)
             {
@@ -377,7 +378,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var typed = await client.GetServiceInfoAsync(_serviceName, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var typed = await client.GetServiceInfoAsync(_serviceName, timeout.Token).ConfigureAwait(false);
             return CompareMetadata(wire, JsonSerializer.SerializeToNode(typed, ModelJson), path, requireSourceKey: path != "$");
         }
     }
@@ -388,7 +390,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var typed = await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var typed = await client.GetLayerInfoAsync(_serviceName, _layerId, timeout.Token).ConfigureAwait(false);
             return CompareMetadata(wire, JsonSerializer.SerializeToNode(typed, ModelJson), path, requireSourceKey);
         }
     }
@@ -420,7 +423,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, timeout.Token).ConfigureAwait(false);
             var expected = _oracle["timeInfo"]!;
             if (layer.TimeInfo?.StartTimeField != expected["startTimeField"]!.GetValue<string>()
                 || layer.TimeInfo?.EndTimeField != expected["endTimeField"]!.GetValue<string>())
@@ -444,7 +448,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, timeout.Token).ConfigureAwait(false);
             var expected = _oracle["objectIdField"]!.GetValue<string>();
             return layer.ObjectIdField == expected
                 ? $"objectIdField = {expected}"
@@ -457,7 +462,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, timeout.Token).ConfigureAwait(false);
             var mismatches = new List<string>();
             foreach (var (name, type) in _oracle["fieldTypes"]!.AsObject())
             {
@@ -480,7 +486,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, timeout.Token).ConfigureAwait(false);
             var field = layer.Fields?.FirstOrDefault(f => f.Name == expected["field"]!.GetValue<string>())
                 ?? throw new CellFailure("domain field is missing");
             if (field.Alias != expected["alias"]!.GetValue<string>())
@@ -516,8 +523,10 @@ internal sealed class SourceImportCertification
         using (provider)
         {
             var query = new FeatureServerQueryParams { Where = "1=1" };
-            var count = await client.QueryCountAsync(_serviceName, _layerId, query, Timeout()).ConfigureAwait(false);
-            var ids = await client.QueryIdsAsync(_serviceName, _layerId, query, Timeout()).ConfigureAwait(false);
+            using var countTimeout = Timeout();
+            var count = await client.QueryCountAsync(_serviceName, _layerId, query, countTimeout.Token).ConfigureAwait(false);
+            using var idsTimeout = Timeout();
+            var ids = await client.QueryIdsAsync(_serviceName, _layerId, query, idsTimeout.Token).ConfigureAwait(false);
             if (count != _objectIds.Length)
             {
                 throw new CellFailure($"count = {count}, expected {_objectIds.Length}");
@@ -536,6 +545,7 @@ internal sealed class SourceImportCertification
         using (provider)
         {
             var rowIds = _oracle["rows"]!.AsObject().Select(row => long.Parse(row.Key, CultureInfo.InvariantCulture)).ToArray();
+            using var timeout = Timeout();
             var response = await client.QueryAsync(
                 _serviceName,
                 _layerId,
@@ -546,7 +556,7 @@ internal sealed class SourceImportCertification
                     ReturnGeometry = true,
                     OrderByFields = "objectid",
                 }),
-                Timeout()).ConfigureAwait(false);
+                timeout.Token).ConfigureAwait(false);
             var rows = new Dictionary<long, FeatureServerFeature>();
             foreach (var feature in response.Features ?? [])
             {
@@ -712,7 +722,8 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
-            var page = await client.QueryAsync(_serviceName, _layerId, IdPageQuery(10), Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var page = await client.QueryAsync(_serviceName, _layerId, IdPageQuery(10), timeout.Token).ConfigureAwait(false);
             return page.ExceededTransferLimit && page.Features?.Count == 10
                 ? "a 10-record window over 25 rows reports exceededTransferLimit=true with 10 features"
                 : throw new CellFailure($"exceededTransferLimit={page.ExceededTransferLimit}, features={page.Features?.Count}");
@@ -727,9 +738,10 @@ internal sealed class SourceImportCertification
             var seen = new List<long>();
             var pages = 0;
             Exception? terminal = null;
+            using var timeout = Timeout();
             try
             {
-                await foreach (var page in client.QueryPagesAsync(_serviceName, _layerId, IdPageQuery(10), Timeout()).ConfigureAwait(false))
+                await foreach (var page in client.QueryPagesAsync(_serviceName, _layerId, IdPageQuery(10), timeout.Token).ConfigureAwait(false))
                 {
                     pages++;
                     seen.AddRange(ObjectIdsOf(page));
@@ -766,12 +778,13 @@ internal sealed class SourceImportCertification
         {
             var seen = new List<long>();
             var batches = 0;
+            using var timeout = Timeout();
             await foreach (var batch in client.QueryAllFeaturesByObjectIdBatchesAsync(
                 _serviceName,
                 _layerId,
                 new FeatureServerQueryParams { Where = "1=1", OutFields = "objectid", ReturnGeometry = false },
                 batchSize: 7,
-                Timeout()).ConfigureAwait(false))
+                timeout.Token).ConfigureAwait(false))
             {
                 batches++;
                 if (batch.ExceededTransferLimit)
@@ -798,9 +811,10 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl, useApiKey: false);
         using (provider)
         {
+            using var timeout = Timeout();
             try
             {
-                var count = await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, Timeout()).ConfigureAwait(false);
+                var count = await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, timeout.Token).ConfigureAwait(false);
                 throw new CellFailure($"an unauthenticated query succeeded with count {count}");
             }
             catch (HonuaFeatureServerException exception)
@@ -817,7 +831,8 @@ internal sealed class SourceImportCertification
         var (provider, client, probe) = CreateClient(BaseUrl);
         using (provider)
         {
-            var count = await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, Timeout()).ConfigureAwait(false);
+            using var timeout = Timeout();
+            var count = await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, timeout.Token).ConfigureAwait(false);
             return count == _objectIds.Length
                 ? $"count {count}; {probe.Observations.Last()}"
                 : throw new CellFailure($"count {count}");
@@ -837,8 +852,10 @@ internal sealed class SourceImportCertification
         var (provider, client, probe) = CreateClient(source, credential, useApiKey: false);
         using (provider)
         {
-            var count = await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, Timeout()).ConfigureAwait(false);
-            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var countTimeout = Timeout();
+            var count = await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, countTimeout.Token).ConfigureAwait(false);
+            using var layerTimeout = Timeout();
+            var layer = await client.GetLayerInfoAsync(_serviceName, _layerId, layerTimeout.Token).ConfigureAwait(false);
             if (count != _objectIds.Length || layer.Id != _layerId)
             {
                 throw new CellFailure($"count {count}, layer {layer.Id}");
@@ -862,9 +879,10 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(new Uri(_args.Required("tls-url")), credential, useApiKey: false);
         using (provider)
         {
+            using var timeout = Timeout();
             try
             {
-                await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, Timeout()).ConfigureAwait(false);
+                await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, timeout.Token).ConfigureAwait(false);
                 throw new CellFailure("an invalid token was accepted");
             }
             catch (HonuaFeatureServerException exception) when (exception.GeoServicesErrorCode == 498)
@@ -880,9 +898,10 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(new Uri(_args.Required("basic-url")), credential, useApiKey: false);
         using (provider)
         {
+            using var timeout = Timeout();
             try
             {
-                await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, Timeout()).ConfigureAwait(false);
+                await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, timeout.Token).ConfigureAwait(false);
                 throw new CellFailure("a wrong basic password was accepted");
             }
             catch (HonuaFeatureServerException exception) when (exception.StatusCode == HttpStatusCode.Unauthorized)
@@ -897,9 +916,10 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
+            using var timeout = Timeout();
             try
             {
-                await client.GetLayerInfoAsync(_serviceName, 99, Timeout()).ConfigureAwait(false);
+                await client.GetLayerInfoAsync(_serviceName, 99, timeout.Token).ConfigureAwait(false);
                 throw new CellFailure("a missing layer was returned as success");
             }
             catch (HonuaFeatureServerException exception) when (exception.GeoServicesErrorCode == 404 && exception.Details is { Count: > 0 })
@@ -914,9 +934,10 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
+            using var timeout = Timeout();
             try
             {
-                await client.QueryAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "no_such_column=1" }, Timeout()).ConfigureAwait(false);
+                await client.QueryAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "no_such_column=1" }, timeout.Token).ConfigureAwait(false);
                 throw new CellFailure("an invalid where clause was returned as success");
             }
             catch (HonuaFeatureServerException exception) when (exception.GeoServicesErrorCode == 400)
@@ -931,8 +952,10 @@ internal sealed class SourceImportCertification
         var (provider, client, probe) = CreateClient(BaseUrl);
         using (provider)
         {
-            await client.GetServiceInfoAsync(_serviceName, Timeout()).ConfigureAwait(false);
-            await client.GetLayerInfoAsync(_serviceName, _layerId, Timeout()).ConfigureAwait(false);
+            using var serviceTimeout = Timeout();
+            await client.GetServiceInfoAsync(_serviceName, serviceTimeout.Token).ConfigureAwait(false);
+            using var layerTimeout = Timeout();
+            await client.GetLayerInfoAsync(_serviceName, _layerId, layerTimeout.Token).ConfigureAwait(false);
             return probe.Requests == 2
                 ? $"both requests traversed the injected primary handler: {string.Join(" | ", probe.Observations)}"
                 : throw new CellFailure($"injected handler saw {probe.Requests} request(s)");
@@ -970,11 +993,12 @@ internal sealed class SourceImportCertification
         var (provider, client, _) = CreateClient(BaseUrl);
         using (provider)
         {
+            using var timeout = Timeout();
             using var response = await client.QueryRawAsync(
                 _serviceName,
                 _layerId,
                 new FeatureServerQueryParams { Where = "1=1", OutFields = "*" },
-                Timeout()).ConfigureAwait(false);
+                timeout.Token).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             return !stream.CanSeek
                 ? $"raw query content is a forward-only network stream ({stream.GetType().Name})"
@@ -989,9 +1013,10 @@ internal sealed class SourceImportCertification
             configure: options => options.MaxRetryAttempts = 2);
         using (provider)
         {
+            using var timeout = Timeout();
             try
             {
-                await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, Timeout()).ConfigureAwait(false);
+                await client.QueryCountAsync(_serviceName, _layerId, new FeatureServerQueryParams { Where = "1=1" }, timeout.Token).ConfigureAwait(false);
                 throw new CellFailure("a throttled source returned success");
             }
             catch (HonuaFeatureServerException exception) when (exception.StatusCode == HttpStatusCode.TooManyRequests)
