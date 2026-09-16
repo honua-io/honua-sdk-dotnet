@@ -1,7 +1,9 @@
-﻿// Copyright (c) Honua. All rights reserved.
+// Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Buffers;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.GeoServices.FeatureServer.Exceptions;
 
@@ -41,6 +43,70 @@ internal static class GeoServicesHttp
     }
 
     internal static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+
+    /// <summary>
+    /// Reads a response body as a string without buffering more than <paramref name="maxBytes"/> bytes.
+    /// A declared <c>Content-Length</c> over the ceiling is refused before the body is read; a body that
+    /// streams past it is abandoned at the first chunk that would cross it. Mirrors honua-server's
+    /// <c>MigrationHttpContentReader.ReadStringWithLimitAsync</c>, including charset and BOM handling.
+    /// </summary>
+    internal static async Task<string> ReadStringWithLimitAsync(
+        HttpResponseMessage response, long maxBytes, CancellationToken cancellationToken)
+    {
+        if (response.Content.Headers.ContentLength is { } declared && declared > maxBytes)
+        {
+            throw new HonuaFeatureServerResponseTooLargeException(
+                response.StatusCode, response.RequestMessage?.RequestUri, maxBytes, declared);
+        }
+
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using (stream.ConfigureAwait(false))
+        {
+            using var buffered = new MemoryStream();
+            var buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
+            try
+            {
+                int read;
+                while ((read = await stream.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false)) > 0)
+                {
+                    if (buffered.Length + read > maxBytes)
+                    {
+                        throw new HonuaFeatureServerResponseTooLargeException(
+                            response.StatusCode, response.RequestMessage?.RequestUri, maxBytes, declaredContentLength: null);
+                    }
+
+                    await buffered.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+
+            return DecodeString(buffered, response.Content.Headers.ContentType?.CharSet);
+        }
+    }
+
+    private static string DecodeString(MemoryStream buffered, string? charSet)
+    {
+        var encoding = Encoding.UTF8;
+        if (!string.IsNullOrWhiteSpace(charSet))
+        {
+            try
+            {
+                encoding = Encoding.GetEncoding(charSet.Trim('"'));
+            }
+            catch (ArgumentException)
+            {
+                // Unknown charset advertised by the source; fall back to UTF-8.
+            }
+        }
+
+        var text = encoding.GetString(buffered.GetBuffer(), 0, (int)buffered.Length);
+
+        // Strip a byte-order mark, matching HttpContent.ReadAsStringAsync semantics.
+        return text.Length > 0 && text[0] == '\uFEFF' ? text[1..] : text;
+    }
 
     internal static void EnsureSuccess(HttpResponseMessage response, string body)
     {

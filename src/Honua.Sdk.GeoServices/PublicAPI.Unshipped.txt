@@ -71,3 +71,61 @@ override Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.ToString() -
 override Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.FailureReceipt.get -> Honua.Sdk.Abstractions.HonuaFailureReceipt?
 static Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.operator !=(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? left, Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? right) -> bool
 static Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.operator ==(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? left, Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential? right) -> bool
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.RootAddress.get -> System.Uri!
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.RootAddress.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ServiceId.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ServiceId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ServicesPath.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ServicesPath.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ServiceType.get -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ServiceType.init -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ToClientOptions(long maxResponseBytes = 67108864) -> Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions!
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType.FeatureServer = 0 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType.MapServer = 1 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.DeclaredContentLength.get -> long?
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.HonuaFeatureServerResponseTooLargeException() -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.HonuaFeatureServerResponseTooLargeException(string! message) -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.HonuaFeatureServerResponseTooLargeException(string! message, System.Exception! innerException) -> void
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.MaxResponseBytes.get -> long
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.RequestUri.get -> System.Uri?
+Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.StatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.HonuaFeatureServerClient(System.Net.Http.HttpClient! httpClient, Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions! options) -> void
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryAttachmentsAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<long>! objectIds, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroupsResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.HonuaFeatureServerClientOptions() -> void
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.MaxResponseBytes.get -> long
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.MaxResponseBytes.set -> void
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.RootAddress.get -> System.Uri?
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.RootAddress.set -> void
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.ServicesPath.get -> string!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.ServicesPath.set -> void
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.ServiceType.get -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceType
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.ServiceType.set -> void
+Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAttachmentsAsync(string! serviceId, int layerId, System.Collections.Generic.IReadOnlyList<long>! objectIds, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroupsResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.AttachmentInfos.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentInfo!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.AttachmentInfos.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.FeatureServerAttachmentGroup() -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.ParentGlobalId.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.ParentGlobalId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.ParentObjectId.get -> long
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup.ParentObjectId.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroupsResponse
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroupsResponse.AttachmentGroups.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroup!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroupsResponse.AttachmentGroups.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerAttachmentGroupsResponse.FeatureServerAttachmentGroupsResponse() -> void
+const Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClientOptions.DefaultMaxResponseBytes = 67108864 -> long
+override Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.Equals(object? obj) -> bool
+override Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.GetHashCode() -> int
+override Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ToString() -> string!
+override Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerResponseTooLargeException.HttpStatus.get -> int?
+static Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.operator !=(Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? left, Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.operator ==(Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? left, Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? right) -> bool
+static Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.Parse(System.Uri! serviceRootUrl) -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot!
+static Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.TryParse(System.Uri? serviceRootUrl, out Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? root) -> bool
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot!
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ArcGisServiceRoot() -> void
+Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.Equals(Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? other) -> bool

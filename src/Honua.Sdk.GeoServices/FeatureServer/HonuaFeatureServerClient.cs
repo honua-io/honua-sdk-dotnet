@@ -65,15 +65,47 @@ public sealed class HonuaFeatureServerClient :
     };
 
     private readonly HttpClient _http;
+    private readonly Uri? _rootAddress;
+    private readonly string _servicesPath;
+    private readonly string _serviceTypeSegment;
+    private readonly long _maxResponseBytes;
     private readonly ConcurrentDictionary<(string ServiceId, int LayerId), string> _objectIdFieldCache = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HonuaFeatureServerClient"/> class.
+    /// Initializes a new instance of the <see cref="HonuaFeatureServerClient"/> class that addresses
+    /// <c>{BaseAddress}/rest/services/{serviceId}/FeatureServer</c> with the default response size ceiling.
     /// </summary>
     /// <param name="httpClient">The HTTP client configured with base address and auth handlers.</param>
     public HonuaFeatureServerClient(HttpClient httpClient)
+        : this(httpClient, new HonuaFeatureServerClientOptions())
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaFeatureServerClient"/> class that addresses an
+    /// arbitrary ArcGIS service root: any path prefix, foldered service ids, and FeatureServer or MapServer.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client configured with auth handlers and, unless <see cref="HonuaFeatureServerClientOptions.RootAddress"/> is set, a base address.</param>
+    /// <param name="options">Addressing and response-size options. Values are captured at construction.</param>
+    public HonuaFeatureServerClient(HttpClient httpClient, HonuaFeatureServerClientOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.MaxResponseBytes, 0L, nameof(options));
+        if (options.RootAddress is { IsAbsoluteUri: false })
+        {
+            throw new ArgumentException("HonuaFeatureServerClientOptions.RootAddress must be an absolute URI.", nameof(options));
+        }
+
+        if (!Enum.IsDefined(options.ServiceType))
+        {
+            throw new ArgumentException($"Unsupported ArcGIS service type '{options.ServiceType}'.", nameof(options));
+        }
+
         _http = httpClient;
+        _rootAddress = options.RootAddress;
+        _servicesPath = (options.ServicesPath ?? string.Empty).Trim('/');
+        _serviceTypeSegment = options.ServiceType.ToString();
+        _maxResponseBytes = options.MaxResponseBytes;
     }
 
     /// <inheritdoc />
@@ -88,8 +120,29 @@ public sealed class HonuaFeatureServerClient :
     /// <inheritdoc />
     public FeatureQueryCapabilities QueryCapabilities => ProviderQueryCapabilities;
 
-    private static string ServicePath(string serviceId) =>
-        $"/rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer";
+    /// <summary>
+    /// Builds the service path relative to the root. Each folder segment of the service id is escaped on
+    /// its own, so <c>Utilities/Water</c> stays two path segments rather than <c>Utilities%2FWater</c>.
+    /// </summary>
+    private string ServicePath(string serviceId)
+    {
+        var segments = serviceId.Split('/');
+        if (!AreValidServiceIdSegments(segments))
+        {
+            throw new ArgumentException(
+                "A service id must be one or more non-empty folder/name segments without '.' or '..'.",
+                nameof(serviceId));
+        }
+
+        var escapedServiceId = string.Join('/', segments.Select(Uri.EscapeDataString));
+        return _servicesPath.Length == 0
+            ? $"{escapedServiceId}/{_serviceTypeSegment}"
+            : $"{_servicesPath}/{escapedServiceId}/{_serviceTypeSegment}";
+    }
+
+    internal static bool AreValidServiceIdSegments(IReadOnlyList<string> segments) =>
+        segments.Count > 0 &&
+        segments.All(segment => !string.IsNullOrWhiteSpace(segment) && segment is not "." and not "..");
 
     /// <inheritdoc />
     public async Task<FeatureServerServiceInfo> GetServiceInfoAsync(string serviceId, CancellationToken cancellationToken = default)
@@ -307,6 +360,36 @@ public sealed class HonuaFeatureServerClient :
     }
 
     /// <inheritdoc />
+    public async Task<FeatureServerAttachmentGroupsResponse> QueryAttachmentsAsync(
+        string serviceId,
+        int layerId,
+        IReadOnlyList<long> objectIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceId);
+        ArgumentNullException.ThrowIfNull(objectIds);
+        if (objectIds.Count == 0)
+        {
+            return new FeatureServerAttachmentGroupsResponse();
+        }
+
+        var parameters = new List<(string Key, string? Value)>
+        {
+            ("objectIds", string.Join(',', objectIds.Select(id => id.ToString(CultureInfo.InvariantCulture)))),
+            ("returnUrl", "false"),
+            ("f", "json"),
+        };
+        var basePath = $"{ServicePath(serviceId)}/{layerId}/queryAttachments";
+        var url = basePath + BuildQueryString(parameters);
+        var body = url.Length > PostFallbackThreshold
+            ? await PostFormAsync(basePath, parameters, cancellationToken).ConfigureAwait(false)
+            : await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
+
+        return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentGroupsResponse)
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize queryAttachments response.", body);
+    }
+
+    /// <inheritdoc />
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
@@ -324,9 +407,9 @@ public sealed class HonuaFeatureServerClient :
             // Read the body and run the status check while the response is still alive,
             // then dispose. GeoServicesHttp.EnsureSuccess reads response.StatusCode, so it must run before
             // Dispose to remain correct under refactoring.
-            var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             try
             {
+                var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
                 GeoServicesHttp.EnsureSuccess(response, body);
             }
             finally
@@ -644,14 +727,14 @@ public sealed class HonuaFeatureServerClient :
     /// non-success status the (small) error body is read and routed through <see cref="GeoServicesHttp.EnsureSuccess"/>
     /// so callers still observe the normal <see cref="HonuaFeatureServerException"/>.
     /// </summary>
-    private static async Task EnsureSuccessStreamingAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private async Task EnsureSuccessStreamingAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)
         {
             return;
         }
 
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
         GeoServicesHttp.EnsureSuccess(response, body);
     }
 
@@ -659,8 +742,9 @@ public sealed class HonuaFeatureServerClient :
 
     private async Task<string> GetStringAsync(string url, CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        // ResponseHeadersRead: HttpClient must not buffer the body before the bounded read below.
+        using var response = await _http.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
         GeoServicesHttp.EnsureSuccess(response, body);
         return body;
     }
@@ -686,8 +770,9 @@ public sealed class HonuaFeatureServerClient :
         using var content = new FormUrlEncodedContent(
             parameters.Where(p => p.Value is not null).Select(p => new KeyValuePair<string, string>(p.Key, p.Value!)));
 
-        using var response = await _http.PostAsync(CreateRequestUri(path), content, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        using var request = new HttpRequestMessage(HttpMethod.Post, CreateRequestUri(path)) { Content = content };
+        using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
         GeoServicesHttp.EnsureSuccess(response, body);
         return body;
     }
@@ -727,8 +812,9 @@ public sealed class HonuaFeatureServerClient :
         attachment.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
         form.Add(attachment, "attachment", name);
 
-        using var response = await _http.PostAsync(CreateRequestUri(path), form, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        using var request = new HttpRequestMessage(HttpMethod.Post, CreateRequestUri(path)) { Content = form };
+        using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
         GeoServicesHttp.EnsureSuccess(response, body);
         return JsonSerializer.Deserialize(body, FeatureServerJsonContext.Default.FeatureServerAttachmentEditResponse)
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize attachment edit response.", body);
@@ -1358,7 +1444,22 @@ public sealed class HonuaFeatureServerClient :
         };
     }
 
-    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+    /// <summary>
+    /// Resolves a service-relative path under <see cref="HonuaFeatureServerClientOptions.RootAddress"/> or the
+    /// HTTP client's base address, keeping any path prefix (for example <c>/Org123/arcgis/</c>) even when the
+    /// configured address omits its trailing slash.
+    /// </summary>
+    private Uri CreateRequestUri(string relativeUrl)
+    {
+        var root = _rootAddress ?? _http.BaseAddress;
+        if (root is null)
+        {
+            return new Uri("/" + relativeUrl, UriKind.Relative);
+        }
+
+        var rootText = root.GetLeftPart(UriPartial.Path);
+        return new Uri(new Uri(rootText.EndsWith('/') ? rootText : rootText + "/", UriKind.Absolute), relativeUrl);
+    }
 
     private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
     {
