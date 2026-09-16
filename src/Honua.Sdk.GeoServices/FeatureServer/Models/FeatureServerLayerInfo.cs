@@ -100,6 +100,26 @@ public sealed class FeatureServerLayerInfo
     [JsonPropertyName("relationships")]
     public JsonElement? Relationships { get; init; }
 
+    /// <summary>The minimum (most zoomed-out) display scale; 0 means no limit.</summary>
+    [JsonPropertyName("minScale")]
+    public double? MinScale { get; init; }
+
+    /// <summary>The maximum (most zoomed-in) display scale; 0 means no limit.</summary>
+    [JsonPropertyName("maxScale")]
+    public double? MaxScale { get; init; }
+
+    /// <summary>The field that holds the subtype code of a subtype-enabled layer.</summary>
+    [JsonPropertyName("subtypeField")]
+    public string? SubtypeField { get; init; }
+
+    /// <summary>The provider-native default subtype code, preserved verbatim.</summary>
+    [JsonPropertyName("defaultSubtypeCode")]
+    public JsonElement? DefaultSubtypeCode { get; init; }
+
+    /// <summary>The provider-native attribute rules (calculation, constraint and validation).</summary>
+    [JsonPropertyName("attributeRules")]
+    public JsonElement? AttributeRules { get; init; }
+
     /// <summary>The field that holds the subtype/type code.</summary>
     [JsonPropertyName("typeIdField")]
     public string? TypeIdField { get; init; }

@@ -21,6 +21,7 @@ public sealed class ArcGisSourcePreservationTests
         {
           "currentVersion": 11.3,
           "serviceDescription": "Parcels",
+          "description": "County parcel fabric",
           "maxRecordCount": 2000,
           "capabilities": "Query",
           "units": "esriMeters",
@@ -42,6 +43,11 @@ public sealed class ArcGisSourcePreservationTests
           "objectIdField": "OBJECTID",
           "globalIdField": "PARCEL_GUID",
           "displayField": "NAME",
+          "minScale": 250000,
+          "maxScale": 0,
+          "subtypeField": "ZONE",
+          "defaultSubtypeCode": 1,
+          "attributeRules": [ { "name": "AreaCalc", "type": "esriARTCalculation", "fieldName": "AREA", "scriptExpression": "Area($feature)", "triggeringEvents": [ "esriARTEInsert" ] } ],
           "typeIdField": "ZONE",
           "types": [ { "id": 1, "name": "Residential", "domains": {}, "templates": [] } ],
           "subtypes": [ { "code": 1, "name": "Residential", "defaultValues": { "ZONE": 1 }, "domains": {} } ],
@@ -102,7 +108,8 @@ public sealed class ArcGisSourcePreservationTests
         Assert.Equal("Table", table.AdditionalProperties!["type"].GetString());
         Assert.Equal("esriGeometryPolygon", service.Layers![0].AdditionalProperties!["geometryType"].GetString());
         Assert.Equal("esriMeters", service.AdditionalProperties!["units"].GetString());
-        Assert.Equal("11.3", service.AdditionalProperties["currentVersion"].GetRawText());
+        Assert.Equal("11.3", service.CurrentVersion!.Value.GetRawText());
+        Assert.Equal("County parcel fabric", service.Description);
         AssertEverySourceMemberPreserved(ServiceJson, service);
     }
 
@@ -119,6 +126,11 @@ public sealed class ArcGisSourcePreservationTests
         Assert.False(layer.SupportsPagination);
         Assert.False(layer.AdvancedQueryCapabilities!.Value.GetProperty("supportsPagination").GetBoolean());
         Assert.Equal("ZONE", layer.TypeIdField);
+        Assert.Equal(250000d, layer.MinScale);
+        Assert.Equal(0d, layer.MaxScale);
+        Assert.Equal("ZONE", layer.SubtypeField);
+        Assert.Equal(1, layer.DefaultSubtypeCode!.Value.GetInt32());
+        Assert.Equal("Area($feature)", layer.AttributeRules!.Value[0].GetProperty("scriptExpression").GetString());
         Assert.Equal("Residential", layer.Types!.Value[0].GetProperty("name").GetString());
         Assert.Equal(1, layer.Subtypes!.Value[0].GetProperty("defaultValues").GetProperty("ZONE").GetInt32());
         Assert.Equal("PARCEL_GUID", layer.Relationships!.Value[0].GetProperty("keyField").GetString());
@@ -134,6 +146,20 @@ public sealed class ArcGisSourcePreservationTests
         Assert.Equal("NAME", layer.AdditionalProperties!["displayField"].GetString());
         Assert.Equal("""[ 1, 2.5, "three", null ]""", layer.AdditionalProperties["x-vendorExtension"].GetProperty("k").GetRawText());
         AssertEverySourceMemberPreserved(LayerJson, layer);
+    }
+
+    [Fact]
+    public async Task QueryAsync_TrueCurveGeometry_IsPreservedVerbatimAndNeverCoercedToLinearGeometry()
+    {
+        const string curveGeometry = """{ "hasZ": false, "curvePaths": [ [ [ 0, 0 ], { "c": [ [ 10, 0 ], [ 5, 5 ] ] }, { "a": [ [ 20, 0 ], [ 15, 0 ], 0, 1 ] } ] ], "spatialReference": { "wkid": 3857 } }""";
+        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(TestHelpers.CreateRawJsonResponse(
+            $$"""{ "features": [ { "attributes": { "OBJECTID": 1 }, "geometry": {{curveGeometry}} } ] }""")));
+
+        var response = await client.QueryAsync("Parcels", 0, new FeatureServerQueryParams { OutFields = "*" });
+
+        var geometry = Assert.Single(response.Features!).Geometry!.Value;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(curveGeometry), JsonNode.Parse(geometry.GetRawText())));
+        Assert.Throws<JsonException>(() => Honua.Sdk.Geometry.GeoServicesGeometryConverter.ReadGeometry(geometry));
     }
 
     [Fact]
