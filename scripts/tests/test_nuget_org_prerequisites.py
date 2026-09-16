@@ -128,8 +128,11 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertLess(preflight, nuget_push)
         self.assertLess(preflight, github_push)
         self.assertIn("check-package-coordinates.py", workflow[preflight:nuget_push])
-        self.assertNotIn("--skip-duplicate", workflow[nuget_push:nuget_verify])
-        self.assertNotIn("--skip-duplicate", workflow[github_push:])
+        # --skip-duplicate makes a `dotnet nuget push` rerun-safe after a red
+        # verify step; it does not weaken verification, since the coordinate
+        # proof steps still fail closed on absent/divergent content.
+        self.assertIn("--skip-duplicate", workflow[nuget_push:nuget_verify])
+        self.assertIn("--skip-duplicate", workflow[github_push:])
 
     def test_non_dry_publish_requires_staging_and_trunk_bound_tag(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -169,7 +172,7 @@ class PublishWorkflowContractTests(unittest.TestCase):
         stable_condition = "if: ${{ !contains(needs.release-smoke.outputs.package-version, '-') }}"
         self.assertEqual(2, login_block.count(stable_condition))
 
-    def test_symbol_coordinates_are_preflighted_and_proven_without_duplicate_acceptance(self) -> None:
+    def test_symbol_coordinates_are_preflighted_and_proven_and_rerun_safe(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         preflight = workflow.index("- name: Preflight every immutable registry coordinate")
         symbol_push = workflow.index("- name: Submit portable symbol packages to nuget.org")
@@ -181,7 +184,7 @@ class PublishWorkflowContractTests(unittest.TestCase):
         self.assertIn("--symbol-package-base-address", workflow[preflight:symbol_push])
         self.assertIn("--symbol-publish-list-out", workflow[preflight:symbol_push])
         self.assertIn("--require-present", workflow[symbol_proof:github_push])
-        self.assertNotIn("--skip-duplicate", workflow)
+        self.assertIn("--skip-duplicate", workflow[symbol_push:symbol_proof])
 
     def test_registry_evidence_survives_partial_publication_failure(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
