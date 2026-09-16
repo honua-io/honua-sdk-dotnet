@@ -18,6 +18,7 @@ package, whose SHA-512 must equal the nuget.org catalog `packageHash`.
 | `consumer/` | Installed-package consumer; isolated from the repository build and package sources. |
 | `run.sh` | Boots the digest-pinned candidate, publishes the fixture, runs the consumer and the negative control. |
 | `evidence/<pin>/<package>/` | Receipts, logs and source wire captures from a run. |
+| `source-inventory.md` | Every importer source operation and wire field mapped to the SDK API and the cell that proves it. |
 
 ## What a run does
 
@@ -62,10 +63,14 @@ reported as `released`, never as `pass`.
 
 ```bash
 WORK_DIR=/path/on/real/disk/cert341 \
-OUT_DIR=certification/geoservices-source-import/evidence/548b7a5/published-1.7.0 \
-SDK_PACKAGE_VERSION=1.7.0 \
+OUT_DIR=certification/geoservices-source-import/evidence/2cc2213/published-1.8.0 \
+SDK_PACKAGE_VERSION=1.8.0 \
 certification/geoservices-source-import/run.sh
 ```
+
+The defaults are the published 1.8.0 package and the imaged trunk nightly
+`nightly-2cc2213` (`sha256:61e06ef3…`). Set `SERVER_IMAGE` and
+`SERVER_SOURCE_SHA` to certify against a newer nightly.
 
 Requirements are Docker, the .NET 10 SDK, `jq`, `openssl` and network access to
 ghcr.io and nuget.org. `WORK_DIR` must be on a disk Docker can bind-mount.
@@ -75,3 +80,13 @@ folder and set `LOCAL_PACKAGE_DIR` together with the packed
 `SDK_PACKAGE_VERSION`. That run restores the local packages instead of
 nuget.org, and its receipt records the local source. It is **not** a
 published-bytes receipt and cannot close #341.
+
+## Results
+
+| Evidence | Package bytes | Server | pass / fail / released |
+| --- | --- | --- | --- |
+| `evidence/548b7a5/published-1.7.0` | nuget.org 1.7.0 | `548b7a5` (`sha256:29974ee7…`) | 29 / 10 / 3 |
+| `evidence/548b7a5/unpublished-1.7.1-cert341` | local pack of #372 (not published) | `548b7a5` | 39 / 0 / 3 |
+| `evidence/2cc2213/published-1.8.0` | nuget.org 1.8.0, nupkg SHA-512 `m5wSCMoU…pkaQw==`, assembly SHA-256 `b276ee31…` | `nightly-2cc2213` (`sha256:61e06ef3…`, dbSchema 120) | **39 / 0 / 3** |
+
+The negative control failed `data.int64-precision` in every run, as required.
