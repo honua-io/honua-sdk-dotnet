@@ -445,6 +445,86 @@ def resolve_package_base_address(
     return candidates[0]
 
 
+def resolve_registration_base_address(
+    service_index: str,
+    *,
+    headers: dict[str, str],
+) -> str:
+    try:
+        response_bytes = _request_bytes(
+            service_index,
+            headers=headers,
+            timeout=60,
+            limit=5 * 1024 * 1024,
+            missing_is_none=False,
+        )
+        assert response_bytes is not None
+        payload = json.loads(response_bytes)
+    except (CoordinateError, json.JSONDecodeError) as exc:
+        raise CoordinateError(f"registry service index is unreadable: {exc}") from exc
+    resources = payload.get("resources") if isinstance(payload, dict) else None
+    if not isinstance(resources, list):
+        raise CoordinateError("registry service index has no resources array")
+    candidates: list[str] = []
+    for resource in resources:
+        if not isinstance(resource, dict):
+            continue
+        resource_type = resource.get("@type")
+        types = resource_type if isinstance(resource_type, list) else [resource_type]
+        # The bare, unversioned "RegistrationsBaseUrl" type is the uncompressed
+        # SemVer1 resource every NuGet v3 index publishes; versioned/gz-semver2
+        # variants point at the same underlying, independently-propagated blob
+        # store, so this one resource is a sufficient presence proxy.
+        if any(value == "RegistrationsBaseUrl" for value in types):
+            resource_id = resource.get("@id")
+            if isinstance(resource_id, str) and resource_id.startswith("https://"):
+                candidates.append(resource_id.rstrip("/") + "/")
+    if len(candidates) != 1:
+        raise CoordinateError(
+            f"expected exactly one HTTPS RegistrationsBaseUrl resource, found {len(candidates)}"
+        )
+    return candidates[0]
+
+
+def registration_leaf_url(registration_base: str, package_id: str, version: str) -> str:
+    safe_id = urllib.parse.quote(package_id.lower(), safe=".-_")
+    safe_version = urllib.parse.quote(version.lower(), safe=".-_")
+    return f"{registration_base}{safe_id}/{safe_version}.json"
+
+
+def evaluate_registration_index(
+    *,
+    registration_base: str,
+    package_version: str,
+    local_packages: dict[str, tuple[Path, PackageArchive]],
+    fetch_leaf: Callable[[str], bytes | None],
+) -> tuple[dict[str, Any], list[str]]:
+    failures: list[str] = []
+    present_by_id: dict[str, bool] = {}
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=min(4, max(1, len(local_packages)))
+    ) as executor:
+        futures = {
+            folded_id: executor.submit(
+                fetch_leaf,
+                registration_leaf_url(registration_base, package.package_id, package_version),
+            )
+            for folded_id, (_, package) in local_packages.items()
+        }
+        for folded_id, future in futures.items():
+            present_by_id[folded_id] = future.result() is not None
+    for folded_id in sorted(local_packages):
+        _, local = local_packages[folded_id]
+        if not present_by_id[folded_id]:
+            failures.append(f"{local.package_id} {package_version} is absent from the registration index")
+    summary = {
+        "total": len(present_by_id),
+        "absent": sum(not present for present in present_by_id.values()),
+        "present": sum(present for present in present_by_id.values()),
+    }
+    return summary, failures
+
+
 def package_download_url(package_base: str, package_id: str, version: str) -> str:
     safe_id = urllib.parse.quote(package_id.lower(), safe=".-_")
     safe_version = urllib.parse.quote(version.lower(), safe=".-_")
@@ -665,6 +745,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--publish-list-out", type=Path)
     parser.add_argument("--symbol-publish-list-out", type=Path)
     parser.add_argument("--require-present", action="store_true")
+    parser.add_argument(
+        "--verify-registration-index",
+        action="store_true",
+        help=(
+            "Also require every package id/version to resolve on the registry's "
+            "RegistrationsBaseUrl before passing; the flat container and the "
+            "registration index are independently-propagated blob stores, so a "
+            "restore that resolves the dependency graph via the registration "
+            "index can 404 after the flat container already reports present."
+        ),
+    )
     parser.add_argument("--attempts", type=int, default=1)
     parser.add_argument("--delay-seconds", type=float, default=0)
     args = parser.parse_args(argv)
@@ -690,6 +781,11 @@ def main(argv: list[str] | None = None) -> int:
     try:
         headers = registry_headers(args.username, token)
         package_base = resolve_package_base_address(args.service_index, headers=headers)
+        registration_base = (
+            resolve_registration_base_address(args.service_index, headers=headers)
+            if args.verify_registration_index
+            else None
+        )
         inventory = read_inventory(args.inventory)
         local = load_local_packages(
             args.package_dir,
@@ -742,6 +838,17 @@ def main(argv: list[str] | None = None) -> int:
                 result["status"] = "fail" if result["failures"] else "pass"
             else:
                 result["symbolPackages"] = local_symbol_evidence(symbols)
+            if registration_base is not None:
+                registration_summary, registration_failures = evaluate_registration_index(
+                    registration_base=registration_base,
+                    package_version=args.package_version,
+                    local_packages=local,
+                    fetch_leaf=lambda url: fetch_registry_package(url, headers=headers),
+                )
+                result["registrationBaseAddress"] = registration_base
+                result["failures"].extend(registration_failures)
+                result["summary"]["registrationIndex"] = registration_summary
+                result["status"] = "fail" if result["failures"] else "pass"
             if result["status"] == "pass":
                 break
             if any(row["state"] == "divergent" for row in result["packages"]) or any(

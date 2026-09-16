@@ -277,6 +277,210 @@ class CoordinateEvaluationTests(unittest.TestCase):
             MODULE.load_local_packages(package_dir, ["Honua.Sdk"], "1.6.1", "b" * 40)
 
 
+class RegistrationIndexTests(unittest.TestCase):
+    SERVICE_INDEX = {
+        "resources": [
+            {"@type": "RegistrationsBaseUrl", "@id": "https://api.nuget.org/v3/registration5-semver1/"},
+            {
+                "@type": "RegistrationsBaseUrl/3.4.0",
+                "@id": "https://api.nuget.org/v3/registration5-gz-semver1/",
+            },
+            {
+                "@type": "RegistrationsBaseUrl/3.6.0",
+                "@id": "https://api.nuget.org/v3/registration5-gz-semver2/",
+            },
+            {"@type": "PackageBaseAddress/3.0.0", "@id": "https://api.nuget.org/v3-flatcontainer/"},
+        ]
+    }
+
+    @mock.patch.object(MODULE, "_request_bytes")
+    def test_registration_base_address_selects_only_the_bare_type(self, request_bytes) -> None:
+        request_bytes.return_value = json.dumps(self.SERVICE_INDEX).encode("utf-8")
+        base = MODULE.resolve_registration_base_address(
+            "https://example.invalid/index.json", headers={}
+        )
+        self.assertEqual("https://api.nuget.org/v3/registration5-semver1/", base)
+
+    @mock.patch.object(MODULE, "_request_bytes")
+    def test_registration_base_address_fails_closed_when_type_is_missing(self, request_bytes) -> None:
+        request_bytes.return_value = json.dumps({"resources": []}).encode("utf-8")
+        with self.assertRaises(MODULE.CoordinateError):
+            MODULE.resolve_registration_base_address(
+                "https://example.invalid/index.json", headers={}
+            )
+
+    def test_registration_leaf_url_lowercases_id_and_version(self) -> None:
+        self.assertEqual(
+            "https://api.nuget.org/v3/registration5-semver1/honua.sdk/1.6.1.json",
+            MODULE.registration_leaf_url(
+                "https://api.nuget.org/v3/registration5-semver1/",
+                "Honua.Sdk",
+                "1.6.1",
+            ),
+        )
+
+    def local(self) -> tuple[tempfile.TemporaryDirectory[str], dict]:
+        directory = tempfile.TemporaryDirectory()
+        path = Path(directory.name, "Honua.Sdk.1.6.1.nupkg")
+        path.write_bytes(package_bytes())
+        package = MODULE.inspect_package_file(path)
+        return directory, {"honua.sdk": (path, package)}
+
+    def test_evaluate_registration_index_reports_absent_packages(self) -> None:
+        directory, local = self.local()
+        self.addCleanup(directory.cleanup)
+        summary, failures = MODULE.evaluate_registration_index(
+            registration_base="https://example.invalid/registration/",
+            package_version="1.6.1",
+            local_packages=local,
+            fetch_leaf=lambda _: None,
+        )
+        self.assertEqual({"total": 1, "absent": 1, "present": 0}, summary)
+        self.assertEqual(["Honua.Sdk 1.6.1 is absent from the registration index"], failures)
+
+    def test_evaluate_registration_index_passes_when_leaf_is_present(self) -> None:
+        directory, local = self.local()
+        self.addCleanup(directory.cleanup)
+        summary, failures = MODULE.evaluate_registration_index(
+            registration_base="https://example.invalid/registration/",
+            package_version="1.6.1",
+            local_packages=local,
+            fetch_leaf=lambda _: b"{}",
+        )
+        self.assertEqual({"total": 1, "absent": 0, "present": 1}, summary)
+        self.assertEqual([], failures)
+
+    def test_cli_retries_until_registration_index_catches_up_with_flat_container(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        package_dir = root / "packages"
+        package_dir.mkdir()
+        (package_dir / "Honua.Sdk.1.6.1.nupkg").write_bytes(package_bytes())
+        (package_dir / "Honua.Sdk.1.6.1.snupkg").write_bytes(symbol_package_bytes())
+        inventory = root / "inventory.txt"
+        inventory.write_text("src/Honua.Sdk.csproj|Honua.Sdk\n", encoding="utf-8")
+        evidence = root / "evidence.json"
+
+        # The flat container reports the package present on the first attempt;
+        # the registration index only catches up on the second, mirroring the
+        # nuget.org propagation lag from honua-sdk-dotnet#377.
+        registration_leaf_results = iter([None, b"{}"])
+
+        def fake_fetch(url: str, *, headers: dict[str, str]) -> bytes | None:
+            if "registration" in url:
+                return next(registration_leaf_results)
+            return package_bytes()
+
+        with (
+            mock.patch.object(
+                MODULE,
+                "resolve_package_base_address",
+                return_value="https://example.invalid/flat/",
+            ),
+            mock.patch.object(
+                MODULE,
+                "resolve_registration_base_address",
+                return_value="https://example.invalid/registration/",
+            ),
+            mock.patch.object(MODULE, "fetch_registry_package", side_effect=fake_fetch),
+            mock.patch.object(MODULE.time, "sleep"),
+        ):
+            result = MODULE.main(
+                [
+                    "--registry-name",
+                    "nuget.org",
+                    "--service-index",
+                    "https://example.invalid/index.json",
+                    "--package-dir",
+                    str(package_dir),
+                    "--inventory",
+                    str(inventory),
+                    "--package-version",
+                    "1.6.1",
+                    "--source-revision",
+                    SOURCE_SHA,
+                    "--evidence-out",
+                    str(evidence),
+                    "--require-present",
+                    "--verify-registration-index",
+                    "--attempts",
+                    "2",
+                    "--delay-seconds",
+                    "0",
+                ]
+            )
+
+        self.assertEqual(0, result)
+        receipt = json.loads(evidence.read_text(encoding="utf-8"))
+        self.assertEqual("pass", receipt["status"])
+        self.assertEqual(2, receipt["attempt"])
+        self.assertEqual({"total": 1, "absent": 0, "present": 1}, receipt["summary"]["registrationIndex"])
+
+    def test_cli_fails_when_registration_index_never_catches_up(self) -> None:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        package_dir = root / "packages"
+        package_dir.mkdir()
+        (package_dir / "Honua.Sdk.1.6.1.nupkg").write_bytes(package_bytes())
+        (package_dir / "Honua.Sdk.1.6.1.snupkg").write_bytes(symbol_package_bytes())
+        inventory = root / "inventory.txt"
+        inventory.write_text("src/Honua.Sdk.csproj|Honua.Sdk\n", encoding="utf-8")
+        evidence = root / "evidence.json"
+
+        def fake_fetch(url: str, *, headers: dict[str, str]) -> bytes | None:
+            if "registration" in url:
+                return None
+            return package_bytes()
+
+        with (
+            mock.patch.object(
+                MODULE,
+                "resolve_package_base_address",
+                return_value="https://example.invalid/flat/",
+            ),
+            mock.patch.object(
+                MODULE,
+                "resolve_registration_base_address",
+                return_value="https://example.invalid/registration/",
+            ),
+            mock.patch.object(MODULE, "fetch_registry_package", side_effect=fake_fetch),
+            mock.patch.object(MODULE.time, "sleep"),
+        ):
+            result = MODULE.main(
+                [
+                    "--registry-name",
+                    "nuget.org",
+                    "--service-index",
+                    "https://example.invalid/index.json",
+                    "--package-dir",
+                    str(package_dir),
+                    "--inventory",
+                    str(inventory),
+                    "--package-version",
+                    "1.6.1",
+                    "--source-revision",
+                    SOURCE_SHA,
+                    "--evidence-out",
+                    str(evidence),
+                    "--require-present",
+                    "--verify-registration-index",
+                    "--attempts",
+                    "2",
+                    "--delay-seconds",
+                    "0",
+                ]
+            )
+
+        self.assertEqual(1, result)
+        receipt = json.loads(evidence.read_text(encoding="utf-8"))
+        self.assertEqual("fail", receipt["status"])
+        self.assertIn(
+            "Honua.Sdk 1.6.1 is absent from the registration index", receipt["failures"]
+        )
+
+
 class SymbolCoordinateEvaluationTests(unittest.TestCase):
     def local(self) -> tuple[tempfile.TemporaryDirectory[str], dict]:
         directory = tempfile.TemporaryDirectory()
