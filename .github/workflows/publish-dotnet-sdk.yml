@@ -802,7 +802,8 @@ jobs:
             dotnet nuget push "${package_file}" \
               --source "https://api.nuget.org/v3/index.json" \
               --api-key "${NUGET_API_KEY}" \
-              --no-symbols
+              --no-symbols \
+              --skip-duplicate
           done < coordinate-evidence/nuget-org-publish-list.txt
 
       - name: Verify stable packages from nuget.org
@@ -821,6 +822,7 @@ jobs:
             --source-revision "${GITHUB_SHA}" \
             --evidence-out coordinate-evidence/nuget-org-public-proof.json \
             --require-present \
+            --verify-registration-index \
             --attempts 30 \
             --delay-seconds 30
 
@@ -868,7 +870,8 @@ jobs:
             [[ -n "${symbol_package}" ]] || continue
             dotnet nuget push "${symbol_package}" \
               --source "https://api.nuget.org/v3/index.json" \
-              --api-key "${NUGET_API_KEY}"
+              --api-key "${NUGET_API_KEY}" \
+              --skip-duplicate
           done < coordinate-evidence/nuget-org-symbol-publish-list.txt
 
       - name: Verify portable symbol packages from nuget.org
@@ -900,7 +903,8 @@ jobs:
             dotnet nuget push "${package_file}" \
               --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
               --api-key "${GITHUB_PACKAGES_TOKEN}" \
-              --no-symbols
+              --no-symbols \
+              --skip-duplicate
           done < coordinate-evidence/github-packages-publish-list.txt
 
       - name: Verify GitHub Packages payloads
