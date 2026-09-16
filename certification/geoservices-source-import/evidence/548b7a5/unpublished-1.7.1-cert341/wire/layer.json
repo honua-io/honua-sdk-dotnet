@@ -1,0 +1,245 @@
+{
+  "advancedQueryCapabilities": {
+    "supportsBatchEditing": true,
+    "supportsCountDistinct": true,
+    "supportsDistinct": true,
+    "supportsHavingClause": true,
+    "supportsLod": false,
+    "supportsOrderBy": true,
+    "supportsPagination": true,
+    "supportsPercentileStatistics": false,
+    "supportsQueryAnalytic": false,
+    "supportsQueryAttachments": false,
+    "supportsQueryWithDatumTransformation": true,
+    "supportsQueryWithDistance": true,
+    "supportsQueryWithLodSR": false,
+    "supportsReturningGeometryCentroid": false,
+    "supportsReturningQueryExtent": true,
+    "supportsSqlExpression": true,
+    "supportsStatistics": true,
+    "supportsTopFeaturesQuery": true,
+    "supportsTrueCurve": false,
+    "useStandardizedQueries": true
+  },
+  "allowGeometryUpdates": false,
+  "capabilities": "Query",
+  "copyrightText": "honua-sdk-dotnet#341 fixture",
+  "defaultVisibility": true,
+  "displayField": "site_guid",
+  "drawingInfo": {
+    "labelingInfo": null,
+    "renderer": {
+      "description": "",
+      "label": "",
+      "symbol": {
+        "color": [
+          45,
+          105,
+          165,
+          255
+        ],
+        "outline": {
+          "color": [
+            45,
+            105,
+            165,
+            255
+          ],
+          "style": "esriSLSSolid",
+          "type": "esriSLS",
+          "width": 1
+        },
+        "size": 6,
+        "style": "esriSMSCircle",
+        "type": "esriSMS"
+      },
+      "type": "simple"
+    },
+    "transparency": 0
+  },
+  "extent": {
+    "spatialReference": {
+      "wkid": 4326
+    },
+    "xmax": -122.4,
+    "xmin": -122.449,
+    "ymax": 37.78,
+    "ymin": 37.751
+  },
+  "fields": [
+    {
+      "alias": "objectid",
+      "canSort": true,
+      "displayName": "objectid",
+      "editable": false,
+      "name": "objectid",
+      "nullable": false,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeOID",
+      "visible": true
+    },
+    {
+      "alias": "site_guid",
+      "canSort": true,
+      "displayName": "site_guid",
+      "editable": true,
+      "name": "site_guid",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeGUID",
+      "visible": true
+    },
+    {
+      "alias": "name",
+      "canSort": true,
+      "displayName": "name",
+      "editable": true,
+      "length": 256,
+      "name": "name",
+      "nullable": true,
+      "sqlType": "sqlTypeNVarchar",
+      "type": "esriFieldTypeString",
+      "visible": true
+    },
+    {
+      "alias": "note",
+      "canSort": true,
+      "displayName": "note",
+      "editable": true,
+      "length": 256,
+      "name": "note",
+      "nullable": true,
+      "sqlType": "sqlTypeNVarchar",
+      "type": "esriFieldTypeString",
+      "visible": true
+    },
+    {
+      "alias": "inspected_at",
+      "canSort": true,
+      "displayName": "inspected_at",
+      "editable": true,
+      "name": "inspected_at",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeDate",
+      "visible": true
+    },
+    {
+      "alias": "install_date",
+      "canSort": true,
+      "displayName": "install_date",
+      "editable": true,
+      "name": "install_date",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeDate",
+      "visible": true
+    },
+    {
+      "alias": "amount",
+      "canSort": true,
+      "displayName": "amount",
+      "editable": true,
+      "name": "amount",
+      "nullable": true,
+      "sqlType": "sqlTypeFloat",
+      "type": "esriFieldTypeDouble",
+      "visible": true
+    },
+    {
+      "alias": "Status",
+      "canSort": true,
+      "displayName": "Status",
+      "domain": {
+        "codedValues": [
+          {
+            "code": 1,
+            "name": "Active"
+          },
+          {
+            "code": 2,
+            "name": "Retired"
+          },
+          {
+            "code": 3,
+            "name": "Planned"
+          }
+        ],
+        "name": "SiteStatus",
+        "type": "codedValue"
+      },
+      "editable": true,
+      "name": "status_code",
+      "nullable": true,
+      "sqlType": "sqlTypeInteger",
+      "type": "esriFieldTypeInteger",
+      "visible": true
+    },
+    {
+      "alias": "big_counter",
+      "canSort": true,
+      "displayName": "big_counter",
+      "editable": true,
+      "name": "big_counter",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeBigInteger",
+      "visible": true
+    },
+    {
+      "alias": "Geometry",
+      "canSort": true,
+      "displayName": "Geometry",
+      "editable": false,
+      "name": "geom",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeGeometry",
+      "visible": true
+    }
+  ],
+  "geometryType": "esriGeometryPoint",
+  "hasAttachments": false,
+  "id": 1,
+  "isDataVersioned": false,
+  "maxRecordCount": 10000,
+  "name": "source_sites",
+  "objectIdField": "objectid",
+  "relationships": [],
+  "spatialReference": {
+    "wkid": 4326
+  },
+  "supportedQueryFormats": "JSON, GEOJSON, PBF, FGB, GEOBUF, PARQUET, ARROW",
+  "supportedSqlFormats": "none, standard, native",
+  "supportsAdvancedQueries": true,
+  "supportsApplyEditsWithGlobalIds": false,
+  "supportsAttachmentKeywords": false,
+  "supportsAttachmentsByUploadId": false,
+  "supportsCoordinatesQuantization": true,
+  "supportsCountDistinct": true,
+  "supportsDistinct": true,
+  "supportsOrderBy": true,
+  "supportsPagination": true,
+  "supportsQueryAttachments": false,
+  "supportsQueryRelated": false,
+  "supportsReturningQueryExtent": true,
+  "supportsRollbackOnFailureParameter": false,
+  "supportsSqlFormat": true,
+  "supportsStatistics": true,
+  "supportsTrueCurve": false,
+  "templates": [],
+  "timeInfo": {
+    "endTimeField": "install_date",
+    "startTimeField": "inspected_at",
+    "timeExtent": [
+      -1000,
+      1767312000000
+    ]
+  },
+  "type": "Feature Layer",
+  "uniqueIdField": {
+    "isSystemMaintained": true,
+    "name": "objectid"
+  },
+  "useStandardizedQueries": true
+}

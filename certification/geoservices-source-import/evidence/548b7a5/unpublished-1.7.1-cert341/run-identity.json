@@ -1,0 +1,9 @@
+{
+  "serverImage": "ghcr.io/honua-io/honua-server@sha256:29974ee7b722e3ae15c3b891024e5e70800f412188aeccf5ec3d32d9dac675c1",
+  "runningImageId": "sha256:29974ee7b722e3ae15c3b891024e5e70800f412188aeccf5ec3d32d9dac675c1",
+  "serverSourceSha": "548b7a5263da5a3f2381eb43f232687cdf92b0bf",
+  "sdkPackageVersion": "1.7.1-cert341",
+  "sdkPackageSource": "local:/home/mike/honua-io/lane-341-run/local-packages",
+  "nupkgSha512": "AdgGBrfpDCxxWAbL6K04EL9xQ06iJKP4oAhkMbWu2xdtnD0X800iLitNgIZei/YdV+P5miOn8/LhkMX2drrXpQ==",
+  "certificationExit": 0
+}
