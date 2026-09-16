@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.8.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.7.0...dotnet-sdk-v1.8.0) (2026-09-16)
+
+
+### Features
+
+* **geoservices:** address arbitrary ArcGIS source roots and bound source bodies ([#376](https://github.com/honua-io/honua-sdk-dotnet/issues/376)) ([40cb193](https://github.com/honua-io/honua-sdk-dotnet/commit/40cb1938a267a8cfba5dcdbb6152544e55871440))
+* **geoservices:** certify lossless ArcGIS source import on the 2026.1 candidate ([#372](https://github.com/honua-io/honua-sdk-dotnet/issues/372)) ([efaa836](https://github.com/honua-io/honua-sdk-dotnet/commit/efaa83644f1013e01aa59a28f0e1f1c6d52222b8))
+
 ## [1.7.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.4...dotnet-sdk-v1.7.0) (2026-09-14)
 
 
