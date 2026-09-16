@@ -129,3 +129,17 @@ static Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.TryParse(System.Uri
 Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.<Clone>$() -> Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot!
 Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.ArcGisServiceRoot() -> void
 Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot.Equals(Honua.Sdk.GeoServices.FeatureServer.ArcGisServiceRoot? other) -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AttributeRules.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AttributeRules.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.DefaultSubtypeCode.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.DefaultSubtypeCode.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.MaxScale.get -> double?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.MaxScale.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.MinScale.get -> double?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.MinScale.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SubtypeField.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.SubtypeField.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.CurrentVersion.get -> System.Text.Json.JsonElement?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.CurrentVersion.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Description.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.Description.init -> void
