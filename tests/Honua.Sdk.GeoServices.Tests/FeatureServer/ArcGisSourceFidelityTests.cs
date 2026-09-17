@@ -186,6 +186,114 @@ public sealed class ArcGisSourceFidelityTests
     }
 
     [Fact]
+    public void Field_OmitsNullableAndEditable_PreservesNullDistinctFromExplicitFalse()
+    {
+        // The MapServer layer resource omits `nullable`/`editable` on some fields (#381). The legacy
+        // `Nullable`/`Editable` (bool) members keep their original collapsing behaviour for binary
+        // compatibility with published 1.x releases; `IsNullable`/`IsEditable` (bool?) preserve "not
+        // advertised" as distinct from an explicit `false`.
+        var omitted = JsonSerializer.Deserialize<FeatureServerField>(
+            """{ "name": "PIN", "type": "esriFieldTypeString" }""",
+            GeoServicesTestJsonOptions.CamelCase)!;
+        var explicitFalse = JsonSerializer.Deserialize<FeatureServerField>(
+            """{ "name": "OBJECTID", "type": "esriFieldTypeOID", "nullable": false, "editable": false }""",
+            GeoServicesTestJsonOptions.CamelCase)!;
+
+        Assert.False(omitted.Nullable);
+        Assert.False(omitted.Editable);
+        Assert.Null(omitted.IsNullable);
+        Assert.Null(omitted.IsEditable);
+
+        Assert.False(explicitFalse.Nullable);
+        Assert.False(explicitFalse.Editable);
+        Assert.False(explicitFalse.IsNullable);
+        Assert.False(explicitFalse.IsEditable);
+    }
+
+    [Fact]
+    public void Field_PreservesAliasLengthDomainAndAdditionalProperties()
+    {
+        // The hand-written FeatureServerFieldConverter takes over serialization for the whole type
+        // (#381); this guards every other member it must still round-trip correctly.
+        var field = JsonSerializer.Deserialize<FeatureServerField>(
+            """
+            {
+              "name": "STATUS",
+              "type": "esriFieldTypeString",
+              "alias": "Status",
+              "nullable": true,
+              "length": 20,
+              "editable": true,
+              "defaultValue": "open",
+              "domain": { "type": "codedValue" },
+              "sqlType": "sqlTypeNVarchar"
+            }
+            """,
+            GeoServicesTestJsonOptions.CamelCase)!;
+
+        Assert.Equal("STATUS", field.Name);
+        Assert.Equal("esriFieldTypeString", field.Type);
+        Assert.Equal("Status", field.Alias);
+        Assert.True(field.Nullable);
+        Assert.True(field.IsNullable);
+        Assert.Equal(20, field.Length);
+        Assert.True(field.Editable);
+        Assert.True(field.IsEditable);
+        Assert.Equal("open", field.DefaultValue?.GetString());
+        Assert.Equal("codedValue", field.Domain?.GetProperty("type").GetString());
+        Assert.NotNull(field.AdditionalProperties);
+        Assert.Equal("sqlTypeNVarchar", field.AdditionalProperties!["sqlType"].GetString());
+    }
+
+    [Fact]
+    public async Task GetLayerInfoAsync_ExtentSpatialReference_WktOnly_PreservesWkt()
+    {
+        // A custom-projection source advertises `{"wkt": "..."}` with no `wkid` (#381). 1.8.0
+        // returned Wkid=0/LatestWkid=0 and dropped the WKT entirely.
+        const string wkt = "PROJCS[\"NAD_1983_StatePlane_California_V\",GEOGCS[\"GCS_North_American_1983\"]]";
+        var json = $$"""
+            {
+              "id": 0,
+              "extent": {
+                "xmin": 1, "ymin": 2, "xmax": 3, "ymax": 4,
+                "spatialReference": { "wkt": {{JsonSerializer.Serialize(wkt)}} }
+              }
+            }
+            """;
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var layer = await client.GetLayerInfoAsync("parks", 0);
+
+        var spatialReference = layer.Extent!.SpatialReference!;
+        Assert.Equal(0, spatialReference.Wkid);
+        Assert.Equal(0, spatialReference.LatestWkid);
+        Assert.Equal(wkt, spatialReference.Wkt);
+    }
+
+    [Fact]
+    public async Task QueryAsync_ResponseSpatialReference_WktOnly_PreservesWkt()
+    {
+        const string wkt = "PROJCS[\"Custom_Projection\",GEOGCS[\"GCS_Unknown\"]]";
+        var json = $$"""
+            {
+              "objectIdFieldName": "OBJECTID",
+              "spatialReference": { "wkt": {{JsonSerializer.Serialize(wkt)}} },
+              "features": []
+            }
+            """;
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var result = await client.QueryAsync("parks", 0, new FeatureServerQueryParams { Where = "1=1" });
+
+        var spatialReference = result.SpatialReference!;
+        Assert.Equal(0, spatialReference.Wkid);
+        Assert.Equal(0, spatialReference.LatestWkid);
+        Assert.Equal(wkt, spatialReference.Wkt);
+    }
+
+    [Fact]
     public async Task ArcGisSourceCredentialHandler_TokenMode_AppendsTokenQueryParameter()
     {
         HttpRequestMessage? captured = null;

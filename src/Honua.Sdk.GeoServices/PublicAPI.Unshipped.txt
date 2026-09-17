@@ -29,6 +29,14 @@ Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.Retry
 Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAllFeaturesByObjectIdBatchesAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, int batchSize = 1000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.AdditionalProperties.set -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.IsEditable.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.IsEditable.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.IsNullable.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.IsNullable.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.LatestWkt.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.LatestWkt.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.Wkt.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerSpatialReference.Wkt.init -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdditionalProperties.set -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerInfo.AdvancedQueryCapabilities.get -> System.Text.Json.JsonElement?
