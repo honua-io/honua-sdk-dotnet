@@ -17,6 +17,14 @@ public sealed class FeatureServerSpatialReference
     /// <summary>Latest well-known ID of the spatial reference.</summary>
     [JsonPropertyName("latestWkid")]
     public int LatestWkid { get; init; }
+
+    /// <summary>Well-known text of the spatial reference, for custom projections without a WKID.</summary>
+    [JsonPropertyName("wkt")]
+    public string? Wkt { get; init; }
+
+    /// <summary>Latest well-known text of the spatial reference.</summary>
+    [JsonPropertyName("latestWkt")]
+    public string? LatestWkt { get; init; }
 }
 
 /// <summary>
