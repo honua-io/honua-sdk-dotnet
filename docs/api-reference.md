@@ -135,7 +135,7 @@ using Microsoft.Extensions.Hosting;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
+    options.BaseAddress = new Uri("http://localhost:8081"); // gRPC is h2c on 8081
 });
 
 using var host = builder.Build();

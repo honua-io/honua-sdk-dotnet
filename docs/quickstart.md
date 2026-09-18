@@ -1,7 +1,7 @@
 ---
 type: guide
 title: "Install the SDK and make your first call"
-description: "Two paths: a 60-second single-package hello, and a seven-step tour registering every client through dependency injection. Includes the GitHub Packages feed setup the packages require."
+description: "Two paths: a 60-second single-package hello, and a seven-step tour registering every client through dependency injection."
 resource: "https://www.nuget.org/packages/Honua.Sdk/"
 tags: [quickstart, dotnet, dependency-injection]
 ---
@@ -12,7 +12,7 @@ This page has two paths:
 - [60-second hello-features](#60-second-hello-features) — one package, one
   client, one call. Use this if you just want to confirm the SDK talks to
   your server.
-- [Full quickstart (5 steps, ~10 minutes)](#full-quickstart-five-steps) —
+- [Full quickstart (7 steps, ~10 minutes)](#full-quickstart-seven-steps) —
   gRPC + Admin + Geocoding + WFS + OGC API Features through the shared
   abstraction, with the umbrella also registering OGC API Processes by
   default. Use this if you want a guided tour of the SDK.
@@ -34,8 +34,7 @@ Single package, single async call. Replace the URL with your Honua server.
 ```bash
 dotnet new console -n HonuaHello
 cd HonuaHello
-dotnet add package Honua.Sdk.Grpc \
- 
+dotnet add package Honua.Sdk.Grpc
 dotnet add package Microsoft.Extensions.Hosting
 ```
 
@@ -77,7 +76,7 @@ edits, scenes, or the cross-protocol abstraction, continue below.
 
 ---
 
-## Full quickstart (five steps)
+## Full quickstart (seven steps)
 
 ## What You'll Build
 
@@ -93,10 +92,8 @@ address -- all printed to the console.
 dotnet new console -n HonuaDemo
 cd HonuaDemo
 
-# Core packages this quickstart uses (feed setup: see Prerequisites above).
-# Pass the feed URL, not the --name alias: the alias can degrade to a
-# filesystem lookup (NU1301) that reads as though the package does not exist.
-# --version is optional here; pinned so this page stays reproducible.
+# Core packages this quickstart uses. All stable Honua.Sdk* packages are on
+# nuget.org; no feed setup is needed.
 dotnet add package Honua.Sdk.Grpc          # gRPC FeatureService + native ProcessService jobs
 dotnet add package Honua.Sdk.Abstractions  # shared query abstraction
 dotnet add package Honua.Sdk.Admin         # Admin + Geocoding REST
@@ -319,8 +316,6 @@ catalog and the caller should discover standards-facing metadata records instead
 of operator/control-plane inventory. First install and register the package:
 
 ```bash
-# The feed URL, not a --name alias: the alias can degrade to a filesystem
-# lookup (NU1301) whose error reads as though the package does not exist.
 dotnet add package Honua.Sdk.Catalogs
 ```
 
@@ -348,8 +343,6 @@ asset search semantics instead of Records metadata records. First install and
 register the package:
 
 ```bash
-# The feed URL, not a --name alias: the alias can degrade to a filesystem
-# lookup (NU1301) whose error reads as though the package does not exist.
 dotnet add package Honua.Sdk.Catalogs
 ```
 

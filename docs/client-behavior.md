@@ -21,13 +21,13 @@ seconds, matching the .NET `HttpClient` default. The value must be greater than
 ```csharp
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
+    options.BaseAddress = new Uri("http://localhost:8081"); // gRPC is h2c on 8081
     options.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHonuaWfs(options =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
+    options.BaseAddress = new Uri("http://localhost:8080");
     options.Timeout = TimeSpan.FromSeconds(30);
 });
 ```
