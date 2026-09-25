@@ -34,7 +34,7 @@ public sealed class ArcGisSourceMetadataTests
         var content = new TrackingContent(source);
         var client = TestHelpers.CreateFeatureServerClient(_ =>
         {
-            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+            var response = CreateResponse(content);
             return Task.FromResult(response);
         });
 
@@ -68,7 +68,7 @@ public sealed class ArcGisSourceMetadataTests
             : """{"message":"Rate limit"}""");
         var client = TestHelpers.CreateFeatureServerClient(_ =>
         {
-            var response = new HttpResponseMessage(status) { Content = content };
+            var response = CreateResponse(content, status);
             response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(3));
             return Task.FromResult(response);
         });
@@ -89,7 +89,7 @@ public sealed class ArcGisSourceMetadataTests
         var content = new TrackingContent("{ invalid");
         var client = TestHelpers.CreateFeatureServerClient(_ =>
         {
-            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+            var response = CreateResponse(content);
             return Task.FromResult(response);
         });
 
@@ -103,23 +103,16 @@ public sealed class ArcGisSourceMetadataTests
     [InlineData(true)]
     public async Task Metadata_CancellationDuringBodyRead_PropagatesAndDisposesStream(bool layer)
     {
-        var cancellation = new CancellationTokenSource();
+        using var cancellation = new CancellationTokenSource();
         var body = new WaitingStream();
         var client = CreateWaitingClient(body);
 
-        try
-        {
-            var read = ReadMetadataAsync(client, layer, cancellation.Token);
-            await body.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            cancellation.Cancel();
+        var read = ReadMetadataAsync(client, layer, cancellation.Token);
+        await body.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        cancellation.Cancel();
 
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await read);
-            Assert.True(body.Disposed);
-        }
-        finally
-        {
-            cancellation.Dispose();
-        }
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await read);
+        Assert.True(body.Disposed);
     }
 
     private static Task<JsonDocument> ReadMetadataAsync(
@@ -131,9 +124,13 @@ public sealed class ArcGisSourceMetadataTests
     private static HonuaFeatureServerClient CreateWaitingClient(WaitingStream body)
         => TestHelpers.CreateFeatureServerClient(_ =>
         {
-            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) };
+            var response = CreateResponse(new StreamContent(body));
             return Task.FromResult(response);
         });
+
+    // Ownership transfers to the HttpClient pipeline; each test asserts that the SDK disposes the content.
+    private static HttpResponseMessage CreateResponse(HttpContent content, HttpStatusCode status = HttpStatusCode.OK)
+        => new(status) { Content = content };
 
     private sealed class TrackingContent(string json) : StringContent(json, Encoding.UTF8, "application/json")
     {
