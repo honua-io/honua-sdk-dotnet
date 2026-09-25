@@ -5,8 +5,8 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 318,
-    "exercised": 22,
+    "total": 320,
+    "exercised": 24,
     "gap": 278,
     "non-addressable": 18
   },
@@ -5701,6 +5701,60 @@
       ],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
       "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetLayerMetadataAsync(string,int,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
+      "operation": "GetLayerMetadataAsync",
+      "signature": "GetLayerMetadataAsync(string,int,CancellationToken)",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer"
+      ],
+      "implementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer"
+        ]
+      }
+    },
+    {
+      "id": "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetServiceMetadataAsync(string,CancellationToken)",
+      "surface": "geoservices",
+      "client": "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient",
+      "operation": "GetServiceMetadataAsync",
+      "signature": "GetServiceMetadataAsync(string,CancellationToken)",
+      "status": "exercised",
+      "requiredTiers": [
+        "pr",
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer"
+      ],
+      "implementations": [
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer"
+        ]
+      }
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.QueryVectorAsync(string,int,FeatureServerQueryParams,VectorPayloadFormat?,CancellationToken)",

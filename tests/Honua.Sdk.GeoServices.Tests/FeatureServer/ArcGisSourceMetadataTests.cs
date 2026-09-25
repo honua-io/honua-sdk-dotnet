@@ -97,17 +97,24 @@ public sealed class ArcGisSourceMetadataTests
     [InlineData(true)]
     public async Task Metadata_CancellationDuringBodyRead_PropagatesAndDisposesStream(bool layer)
     {
-        using var cancellation = new CancellationTokenSource();
-        var body = new WaitingStream();
-        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) }));
+        var cancellation = new CancellationTokenSource();
+        try
+        {
+            var body = new WaitingStream();
+            var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) }));
 
-        var read = ReadMetadataAsync(client, layer, cancellation.Token);
-        await body.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        cancellation.Cancel();
+            var read = ReadMetadataAsync(client, layer, cancellation.Token);
+            await body.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            cancellation.Cancel();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => read);
-        Assert.True(body.Disposed);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await read);
+            Assert.True(body.Disposed);
+        }
+        finally
+        {
+            cancellation.Dispose();
+        }
     }
 
     private static Task<JsonDocument> ReadMetadataAsync(
