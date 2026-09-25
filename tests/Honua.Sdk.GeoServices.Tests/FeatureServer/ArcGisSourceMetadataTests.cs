@@ -105,11 +105,7 @@ public sealed class ArcGisSourceMetadataTests
     {
         var cancellation = new CancellationTokenSource();
         var body = new WaitingStream();
-        var client = TestHelpers.CreateFeatureServerClient(_ =>
-        {
-            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) };
-            return Task.FromResult(response);
-        });
+        var client = CreateWaitingClient(body);
 
         try
         {
@@ -131,6 +127,13 @@ public sealed class ArcGisSourceMetadataTests
         => layer
             ? client.GetLayerMetadataAsync("Utilities/Water", 3, cancellationToken)
             : client.GetServiceMetadataAsync("Utilities/Water", cancellationToken);
+
+    private static HonuaFeatureServerClient CreateWaitingClient(WaitingStream body)
+        => TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) };
+            return Task.FromResult(response);
+        });
 
     private sealed class TrackingContent(string json) : StringContent(json, Encoding.UTF8, "application/json")
     {
