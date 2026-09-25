@@ -18,7 +18,7 @@ sharing one options/auth/resilience pattern.
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
 > - Want a map of the 15 packages and the separate CLI tool before you choose → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
-> - Want to set up the package feed (all versions install from GitHub Packages today) → [INSTALL.md](INSTALL.md)
+> - Want to install public stable packages or configure the prerelease feed → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
 
 ## Status
@@ -27,7 +27,7 @@ sharing one options/auth/resilience pattern.
 |---|---|
 | Current version | 1.10.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
 | Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
-| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is unblocked on both counts it used to wait on: `Geospatial.Grpc 1.0.0` is public there, and the release gate that failed every stable tag now runs against an ephemeral server (#347). What remains is a nuget.org Trusted Publishing policy and a release tag. |
+| Package feed | Stable packages are publicly available on [nuget.org](https://www.nuget.org/packages/Honua.Sdk/) and install anonymously. GitHub Packages is the authenticated stable mirror and the only prerelease feed; see [Install](#install). |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
 | License | [Apache 2.0](LICENSE) |
 
