@@ -158,9 +158,28 @@ var validation = await packages.ValidateDraftAsync(draft.DraftId, ct);
 var plan = await packages.PreviewPlanAsync(draft.DraftId, ct);
 var version = await packages.CreateContentVersionAsync(
     draft.DraftId, new SaveStudioContentVersionRequest { ChangeNote = "v1" }, ct);
-var publish = await packages.CreatePublishRequestAsync(
+var submission = await packages.SubmitPublishRequestAsync(
     version.ItemId, version.VersionId, new CreateStudioPublicationRequest(), ct);
+if (submission.RequiresApproval)
+{
+    // Keep the saved version and previous published pointer unchanged.
+    // A separate authorized actor reviews this proposal through the governance UI/API.
+    Console.WriteLine($"Awaiting approval: {submission.Operation!.ProposalId}");
+}
+else
+{
+    Console.WriteLine($"Publication request: {submission.Publication!.Status}");
+}
 ```
+
+`SubmitPublishRequestAsync` distinguishes a HTTP 201 publication request from a
+HTTP 202 operation requiring approval. A pending operation has no publication
+request ID and is not evidence that the version was published. The SDK does not
+approve proposals, retry a submission automatically, or replace authorization.
+Malformed or ambiguous success payloads raise `HonuaStudioContractException`.
+The existing `CreatePublishRequestAsync` signature remains available for callers
+that expect only completed publication-request responses. The new submission API
+requires a release after 1.9.0; it is not included in 1.9.0.
 
 ## Scope
 

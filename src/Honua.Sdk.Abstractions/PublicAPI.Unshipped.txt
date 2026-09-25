@@ -65,3 +65,40 @@ Honua.Sdk.Abstractions.HonuaProtocolMetadata.Trailing.init -> void
 static Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromGrpc(int protocolCode, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>? initialMetadata, System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<string!>!>? trailingMetadata) -> Honua.Sdk.Abstractions.HonuaFailureReceipt!
 static Honua.Sdk.Abstractions.HonuaFailureReceiptFactory.FromHttpResponse(System.Net.Http.HttpResponseMessage! response, string? body, int? protocolCode = null) -> Honua.Sdk.Abstractions.HonuaFailureReceipt!
 virtual Honua.Sdk.Abstractions.HonuaException.FailureReceipt.get -> Honua.Sdk.Abstractions.HonuaFailureReceipt?
+
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.HonuaOperationHandle() -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.OperationInstanceId.get -> string!
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.OperationInstanceId.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.OperationId.get -> string!
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.OperationId.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.Status.get -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.Status.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.CorrelationId.get -> string!
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.CorrelationId.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.CreatedAt.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.UpdatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.UpdatedAt.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.ProposalId.get -> string?
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.ProposalId.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.ApprovalLane.get -> string?
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.ApprovalLane.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.AuditId.get -> string?
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.AuditId.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.Reason.get -> string?
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.Reason.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.ResourceIds.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Abstractions.Operations.HonuaOperationHandle.ResourceIds.init -> void
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Accepted = 0 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Completed = 1 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Queued = 2 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Running = 3 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.RequiresApproval = 4 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.DryRunRequired = 5 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Denied = 6 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Rejected = 7 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Cancelled = 8 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Failed = 9 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Indeterminate = 10 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus

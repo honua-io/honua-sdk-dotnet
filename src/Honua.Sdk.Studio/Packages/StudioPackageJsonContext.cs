@@ -1,7 +1,9 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Honua.Sdk.Abstractions.Operations;
 
 namespace Honua.Sdk.Studio.Packages;
 
@@ -22,6 +24,8 @@ namespace Honua.Sdk.Studio.Packages;
 [JsonSerializable(typeof(StudioApiResponse<StudioContentVersionList>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioVersionComparison>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioPublicationRequest>))]
+[JsonSerializable(typeof(StudioPublicationSubmissionEnvelope))]
+[JsonSerializable(typeof(HonuaOperationHandle))]
 [JsonSerializable(typeof(StudioApiResponse<StudioRollbackRequest>))]
 [JsonSerializable(typeof(CreateStudioPackageDraftRequest))]
 [JsonSerializable(typeof(UpdateStudioPackageDraftRequest))]
@@ -41,4 +45,10 @@ namespace Honua.Sdk.Studio.Packages;
 [JsonSerializable(typeof(StudioRollbackRequest))]
 internal sealed partial class StudioPackageJsonContext : JsonSerializerContext
 {
+}
+
+internal sealed class StudioPublicationSubmissionEnvelope
+{
+    public bool Success { get; init; }
+    public JsonElement Data { get; init; }
 }

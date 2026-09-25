@@ -5,9 +5,9 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 320,
+    "total": 321,
     "exercised": 24,
-    "gap": 278,
+    "gap": 279,
     "non-addressable": 18
   },
   "operations": [
@@ -8536,6 +8536,33 @@
       "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
       "operation": "RollbackAsync",
       "signature": "RollbackAsync(Guid,CreateStudioRollbackRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.SubmitPublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "SubmitPublishRequestAsync",
+      "signature": "SubmitPublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",

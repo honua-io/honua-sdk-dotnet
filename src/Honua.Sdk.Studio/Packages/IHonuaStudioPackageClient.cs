@@ -96,6 +96,20 @@ public interface IHonuaStudioPackageClient
         CreateStudioPublicationRequest request,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Submits publication and distinguishes a persisted request from a pending approval operation.</summary>
+    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="versionId">Version identifier.</param>
+    /// <param name="request">Publication request.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <remarks>The default implementation preserves existing client implementations; HTTP clients override it to support governed responses.</remarks>
+    async Task<StudioPublicationSubmission> SubmitPublishRequestAsync(
+        Guid itemId,
+        Guid versionId,
+        CreateStudioPublicationRequest request,
+        CancellationToken cancellationToken = default)
+        => StudioPublicationSubmission.FromPublication(
+            await CreatePublishRequestAsync(itemId, versionId, request, cancellationToken).ConfigureAwait(false));
+
     /// <summary>Reopens an immutable content version as a new mutable draft.</summary>
     /// <param name="itemId">Content item identifier.</param>
     /// <param name="versionId">Version identifier.</param>

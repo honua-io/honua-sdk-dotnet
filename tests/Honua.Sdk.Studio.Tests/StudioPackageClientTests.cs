@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using Honua.Sdk.Abstractions.Operations;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Extensions;
 using Honua.Sdk.Studio.Packages;
@@ -187,6 +188,213 @@ public sealed class StudioPackageClientTests
             $"/api/v1/studio/content-items/{ItemId}/versions/{VersionId}/publish-requests",
             captured?.RequestUri?.PathAndQuery);
         Assert.Equal(StudioPublicationRequestStatus.Accepted, publication.Status);
+    }
+
+    [Theory]
+    [InlineData("accepted", StudioPublicationRequestStatus.Accepted)]
+    [InlineData("pending", StudioPublicationRequestStatus.Pending)]
+    [InlineData("rejected", StudioPublicationRequestStatus.Rejected)]
+    public async Task SubmitPublishRequestAsync_Created_PreservesPublicationStatus(
+        string wireStatus, StudioPublicationRequestStatus expectedStatus)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(PublicationEnvelope(wireStatus), HttpStatusCode.Created));
+        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest());
+
+        Assert.False(result.RequiresApproval);
+        Assert.Null(result.Operation);
+        Assert.NotNull(result.Publication);
+        Assert.Equal(expectedStatus, result.Publication.Status);
+        Assert.Equal(ItemId, result.Publication.ItemId);
+        Assert.Equal(VersionId, result.Publication.VersionId);
+    }
+
+    [Fact]
+    public async Task SubmitPublishRequestAsync_Accepted_ReturnsApprovalContextWithoutPublication()
+    {
+        string? path = null;
+        string? body = null;
+        using var http = CreateHttpClient(async request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            path = request.RequestUri?.AbsolutePath;
+            body = await request.Content!.ReadAsStringAsync();
+            return await JsonResponse(ApprovalEnvelope(), HttpStatusCode.Accepted);
+        });
+        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest { WarningAcknowledgement = "reviewed" });
+
+        Assert.Equal($"/api/v1/studio/content-items/{ItemId}/versions/{VersionId}/publish-requests", path);
+        Assert.Contains("reviewed", body, StringComparison.Ordinal);
+        Assert.True(result.RequiresApproval);
+        Assert.Null(result.Publication);
+        var operation = Assert.IsType<HonuaOperationHandle>(result.Operation);
+        Assert.Equal(HonuaOperationStatus.RequiresApproval, operation.Status);
+        Assert.Equal("invocation-1", operation.OperationInstanceId);
+        Assert.Equal("studio.content.create-publication-request", operation.OperationId);
+        Assert.Equal("proposal-1", operation.ProposalId);
+        Assert.Equal("correlation-1", operation.CorrelationId);
+        Assert.Equal("audit-1", operation.AuditId);
+        Assert.Equal("standard", operation.ApprovalLane);
+        Assert.Equal("Separate review required", operation.Reason);
+        Assert.Equal(ItemId.ToString(), operation.ResourceIds["itemId"]);
+    }
+
+    [Theory]
+    [InlineData("\"proposalId\":\"proposal-1\",", "")]
+    [InlineData("\"proposalId\":\"proposal-1\"", "\"proposalId\":null")]
+    [InlineData("invocation-1", "")]
+    [InlineData("correlation-1", " ")]
+    [InlineData("RequiresApproval", "Completed")]
+    [InlineData("RequiresApproval", "Unknown")]
+    [InlineData("\"status\":\"RequiresApproval\",", "")]
+    [InlineData("\"operationId\":\"studio.content.create-publication-request\",", "")]
+    [InlineData("\"success\":true", "\"success\":false")]
+    [InlineData("\"proposalId\":\"proposal-1\"", "\"requestId\":\"44444444-4444-4444-4444-444444444444\",\"proposalId\":\"proposal-1\"")]
+    public async Task SubmitPublishRequestAsync_MalformedApproval_ThrowsContractException(string from, string to)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(
+            ApprovalEnvelope().Replace(from, to, StringComparison.Ordinal), HttpStatusCode.Accepted));
+        var client = new HonuaStudioPackageClient(http);
+
+        var error = await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+
+        Assert.Equal("SubmitPublishRequest", error.Operation);
+    }
+
+    [Theory]
+    [InlineData("{}", HttpStatusCode.Accepted)]
+    [InlineData("{\"success\":true,\"data\":null}", HttpStatusCode.Accepted)]
+    [InlineData("{\"success\":true,\"data\":[]}", HttpStatusCode.Accepted)]
+    public async Task SubmitPublishRequestAsync_MissingApproval_ThrowsContractException(string json, HttpStatusCode status)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json, status));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, false)]
+    [InlineData(HttpStatusCode.Accepted, false)]
+    [InlineData(HttpStatusCode.Created, true)]
+    public async Task SubmitPublishRequestAsync_PublicationWithWrongStatusOrIdentity_IsRejected(HttpStatusCode status, bool wrongVersion)
+    {
+        var json = PublicationEnvelope("accepted");
+        if (wrongVersion)
+        {
+            json = json.Replace(VersionId.ToString(), DraftId.ToString(), StringComparison.Ordinal);
+        }
+
+        using var http = CreateHttpClient(_ => JsonResponse(json, status));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task SubmitPublishRequestAsync_AuthorizationFailure_PreservesStatusWithoutRetry(HttpStatusCode status)
+    {
+        var calls = 0;
+        using var http = CreateHttpClient(_ =>
+        {
+            calls++;
+            return JsonResponse("{\"title\":\"Denied\",\"detail\":\"Authorization required\"}", status);
+        });
+        var client = new HonuaStudioPackageClient(http);
+        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+        Assert.Equal(status, error.StatusCode);
+        Assert.Equal(1, calls);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SubmitPublishRequestAsync_DisposesResponseOnSuccessAndContractFailure(bool malformed)
+    {
+        using var content = new TrackingJsonContent(malformed ? "{}" : ApprovalEnvelope());
+        using var http = CreateHttpClient(_ => ResponseWithContent(content));
+        var client = new HonuaStudioPackageClient(http);
+        if (malformed)
+        {
+            await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+                ItemId, VersionId, new CreateStudioPublicationRequest()));
+        }
+        else
+        {
+            var result = await client.SubmitPublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest());
+            Assert.Equal("proposal-1", result.Operation?.ProposalId);
+        }
+
+        Assert.True(content.Disposed);
+    }
+
+    [Fact]
+    public async Task SubmitPublishRequestAsync_Cancellation_ReachesTransport()
+    {
+        using var handler = new CancellationHandler();
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
+        using var cancellation = new CancellationTokenSource();
+        var client = new HonuaStudioPackageClient(http);
+        var submission = client.SubmitPublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest(), cancellation.Token);
+        await handler.Started.Task;
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => submission);
+        Assert.True(handler.TransportToken.IsCancellationRequested);
+    }
+
+    private static string PublicationEnvelope(string status) => $$"""
+        {"success":true,"data":{"requestId":"44444444-4444-4444-4444-444444444444",
+        "itemId":"{{ItemId}}","versionId":"{{VersionId}}","status":"{{status}}",
+        "validation":{"status":"valid"},"createdAt":"2026-09-25T12:00:00Z"} }
+        """;
+
+    private static string ApprovalEnvelope() => $$"""
+        {"success":true,"data":{"operationInstanceId":"invocation-1",
+        "operationId":"studio.content.create-publication-request",
+        "status":"RequiresApproval","correlationId":"correlation-1","proposalId":"proposal-1",
+        "approvalLane":"standard","auditId":"audit-1","reason":"Separate review required",
+        "createdAt":"2026-09-25T12:00:00Z","updatedAt":"2026-09-25T12:00:00Z",
+        "resourceIds":{"itemId":"{{ItemId}}","versionId":"{{VersionId}}"} } }
+        """;
+
+    private static Task<HttpResponseMessage> ResponseWithContent(HttpContent content)
+    {
+        var response = CreateResponseWithContent(content);
+        return Task.FromResult(response);
+    }
+
+    private static HttpResponseMessage CreateResponseWithContent(HttpContent content)
+        => new(HttpStatusCode.Accepted) { Content = content };
+
+    private sealed class TrackingJsonContent(string json) : StringContent(json, Encoding.UTF8, "application/json")
+    {
+        public bool Disposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            Disposed = true;
+            base.Dispose(disposing);
+        }
+    }
+
+    private sealed class CancellationHandler : HttpMessageHandler
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public CancellationToken TransportToken { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            TransportToken = cancellationToken;
+            Started.SetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("The test transport must be cancelled.");
+        }
     }
 
     [Fact]
