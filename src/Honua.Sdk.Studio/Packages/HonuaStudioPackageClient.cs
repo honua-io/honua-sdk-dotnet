@@ -196,6 +196,8 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
 
         const string operation = "GetContentItemPointers";
         var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        var seenItems = new HashSet<Guid>();
+        long largestTotal = 0;
         string? cursor = null;
         for (var page = 0; page < 100; page++)
         {
@@ -211,26 +213,36 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             var envelope = await StudioHttpResponseReader.ReadAsync(response,
                 StudioPackageJsonContext.Default.StudioContentPointerEnvelope, operation, cancellationToken).ConfigureAwait(false);
             if (response.StatusCode != HttpStatusCode.OK || !envelope.Success || envelope.Data?.Items is not { } items
+                || envelope.Data.Total is not { } total || total < 0 || items.Count > total
                 || items.Any(item => item is null || item.ItemId == Guid.Empty
                     || item.CurrentVersionId == Guid.Empty || item.PublishedVersionId == Guid.Empty))
             {
                 throw new HonuaStudioContractException("Content-item listing did not contain a valid pointer page.", operation);
             }
 
-            var matches = items.Where(item => item.ItemId == itemId).ToArray();
-            if (matches.Length > 1)
+            largestTotal = Math.Max(largestTotal, total);
+            foreach (var item in items)
             {
-                throw new HonuaStudioContractException("Content-item listing returned ambiguous item identities.", operation);
+                if (!seenItems.Add(item.ItemId))
+                {
+                    throw new HonuaStudioContractException("Content-item listing repeated an item identity.", operation);
+                }
             }
 
-            if (matches.Length == 1)
+            var match = items.FirstOrDefault(item => item.ItemId == itemId);
+            if (match is not null)
             {
-                return matches[0];
+                return match;
             }
 
             cursor = envelope.Data.NextCursor;
             if (string.IsNullOrWhiteSpace(cursor))
             {
+                if (seenItems.Count != largestTotal)
+                {
+                    throw new HonuaStudioContractException("Content-item listing ended before its advertised total was observed; item presence is unknown.", operation);
+                }
+
                 return null;
             }
 

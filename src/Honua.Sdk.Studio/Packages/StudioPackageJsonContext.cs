@@ -63,5 +63,6 @@ internal sealed class StudioContentPointerEnvelope
 internal sealed class StudioContentPointerPage
 {
     public IReadOnlyList<StudioContentItemPointers>? Items { get; init; }
+    public long? Total { get; init; }
     public string? NextCursor { get; init; }
 }

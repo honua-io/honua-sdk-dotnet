@@ -406,7 +406,7 @@ public sealed class StudioPackageClientTests
         {
             requests.Add(request.RequestUri!.PathAndQuery);
             return JsonResponse(requests.Count == 1
-                ? "{\"success\":true,\"data\":{\"items\":[],\"nextCursor\":\"next+/=\"}}"
+                ? "{\"success\":true,\"data\":{\"total\":1,\"items\":[],\"nextCursor\":\"next+/=\"}}"
                 : PointerEnvelope());
         });
         var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
@@ -419,8 +419,8 @@ public sealed class StudioPackageClientTests
     }
 
     [Theory]
-    [InlineData("{\"success\":true,\"data\":{\"items\":[]}}")]
-    [InlineData("{\"success\":true,\"data\":{\"items\":[],\"nextCursor\":null}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":null}}")]
     public async Task GetContentItemPointersAsync_CompleteEmptyListing_ReturnsNull(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
@@ -440,11 +440,14 @@ public sealed class StudioPackageClientTests
 
     [Theory]
     [InlineData("{}")]
-    [InlineData("{\"success\":true,\"data\":{}}")]
-    [InlineData("{\"success\":true,\"data\":{\"items\":null}}")]
-    [InlineData("{\"success\":true,\"data\":{\"items\":[null]}}")]
-    [InlineData("{\"success\":true,\"data\":{\"items\":[{}]}}")]
-    [InlineData("{\"success\":false,\"data\":{\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":null}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[null]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[{}]}}")]
+    [InlineData("{\"success\":false,\"data\":{\"total\":0,\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":100,\"items\":[],\"nextCursor\":null}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":100,\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"items\":[]}}")]
     public async Task GetContentItemPointersAsync_MalformedPage_DoesNotReportAbsence(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
@@ -456,7 +459,7 @@ public sealed class StudioPackageClientTests
     public async Task GetContentItemPointersAsync_DuplicateItemIdentity_IsRejected()
     {
         var json = $$"""
-            {"success":true,"data":{"items":[{"itemId":"{{ItemId}}"},{"itemId":"{{ItemId}}"}]} }
+            {"success":true,"data":{"total":2,"items":[{"itemId":"{{ItemId}}"},{"itemId":"{{ItemId}}"}]} }
             """;
         using var http = CreateHttpClient(_ => JsonResponse(json));
         var client = new HonuaStudioPackageClient(http);
@@ -473,7 +476,7 @@ public sealed class StudioPackageClientTests
         {
             calls++;
             var cursor = cycle ? "cycle" : calls.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            return JsonResponse("{\"success\":true,\"data\":{\"items\":[],\"nextCursor\":\"" + cursor + "\"}}");
+            return JsonResponse("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":\"" + cursor + "\"}}");
         });
         var client = new HonuaStudioPackageClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
@@ -505,7 +508,7 @@ public sealed class StudioPackageClientTests
     }
 
     private static string PointerEnvelope() => $$"""
-        {"success":true,"data":{"items":[{"itemId":"{{ItemId}}",
+        {"success":true,"data":{"total":1,"items":[{"itemId":"{{ItemId}}",
         "currentVersionId":"{{VersionId}}","publishedVersionId":"{{DraftId}}"}],"nextCursor":null} }
         """;
 
