@@ -217,10 +217,14 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
                     throw new HonuaStudioContractException("Approval response also contains publication identity.", operation);
                 }
 
+                if (data.TryGetProperty("resourceIds", out var resources) && resources.ValueKind != JsonValueKind.Object)
+                {
+                    throw new HonuaStudioContractException("Approval response resource identities must be an object when supplied.", operation);
+                }
+
                 var pending = data.Deserialize(StudioPackageJsonContext.Default.HonuaOperationHandle)
                     ?? throw new HonuaStudioContractException("Approval response has no operation.", operation);
-                if (pending.ResourceIds is null
-                    || !string.Equals(pending.OperationId, "studio.content.create-publication-request", StringComparison.Ordinal)
+                if (!string.Equals(pending.OperationId, "studio.content.create-publication-request", StringComparison.Ordinal)
                     || !MatchesResource(pending.ResourceIds, "itemId", itemId)
                     || !MatchesResource(pending.ResourceIds, "versionId", versionId))
                 {

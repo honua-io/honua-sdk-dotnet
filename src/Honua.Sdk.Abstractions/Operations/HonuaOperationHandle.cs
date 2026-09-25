@@ -8,6 +8,8 @@ namespace Honua.Sdk.Abstractions.Operations;
 /// <summary>Server-owned operation identity and approval context, independent of its protocol entry point.</summary>
 public sealed class HonuaOperationHandle
 {
+    private IReadOnlyDictionary<string, string> _resourceIds = new Dictionary<string, string>();
+
     /// <summary>Stable identity of this invocation.</summary>
     [JsonPropertyName("operationInstanceId")]
     public required string OperationInstanceId { get; init; }
@@ -50,7 +52,11 @@ public sealed class HonuaOperationHandle
 
     /// <summary>Stable resource identities targeted or produced by the operation.</summary>
     [JsonPropertyName("resourceIds")]
-    public IReadOnlyDictionary<string, string> ResourceIds { get; init; } = new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, string> ResourceIds
+    {
+        get => _resourceIds;
+        init => _resourceIds = value ?? new Dictionary<string, string>();
+    }
 }
 
 /// <summary>Lifecycle status reported by the server operation runtime.</summary>
