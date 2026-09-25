@@ -243,6 +243,9 @@ public sealed class StudioPackageClientTests
     [Theory]
     [InlineData("\"proposalId\":\"proposal-1\",", "")]
     [InlineData("\"proposalId\":\"proposal-1\"", "\"proposalId\":null")]
+    [InlineData("studio.content.create-publication-request", "studio.content.rollback")]
+    [InlineData("22222222-2222-2222-2222-222222222222", "11111111-1111-1111-1111-111111111111")]
+    [InlineData("33333333-3333-3333-3333-333333333333", "not-a-version")]
     [InlineData("invocation-1", "")]
     [InlineData("correlation-1", " ")]
     [InlineData("RequiresApproval", "Completed")]
@@ -261,6 +264,19 @@ public sealed class StudioPackageClientTests
             ItemId, VersionId, new CreateStudioPublicationRequest()));
 
         Assert.Equal("SubmitPublishRequest", error.Operation);
+    }
+
+    [Fact]
+    public async Task SubmitPublishRequestAsync_ApprovalWithoutExecutionResources_IsAccepted()
+    {
+        var json = ApprovalEnvelope().Replace(
+            $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
+            "\"resourceIds\":{}", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
+        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest());
+        Assert.True(result.RequiresApproval);
+        Assert.Empty(result.Operation!.ResourceIds);
     }
 
     [Theory]
