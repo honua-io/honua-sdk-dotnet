@@ -32,8 +32,11 @@ public sealed class ArcGisSourceMetadataTests
             }
             """;
         var content = new TrackingContent(source);
-        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = content }));
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+            return Task.FromResult(response);
+        });
 
         using var document = await ReadMetadataAsync(client, layer);
 
@@ -84,8 +87,11 @@ public sealed class ArcGisSourceMetadataTests
     public async Task Metadata_InvalidJson_DisposesResponse(bool layer)
     {
         var content = new TrackingContent("{ invalid");
-        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = content }));
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+            return Task.FromResult(response);
+        });
 
         await Assert.ThrowsAsync<JsonException>(() => ReadMetadataAsync(client, layer));
 
@@ -97,24 +103,20 @@ public sealed class ArcGisSourceMetadataTests
     [InlineData(true)]
     public async Task Metadata_CancellationDuringBodyRead_PropagatesAndDisposesStream(bool layer)
     {
-        var cancellation = new CancellationTokenSource();
-        try
+        using var cancellation = new CancellationTokenSource();
+        var body = new WaitingStream();
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
         {
-            var body = new WaitingStream();
-            var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) }));
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(body) };
+            return Task.FromResult(response);
+        });
 
-            var read = ReadMetadataAsync(client, layer, cancellation.Token);
-            await body.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            cancellation.Cancel();
+        var read = ReadMetadataAsync(client, layer, cancellation.Token);
+        await body.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        cancellation.Cancel();
 
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await read);
-            Assert.True(body.Disposed);
-        }
-        finally
-        {
-            cancellation.Dispose();
-        }
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await read);
+        Assert.True(body.Disposed);
     }
 
     private static Task<JsonDocument> ReadMetadataAsync(
