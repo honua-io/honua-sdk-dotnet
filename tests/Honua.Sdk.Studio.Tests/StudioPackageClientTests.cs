@@ -440,7 +440,7 @@ public sealed class StudioPackageClientTests
 
     [Theory]
     [InlineData("{}")]
-    [InlineData("{\"success\":true,\"data\":{\"total\":0,}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0}}")]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":null}}")]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[null]}}")]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[{}]}}")]
