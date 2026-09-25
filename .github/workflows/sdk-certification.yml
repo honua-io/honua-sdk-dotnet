@@ -213,7 +213,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p artifacts/test-results
-          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
+          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
           conformance_filter='FullyQualifiedName~GrpcQueryFeatures_RoundTripsCanonicalResponseShape|FullyQualifiedName~GrpcQuery_GeometryOmission_IsHonored|FullyQualifiedName~FeatureServerQuery_RoundTripsCanonicalAttributeProjection|FullyQualifiedName~OgcItems_RoundTripCanonicalPropertyProjection'
           if [[ "${TIER}" != pr ]]; then
             filter='Category=ProtocolIntegration'
