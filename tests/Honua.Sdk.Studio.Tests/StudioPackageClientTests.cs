@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using Honua.Sdk.Abstractions.Operations;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Extensions;
 using Honua.Sdk.Studio.Packages;
@@ -187,6 +188,377 @@ public sealed class StudioPackageClientTests
             $"/api/v1/studio/content-items/{ItemId}/versions/{VersionId}/publish-requests",
             captured?.RequestUri?.PathAndQuery);
         Assert.Equal(StudioPublicationRequestStatus.Accepted, publication.Status);
+    }
+
+    [Theory]
+    [InlineData("accepted", StudioPublicationRequestStatus.Accepted)]
+    [InlineData("pending", StudioPublicationRequestStatus.Pending)]
+    [InlineData("rejected", StudioPublicationRequestStatus.Rejected)]
+    public async Task SubmitPublishRequestAsync_Created_PreservesPublicationStatus(
+        string wireStatus, StudioPublicationRequestStatus expectedStatus)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(PublicationEnvelope(wireStatus), HttpStatusCode.Created));
+        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest());
+
+        Assert.False(result.RequiresApproval);
+        Assert.Null(result.Operation);
+        Assert.NotNull(result.Publication);
+        Assert.Equal(expectedStatus, result.Publication.Status);
+        Assert.Equal(ItemId, result.Publication.ItemId);
+        Assert.Equal(VersionId, result.Publication.VersionId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SubmitPublishRequestAsync_Accepted_ReturnsApprovalContextWithoutPublication(bool numericStatus)
+    {
+        string? path = null;
+        string? body = null;
+        using var http = CreateHttpClient(async request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            path = request.RequestUri?.AbsolutePath;
+            body = await request.Content!.ReadAsStringAsync();
+            var json = numericStatus
+                ? ApprovalEnvelope().Replace("\"RequiresApproval\"", "4", StringComparison.Ordinal)
+                : ApprovalEnvelope();
+            return await JsonResponse(json, HttpStatusCode.Accepted);
+        });
+        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest { WarningAcknowledgement = "reviewed" });
+
+        Assert.Equal($"/api/v1/studio/content-items/{ItemId}/versions/{VersionId}/publish-requests", path);
+        Assert.Contains("reviewed", body, StringComparison.Ordinal);
+        Assert.True(result.RequiresApproval);
+        Assert.Null(result.Publication);
+        var operation = Assert.IsType<HonuaOperationHandle>(result.Operation);
+        Assert.Equal(HonuaOperationStatus.RequiresApproval, operation.Status);
+        Assert.Equal("invocation-1", operation.OperationInstanceId);
+        Assert.Equal("studio.content.create-publication-request", operation.OperationId);
+        Assert.Equal("proposal-1", operation.ProposalId);
+        Assert.Equal("correlation-1", operation.CorrelationId);
+        Assert.Equal("audit-1", operation.AuditId);
+        Assert.Equal("standard", operation.ApprovalLane);
+        Assert.Equal("Separate review required", operation.Reason);
+        Assert.Equal(ItemId.ToString(), operation.ResourceIds["itemId"]);
+    }
+
+    [Theory]
+    [InlineData("\"proposalId\":\"proposal-1\",", "")]
+    [InlineData("\"proposalId\":\"proposal-1\"", "\"proposalId\":null")]
+    [InlineData("studio.content.create-publication-request", "studio.content.rollback")]
+    [InlineData("22222222-2222-2222-2222-222222222222", "11111111-1111-1111-1111-111111111111")]
+    [InlineData("33333333-3333-3333-3333-333333333333", "not-a-version")]
+    [InlineData("invocation-1", "")]
+    [InlineData("correlation-1", " ")]
+    [InlineData("RequiresApproval", "Completed")]
+    [InlineData("RequiresApproval", "Unknown")]
+    [InlineData("\"status\":\"RequiresApproval\",", "")]
+    [InlineData("\"operationId\":\"studio.content.create-publication-request\",", "")]
+    [InlineData("\"success\":true", "\"success\":false")]
+    [InlineData("\"proposalId\":\"proposal-1\"", "\"requestId\":\"44444444-4444-4444-4444-444444444444\",\"proposalId\":\"proposal-1\"")]
+    public async Task SubmitPublishRequestAsync_MalformedApproval_ThrowsContractException(string from, string to)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(
+            ApprovalEnvelope().Replace(from, to, StringComparison.Ordinal), HttpStatusCode.Accepted));
+        var client = new HonuaStudioPackageClient(http);
+
+        var error = await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+
+        Assert.Equal("SubmitPublishRequest", error.Operation);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SubmitPublishRequestAsync_ApprovalWithoutExecutionResources_IsAccepted(bool omitResources)
+    {
+        var json = ApprovalEnvelope().Replace(
+            $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
+            omitResources ? "\"unmodeled\":true" : "\"resourceIds\":{}", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
+        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest());
+        Assert.True(result.RequiresApproval);
+        Assert.Empty(result.Operation!.ResourceIds);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("[]")]
+    public async Task SubmitPublishRequestAsync_InvalidResources_ThrowsContractException(string resources)
+    {
+        var json = ApprovalEnvelope().Replace(
+            $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
+            $"\"resourceIds\":{resources}", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData("{}", HttpStatusCode.Accepted)]
+    [InlineData("{\"success\":true,\"data\":null}", HttpStatusCode.Accepted)]
+    [InlineData("{\"success\":true,\"data\":[]}", HttpStatusCode.Accepted)]
+    public async Task SubmitPublishRequestAsync_MissingApproval_ThrowsContractException(string json, HttpStatusCode status)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json, status));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, false)]
+    [InlineData(HttpStatusCode.Accepted, false)]
+    [InlineData(HttpStatusCode.Created, true)]
+    public async Task SubmitPublishRequestAsync_PublicationWithWrongStatusOrIdentity_IsRejected(HttpStatusCode status, bool wrongVersion)
+    {
+        var json = PublicationEnvelope("accepted");
+        if (wrongVersion)
+        {
+            json = json.Replace(VersionId.ToString(), DraftId.ToString(), StringComparison.Ordinal);
+        }
+
+        using var http = CreateHttpClient(_ => JsonResponse(json, status));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData("\"proposalId\":\"proposal-1\"")]
+    [InlineData("\"operationInstanceId\":\"invocation-1\"")]
+    public async Task SubmitPublishRequestAsync_AmbiguousCreatedPublication_IsRejected(string extraIdentity)
+    {
+        var json = PublicationEnvelope("accepted").Replace(
+            "\"status\":\"accepted\"", $"\"status\":\"accepted\",{extraIdentity}", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Created));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task SubmitPublishRequestAsync_AuthorizationFailure_PreservesStatusWithoutRetry(HttpStatusCode status)
+    {
+        var calls = 0;
+        using var http = CreateHttpClient(_ =>
+        {
+            calls++;
+            return JsonResponse("{\"title\":\"Denied\",\"detail\":\"Authorization required\"}", status);
+        });
+        var client = new HonuaStudioPackageClient(http);
+        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+        Assert.Equal(status, error.StatusCode);
+        Assert.Equal(1, calls);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SubmitPublishRequestAsync_DisposesResponseOnSuccessAndContractFailure(bool malformed)
+    {
+        using var content = new TrackingJsonContent(malformed ? "{}" : ApprovalEnvelope());
+        using var http = CreateHttpClient(async _ => await ResponseWithContent(content));
+        var client = new HonuaStudioPackageClient(http);
+        if (malformed)
+        {
+            await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+                ItemId, VersionId, new CreateStudioPublicationRequest()));
+        }
+        else
+        {
+            var result = await client.SubmitPublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest());
+            Assert.Equal("proposal-1", result.Operation?.ProposalId);
+        }
+
+        Assert.True(content.Disposed);
+    }
+
+    [Fact]
+    public async Task SubmitPublishRequestAsync_Cancellation_ReachesTransport()
+    {
+        using var handler = new CancellationHandler();
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
+        using var cancellation = new CancellationTokenSource();
+        var client = new HonuaStudioPackageClient(http);
+        var submission = client.SubmitPublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest(), cancellation.Token);
+        await handler.Started.Task;
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => submission);
+        Assert.True(handler.TransportToken.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_FollowsPagesAndReturnsExactServerPointers()
+    {
+        var requests = new List<string>();
+        using var http = CreateHttpClient(request =>
+        {
+            requests.Add(request.RequestUri!.PathAndQuery);
+            return JsonResponse(requests.Count == 1
+                ? "{\"success\":true,\"data\":{\"total\":1,\"items\":[],\"nextCursor\":\"next+/=\"}}"
+                : PointerEnvelope());
+        });
+        var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
+
+        Assert.NotNull(pointers);
+        Assert.Equal(VersionId, pointers.CurrentVersionId);
+        Assert.Equal(DraftId, pointers.PublishedVersionId);
+        Assert.Equal(2, requests.Count);
+        Assert.Equal("/api/v1/studio/content-items?limit=100&cursor=next%2B%2F%3D", requests[1]);
+    }
+
+    [Theory]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":null}}")]
+    public async Task GetContentItemPointersAsync_CompleteEmptyListing_ReturnsNull(string json)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        Assert.Null(await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId));
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_UnpublishedItem_PreservesNullPointer()
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(PointerEnvelope().Replace(
+            $"\"publishedVersionId\":\"{DraftId}\"", "\"publishedVersionId\":null", StringComparison.Ordinal)));
+        var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
+        Assert.NotNull(pointers);
+        Assert.Null(pointers.PublishedVersionId);
+        Assert.Equal(VersionId, pointers.CurrentVersionId);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":null}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[null]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[{}]}}")]
+    [InlineData("{\"success\":false,\"data\":{\"total\":0,\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":100,\"items\":[],\"nextCursor\":null}}")]
+    [InlineData("{\"success\":true,\"data\":{\"total\":100,\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"items\":[]}}")]
+    public async Task GetContentItemPointersAsync_MalformedPage_DoesNotReportAbsence(string json)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_DuplicateItemIdentity_IsRejected()
+    {
+        var json = $$"""
+            {"success":true,"data":{"total":2,"items":[{"itemId":"{{ItemId}}"},{"itemId":"{{ItemId}}"}]} }
+            """;
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+    }
+
+    [Theory]
+    [InlineData(true, 2)]
+    [InlineData(false, 100)]
+    public async Task GetContentItemPointersAsync_CycleOrScanLimit_DoesNotReportAbsence(bool cycle, int expectedRequests)
+    {
+        var calls = 0;
+        using var http = CreateHttpClient(_ =>
+        {
+            calls++;
+            var cursor = cycle ? "cycle" : calls.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return JsonResponse("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":\"" + cursor + "\"}}");
+        });
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+        Assert.Equal(expectedRequests, calls);
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_Cancellation_ReachesTransport()
+    {
+        using var handler = new CancellationHandler();
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
+        using var cancellation = new CancellationTokenSource();
+        var task = new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId, cancellation.Token);
+        await handler.Started.Task;
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+        Assert.True(handler.TransportToken.IsCancellationRequested);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task GetContentItemPointersAsync_AuthorizationFailure_IsPreserved(HttpStatusCode status)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse("{}", status));
+        var client = new HonuaStudioPackageClient(http);
+        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetContentItemPointersAsync(ItemId));
+        Assert.Equal(status, error.StatusCode);
+    }
+
+    private static string PointerEnvelope() => $$"""
+        {"success":true,"data":{"total":1,"items":[{"itemId":"{{ItemId}}",
+        "currentVersionId":"{{VersionId}}","publishedVersionId":"{{DraftId}}"}],"nextCursor":null} }
+        """;
+
+    private static string PublicationEnvelope(string status) => $$"""
+        {"success":true,"data":{"requestId":"44444444-4444-4444-4444-444444444444",
+        "itemId":"{{ItemId}}","versionId":"{{VersionId}}","status":"{{status}}",
+        "validation":{"status":"valid"},"createdAt":"2026-09-25T12:00:00Z"} }
+        """;
+
+    private static string ApprovalEnvelope() => $$"""
+        {"success":true,"data":{"operationInstanceId":"invocation-1",
+        "operationId":"studio.content.create-publication-request",
+        "status":"RequiresApproval","correlationId":"correlation-1","proposalId":"proposal-1",
+        "approvalLane":"standard","auditId":"audit-1","reason":"Separate review required",
+        "createdAt":"2026-09-25T12:00:00Z","updatedAt":"2026-09-25T12:00:00Z",
+        "resourceIds":{"itemId":"{{ItemId}}","versionId":"{{VersionId}}"} } }
+        """;
+
+    private static Task<HttpResponseMessage> ResponseWithContent(HttpContent content)
+    {
+        var response = CreateResponseWithContent(content);
+        return Task.FromResult(response);
+    }
+
+    private static HttpResponseMessage CreateResponseWithContent(HttpContent content)
+        => new(HttpStatusCode.Accepted) { Content = content };
+
+    private sealed class TrackingJsonContent(string json) : StringContent(json, Encoding.UTF8, "application/json")
+    {
+        public bool Disposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            Disposed = true;
+            base.Dispose(disposing);
+        }
+    }
+
+    private sealed class CancellationHandler : HttpMessageHandler
+    {
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public CancellationToken TransportToken { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            TransportToken = cancellationToken;
+            Started.SetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("The test transport must be cancelled.");
+        }
     }
 
     [Fact]

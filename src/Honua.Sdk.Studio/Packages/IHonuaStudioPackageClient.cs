@@ -96,6 +96,28 @@ public interface IHonuaStudioPackageClient
         CreateStudioPublicationRequest request,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Reads exact current and published pointers for a visible content item.</summary>
+    /// <param name="itemId">The content item identifier.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The server-owned pointers, or null only when a complete visible listing does not contain the item.</returns>
+    /// <remarks>Reads at most 100 pages of 100 items; cycles, malformed pages and an incomplete scan fail instead of reporting absence.</remarks>
+    Task<StudioContentItemPointers?> GetContentItemPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
+        => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support content-item pointer reads."));
+
+    /// <summary>Submits publication and distinguishes a persisted request from a pending approval operation.</summary>
+    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="versionId">Version identifier.</param>
+    /// <param name="request">Publication request.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <remarks>The default implementation preserves existing client implementations; HTTP clients override it to support governed responses.</remarks>
+    async Task<StudioPublicationSubmission> SubmitPublishRequestAsync(
+        Guid itemId,
+        Guid versionId,
+        CreateStudioPublicationRequest request,
+        CancellationToken cancellationToken = default)
+        => StudioPublicationSubmission.FromPublication(
+            await CreatePublishRequestAsync(itemId, versionId, request, cancellationToken).ConfigureAwait(false));
+
     /// <summary>Reopens an immutable content version as a new mutable draft.</summary>
     /// <param name="itemId">Content item identifier.</param>
     /// <param name="versionId">Version identifier.</param>

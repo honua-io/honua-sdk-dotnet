@@ -3,3 +3,14 @@ Honua.Sdk.Studio.Capabilities.CapabilityEntry.Lifecycle.get -> string!
 Honua.Sdk.Studio.Capabilities.CapabilityEntry.Lifecycle.init -> void
 Honua.Sdk.Studio.Capabilities.CapabilityEntry.OptInRequired.get -> bool
 Honua.Sdk.Studio.Capabilities.CapabilityEntry.OptInRequired.init -> void
+
+Honua.Sdk.Studio.Packages.StudioPublicationSubmission
+static Honua.Sdk.Studio.Packages.StudioPublicationSubmission.AwaitingApproval(Honua.Sdk.Abstractions.Operations.HonuaOperationHandle! operation) -> Honua.Sdk.Studio.Packages.StudioPublicationSubmission!
+static Honua.Sdk.Studio.Packages.StudioPublicationSubmission.FromPublication(Honua.Sdk.Studio.Packages.StudioPublicationRequest! publication) -> Honua.Sdk.Studio.Packages.StudioPublicationSubmission!
+Honua.Sdk.Studio.Packages.StudioPublicationSubmission.Operation.get -> Honua.Sdk.Abstractions.Operations.HonuaOperationHandle?
+Honua.Sdk.Studio.Packages.StudioPublicationSubmission.Publication.get -> Honua.Sdk.Studio.Packages.StudioPublicationRequest?
+Honua.Sdk.Studio.Packages.StudioPublicationSubmission.RequiresApproval.get -> bool
+Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.SubmitPublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublicationSubmission!>!
+Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.SubmitPublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublicationSubmission!>!
+Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentItemPointers?>!
+Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentItemPointers?>!
