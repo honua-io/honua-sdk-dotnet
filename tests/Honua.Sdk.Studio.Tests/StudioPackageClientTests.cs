@@ -209,8 +209,10 @@ public sealed class StudioPackageClientTests
         Assert.Equal(VersionId, result.Publication.VersionId);
     }
 
-    [Fact]
-    public async Task SubmitPublishRequestAsync_Accepted_ReturnsApprovalContextWithoutPublication()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SubmitPublishRequestAsync_Accepted_ReturnsApprovalContextWithoutPublication(bool numericStatus)
     {
         string? path = null;
         string? body = null;
@@ -219,7 +221,10 @@ public sealed class StudioPackageClientTests
             Assert.Equal(HttpMethod.Post, request.Method);
             path = request.RequestUri?.AbsolutePath;
             body = await request.Content!.ReadAsStringAsync();
-            return await JsonResponse(ApprovalEnvelope(), HttpStatusCode.Accepted);
+            var json = numericStatus
+                ? ApprovalEnvelope().Replace("\"RequiresApproval\"", "4", StringComparison.Ordinal)
+                : ApprovalEnvelope();
+            return await JsonResponse(json, HttpStatusCode.Accepted);
         });
         var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest { WarningAcknowledgement = "reviewed" });
@@ -320,6 +325,19 @@ public sealed class StudioPackageClientTests
         }
 
         using var http = CreateHttpClient(_ => JsonResponse(json, status));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
+    }
+
+    [Theory]
+    [InlineData("\"proposalId\":\"proposal-1\"")]
+    [InlineData("\"operationInstanceId\":\"invocation-1\"")]
+    public async Task SubmitPublishRequestAsync_AmbiguousCreatedPublication_IsRejected(string extraIdentity)
+    {
+        var json = PublicationEnvelope("accepted").Replace(
+            "\"status\":\"accepted\"", $"\"status\":\"accepted\",{extraIdentity}", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Created));
         var client = new HonuaStudioPackageClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
