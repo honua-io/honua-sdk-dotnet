@@ -219,7 +219,8 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
 
                 var pending = data.Deserialize(StudioPackageJsonContext.Default.HonuaOperationHandle)
                     ?? throw new HonuaStudioContractException("Approval response has no operation.", operation);
-                if (!string.Equals(pending.OperationId, "studio.content.create-publication-request", StringComparison.Ordinal)
+                if (pending.ResourceIds is null
+                    || !string.Equals(pending.OperationId, "studio.content.create-publication-request", StringComparison.Ordinal)
                     || !MatchesResource(pending.ResourceIds, "itemId", itemId)
                     || !MatchesResource(pending.ResourceIds, "versionId", versionId))
                 {
@@ -258,8 +259,8 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
 
     // Decision handles currently omit resource IDs; validate any target identities supplied
     // by later server versions without requiring execution-only metadata before approval.
-    private static bool MatchesResource(IReadOnlyDictionary<string, string>? resources, string key, Guid expected)
-        => resources is null || !resources.TryGetValue(key, out var value)
+    private static bool MatchesResource(IReadOnlyDictionary<string, string> resources, string key, Guid expected)
+        => !resources.TryGetValue(key, out var value)
             || (Guid.TryParse(value, out var actual) && actual == expected);
 
     /// <inheritdoc />

@@ -266,17 +266,33 @@ public sealed class StudioPackageClientTests
         Assert.Equal("SubmitPublishRequest", error.Operation);
     }
 
-    [Fact]
-    public async Task SubmitPublishRequestAsync_ApprovalWithoutExecutionResources_IsAccepted()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SubmitPublishRequestAsync_ApprovalWithoutExecutionResources_IsAccepted(bool omitResources)
     {
         var json = ApprovalEnvelope().Replace(
             $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
-            "\"resourceIds\":{}", StringComparison.Ordinal);
+            omitResources ? "\"unmodeled\":true" : "\"resourceIds\":{}", StringComparison.Ordinal);
         using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
         var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest());
         Assert.True(result.RequiresApproval);
         Assert.Empty(result.Operation!.ResourceIds);
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("[]")]
+    public async Task SubmitPublishRequestAsync_InvalidResources_ThrowsContractException(string resources)
+    {
+        var json = ApprovalEnvelope().Replace(
+            $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
+            $"\"resourceIds\":{resources}", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
+            ItemId, VersionId, new CreateStudioPublicationRequest()));
     }
 
     [Theory]
