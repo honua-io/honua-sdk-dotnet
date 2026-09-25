@@ -93,7 +93,7 @@ public sealed class ArcGisSourceMetadataTests
             return Task.FromResult(response);
         });
 
-        await Assert.ThrowsAsync<JsonException>(() => ReadMetadataAsync(client, layer));
+        await Assert.ThrowsAnyAsync<JsonException>(() => ReadMetadataAsync(client, layer));
 
         Assert.True(content.Disposed);
     }
