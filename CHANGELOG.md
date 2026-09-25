@@ -2,6 +2,25 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.9.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.8.0...dotnet-sdk-v1.9.0) (2026-09-25)
+
+
+### Features
+
+* **geoservices:** preserve raw source metadata through bounded SDK reads ([#389](https://github.com/honua-io/honua-sdk-dotnet/issues/389)) ([c9d31fd](https://github.com/honua-io/honua-sdk-dotnet/commit/c9d31fd73440bebfb0c6f838efc94e5310153b51))
+* **geoservices:** type the remaining ArcGIS importer layer and service members ([#379](https://github.com/honua-io/honua-sdk-dotnet/issues/379)) ([3165cd5](https://github.com/honua-io/honua-sdk-dotnet/commit/3165cd5a1c8532a50f8107019a7b060f03f47f72))
+
+
+### Bug Fixes
+
+* **ci:** prefer the installed SDK version for release validation ([#388](https://github.com/honua-io/honua-sdk-dotnet/issues/388)) ([bba38f5](https://github.com/honua-io/honua-sdk-dotnet/commit/bba38f5e8cab0417120d283a901f2020e3920362))
+* **geoservices:** preserve nullable/editable tri-state and WKT on FeatureServerField/FeatureServerSpatialReference ([#383](https://github.com/honua-io/honua-sdk-dotnet/issues/383)) ([868502d](https://github.com/honua-io/honua-sdk-dotnet/commit/868502d9dcf00352abf969847cf9747916ae26ef))
+
+
+### Documentation
+
+* make the .NET quickstart's commands match what they do ([#384](https://github.com/honua-io/honua-sdk-dotnet/issues/384)) ([cb46778](https://github.com/honua-io/honua-sdk-dotnet/commit/cb46778f83ff9344e391cebd0f01203f0bd6f908))
+
 ## [1.8.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.7.0...dotnet-sdk-v1.8.0) (2026-09-16)
 
 
