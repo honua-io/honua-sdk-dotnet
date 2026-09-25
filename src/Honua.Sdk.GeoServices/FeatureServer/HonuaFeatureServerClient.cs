@@ -552,7 +552,8 @@ public sealed class HonuaFeatureServerClient :
 
         var body = await ExecuteQueryAsync(serviceId, layerId, parameters, cancellationToken).ConfigureAwait(false);
         var response = DeserializeQueryResponse(body);
-        return response.Count ?? 0;
+        return response.Count
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "FeatureServer count response did not contain a count.");
     }
 
     /// <inheritdoc />

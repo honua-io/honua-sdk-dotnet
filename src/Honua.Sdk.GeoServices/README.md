@@ -93,6 +93,10 @@ var advertisedAttachments = metadata.RootElement.TryGetProperty("hasAttachments"
     : (System.Text.Json.JsonElement?)null;
 ```
 
+Count-only queries require an explicit numeric `count` in the source response.
+`QueryCountAsync` throws `HonuaFeatureServerException` when the count is omitted or null,
+so an unavailable count is never reported as an empty source. An explicit zero remains zero.
+
 ### Routing
 
 ```csharp

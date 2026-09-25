@@ -78,6 +78,9 @@ public interface IHonuaFeatureServerClient
     /// <param name="query">Query parameters for filtering.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The count of matching features.</returns>
+    /// <exception cref="Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException">
+    /// The response omits the count or returns a null count.
+    /// </exception>
     Task<long> QueryCountAsync(string serviceId, int layerId, FeatureServerQueryParams query, CancellationToken cancellationToken = default);
 
     /// <summary>

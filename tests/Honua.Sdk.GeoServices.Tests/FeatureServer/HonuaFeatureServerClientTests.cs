@@ -999,6 +999,32 @@ public class HonuaFeatureServerClientTests
 
     // ── QueryIdsAsync ───────────────────────────────────────────────
 
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"count\":null}")]
+    public async Task QueryCountAsync_MissingCount_ThrowsInsteadOfInventingZero(string json)
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(TestHelpers.CreateRawJsonResponse(json)));
+
+        var exception = await Assert.ThrowsAsync<HonuaFeatureServerException>(() =>
+            client.QueryCountAsync("svc", 0, new FeatureServerQueryParams()));
+
+        Assert.Equal(HttpStatusCode.OK, exception.StatusCode);
+        Assert.Contains("did not contain a count", exception.Message);
+        Assert.Null(exception.ResponseBody);
+    }
+
+    [Fact]
+    public async Task QueryCountAsync_ExplicitZero_ReturnsZero()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(
+            TestHelpers.CreateRawJsonResponse("""{"count":0}""")));
+
+        var count = await client.QueryCountAsync("svc", 0, new FeatureServerQueryParams());
+
+        Assert.Equal(0, count);
+    }
+
     [Fact]
     public async Task QueryIdsAsync_ReturnsIds()
     {
