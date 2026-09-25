@@ -25,6 +25,7 @@ namespace Honua.Sdk.Studio.Packages;
 [JsonSerializable(typeof(StudioApiResponse<StudioVersionComparison>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioPublicationRequest>))]
 [JsonSerializable(typeof(StudioPublicationSubmissionEnvelope))]
+[JsonSerializable(typeof(StudioContentPointerEnvelope))]
 [JsonSerializable(typeof(HonuaOperationHandle))]
 [JsonSerializable(typeof(StudioApiResponse<StudioRollbackRequest>))]
 [JsonSerializable(typeof(CreateStudioPackageDraftRequest))]
@@ -51,4 +52,16 @@ internal sealed class StudioPublicationSubmissionEnvelope
 {
     public bool Success { get; init; }
     public JsonElement Data { get; init; }
+}
+
+internal sealed class StudioContentPointerEnvelope
+{
+    public bool Success { get; init; }
+    public StudioContentPointerPage? Data { get; init; }
+}
+
+internal sealed class StudioContentPointerPage
+{
+    public IReadOnlyList<StudioContentItemPointers>? Items { get; init; }
+    public string? NextCursor { get; init; }
 }

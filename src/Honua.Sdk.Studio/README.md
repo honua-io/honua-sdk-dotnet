@@ -177,6 +177,12 @@ HTTP 202 operation requiring approval. A pending operation has no publication
 request ID and is not evidence that the version was published. The SDK does not
 approve proposals, retry a submission automatically, or replace authorization.
 Malformed or ambiguous success payloads raise `HonuaStudioContractException`.
+Call `GetContentItemPointersAsync(itemId)` to refresh exact current/published
+version IDs after an authorized reviewer acts. This reads the existing scoped
+content-item listing, with cancellation, cursor-cycle protection and a 100-page
+limit. It returns null only after a complete visible listing omits the item;
+malformed or incomplete scans fail instead of fabricating absence. A proposal's
+success status alone is not proof of the currently published pointer.
 The existing `CreatePublishRequestAsync` signature remains available for callers
 that expect only completed publication-request responses. The new submission API
 requires a release after 1.9.0; it is not included in 1.9.0.

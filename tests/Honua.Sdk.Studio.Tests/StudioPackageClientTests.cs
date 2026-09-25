@@ -398,6 +398,117 @@ public sealed class StudioPackageClientTests
         Assert.True(handler.TransportToken.IsCancellationRequested);
     }
 
+    [Fact]
+    public async Task GetContentItemPointersAsync_FollowsPagesAndReturnsExactServerPointers()
+    {
+        var requests = new List<string>();
+        using var http = CreateHttpClient(request =>
+        {
+            requests.Add(request.RequestUri!.PathAndQuery);
+            return JsonResponse(requests.Count == 1
+                ? "{\"success\":true,\"data\":{\"items\":[],\"nextCursor\":\"next+/=\"}}"
+                : PointerEnvelope());
+        });
+        var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
+
+        Assert.NotNull(pointers);
+        Assert.Equal(VersionId, pointers.CurrentVersionId);
+        Assert.Equal(DraftId, pointers.PublishedVersionId);
+        Assert.Equal(2, requests.Count);
+        Assert.Equal("/api/v1/studio/content-items?limit=100&cursor=next%2B%2F%3D", requests[1]);
+    }
+
+    [Theory]
+    [InlineData("{\"success\":true,\"data\":{\"items\":[]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"items\":[],\"nextCursor\":null}}")]
+    public async Task GetContentItemPointersAsync_CompleteEmptyListing_ReturnsNull(string json)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        Assert.Null(await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId));
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_UnpublishedItem_PreservesNullPointer()
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(PointerEnvelope().Replace(
+            $"\"publishedVersionId\":\"{DraftId}\"", "\"publishedVersionId\":null", StringComparison.Ordinal)));
+        var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
+        Assert.NotNull(pointers);
+        Assert.Null(pointers.PublishedVersionId);
+        Assert.Equal(VersionId, pointers.CurrentVersionId);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"success\":true,\"data\":{}}")]
+    [InlineData("{\"success\":true,\"data\":{\"items\":null}}")]
+    [InlineData("{\"success\":true,\"data\":{\"items\":[null]}}")]
+    [InlineData("{\"success\":true,\"data\":{\"items\":[{}]}}")]
+    [InlineData("{\"success\":false,\"data\":{\"items\":[]}}")]
+    public async Task GetContentItemPointersAsync_MalformedPage_DoesNotReportAbsence(string json)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_DuplicateItemIdentity_IsRejected()
+    {
+        var json = $$"""
+            {"success":true,"data":{"items":[{"itemId":"{{ItemId}}"},{"itemId":"{{ItemId}}"}]} }
+            """;
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+    }
+
+    [Theory]
+    [InlineData(true, 2)]
+    [InlineData(false, 100)]
+    public async Task GetContentItemPointersAsync_CycleOrScanLimit_DoesNotReportAbsence(bool cycle, int expectedRequests)
+    {
+        var calls = 0;
+        using var http = CreateHttpClient(_ =>
+        {
+            calls++;
+            var cursor = cycle ? "cycle" : calls.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return JsonResponse("{\"success\":true,\"data\":{\"items\":[],\"nextCursor\":\"" + cursor + "\"}}");
+        });
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+        Assert.Equal(expectedRequests, calls);
+    }
+
+    [Fact]
+    public async Task GetContentItemPointersAsync_Cancellation_ReachesTransport()
+    {
+        using var handler = new CancellationHandler();
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
+        using var cancellation = new CancellationTokenSource();
+        var task = new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId, cancellation.Token);
+        await handler.Started.Task;
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+        Assert.True(handler.TransportToken.IsCancellationRequested);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task GetContentItemPointersAsync_AuthorizationFailure_IsPreserved(HttpStatusCode status)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse("{}", status));
+        var client = new HonuaStudioPackageClient(http);
+        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetContentItemPointersAsync(ItemId));
+        Assert.Equal(status, error.StatusCode);
+    }
+
+    private static string PointerEnvelope() => $$"""
+        {"success":true,"data":{"items":[{"itemId":"{{ItemId}}",
+        "currentVersionId":"{{VersionId}}","publishedVersionId":"{{DraftId}}"}],"nextCursor":null} }
+        """;
+
     private static string PublicationEnvelope(string status) => $$"""
         {"success":true,"data":{"requestId":"44444444-4444-4444-4444-444444444444",
         "itemId":"{{ItemId}}","versionId":"{{VersionId}}","status":"{{status}}",

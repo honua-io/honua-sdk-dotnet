@@ -185,6 +185,65 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
     }
 
     /// <inheritdoc />
+    public async Task<StudioContentItemPointers?> GetContentItemPointersAsync(
+        Guid itemId,
+        CancellationToken cancellationToken = default)
+    {
+        if (itemId == Guid.Empty)
+        {
+            throw new ArgumentException("A content item identifier is required.", nameof(itemId));
+        }
+
+        const string operation = "GetContentItemPointers";
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        string? cursor = null;
+        for (var page = 0; page < 100; page++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var path = $"{BasePath}/content-items?limit=100";
+            if (cursor is not null)
+            {
+                path += "&cursor=" + Uri.EscapeDataString(cursor);
+            }
+
+            using var message = new HttpRequestMessage(HttpMethod.Get, path);
+            using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            var envelope = await StudioHttpResponseReader.ReadAsync(response,
+                StudioPackageJsonContext.Default.StudioContentPointerEnvelope, operation, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != HttpStatusCode.OK || !envelope.Success || envelope.Data?.Items is not { } items
+                || items.Any(item => item is null || item.ItemId == Guid.Empty
+                    || item.CurrentVersionId == Guid.Empty || item.PublishedVersionId == Guid.Empty))
+            {
+                throw new HonuaStudioContractException("Content-item listing did not contain a valid pointer page.", operation);
+            }
+
+            var matches = items.Where(item => item.ItemId == itemId).ToArray();
+            if (matches.Length > 1)
+            {
+                throw new HonuaStudioContractException("Content-item listing returned ambiguous item identities.", operation);
+            }
+
+            if (matches.Length == 1)
+            {
+                return matches[0];
+            }
+
+            cursor = envelope.Data.NextCursor;
+            if (string.IsNullOrWhiteSpace(cursor))
+            {
+                return null;
+            }
+
+            if (!seenCursors.Add(cursor))
+            {
+                throw new HonuaStudioContractException("Content-item listing repeated a pagination cursor.", operation);
+            }
+        }
+
+        throw new HonuaStudioContractException("Content-item listing exceeded the 100-page scan limit; item presence is unknown.", operation);
+    }
+
+    /// <inheritdoc />
     public async Task<StudioPublicationSubmission> SubmitPublishRequestAsync(
         Guid itemId,
         Guid versionId,

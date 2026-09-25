@@ -5,9 +5,9 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 321,
+    "total": 322,
     "exercised": 24,
-    "gap": 279,
+    "gap": 280,
     "non-addressable": 18
   },
   "operations": [
@@ -8354,6 +8354,33 @@
       ],
       "scenarioFacets": [
         "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
+      },
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "GetContentItemPointersAsync",
+      "signature": "GetContentItemPointersAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
       ],
       "tests": [],
       "implementations": [
