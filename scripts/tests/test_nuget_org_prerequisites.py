@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -196,6 +197,10 @@ class PublishWorkflowContractTests(unittest.TestCase):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('DOTNET_VERSION: "10.0.400"', workflow)
         self.assertNotIn('DOTNET_VERSION: "10.0.x"', workflow)
+        sdk = json.loads((ROOT / "global.json").read_text(encoding="utf-8"))["sdk"]
+        self.assertEqual("10.0.400", sdk["version"])
+        self.assertEqual("patch", sdk["rollForward"])
+        self.assertEqual(2, workflow.count('if [[ "${actual_version}" != "${DOTNET_VERSION}" ]]; then'))
         staging_workflow = STAGING_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('DOTNET_VERSION: "10.0.400"', staging_workflow)
         self.assertIn("Verify pinned .NET SDK", staging_workflow)
