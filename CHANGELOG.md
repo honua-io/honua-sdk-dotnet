@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.10.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.9.0...dotnet-sdk-v1.10.0) (2026-09-25)
+
+
+### Features
+
+* **studio:** support governed publication and exact content pointers ([#390](https://github.com/honua-io/honua-sdk-dotnet/issues/390)) ([ded4f41](https://github.com/honua-io/honua-sdk-dotnet/commit/ded4f41e4eba590cb3e57b2e0808449d09872c3e))
+
 ## [1.9.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.8.0...dotnet-sdk-v1.9.0) (2026-09-25)
 
 
