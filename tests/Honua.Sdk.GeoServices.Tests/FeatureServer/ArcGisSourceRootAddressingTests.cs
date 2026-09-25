@@ -38,7 +38,7 @@ public sealed class ArcGisSourceRootAddressingTests
 
         await DriveEveryCallAsync(client, serviceId);
 
-        Assert.True(sent.Count == 17, $"[{label}] expected one request per call (17); sent {sent.Count}.");
+        Assert.True(sent.Count == 19, $"[{label}] expected one request per call (19); sent {sent.Count}.");
         Assert.All(sent, url => Assert.True(
             url.Replace("POST ", string.Empty, StringComparison.Ordinal).StartsWith(serviceRoot + "?", StringComparison.Ordinal) ||
             url.Replace("POST ", string.Empty, StringComparison.Ordinal).StartsWith(serviceRoot + "/0", StringComparison.Ordinal),
@@ -211,6 +211,8 @@ public sealed class ArcGisSourceRootAddressingTests
 
         await client.GetServiceInfoAsync(serviceId);
         await client.GetLayerInfoAsync(serviceId, 0);
+        using var serviceMetadata = await client.GetServiceMetadataAsync(serviceId);
+        using var layerMetadata = await client.GetLayerMetadataAsync(serviceId, 0);
         await client.QueryAsync(serviceId, 0, page);
         await client.QueryAsync(serviceId, 0, new FeatureServerQueryParams { Where = "NAME IN ('" + new string('x', 2100) + "')" });
         await client.QueryCountAsync(serviceId, 0, new FeatureServerQueryParams());

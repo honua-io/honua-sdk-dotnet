@@ -23,6 +23,33 @@ public sealed class ArcGisSourceResponseLimitTests
 {
     private const long Limit = 4096;
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task Metadata_OversizedBody_IsBoundedAndDisposed(bool layer, bool declareLength)
+    {
+        var body = new CountingStream(length: declareLength ? Limit + 1 : long.MaxValue);
+        var client = CreateClient(_ => Respond(HttpStatusCode.OK, body, declareLength));
+
+        var exception = await Assert.ThrowsAsync<HonuaFeatureServerResponseTooLargeException>(() => layer
+            ? client.GetLayerMetadataAsync("Hydrants", 0)
+            : client.GetServiceMetadataAsync("Hydrants"));
+
+        Assert.Equal(Limit, exception.MaxResponseBytes);
+        if (declareLength)
+        {
+            Assert.Equal(0, body.BytesRead);
+        }
+        else
+        {
+            Assert.InRange(body.BytesRead, Limit + 1, Limit + (64 * 1024));
+        }
+
+        Assert.True(body.Disposed);
+    }
+
     [Fact]
     public void DefaultCeiling_MatchesTheServerImporter()
     {

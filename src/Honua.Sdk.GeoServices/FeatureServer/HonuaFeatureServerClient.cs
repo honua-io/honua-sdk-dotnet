@@ -166,6 +166,40 @@ public sealed class HonuaFeatureServerClient :
             ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "Failed to deserialize layer info.", body);
     }
 
+    /// <summary>
+    /// Reads service metadata without projecting it into typed models. Source member presence,
+    /// explicit nulls and provider extensions are preserved for migration inventories.
+    /// </summary>
+    /// <param name="serviceId">The service identifier, including any folder segments.</param>
+    /// <param name="cancellationToken">Cancellation token for the bounded response read.</param>
+    /// <returns>A document owned by the caller, who must dispose it. The HTTP response is already disposed.</returns>
+    public Task<JsonDocument> GetServiceMetadataAsync(string serviceId, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceId);
+        return GetMetadataDocumentAsync($"{ServicePath(serviceId)}?f=json", cancellationToken);
+    }
+
+    /// <summary>
+    /// Reads layer metadata without projecting it into typed models. Source member presence,
+    /// explicit nulls and provider extensions are preserved for migration inventories.
+    /// </summary>
+    /// <param name="serviceId">The service identifier, including any folder segments.</param>
+    /// <param name="layerId">The source layer or table identifier.</param>
+    /// <param name="cancellationToken">Cancellation token for the bounded response read.</param>
+    /// <returns>A document owned by the caller, who must dispose it. The HTTP response is already disposed.</returns>
+    public Task<JsonDocument> GetLayerMetadataAsync(string serviceId, int layerId, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceId);
+        return GetMetadataDocumentAsync($"{ServicePath(serviceId)}/{layerId}?f=json", cancellationToken);
+    }
+
+    private async Task<JsonDocument> GetMetadataDocumentAsync(string url, CancellationToken cancellationToken)
+    {
+        var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        return JsonDocument.Parse(body);
+    }
+
     /// <inheritdoc />
     public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default)
     {
@@ -518,7 +552,8 @@ public sealed class HonuaFeatureServerClient :
 
         var body = await ExecuteQueryAsync(serviceId, layerId, parameters, cancellationToken).ConfigureAwait(false);
         var response = DeserializeQueryResponse(body);
-        return response.Count ?? 0;
+        return response.Count
+            ?? throw new HonuaFeatureServerException(HttpStatusCode.OK, "FeatureServer count response did not contain a count.");
     }
 
     /// <inheritdoc />

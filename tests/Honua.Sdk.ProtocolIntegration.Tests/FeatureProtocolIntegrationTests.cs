@@ -113,6 +113,22 @@ public sealed class FeatureProtocolIntegrationTests(ProtocolIntegrationFixture f
     }
 
     [ProtocolIntegrationFact]
+    public async Task FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
+        using var service = await _fixture.SourceMetadataClient.GetServiceMetadataAsync(
+            _fixture.Options.ServiceName, timeout.Token).ConfigureAwait(false);
+        using var layer = await _fixture.SourceMetadataClient.GetLayerMetadataAsync(
+            _fixture.Options.ServiceName, _fixture.Options.LayerId, timeout.Token).ConfigureAwait(false);
+
+        Assert.Contains(service.RootElement.GetProperty("layers").EnumerateArray(),
+            entry => entry.GetProperty("id").GetInt32() == _fixture.Options.LayerId);
+        Assert.Equal(_fixture.Options.LayerId, layer.RootElement.GetProperty("id").GetInt32());
+        Assert.NotEmpty(layer.RootElement.GetProperty("fields").EnumerateArray());
+        Assert.False(string.IsNullOrWhiteSpace(layer.RootElement.GetProperty("name").GetString()));
+    }
+
+    [ProtocolIntegrationFact]
     public async Task OgcCollections_Items_Queryables_AndSingleItem_AreReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope();

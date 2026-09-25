@@ -1,5 +1,7 @@
 ﻿#nullable enable
 Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetLayerMetadataAsync(string! serviceId, int layerId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
+Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient.GetServiceMetadataAsync(string! serviceId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Text.Json.JsonDocument!>!
 Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.Basic = 2 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
 Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.Bearer = 3 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
 Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode.None = 0 -> Honua.Sdk.GeoServices.FeatureServer.ArcGisCredentialMode
