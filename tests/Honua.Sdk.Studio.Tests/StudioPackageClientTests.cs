@@ -333,7 +333,7 @@ public sealed class StudioPackageClientTests
     public async Task SubmitPublishRequestAsync_DisposesResponseOnSuccessAndContractFailure(bool malformed)
     {
         using var content = new TrackingJsonContent(malformed ? "{}" : ApprovalEnvelope());
-        using var http = CreateHttpClient(_ => ResponseWithContent(content));
+        using var http = CreateHttpClient(async _ => await ResponseWithContent(content));
         var client = new HonuaStudioPackageClient(http);
         if (malformed)
         {
