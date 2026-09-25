@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.10.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.0...dotnet-sdk-v1.10.1) (2026-09-25)
+
+
+### Documentation
+
+* correct stable package feed availability ([#392](https://github.com/honua-io/honua-sdk-dotnet/issues/392)) ([35c979a](https://github.com/honua-io/honua-sdk-dotnet/commit/35c979aef504a052466a26f68c10cc9ea348b017))
+
 ## [1.10.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.9.0...dotnet-sdk-v1.10.0) (2026-09-25)
 
 
