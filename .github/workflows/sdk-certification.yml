@@ -42,10 +42,13 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:373aa1fdf1bd4153df9cb21e25e43dfc463c0e194fcac13b40a39c4bb390eb72"
-  PINNED_SERVER_SOURCE_SHA: "ac30266fbd153363bebdbed13130accc8ab0c94a"
-  PINNED_SERVER_FIXTURE_REVISION: "sha256:97d35505c77ac4e8c2707364bd499f780cbf63e0e7152e84cd3ef4994ff42914"
-  PINNED_CANDIDATE_CUT: "2026-08-27T03:54:36Z"
+  # honua-release origin/trunk candidate. Digest only; never :nightly or :nightly-aot.
+  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a"
+  PINNED_SERVER_SOURCE_SHA: "87966c3f7b6c840ffc4d4da0b451714ab717b18a"
+  # sha256 of honua-server tests/seed/base-schema.sql at the server pin.
+  PINNED_SERVER_FIXTURE_REVISION: "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
+  # linux/amd64 image config created time for that digest.
+  PINNED_CANDIDATE_CUT: "2026-09-16T08:23:18.979734311Z"
   PINNED_SDK_PACKAGE_ID: "Honua.Sdk"
   PINNED_SDK_PACKAGE_VERSION: "1.6.0"
   PINNED_SDK_PACKAGE_DIGEST: "sha256:e5c3bf0a243822cb3d76cca6ef090b226f8502480c6a6699d7e34e24c1aeeadc"
@@ -109,6 +112,15 @@ jobs:
           seed_ref="${INPUT_SEED_REF:-${source_sha}}"
           expected_fixture_revision="${INPUT_FIXTURE_REVISION:-${PINNED_SERVER_FIXTURE_REVISION}}"
           release_cut="${INPUT_RELEASE_CUT:-${PINNED_CANDIDATE_CUT}}"
+          if [[ ! "${image}" =~ ^ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}$ ]]; then
+            echo '::error::Refusing a floating or tagged server image. Certification requires ghcr.io/honua-io/honua-server@sha256:<digest>.'
+            exit 1
+          fi
+          if [[ "${tier}" == release ]]; then
+            [[ "${image}" == "${PINNED_SERVER_IMAGE}" ]] || { echo '::error::Release image is not the manifest candidate digest.'; exit 1; }
+            [[ "${source_sha}" == "${PINNED_SERVER_SOURCE_SHA}" ]] || { echo '::error::Release source SHA is not the manifest server pin.'; exit 1; }
+            [[ "${expected_fixture_revision}" == "${PINNED_SERVER_FIXTURE_REVISION}" ]] || { echo '::error::Release fixture revision is not the candidate pin.'; exit 1; }
+          fi
           image_metadata="$(docker buildx imagetools inspect "${image}" --format '{{json .}}')"
           resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
           requested_digest="${image##*@}"
@@ -160,6 +172,9 @@ jobs:
             --package-source-sha "${PINNED_SDK_PACKAGE_SOURCE_SHA}" \
             --publication-state "${PINNED_SDK_PACKAGE_PUBLICATION_STATE}" \
             --registry "${PINNED_SDK_PACKAGE_REGISTRY}" \
+            --server-image "${{ steps.identity.outputs.image }}" \
+            --server-source-sha "${{ steps.identity.outputs.source-sha }}" \
+            --fixture-revision "${{ steps.identity.outputs.expected-fixture-revision }}" \
             --release-cut "${{ steps.identity.outputs.release-cut }}" \
             --nuget-config NuGet.config \
             --output "${RUNNER_TEMP}/honua-sdk-installed-consumer" \

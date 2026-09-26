@@ -847,6 +847,12 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "layerId": getattr(args, "layer_id", None) or os.environ.get("HONUA_PROTOCOL_LAYER_ID", "0"),
         "collectionId": getattr(args, "collection_id", None) or os.environ.get("HONUA_PROTOCOL_OGC_COLLECTION_ID", "0"),
     }
+    if args.tier == "release" and not re.fullmatch(
+        r"ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}", args.server_image or ""
+    ):
+        raise ValueError(
+            "release server image must be digest-addressed and must not use a floating nightly tag"
+        )
     if args.tier == "release":
         missing = [key for key, value in values.items() if not value]
         if missing:
@@ -857,8 +863,6 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
             raise ValueError("release seed revision must exactly equal the server source SHA")
         if args.image_source_revision != args.server_source_sha:
             raise ValueError("verified image source revision must exactly equal the release server source SHA")
-        if not re.search(r"@sha256:[0-9a-f]{64}$", args.server_image, re.I):
-            raise ValueError("release server image must be immutable and addressed by sha256 digest")
         if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.fixture_revision or "", re.I):
             raise ValueError("release fixture revision must be the SHA-256 of the applied fixture")
         if values["sdkPackageId"] != "Honua.Sdk":

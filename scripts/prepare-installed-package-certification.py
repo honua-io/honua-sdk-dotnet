@@ -18,6 +18,19 @@ ROOT = Path(__file__).resolve().parents[1]
 SHA256_RE = re.compile(r"sha256:[0-9a-f]{64}")
 SHA_RE = re.compile(r"[0-9a-f]{40}")
 VERSION_RE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
+DIGEST_IMAGE_RE = re.compile(r"ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}")
+
+# honua-release origin/trunk candidate. The image is digest-addressed; the per-sha
+# nightly-* tag is not an acceptable substitute.
+CANDIDATE_SERVER_SHA = "87966c3f7b6c840ffc4d4da0b451714ab717b18a"
+CANDIDATE_SERVER_IMAGE = (
+    "ghcr.io/honua-io/honua-server@sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a"
+)
+CANDIDATE_FIXTURE_REVISION = "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
+# clientArtifacts.honua-sdk-dotnet on that same manifest. Component version 1.6.2 is not published.
+CANDIDATE_PACKAGE_VERSION = "1.6.0"
+CANDIDATE_PACKAGE_DIGEST = "sha256:e5c3bf0a243822cb3d76cca6ef090b226f8502480c6a6699d7e34e24c1aeeadc"
+CANDIDATE_PACKAGE_SOURCE_SHA = "a88a7fbb3643cb046e70d6ef4d38ae70a025a2a4"
 
 
 def validate_identity(args: argparse.Namespace) -> None:
@@ -29,6 +42,10 @@ def validate_identity(args: argparse.Namespace) -> None:
         raise ValueError("package digest must be a lowercase SHA-256")
     if not SHA_RE.fullmatch(args.package_source_sha):
         raise ValueError("package source SHA must be a full lowercase commit")
+    image = getattr(args, "server_image", None)
+    if args.tier == "release" or image:
+        if not image or not DIGEST_IMAGE_RE.fullmatch(image):
+            raise ValueError("server image must be digest-addressed; refusing a floating nightly tag")
     if args.tier == "release":
         if args.publication_state != "published":
             raise ValueError("release certification requires a published package")
@@ -36,6 +53,18 @@ def validate_identity(args: argparse.Namespace) -> None:
             raise ValueError("release certification requires the pinned remote registry")
         if not args.release_cut:
             raise ValueError("release certification requires an exact release cut")
+        if image != CANDIDATE_SERVER_IMAGE:
+            raise ValueError("release certification requires the exact candidate image digest")
+        if getattr(args, "server_source_sha", None) != CANDIDATE_SERVER_SHA:
+            raise ValueError(f"release certification requires server pin {CANDIDATE_SERVER_SHA}")
+        if getattr(args, "fixture_revision", None) != CANDIDATE_FIXTURE_REVISION:
+            raise ValueError("release fixture revision does not match the candidate pin")
+        if (
+            args.package_version != CANDIDATE_PACKAGE_VERSION
+            or args.package_digest != CANDIDATE_PACKAGE_DIGEST
+            or args.package_source_sha != CANDIDATE_PACKAGE_SOURCE_SHA
+        ):
+            raise ValueError("release certification requires the manifest-pinned Honua.Sdk package")
 
 
 def _write_consumer(directory: Path, args: argparse.Namespace) -> Path:
@@ -103,6 +132,25 @@ def _verify_package(package: Path, args: argparse.Namespace) -> dict[str, str]:
     }
 
 
+def package_archive(packages: Path, args: argparse.Namespace) -> Path:
+    return packages / args.package_id.lower() / args.package_version.lower() / (
+        f"{args.package_id.lower()}.{args.package_version.lower()}.nupkg"
+    )
+
+
+def restore_failure_message(output: str, package_present: bool, server_sha: str) -> str:
+    if "NU3018" in output or "NU3042" in output:
+        return (
+            "published package bytes cannot be installed: the author signing certificate "
+            "O=Honua, CN=Honua SDK Signing is not trusted by the .NET trust provider "
+            "(NU3042/NU3018). Certification fails closed and does not suppress signature "
+            "warnings, pack from source, or substitute a floating nightly tag."
+        )
+    if not package_present:
+        return f"published package bytes for server pin {server_sha} do not exist"
+    return "installed package restore failed closed"
+
+
 def prepare(args: argparse.Namespace) -> dict[str, str]:
     validate_identity(args)
     project = _write_consumer(args.output, args)
@@ -110,14 +158,22 @@ def prepare(args: argparse.Namespace) -> dict[str, str]:
     command = [
         "dotnet", "restore", str(project), "--packages", str(packages),
         "--configfile", str(args.nuget_config), "--no-cache", "--force-evaluate",
-        f"-p:RestoreLockedMode=false",
+        "-p:RestoreLockedMode=false",
     ]
-    subprocess.run(command, check=True)
-    package = packages / args.package_id.lower() / args.package_version.lower() / (
-        f"{args.package_id.lower()}.{args.package_version.lower()}.nupkg"
-    )
+    completed = subprocess.run(command, capture_output=True, text=True)
+    package = package_archive(packages, args)
+    if completed.returncode != 0:
+        raise ValueError(
+            restore_failure_message(
+                f"{completed.stdout}\n{completed.stderr}",
+                package.is_file(),
+                getattr(args, "server_source_sha", None) or CANDIDATE_SERVER_SHA,
+            )
+        )
     if not package.is_file():
-        raise ValueError(f"restore did not install the exact package archive: {package}")
+        raise ValueError(
+            f"published package bytes for server pin {CANDIDATE_SERVER_SHA} do not exist"
+        )
     assets = json.loads((args.output / "obj" / "project.assets.json").read_text(encoding="utf-8"))
     if f"{args.package_id}/{args.package_version}" not in assets["libraries"]:
         raise ValueError("restored assets do not contain the exact package coordinate")
@@ -135,6 +191,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--package-source-sha", required=True)
     parser.add_argument("--publication-state", required=True)
     parser.add_argument("--registry", required=True)
+    parser.add_argument("--server-image")
+    parser.add_argument("--server-source-sha")
+    parser.add_argument("--fixture-revision")
     parser.add_argument("--release-cut")
     parser.add_argument("--nuget-config", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)

@@ -97,6 +97,31 @@ class SdkCertificationTests(unittest.TestCase):
                 **self._request_context(),
             ))
 
+    def test_release_identity_rejects_floating_nightly_tags(self):
+        sha = "b" * 40
+        for image in (
+            "ghcr.io/honua-io/honua-server:nightly",
+            "ghcr.io/honua-io/honua-server:nightly-aot",
+            "ghcr.io/honua-io/honua-server:nightly-87966c3",
+            "ghcr.io/honua-io/honua-server:nightly@sha256:" + "c" * 64,
+        ):
+            with self.subTest(image=image), self.assertRaisesRegex(ValueError, "floating nightly tag"):
+                MODULE._identity(Namespace(
+                    tier="release",
+                    sdk_commit="a" * 40,
+                    sdk_version="1.6.0",
+                    sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "f" * 64,
+                    sdk_package_source_sha="a" * 40,
+                    server_source_sha=sha,
+                    image_source_revision=sha,
+                    server_image=image,
+                    release_cut="2026-01-01T00:00:00Z",
+                    candidate_cut="2026-01-01T00:00:00Z", evidence_uri="https://example.test/run/1",
+                    fixture_revision="sha256:" + "e" * 64,
+                    seed_revision=sha,
+                    **self._request_context(),
+                ))
+
     def test_missing_required_result_fails_closed(self):
         document = {
             "operations": [{
