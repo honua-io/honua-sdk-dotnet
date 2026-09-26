@@ -95,7 +95,14 @@ published-bytes receipt and cannot close #341.
 | `evidence/548b7a5/unpublished-1.7.1-cert341` | local pack of #372 (not published) | `548b7a5` | 39 / 0 / 3 |
 | `evidence/2cc2213/published-1.8.0` | nuget.org 1.8.0, nupkg SHA-512 `m5wSCMoU…pkaQw==`, assembly SHA-256 `b276ee31…` | `nightly-2cc2213` (`sha256:61e06ef3…`, dbSchema 120) | **39 / 0 / 3** |
 
-The negative control failed `data.int64-precision` in every run, as required.
+| `evidence/87966c3/published-1.10.0` | nuget.org 1.10.0, nupkg SHA-512 `rBn/8ASX…Uta8Q==` | manifest pin `87966c3` (`sha256:069f196b…`) | **41 / 0 / 3** |
+
+The negative control failed exactly `data.int64-precision` in the 1.10.0 replay
+(expected `9007199254740992`, actual `9007199254740993`), as required. The
+focused ArcGIS source regression suite also passed all 83 tests with zero skips;
+named results are in the 1.10.0 evidence directory. The 41 passing cells comprise
+40 live-source/package-identity cells and one supplemental authored transport
+fixture cell; the three released live cases are not included in that count.
 
 ## Acceptance disposition for the 1.10.0 replay
 
