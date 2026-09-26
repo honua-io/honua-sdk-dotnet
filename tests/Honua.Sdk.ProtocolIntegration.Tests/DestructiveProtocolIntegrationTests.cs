@@ -17,6 +17,13 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
     public async Task FeatureServerApplyEdits_AddUpdateDelete_RoundTrips()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
+        var entitlements = await _fixture.AdminClient.GetLicenseEntitlementsAsync(timeout.Token).ConfigureAwait(false);
+        var featureServerEdits = Assert.Single(
+            entitlements,
+            entitlement => entitlement.Key == "editing.featureserver-edits");
+        Assert.True(
+            featureServerEdits.IsActive,
+            "editing.featureserver-edits is not active. A FeatureServer edit 402 is a failure, not a pass.");
         var addAttributes = ParseAttributes(
             _fixture.Options.FeatureServerEditAddAttributesJson,
             "HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON");
@@ -89,26 +96,22 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
             if (objectIdForCleanup.HasValue)
             {
                 using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                await TryDeleteAsync(objectIdForCleanup.Value, cleanup.Token).ConfigureAwait(false);
+                await DeleteForCleanupAsync(objectIdForCleanup.Value, cleanup.Token).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task TryDeleteAsync(long objectId, CancellationToken cancellationToken)
+    private async Task DeleteForCleanupAsync(long objectId, CancellationToken cancellationToken)
     {
-        try
-        {
-            await _fixture.FeatureServerEditClient.DeleteFeaturesAsync(
-                _fixture.Options.ServiceName,
-                _fixture.Options.LayerId,
-                [objectId],
-                rollbackOnFailure: true,
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Preserve the original edit failure.
-        }
+        var response = await _fixture.FeatureServerEditClient.DeleteFeaturesAsync(
+            _fixture.Options.ServiceName,
+            _fixture.Options.LayerId,
+            [objectId],
+            rollbackOnFailure: true,
+            cancellationToken).ConfigureAwait(false);
+
+        var result = Assert.Single(response.DeleteResults);
+        Assert.True(result.Success, $"FeatureServer cleanup failed. {FormatError(result.Error)}");
     }
 
     private static Dictionary<string, JsonElement> ParseAttributes(string? json, string name)
