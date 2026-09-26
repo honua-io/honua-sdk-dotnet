@@ -1,0 +1,356 @@
+{
+  "command": "HONUA_MSBUILD_NODE_CAP=4 dotnet test tests/Honua.Sdk.GeoServices.Tests/Honua.Sdk.GeoServices.Tests.csproj --configuration Release --filter 'FullyQualifiedName~ArcGisSource'",
+  "sourceCommit": "35c979aef504a052466a26f68c10cc9ea348b017",
+  "counters": {
+    "total": "83",
+    "executed": "83",
+    "passed": "83",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "tests": [
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ArcGisSourceCredentialHandler_DefaultInnerHandler_IsDisposedWithHandler",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_InvalidJson_DisposesResponse(layer: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.CeilingIsCallerConfigurable",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_ParsesPrefixFoldersAndType(serviceRoot: \"https://gis.example.com/rest/services/Utilities/Wa\"\u00b7\u00b7\u00b7, rootAddress: \"https://gis.example.com/\", servicesPath: \"rest/services\", serviceId: \"Utilities/Water\", serviceType: MapServer)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_ParsesPrefixFoldersAndType(serviceRoot: \"https://gis.example.com:6443/arcgis/REST/Services/\"\u00b7\u00b7\u00b7, rootAddress: \"https://gis.example.com:6443/arcgis/\", servicesPath: \"REST/Services\", serviceId: \"Public Works/Mains\", serviceType: MapServer)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.RootAddress_TakesPrecedenceOverTheHttpClientBaseAddress",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRootUrl_AddressesTheSourceWithoutABaseAddress",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_ParsesPrefixFoldersAndType(serviceRoot: \"https://gis.example.com/arcgis/rest/services/Inspe\"\u00b7\u00b7\u00b7, rootAddress: \"https://gis.example.com/arcgis/\", servicesPath: \"rest/services\", serviceId: \"Inspections\", serviceType: FeatureServer)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.PointGeometry_WithZAndM_RoundTripsExactOrdinates",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.FolderSegments_AreEscapedIndividually",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.BodyAtTheCeiling_IsReadNormally",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.DeclaredOversizedBody_IsRefusedBeforeAnyByteIsRead",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"./Hydrants\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.Metadata_OversizedBody_IsBoundedAndDisposed(layer: True, declareLength: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ArcGisSourceCredentialHandler_SuppliedInnerHandler_IsDisposedExactlyOnce",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_ReportsEnvelopeOrTransportError_AndDisposesResponse(layer: True, status: OK)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.OversizedAttachmentErrorBodies_FailWithTheTypedException",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_CancellationDuringBodyRead_PropagatesAndDisposesStream(layer: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.Metadata_OversizedBody_IsBoundedAndDisposed(layer: True, declareLength: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.EmptyServicesPath_PlacesTheServiceIdDirectlyUnderTheRoot",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.EveryRequest_ResolvesUnderTheServiceRoot(label: \"Foldered service (Utilities/Water)\", baseAddress: \"https://gis.example.com/\", serviceId: \"Utilities/Water\", serviceType: FeatureServer, serviceRoot: \"https://gis.example.com/rest/services/Utilities/Wa\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"/Hydrants\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.Constructor_RejectsInvalidOptions",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_RejectsUrlsThatAreNotServiceRoots(candidate: \"https://gis.example.com/arcgis/rest/services/Hydra\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ArcGisSourceCredentialHandler_TokenProvider_TakesPrecedenceAndIsInvokedPerRequest",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_ReportsEnvelopeOrTransportError_AndDisposesResponse(layer: False, status: OK)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"Utilities//Water\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.NullGeometry_IsDistinguishedFromEmptyGeometryObject",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.EveryRequest_ResolvesUnderTheServiceRoot(label: \"MapServer source (MapServer-MixedRenderers)\", baseAddress: \"https://gis.example.com/arcgis/\", serviceId: \"Fixtures/MapServer-MixedRenderers\", serviceType: MapServer, serviceRoot: \"https://gis.example.com/arcgis/rest/services/Fixtu\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_ParsesPrefixFoldersAndType(serviceRoot: \"https://proxy.example.com/sources/Hydrants/Feature\"\u00b7\u00b7\u00b7, rootAddress: \"https://proxy.example.com/sources/\", servicesPath: \"\", serviceId: \"Hydrants\", serviceType: FeatureServer)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.DefaultCeiling_MatchesTheServerImporter",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_RejectsRelativeAndNullUrls",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.Metadata_OversizedBody_IsBoundedAndDisposed(layer: False, declareLength: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.Int64ObjectId_NearLongMaxValue_SurvivesWithoutDoublePrecisionLoss",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.OversizedErrorBody_FailsWithTheTypedExceptionAndStatus",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.BoundedRead_DecodesTheDeclaredCharsetAndStripsTheBom",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_RejectsUrlsThatAreNotServiceRoots(candidate: \"https://gis.example.com/arcgis/rest/services/Hydra\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.QueryPagesAsync_SourceOverlapsPreviousPage_FailsBeforeYieldingDuplicates",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.QueryPagesAsync_RepeatedPageWithoutObjectIdField_FailsBeforeYieldingDuplicates",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.DefaultClient_KeepsTheHonuaServerAddressing",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.QueryAttachments_ListsABatchInOneRequest",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.UndeclaredOversizedBody_IsAbandonedAtTheCeiling",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.QueryPagesAsync_DistinctPagesWithoutObjectIdField_Complete",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ArcGisSourceCredentialHandler_BasicMode_SetsExpectedAuthorizationHeader",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_InvalidJson_DisposesResponse(layer: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"Utilities/../../admin\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ArcGisSourceCredentialHandler_BearerMode_SetsBearerHeader",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.QueryAsync_TrueCurveGeometry_IsPreservedVerbatimAndNeverCoercedToLinearGeometry",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"..\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.QueryAttachments_ReportsGeoServicesErrors",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ErrorEnvelope_On200Response_CapturesRetryAfter",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_RejectsUrlsThatAreNotServiceRoots(candidate: \"https://gis.example.com/arcgis/rest/services/Featu\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_PreservesSourcePresenceAndExtensions_InCallerOwnedDocument(layer: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.Field_PreservesAliasLengthDomainAndAdditionalProperties",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.QueryAsync_ResponseSpatialReference_WktOnly_PreservesWkt",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ErrorResponse_NonSuccessStatus_CapturesRetryAfter",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_ReportsEnvelopeOrTransportError_AndDisposesResponse(layer: False, status: TooManyRequests)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.GetLayerInfoAsync_ExtentSpatialReference_WktOnly_PreservesWkt",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.CodedValueDomain_PreservesEveryCodeNamePairLosslessly",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.OversizedPostBody_FailsWithTheTypedException",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.Field_OmitsNullableAndEditable_PreservesNullDistinctFromExplicitFalse",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.QueryAttachments_LargeBatchFallsBackToFormPost",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.GuidField_CasingAndBracesArePreservedVerbatim",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.QueryAttachments_EmptyBatchSendsNoRequest",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.ArcGisSourceCredentialHandler_TokenMode_AppendsTokenQueryParameter",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.EveryRequest_ResolvesUnderTheServiceRoot(label: \"Web adaptor base address without trailing slash\", baseAddress: \"https://gis.example.com/arcgis\", serviceId: \"Inspections\", serviceType: FeatureServer, serviceRoot: \"https://gis.example.com/arcgis/rest/services/Inspe\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_CancellationDuringBodyRead_PropagatesAndDisposesStream(layer: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_ReportsEnvelopeOrTransportError_AndDisposesResponse(layer: True, status: TooManyRequests)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.EveryRequest_ResolvesUnderTheServiceRoot(label: \"ArcGIS Enterprise web adaptor (/arcgis prefix)\", baseAddress: \"https://gis.example.com/arcgis/\", serviceId: \"Inspections\", serviceType: FeatureServer, serviceRoot: \"https://gis.example.com/arcgis/rest/services/Inspe\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_RejectsUrlsThatAreNotServiceRoots(candidate: \"https://gis.example.com/FeatureServer\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.QueryPagesAsync_SourceRepeatsPage_FailsBeforeYieldingDuplicates",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.GetServiceInfoAsync_TablesAndUnmodelledMembers_ArePreserved",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.InvalidServiceIds_AreRejectedBeforeAnyRequest(serviceId: \"Utilities/\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.QueryAllFeaturesByObjectIdBatchesAsync_EmptySource_YieldsNoBatches",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.EveryRequest_ResolvesUnderTheServiceRoot(label: \"ArcGIS Online hosted (/<org>/arcgis prefix)\", baseAddress: \"https://services.arcgis.com/Org123/arcgis/\", serviceId: \"Hydrants\", serviceType: FeatureServer, serviceRoot: \"https://services.arcgis.com/Org123/arcgis/rest/ser\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.GetLayerInfoAsync_DrawingInfoRelationshipsSubtypesAndPaging_ArePreservedLosslessly",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_ParsesPrefixFoldersAndType(serviceRoot: \"https://services.arcgis.com/Org123/arcgis/rest/ser\"\u00b7\u00b7\u00b7, rootAddress: \"https://services.arcgis.com/Org123/arcgis/\", servicesPath: \"rest/services\", serviceId: \"Hydrants\", serviceType: FeatureServer)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourcePreservationTests.QueryAsync_ReturnZAndReturnM_AreSentOnlyWhenRequested",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceResponseLimitTests.Metadata_OversizedBody_IsBoundedAndDisposed(layer: False, declareLength: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceFidelityTests.QueryAllFeaturesByObjectIdBatchesAsync_SourceIgnoresResultOffset_CompletesWithoutDuplicatesOrGaps",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceRootAddressingTests.ServiceRoot_RejectsUrlsThatAreNotServiceRoots(candidate: \"https://gis.example.com/arcgis/rest/services/a/%2E\"\u00b7\u00b7\u00b7)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Honua.Sdk.GeoServices.Tests.FeatureServer.ArcGisSourceMetadataTests.Metadata_PreservesSourcePresenceAndExtensions_InCallerOwnedDocument(layer: True)",
+      "outcome": "Passed"
+    }
+  ]
+}

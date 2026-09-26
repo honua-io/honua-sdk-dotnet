@@ -33,7 +33,11 @@ package, whose SHA-512 must equal the nuget.org catalog `packageHash`.
    admin API. A coded-value domain, an alias and `timeInfo` are authored through
    the admin field and layer-metadata operations.
 3. Captures the source's own service, layer and query JSON under `wire/`.
-4. Restores `Honua.Sdk.GeoServices` and runs every cell.
+4. Restores `Honua.Sdk.GeoServices` and runs every cell. One supplemental
+   `package.typed-importer-metadata` cell uses an independently authored transport
+   fixture to assert the published typed members (including subtype defaults,
+   int64 defaults, WKT and tri-state field flags). It is explicitly **not** live
+   evidence for the released subtype cell.
 5. Runs again with a corrupted oracle: `big_counter` 2^53 + 1 is replaced by the
    double-rounded 2^53. That run must fail `data.int64-precision`, or `run.sh`
    exits 2.
@@ -48,7 +52,7 @@ never passes.
 
 | Group | Cells | Acceptance criterion |
 | --- | --- | --- |
-| `package.*` | published bytes | Normal versioned `PackageReference` |
+| `package.*` | published bytes and authored typed-metadata fixture | Normal versioned `PackageReference` |
 | `discovery.*`, `schema.*` | layers, tables, object ID field, field types, coded-value domain | Service/layer/table discovery and schema |
 | `metadata.*` | service/layer/field lossless round-trip, drawingInfo, relationships, timeInfo, pagination capabilities | Preserve metadata |
 | `data.*`, `geometry.*` | count/IDs, int64, GUID, null versus empty, temporal, numeric, null geometry, Z/M | Preserve values |
@@ -63,14 +67,16 @@ reported as `released`, never as `pass`.
 
 ```bash
 WORK_DIR=/path/on/real/disk/cert341 \
-OUT_DIR=certification/geoservices-source-import/evidence/2cc2213/published-1.8.0 \
-SDK_PACKAGE_VERSION=1.8.0 \
+OUT_DIR=certification/geoservices-source-import/evidence/87966c3/published-1.10.0 \
+SDK_PACKAGE_VERSION=1.10.0 \
 certification/geoservices-source-import/run.sh
 ```
 
-The defaults are the published 1.8.0 package and the imaged trunk nightly
-`nightly-2cc2213` (`sha256:61e06ef3…`). Set `SERVER_IMAGE` and
-`SERVER_SOURCE_SHA` to certify against a newer nightly.
+The defaults are the published 1.10.0 package and the manifest-pinned nightly
+`nightly-87966c3` (`sha256:069f196b…`), checked against honua-release trunk
+`platform-manifest.yaml` on 2026-09-26. Set `SERVER_IMAGE` and
+`SERVER_SOURCE_SHA` to certify against a newer manifest pin. The default private subnet is `172.30.241.0/24`;
+set `SUBNET_PREFIX`, `PORT_PREFIX` and `PREFIX` if those resources are occupied.
 
 Requirements are Docker, the .NET 10 SDK, `jq`, `openssl` and network access to
 ghcr.io and nuget.org. `WORK_DIR` must be on a disk Docker can bind-mount.
@@ -89,4 +95,31 @@ published-bytes receipt and cannot close #341.
 | `evidence/548b7a5/unpublished-1.7.1-cert341` | local pack of #372 (not published) | `548b7a5` | 39 / 0 / 3 |
 | `evidence/2cc2213/published-1.8.0` | nuget.org 1.8.0, nupkg SHA-512 `m5wSCMoU…pkaQw==`, assembly SHA-256 `b276ee31…` | `nightly-2cc2213` (`sha256:61e06ef3…`, dbSchema 120) | **39 / 0 / 3** |
 
-The negative control failed `data.int64-precision` in every run, as required.
+| `evidence/87966c3/published-1.10.0` | nuget.org 1.10.0, nupkg SHA-512 `rBn/8ASX…Uta8Q==` | manifest pin `87966c3` (`sha256:069f196b…`) | **41 / 0 / 3** |
+
+The negative control failed exactly `data.int64-precision` in the 1.10.0 replay
+(expected `9007199254740992`, actual `9007199254740993`), as required. The
+focused ArcGIS source regression suite also passed all 83 tests with zero skips;
+named results are in the 1.10.0 evidence directory. The 41 passing cells comprise
+40 live-source/package-identity cells and one supplemental authored transport
+fixture cell; the three released live cases are not included in that count.
+
+## Acceptance disposition for the 1.10.0 replay
+
+The publication prerequisite is resolved: 1.10.0 contains #379's typed importer
+members, #383's nullable/editable tri-state and WKT preservation, and #389's raw
+metadata APIs. `metadata.raw-source-documents` compares those APIs with independent
+wire reads, including absent members and explicit nulls. The source inventory was
+rechecked against importer source at the exact `87966c3` candidate revision.
+
+Three live cells remain **released**, not passed: attachments, subtypes and true
+curves. The pinned source still emits `hasAttachments=false`,
+`supportsTrueCurve=false` and no subtype definitions. The supported fixture
+publication path does not author these representations; the reasons remain in
+`fixture/expected.v1.json` and in every receipt. Supplemental SDK fixture checks
+cannot replace that live-source qualification. This replay therefore uses
+`Refs #341 (released: live attachment, subtype and true-curve source qualification
+is unavailable through the pinned candidate's supported fixture authoring path)`.
+It does not claim universal lossless import or certify the downstream server
+importer's source-to-target mapping, which remains owned by server#4599/#4600
+and release#317.
