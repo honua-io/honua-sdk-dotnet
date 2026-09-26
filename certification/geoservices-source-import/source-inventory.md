@@ -3,14 +3,27 @@
 This table lists every source operation and wire field that honua-server's importer
 transport reads, mapped to the `Honua.Sdk.GeoServices` API that covers it. The importer
 transport is `src/Honua.Core/Features/Migration/Services/ArcGisRestClient.cs` on
-honua-server trunk `2cc2213`.
+the manifest-pinned honua-server `87966c3f7b6c840ffc4d4da0b451714ab717b18a`
+(rechecked 2026-09-26). The operation and wire-field denominator is unchanged
+from the previous `2cc2213` inventory.
 
 Status values:
 
 - **typed 1.8.0**: a typed member in the published 1.8.0 package.
 - **preserved 1.8.0**: round-trips losslessly through `AdditionalProperties` in 1.8.0 but
   has no typed member.
-- **typed 1.9.0**: typed by honua-sdk-dotnet#379, which must ship in the next release.
+- **typed 1.9.0**: typed by honua-sdk-dotnet#379 and published in 1.9.0; also
+  present in the certified 1.10.0 package. `package.typed-importer-metadata`
+  directly asserts these members against an authored transport fixture, including
+  subtype defaults, int64 defaults, WKT and the #383 field tri-state flags.
+
+All rows are now available in published 1.10.0. Version labels below record when
+each API first became available; they are not unresolved publication work.
+The 1.10.0 consumer also exercises `GetServiceMetadataAsync` and
+`GetLayerMetadataAsync` (published in 1.9.0 by #389): the
+`metadata.raw-source-documents` live cell checks exact member presence and values
+against independent source reads. These are the SDK-owned reads used by the newer
+server importer adapter; no customer-authored HTTP is needed.
 
 The certification cell or unit test that proves each row is named in the last column.
 

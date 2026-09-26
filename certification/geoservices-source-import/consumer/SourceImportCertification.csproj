@@ -12,7 +12,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <HonuaSdkPackageVersion Condition="'$(HonuaSdkPackageVersion)' == ''">1.7.0</HonuaSdkPackageVersion>
+    <HonuaSdkPackageVersion Condition="'$(HonuaSdkPackageVersion)' == ''">1.10.0</HonuaSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
