@@ -1,0 +1,3 @@
+<Project>
+  <!-- Deliberately empty: isolates the consumer from the repository Directory.Build.targets. -->
+</Project>

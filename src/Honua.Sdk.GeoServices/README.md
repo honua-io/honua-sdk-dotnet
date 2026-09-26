@@ -53,6 +53,50 @@ await foreach (var page in client.QueryPagesAsync(
 }
 ```
 
+### ArcGIS sources (import)
+
+`HonuaFeatureServerClient` can also read an external ArcGIS service. Parse the
+service root URL: it may carry a path prefix (ArcGIS Online `/<org>/arcgis/`, a web
+adaptor's `/arcgis/`), folders (`Utilities/Water`), and `FeatureServer` or
+`MapServer`. Discovery, query, `queryAttachments` and attachment requests all
+resolve under that root.
+
+```csharp
+using Honua.Sdk.GeoServices.FeatureServer;
+
+var root = ArcGisServiceRoot.Parse(
+    new Uri("https://gis.example.com/arcgis/rest/services/Utilities/Water/MapServer"));
+var source = new HonuaFeatureServerClient(httpClient, root.ToClientOptions());
+
+var layer = await source.GetLayerInfoAsync(root.ServiceId, 0, cancellationToken);
+var attachments = await source.QueryAttachmentsAsync(root.ServiceId, 0, [1, 2, 3], cancellationToken);
+```
+
+The client reads JSON and error bodies up to
+`HonuaFeatureServerClientOptions.MaxResponseBytes`. The default is 64 MiB, the
+same limit honua-server's importer uses. A larger body throws
+`HonuaFeatureServerResponseTooLargeException`. When `Content-Length` declares a
+larger body, the client throws before reading any of it. Otherwise it stops
+reading at the limit.
+
+For source inventories that must distinguish an omitted member from an explicit
+`false` or `null`, the concrete client also exposes `GetServiceMetadataAsync` and
+`GetLayerMetadataAsync`. These return unprojected `JsonDocument` instances through
+the same bounded, error-aware transport. The caller owns and must dispose each
+document; the HTTP response is disposed before the method returns. Typed metadata
+methods remain available for ordinary reads.
+
+```csharp
+using var metadata = await source.GetLayerMetadataAsync(root.ServiceId, 0, cancellationToken);
+var advertisedAttachments = metadata.RootElement.TryGetProperty("hasAttachments", out var value)
+    ? value.Clone()
+    : (System.Text.Json.JsonElement?)null;
+```
+
+Count-only queries require an explicit numeric `count` in the source response.
+`QueryCountAsync` throws `HonuaFeatureServerException` when the count is omitted or null,
+so an unavailable count is never reported as an empty source. An explicit zero remains zero.
+
 ### Routing
 
 ```csharp

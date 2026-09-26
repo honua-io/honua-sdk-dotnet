@@ -1,0 +1,9 @@
+<Project>
+  <!--
+    Isolates the consumer from the repository central package versions: the SDK
+    version under certification is chosen explicitly on the command line.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

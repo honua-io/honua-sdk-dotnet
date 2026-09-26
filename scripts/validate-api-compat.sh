@@ -74,12 +74,18 @@ for entry in "${projects[@]}"; do
 
   mkdir -p "${baseline_output}" "${current_output}"
 
+  # The baseline is historical, immutable source: it can carry a since-flagged
+  # transitive dependency (e.g. a NuGetAudit advisory published after that
+  # commit landed) that we cannot go back and patch. Disable NuGetAudit for
+  # this restore only so a new advisory against old code can't block the
+  # compatibility check; the candidate pack below keeps full audit enforcement.
   echo "Packing ${package_id} baseline from ${BASE_REF}..."
   dotnet pack "${BASE_WORKTREE}/${project}" \
     --configuration "${CONFIGURATION}" \
     -o "${baseline_output}" \
     /p:TreatWarningsAsErrors=true \
-    /p:ContinuousIntegrationBuild=true
+    /p:ContinuousIntegrationBuild=true \
+    /p:NuGetAudit=false
 
   echo "Packing ${package_id} from current checkout..."
   dotnet pack "${ROOT}/${project}" \

@@ -1,3 +1,10 @@
+---
+type: reference
+title: "Cross-cutting client behaviour"
+description: "What applies to every client regardless of protocol: timeouts, retries, cancellation, header propagation and error mapping."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
+tags: [transport, retries, timeouts, errors]
+---
 # Client Behavior
 
 This page documents the cross-cutting behavior that applies to the Honua SDK
@@ -14,22 +21,23 @@ seconds, matching the .NET `HttpClient` default. The value must be greater than
 ```csharp
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
+    options.BaseAddress = new Uri("http://localhost:8081"); // gRPC is h2c on 8081
     options.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHonuaWfs(options =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
+    options.BaseAddress = new Uri("http://localhost:8080");
     options.Timeout = TimeSpan.FromSeconds(30);
 });
 ```
 
-For HTTP clients, `Timeout` is applied to the underlying `HttpClient`. When
-automatic retry is enabled, it is also applied to the standard resilience
-pipeline as both the total request timeout and the per-attempt timeout. For
-gRPC, `Timeout` is converted to a per-call deadline. All public async methods
-also accept a `CancellationToken`; use it for caller-driven cancellation.
+For HTTP clients, `Timeout` is the overall resilience-pipeline budget when
+automatic retry is enabled. The pipeline derives a shorter per-attempt budget
+of approximately 45% of `Timeout` and reserves time for retries. With retry
+disabled, `Timeout` is applied directly to `HttpClient`. For gRPC, `Timeout`
+is converted to a per-call deadline. All public async methods also accept a
+`CancellationToken`; use it for caller-driven cancellation.
 
 ## Retries
 
@@ -40,10 +48,14 @@ Retries are enabled by default and can be disabled per client with
 | Client family | Retried failures |
 |---------------|------------------|
 | gRPC | FeatureService `QueryFeatures` / `QueryFeaturesStream` and ProcessService `ValidatePlan`, `DryRunPlan`, `GetJob`, and `GetJobResult` retry on `Unavailable`, `Internal` |
-| Admin, Geocoding, Spec, Studio, Processes, WFS, GeoServices, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `429`, `502`, `503` |
+| Admin, Geocoding, Spec, Studio, Processes, WFS, OGC API Features, OGC Records, STAC, Scenes | Safe HTTP methods (`GET`, `HEAD`, `OPTIONS`, `TRACE`) retry on `408`, `429`, all `5xx` responses, transport failures, and timeouts |
+| GeoServices | Transient failures retry for `GET`, `HEAD`, `OPTIONS`, `TRACE`, `PUT`, `DELETE`, and the idempotent `POST` `/query` fallback |
 
 Write operations such as Admin mutations, FeatureServer `applyEdits`, and OGC
 API Features create/update/delete calls are not retried by the default policy.
+GeoServices `PUT`/`DELETE` requests are the exception because that client’s
+shipped policy treats them as retryable. `MaxRetryAttempts` counts total sends,
+including the original call.
 Retrying writes should be an explicit application decision because a server may
 apply a mutation before returning a transient failure.
 

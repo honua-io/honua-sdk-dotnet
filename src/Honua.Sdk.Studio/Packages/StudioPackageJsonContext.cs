@@ -1,7 +1,9 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Honua.Sdk.Abstractions.Operations;
 
 namespace Honua.Sdk.Studio.Packages;
 
@@ -22,6 +24,9 @@ namespace Honua.Sdk.Studio.Packages;
 [JsonSerializable(typeof(StudioApiResponse<StudioContentVersionList>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioVersionComparison>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioPublicationRequest>))]
+[JsonSerializable(typeof(StudioPublicationSubmissionEnvelope))]
+[JsonSerializable(typeof(StudioContentPointerEnvelope))]
+[JsonSerializable(typeof(HonuaOperationHandle))]
 [JsonSerializable(typeof(StudioApiResponse<StudioRollbackRequest>))]
 [JsonSerializable(typeof(CreateStudioPackageDraftRequest))]
 [JsonSerializable(typeof(UpdateStudioPackageDraftRequest))]
@@ -41,4 +46,23 @@ namespace Honua.Sdk.Studio.Packages;
 [JsonSerializable(typeof(StudioRollbackRequest))]
 internal sealed partial class StudioPackageJsonContext : JsonSerializerContext
 {
+}
+
+internal sealed class StudioPublicationSubmissionEnvelope
+{
+    public bool Success { get; init; }
+    public JsonElement Data { get; init; }
+}
+
+internal sealed class StudioContentPointerEnvelope
+{
+    public bool Success { get; init; }
+    public StudioContentPointerPage? Data { get; init; }
+}
+
+internal sealed class StudioContentPointerPage
+{
+    public IReadOnlyList<StudioContentItemPointers>? Items { get; init; }
+    public long? Total { get; init; }
+    public string? NextCursor { get; init; }
 }

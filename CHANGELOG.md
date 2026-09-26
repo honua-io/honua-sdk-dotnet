@@ -2,6 +2,125 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.10.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.9.0...dotnet-sdk-v1.10.0) (2026-09-25)
+
+
+### Features
+
+* **studio:** support governed publication and exact content pointers ([#390](https://github.com/honua-io/honua-sdk-dotnet/issues/390)) ([ded4f41](https://github.com/honua-io/honua-sdk-dotnet/commit/ded4f41e4eba590cb3e57b2e0808449d09872c3e))
+
+## [1.9.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.8.0...dotnet-sdk-v1.9.0) (2026-09-25)
+
+
+### Features
+
+* **geoservices:** preserve raw source metadata through bounded SDK reads ([#389](https://github.com/honua-io/honua-sdk-dotnet/issues/389)) ([c9d31fd](https://github.com/honua-io/honua-sdk-dotnet/commit/c9d31fd73440bebfb0c6f838efc94e5310153b51))
+* **geoservices:** type the remaining ArcGIS importer layer and service members ([#379](https://github.com/honua-io/honua-sdk-dotnet/issues/379)) ([3165cd5](https://github.com/honua-io/honua-sdk-dotnet/commit/3165cd5a1c8532a50f8107019a7b060f03f47f72))
+
+
+### Bug Fixes
+
+* **ci:** prefer the installed SDK version for release validation ([#388](https://github.com/honua-io/honua-sdk-dotnet/issues/388)) ([bba38f5](https://github.com/honua-io/honua-sdk-dotnet/commit/bba38f5e8cab0417120d283a901f2020e3920362))
+* **geoservices:** preserve nullable/editable tri-state and WKT on FeatureServerField/FeatureServerSpatialReference ([#383](https://github.com/honua-io/honua-sdk-dotnet/issues/383)) ([868502d](https://github.com/honua-io/honua-sdk-dotnet/commit/868502d9dcf00352abf969847cf9747916ae26ef))
+
+
+### Documentation
+
+* make the .NET quickstart's commands match what they do ([#384](https://github.com/honua-io/honua-sdk-dotnet/issues/384)) ([cb46778](https://github.com/honua-io/honua-sdk-dotnet/commit/cb46778f83ff9344e391cebd0f01203f0bd6f908))
+
+## [1.8.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.7.0...dotnet-sdk-v1.8.0) (2026-09-16)
+
+
+### Features
+
+* **geoservices:** address arbitrary ArcGIS source roots and bound source bodies ([#376](https://github.com/honua-io/honua-sdk-dotnet/issues/376)) ([40cb193](https://github.com/honua-io/honua-sdk-dotnet/commit/40cb1938a267a8cfba5dcdbb6152544e55871440))
+* **geoservices:** certify lossless ArcGIS source import on the 2026.1 candidate ([#372](https://github.com/honua-io/honua-sdk-dotnet/issues/372)) ([efaa836](https://github.com/honua-io/honua-sdk-dotnet/commit/efaa83644f1013e01aa59a28f0e1f1c6d52222b8))
+
+## [1.7.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.4...dotnet-sdk-v1.7.0) (2026-09-14)
+
+
+### Features
+
+* **admin:** typed GeoServices/migration import lifecycle client ([#342](https://github.com/honua-io/honua-sdk-dotnet/issues/342)) ([9af4d40](https://github.com/honua-io/honua-sdk-dotnet/commit/9af4d40259084056e6c903791bb48c0c1cea3234))
+* **errors:** expose terminal failure receipts ([#333](https://github.com/honua-io/honua-sdk-dotnet/issues/333)) ([#335](https://github.com/honua-io/honua-sdk-dotnet/issues/335)) ([d92efe9](https://github.com/honua-io/honua-sdk-dotnet/commit/d92efe92c1a6c8b8542aff7ab486d9391cdd8b07))
+* **geoservices:** close source-client fidelity and completeness gaps for ArcGIS import ([#343](https://github.com/honua-io/honua-sdk-dotnet/issues/343)) ([0d2a5ea](https://github.com/honua-io/honua-sdk-dotnet/commit/0d2a5ea8d7859ea670fab49e69d1f8d2a09d7524))
+
+
+### Bug Fixes
+
+* **capabilities:** preserve lifecycle governance fields ([#330](https://github.com/honua-io/honua-sdk-dotnet/issues/330)) ([28c4a03](https://github.com/honua-io/honua-sdk-dotnet/commit/28c4a03156636ff800f2d1c79e76c15cd4df69b8))
+* **ci:** dispatch the publish after release-please cuts a tag ([#367](https://github.com/honua-io/honua-sdk-dotnet/issues/367)) ([4b87045](https://github.com/honua-io/honua-sdk-dotnet/commit/4b87045220b3946dd492717db0cb634d3cbcbd0b))
+* **ci:** stop the publish smoke test referencing itself ([#364](https://github.com/honua-io/honua-sdk-dotnet/issues/364)) ([1f2f8a6](https://github.com/honua-io/honua-sdk-dotnet/commit/1f2f8a6bda0dfd01b6be6aed2985a82a1b5c6e21))
+* preserve governed lineage in feature events ([#334](https://github.com/honua-io/honua-sdk-dotnet/issues/334)) ([#336](https://github.com/honua-io/honua-sdk-dotnet/issues/336)) ([bcbddb7](https://github.com/honua-io/honua-sdk-dotnet/commit/bcbddb798b618872f3aeb8d4e432121f2ab074fb))
+* **security:** exclude generated CodeQL sources and lock release smoke restore ([#337](https://github.com/honua-io/honua-sdk-dotnet/issues/337)) ([49007ec](https://github.com/honua-io/honua-sdk-dotnet/commit/49007ec27649efb31d34fb1edf3f77f9e2d1165c))
+* use Path.Join for the conformance fixture path ([#368](https://github.com/honua-io/honua-sdk-dotnet/issues/368)) ([5dc8374](https://github.com/honua-io/honua-sdk-dotnet/commit/5dc8374cd980973528cb0204b451747b47bb9afa))
+
+
+### Documentation
+
+* **admin:** correct the service-protocol list from 5 values to 19 ([#345](https://github.com/honua-io/honua-sdk-dotnet/issues/345)) ([49160ba](https://github.com/honua-io/honua-sdk-dotnet/commit/49160baa07fd94dd7f47c33844256834374cc75d))
+* nuget.org is the current channel, not a plan ([#369](https://github.com/honua-io/honua-sdk-dotnet/issues/369)) ([ef90ce2](https://github.com/honua-io/honua-sdk-dotnet/commit/ef90ce273fb218244eef32ab60c0937f30c8f865))
+
+## [1.6.4](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.3...dotnet-sdk-v1.6.4) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** pin NuGet/login to a SHA that exists ([#360](https://github.com/honua-io/honua-sdk-dotnet/issues/360)) ([45c4bef](https://github.com/honua-io/honua-sdk-dotnet/commit/45c4bef8c54e45c93d8f5d3d493cfa25ca4f5fca))
+
+## [1.6.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.2...dotnet-sdk-v1.6.3) (2026-09-12)
+
+
+### Bug Fixes
+
+* **ci:** ask the ephemeral server for WFS at the route it actually serves ([#355](https://github.com/honua-io/honua-sdk-dotnet/issues/355))
+* **ci:** point the staging gRPC client at the h2c endpoint ([#357](https://github.com/honua-io/honua-sdk-dotnet/issues/357))
+* stop the install steps from using the feed alias they warn against ([#353](https://github.com/honua-io/honua-sdk-dotnet/issues/353))
+
+## [1.6.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.0...dotnet-sdk-v1.6.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* address certification evidence by digest ([328b0a6](https://github.com/honua-io/honua-sdk-dotnet/commit/328b0a670453a59d5d42fe80e26f8e75ecde712c))
+* align certification pin and mutation facets ([b06da18](https://github.com/honua-io/honua-sdk-dotnet/commit/b06da18db76b213e9ba8f537d2b9ec05dd8ddc14))
+* align conformance fixture contract ([4946d6c](https://github.com/honua-io/honua-sdk-dotnet/commit/4946d6c1607a5970a711a766e44e1383f60dd005))
+* align SDK with current gRPC contract ([c93fdf3](https://github.com/honua-io/honua-sdk-dotnet/commit/c93fdf32549f978e4ad99dbefcc64bfe150de051))
+* assign certification gap owners precisely ([5b10e76](https://github.com/honua-io/honua-sdk-dotnet/commit/5b10e7661c6e5db582d2810c8a753799aae48a26))
+* bind certification to concrete clients ([110ad58](https://github.com/honua-io/honua-sdk-dotnet/commit/110ad581a5c838c36726c9775f6523a065db8182))
+* **certification:** align evidence with release ledger ([573c541](https://github.com/honua-io/honua-sdk-dotnet/commit/573c5416ffa982ebf97b331d34b1d9c8721931a1))
+* **certification:** catalog concrete SDK extensions ([0b81b91](https://github.com/honua-io/honua-sdk-dotnet/commit/0b81b9190d208cdacbc5b12005e5eabe77731eec))
+* **certification:** catalog concrete typed clients ([26c1d5e](https://github.com/honua-io/honua-sdk-dotnet/commit/26c1d5eb3547c0c3f34596a3015a8b4e7f21b7e4))
+* **certification:** classify replica unregister mutation ([92be47e](https://github.com/honua-io/honua-sdk-dotnet/commit/92be47e362a5cddb6eebfbcfbc10e3bf2b2af524))
+* **certification:** enumerate replica client semantics ([5673a41](https://github.com/honua-io/honua-sdk-dotnet/commit/5673a41ed169e4cc6d86819d1257bccbbb3ca2b9))
+* **certification:** include default SDK operations ([126a4e3](https://github.com/honua-io/honua-sdk-dotnet/commit/126a4e372da02d0e9793a93657be263cb11679b4))
+* **certification:** preserve exact SDK operations ([4b00c52](https://github.com/honua-io/honua-sdk-dotnet/commit/4b00c5209106abb3c7b9b2997da97f5b207565d9))
+* **certification:** read OCI image creation timestamp ([bc5ffea](https://github.com/honua-io/honua-sdk-dotnet/commit/bc5ffea6ece02e5d7b414fbb343639058f75dbb2))
+* **certification:** verify SDK evidence provenance ([f966929](https://github.com/honua-io/honua-sdk-dotnet/commit/f966929509f1df4f8127118afe8537433bd50933))
+* certify SDK version changes ([b80255b](https://github.com/honua-io/honua-sdk-dotnet/commit/b80255b0660eacfd6c4945d3755f8dda7faa79c4))
+* classify explicit pagination operations ([613945f](https://github.com/honua-io/honua-sdk-dotnet/commit/613945f2e4e0aa7e8160e5244506e34aa54161ee))
+* close SDK certification evidence gaps ([3ed4401](https://github.com/honua-io/honua-sdk-dotnet/commit/3ed4401efa14a8a966a5b553b3df7f5cd235e01b))
+* **conformance:** unbind the moving canary from trunk HEAD's build verdict ([#302](https://github.com/honua-io/honua-sdk-dotnet/issues/302)) ([a5fb6f5](https://github.com/honua-io/honua-sdk-dotnet/commit/a5fb6f54a34524ea19e9e635e4c6aa258aec11c5)), closes [#300](https://github.com/honua-io/honua-sdk-dotnet/issues/300)
+* **conformance:** unblock the compatibility canary and separate harness failures from drift ([#299](https://github.com/honua-io/honua-sdk-dotnet/issues/299)) ([dfb3cb2](https://github.com/honua-io/honua-sdk-dotnet/commit/dfb3cb2f65331354705aa5a4bc66710208f50a13))
+* embed canonical TRX evidence receipts ([70a3916](https://github.com/honua-io/honua-sdk-dotnet/commit/70a39167d29645d07eea291dc0ee74998c436437))
+* emit bound certification receipts ([9c37eb4](https://github.com/honua-io/honua-sdk-dotnet/commit/9c37eb43f8f72271773925a7e5c8aa035392b4d8))
+* emit digest-bound SDK evidence ([40de842](https://github.com/honua-io/honua-sdk-dotnet/commit/40de842292eaef19afacf6a7f83a150fb9de6e0c))
+* emit federated certification fragments ([2e6f4fe](https://github.com/honua-io/honua-sdk-dotnet/commit/2e6f4feed87268943eaa7ea75a016fa9c03bb354))
+* honor gRPC paging and typed JSON ([5876dee](https://github.com/honua-io/honua-sdk-dotnet/commit/5876dee16f7576d56e97b700f4f6895d02a462fe))
+* map explicit source facade certification ([d490284](https://github.com/honua-io/honua-sdk-dotnet/commit/d490284474d859b559b87a8f5aaa146da31b30c4))
+* preserve certification gap ownership ([f351a03](https://github.com/honua-io/honua-sdk-dotnet/commit/f351a031b0a2cc7fce5d41021a84e00b52ca1a27))
+* preserve mutation certification facets ([70c0b38](https://github.com/honua-io/honua-sdk-dotnet/commit/70c0b380539684121919ea2549ee6ae9741d6a81))
+* promote compatible conformance pins ([3573416](https://github.com/honua-io/honua-sdk-dotnet/commit/35734167fa120d12af2aa3ae872c2a7a4dc698f2))
+* restore catalog service discovery ([#313](https://github.com/honua-io/honua-sdk-dotnet/issues/313)) ([3d72952](https://github.com/honua-io/honua-sdk-dotnet/commit/3d729520f1e9139f3d368235d0f87630fec027db))
+* restrict pagination certification facets ([7514483](https://github.com/honua-io/honua-sdk-dotnet/commit/75144832b7c4dc648c257a351a6031b61f688b8c))
+* retain SDK source identity ([25438bc](https://github.com/honua-io/honua-sdk-dotnet/commit/25438bc8b138c61fd2442e524afbbf9fddadc852))
+* separate certification scope from outcomes ([6c1e2e4](https://github.com/honua-io/honua-sdk-dotnet/commit/6c1e2e405b1fdc1a9eaf4f42533d1c230abb13ad))
+
+
+### Documentation
+
+* record certification image provenance ([40751bc](https://github.com/honua-io/honua-sdk-dotnet/commit/40751bc1b83f36c660f929738528eee3d4403e96))
+
 ## [1.6.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.5.0...dotnet-sdk-v1.6.0) (2026-08-05)
 
 

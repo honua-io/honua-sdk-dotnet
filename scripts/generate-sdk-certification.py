@@ -47,6 +47,8 @@ PR_OPERATIONS = frozenset(
         "IHonuaGrpcClient.QueryFeaturesAsync",
         "IHonuaFeatureServerClient.GetServiceInfoAsync",
         "IHonuaFeatureServerClient.GetLayerInfoAsync",
+        "HonuaFeatureServerClient.GetServiceMetadataAsync",
+        "HonuaFeatureServerClient.GetLayerMetadataAsync",
         "IHonuaFeatureServerClient.QueryAsync",
         "IHonuaFeatureServerClient.QueryCountAsync",
         "IHonuaFeatureServerClient.QueryIdsAsync",
@@ -176,6 +178,8 @@ def _certification_request_url(
             action = {
                 "GetServiceInfoAsync": "",
                 "GetLayerInfoAsync": f"/{layer}",
+                "GetServiceMetadataAsync": "",
+                "GetLayerMetadataAsync": f"/{layer}",
                 "GetEditCapabilitiesAsync": f"/{layer}",
                 "GetFeatureAsync": f"/{layer}/query",
                 "AddFeaturesAsync": f"/{layer}/addFeatures",

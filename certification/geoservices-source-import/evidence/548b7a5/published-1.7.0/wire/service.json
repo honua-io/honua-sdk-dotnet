@@ -1,0 +1,181 @@
+{
+  "allowGeometryUpdates": false,
+  "capabilities": "Query",
+  "fields": [
+    {
+      "alias": "objectid",
+      "canSort": true,
+      "displayName": "objectid",
+      "editable": false,
+      "name": "objectid",
+      "nullable": false,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeOID",
+      "visible": true
+    },
+    {
+      "alias": "site_guid",
+      "canSort": true,
+      "displayName": "site_guid",
+      "editable": true,
+      "name": "site_guid",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeGUID",
+      "visible": true
+    },
+    {
+      "alias": "name",
+      "canSort": true,
+      "displayName": "name",
+      "editable": true,
+      "length": 256,
+      "name": "name",
+      "nullable": true,
+      "sqlType": "sqlTypeNVarchar",
+      "type": "esriFieldTypeString",
+      "visible": true
+    },
+    {
+      "alias": "note",
+      "canSort": true,
+      "displayName": "note",
+      "editable": true,
+      "length": 256,
+      "name": "note",
+      "nullable": true,
+      "sqlType": "sqlTypeNVarchar",
+      "type": "esriFieldTypeString",
+      "visible": true
+    },
+    {
+      "alias": "inspected_at",
+      "canSort": true,
+      "displayName": "inspected_at",
+      "editable": true,
+      "name": "inspected_at",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeDate",
+      "visible": true
+    },
+    {
+      "alias": "install_date",
+      "canSort": true,
+      "displayName": "install_date",
+      "editable": true,
+      "name": "install_date",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeDate",
+      "visible": true
+    },
+    {
+      "alias": "amount",
+      "canSort": true,
+      "displayName": "amount",
+      "editable": true,
+      "name": "amount",
+      "nullable": true,
+      "sqlType": "sqlTypeFloat",
+      "type": "esriFieldTypeDouble",
+      "visible": true
+    },
+    {
+      "alias": "Status",
+      "canSort": true,
+      "displayName": "Status",
+      "domain": {
+        "codedValues": [
+          {
+            "code": 1,
+            "name": "Active"
+          },
+          {
+            "code": 2,
+            "name": "Retired"
+          },
+          {
+            "code": 3,
+            "name": "Planned"
+          }
+        ],
+        "name": "SiteStatus",
+        "type": "codedValue"
+      },
+      "editable": true,
+      "name": "status_code",
+      "nullable": true,
+      "sqlType": "sqlTypeInteger",
+      "type": "esriFieldTypeInteger",
+      "visible": true
+    },
+    {
+      "alias": "big_counter",
+      "canSort": true,
+      "displayName": "big_counter",
+      "editable": true,
+      "name": "big_counter",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeBigInteger",
+      "visible": true
+    },
+    {
+      "alias": "Geometry",
+      "canSort": true,
+      "displayName": "Geometry",
+      "editable": false,
+      "name": "geom",
+      "nullable": true,
+      "sqlType": "sqlTypeOther",
+      "type": "esriFieldTypeGeometry",
+      "visible": true
+    }
+  ],
+  "fullExtent": {
+    "spatialReference": {
+      "wkid": 4326
+    },
+    "xmax": -122.4,
+    "xmin": -122.449,
+    "ymax": 37.78,
+    "ymin": 37.751
+  },
+  "hasGeometryProperties": true,
+  "hasVersionedData": false,
+  "initialExtent": {
+    "spatialReference": {
+      "wkid": 4326
+    },
+    "xmax": -122.4,
+    "xmin": -122.449,
+    "ymax": 37.78,
+    "ymin": 37.751
+  },
+  "isDataVersioned": false,
+  "layers": [
+    {
+      "defaultVisibility": true,
+      "geometryType": "esriGeometryPoint",
+      "id": 1,
+      "name": "source_sites",
+      "type": "Feature Layer"
+    }
+  ],
+  "maxRecordCount": 10000,
+  "objectIdField": "objectid",
+  "relationships": [],
+  "serviceDescription": "Honua service 'cert341_source'",
+  "serviceName": "cert341_source",
+  "spatialReference": {
+    "wkid": 4326
+  },
+  "supportedQueryFormats": "JSON, GEOJSON, PBF, FGB, GEOBUF, PARQUET, ARROW",
+  "supportsAdvancedQueries": true,
+  "supportsBranchVersioning": false,
+  "supportsStatistics": true,
+  "syncEnabled": false,
+  "tables": [],
+  "units": "esriMeters"
+}

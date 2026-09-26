@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.Studio.Capabilities;
@@ -233,11 +234,28 @@ public sealed record CapabilityPackageFamily
 /// </summary>
 public sealed record CapabilityEntry
 {
+    private string _lifecycle = string.Empty;
+
     /// <summary>Stable capability identifier.</summary>
     public string Id { get; init; } = string.Empty;
 
     /// <summary>Capability category.</summary>
     public string? Category { get; init; }
+
+    /// <summary>
+    /// Server-owned governance lifecycle (for example <c>Implemented</c>, <c>Preview</c>,
+    /// or <c>Experimental</c>). Unknown future values are preserved verbatim.
+    /// </summary>
+    [JsonRequired]
+    public string Lifecycle
+    {
+        get => _lifecycle;
+        init => _lifecycle = value ?? throw new JsonException("Capability lifecycle cannot be null.");
+    }
+
+    /// <summary>Whether server governance requires explicit opt-in before use.</summary>
+    [JsonRequired]
+    public bool OptInRequired { get; init; }
 
     /// <summary>Whether the server implements the capability at all.</summary>
     public bool Supported { get; init; }

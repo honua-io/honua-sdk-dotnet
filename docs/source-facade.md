@@ -1,3 +1,10 @@
+---
+type: reference
+title: "Source facade"
+description: "An additive, source-oriented abstraction over the protocol-native clients, for code that should not care which protocol answers."
+resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
+tags: [source-facade, abstraction]
+---
 # Source Facade
 
 `Honua.Sdk.Abstractions` includes an additive source-oriented facade over the

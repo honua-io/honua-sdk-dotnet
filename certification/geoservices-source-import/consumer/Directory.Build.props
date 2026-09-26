@@ -1,0 +1,6 @@
+<Project>
+  <!--
+    Deliberately empty: stops MSBuild importing the repository Directory.Build.props,
+    so this consumer never inherits sibling project settings or SDK source.
+  -->
+</Project>

@@ -43,6 +43,8 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # honua-release origin/trunk candidate. Digest only; never :nightly or :nightly-aot.
+  # The historical rc-cert image e3ab87ce / sha256:d7a45c87 predates Licensing__Mode
+  # and returns 402 for FeatureServer edits; that receipt stays the unentitled result.
   PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a"
   PINNED_SERVER_SOURCE_SHA: "87966c3f7b6c840ffc4d4da0b451714ab717b18a"
   # sha256 of honua-server tests/seed/base-schema.sql at the server pin.
@@ -84,7 +86,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
 
       - name: Resolve tier and immutable identity
         id: identity
@@ -184,7 +186,7 @@ jobs:
       - name: Validate operation ledger
         run: python3 scripts/generate-sdk-certification.py --check
 
-      - name: Fetch and apply exact seed
+      - name: Fetch exact seed
         id: seed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -202,7 +204,10 @@ jobs:
             exit 1
           fi
           echo "fixture-revision=${fixture_revision}" >> "${GITHUB_OUTPUT}"
-          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
+          # Extensions only. The seed's tables are applied after migrations; loading
+          # them first trips the candidate's schema-floor check and never becomes ready.
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_raster;"
 
       - name: Start exact honua-server image
         env:
@@ -212,7 +217,7 @@ jobs:
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-server --network host \
             -e ASPNETCORE_ENVIRONMENT=Development \
-            -e Licensing__DevGrantEdition=Pro \
+            -e Licensing__Mode=Disabled \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
@@ -228,6 +233,11 @@ jobs:
           done
           docker logs honua-server || true
           exit 1
+
+      - name: Apply exact seed
+        env:
+          PGPASSWORD: honua
+        run: psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
 
       - name: Run public SDK operations
         id: tests
@@ -247,7 +257,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p artifacts/test-results
-          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
+          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
           conformance_filter='FullyQualifiedName~GrpcQueryFeatures_RoundTripsCanonicalResponseShape|FullyQualifiedName~GrpcQuery_GeometryOmission_IsHonored|FullyQualifiedName~FeatureServerQuery_RoundTripsCanonicalAttributeProjection|FullyQualifiedName~OgcItems_RoundTripCanonicalPropertyProjection'
           if [[ "${TIER}" != pr ]]; then
             filter='Category=ProtocolIntegration'

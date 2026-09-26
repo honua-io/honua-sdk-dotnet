@@ -1,6 +1,7 @@
 name: CodeQL
 
 on:
+  workflow_dispatch:
   push:
     branches: [trunk]
   pull_request:
@@ -46,15 +47,15 @@ jobs:
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd
         with:
           languages: csharp
+          # No-build extraction honors paths-ignore and does not emit source-generator files.
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
           queries: security-and-quality
 
-      - name: Build SDK solution
-        run: dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true
-
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd
         with:
           category: "/language:csharp"

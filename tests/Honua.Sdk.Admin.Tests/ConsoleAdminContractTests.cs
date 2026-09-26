@@ -115,6 +115,10 @@ public sealed class ConsoleAdminContractTests
         Assert.Equal(20, rule.RuleId);
         Assert.Contains("\"ruleName\":\"Inspection Dwell\"", ruleBody, StringComparison.Ordinal);
         Assert.Equal(1002, replay.NextCursor);
+        Assert.Equal("opinst-exact", replay.Events.Single().OperationInstanceId);
+        Assert.Equal("corr-exact", replay.Events.Single().CorrelationId);
+        Assert.Equal("audit-exact", replay.Events.Single().AuditId);
+        Assert.Equal("proposal-exact", replay.Events.Single().ProposalId);
         Assert.Equal(SubscriberId, subscribers.Subscribers.Single().SubscriberId);
         Assert.Equal(
             [
@@ -315,6 +319,10 @@ public sealed class ConsoleAdminContractTests
                       "Operation": "update",
                       "Protocol": "geoservices-feature-service",
                       "RequestId": "req-1",
+                      "OperationInstanceId": "opinst-exact",
+                      "CorrelationId": "corr-exact",
+                      "AuditId": "audit-exact",
+                      "ProposalId": "proposal-exact",
                       "GeometryChanged": false
                     }
                   ],

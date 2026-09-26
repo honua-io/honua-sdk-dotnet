@@ -26,6 +26,30 @@ public abstract class HonuaException : Exception
     /// </summary>
     public virtual HonuaProblemDetails? ProblemDetails => null;
 
+    /// <summary>The normalized machine terminal receipt, when the failure came from a remote protocol.</summary>
+    public virtual HonuaFailureReceipt? FailureReceipt => null;
+
+    /// <summary>Normalized machine failure kind available without protocol-specific downcasting.</summary>
+    public HonuaFailureKind FailureKind => FailureReceipt?.Kind ?? HonuaFailureKind.Unknown;
+
+    /// <summary>Stable server machine code, when known.</summary>
+    public string? MachineCode => FailureReceipt?.Code;
+
+    /// <summary>Whether the server or protocol declares the terminal failure retryable.</summary>
+    public bool Retryable => FailureReceipt?.Retryable ?? false;
+
+    /// <summary>Known retry delay.</summary>
+    public TimeSpan? RetryAfter => FailureReceipt?.RetryAfter;
+
+    /// <summary>Server correlation/request identity.</summary>
+    public string? CorrelationId => FailureReceipt?.CorrelationId;
+
+    /// <summary>Field- or item-addressable validation failures.</summary>
+    public IReadOnlyList<HonuaFieldFailure> FieldErrors => FailureReceipt?.FieldErrors ?? [];
+
+    /// <summary>Safe protocol response headers and trailers.</summary>
+    public HonuaProtocolMetadata ProtocolMetadata => FailureReceipt?.ProtocolMetadata ?? new();
+
     /// <summary>
     /// Creates a new <see cref="HonuaException"/> with no message.
     /// </summary>

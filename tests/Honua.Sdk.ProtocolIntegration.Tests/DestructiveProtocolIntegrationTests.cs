@@ -13,10 +13,17 @@ public sealed class DestructiveProtocolIntegrationTests(ProtocolIntegrationFixtu
 {
     private readonly ProtocolIntegrationFixture _fixture = fixture;
 
-    [ProtocolIntegrationFact(true, ProtocolIntegrationRequiredFixture.FeatureServerEditEntitlement)]
+    [ProtocolIntegrationFact(true)]
     public async Task FeatureServerApplyEdits_AddUpdateDelete_RoundTrips()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
+        var entitlements = await _fixture.AdminClient.GetLicenseEntitlementsAsync(timeout.Token).ConfigureAwait(false);
+        var featureServerEdits = Assert.Single(
+            entitlements,
+            entitlement => entitlement.Key == "editing.featureserver-edits");
+        Assert.True(
+            featureServerEdits.IsActive,
+            "editing.featureserver-edits is not active. A FeatureServer edit 402 is a failure, not a pass.");
         var addAttributes = ParseAttributes(
             _fixture.Options.FeatureServerEditAddAttributesJson,
             "HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON");

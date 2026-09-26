@@ -1,3 +1,9 @@
+---
+type: guide
+title: "When integration does not work"
+description: "The failures readers actually hit when wiring the SDK into an application, listed by symptom before cause."
+tags: [troubleshooting, errors]
+---
 # Troubleshooting
 
 Common issues and how to fix them when integrating the Honua .NET SDK.
@@ -95,9 +101,9 @@ outside that range fail at options assignment time for every package, including
 
 ### Unsafe HTTP methods aren't retried
 
-Intentional. `Retry.DisableForUnsafeHttpMethods()` is set across every REST client to avoid
-duplicate writes. If you need POST/PUT/DELETE retries for an idempotent endpoint, register a
-custom resilience pipeline on the `HttpClient` after `AddHonua*`.
+Intentional for the default REST policy. GeoServices additionally retries `PUT`, `DELETE`, and
+the idempotent POST `/query` fallback according to its protocol-specific policy. If you need a
+different policy, register a custom resilience pipeline on the `HttpClient` after `AddHonua*`.
 
 ---
 
@@ -190,15 +196,18 @@ conflicts.
 
 ### `error NU1101: Unable to find package Honua.Sdk.*`
 
-No Honua SDK package is on nuget.org yet -- every release, stable or
-prerelease, currently ships to the authenticated GitHub Packages feed only, so
-a bare `dotnet add package Honua.Sdk*` (or `dotnet tool install`) resolving
-against nuget.org always fails with `NU1101`. Add the feed as documented in
-[INSTALL.md](../INSTALL.md#install-from-github-packages-current-channel) and
-install with `--source honua` (or `--add-source` for `dotnet tool install`).
-If your `NuGet.config` uses `<packageSourceMapping>`, the `Honua.Sdk`,
-`Honua.Sdk.*`, and `Geospatial.Grpc` patterns must map to that feed. Dry runs
-are not published to either feed; their artifacts are attached to the
+Every stable `Honua.Sdk*` package is on nuget.org, so a bare
+`dotnet add package Honua.Sdk` resolves. `NU1101` now usually means one of:
+
+- a `<packageSourceMapping>` in your `NuGet.config` that routes `Honua.Sdk*`
+  somewhere other than nuget.org, or a `<clear />` that removed nuget.org;
+- you asked for a **prerelease**, which publishes to the authenticated GitHub
+  Packages feed only - see
+  [INSTALL.md](../INSTALL.md#prereleases-and-the-github-packages-mirror);
+- a package that does not exist under that name. `dotnet package search Honua.Sdk`
+  lists what is published.
+
+Dry runs are published to neither feed; their artifacts are attached to the
 corresponding GitHub Actions run.
 
 ### `401 Unauthorized` / `403 Forbidden` from `nuget.pkg.github.com`
@@ -210,7 +219,7 @@ means no credentials reached the feed (source added without
 `--username`/`--password`, or credentials stored under a different source URL);
 a `403` usually means the token is fine-grained, expired, or missing
 `read:packages`. Re-run the `dotnet nuget add source` / `update source` step in
-[INSTALL.md](../INSTALL.md#install-from-github-packages-current-channel) with a
+[INSTALL.md](../INSTALL.md#prereleases-and-the-github-packages-mirror) with a
 classic PAT.
 
 ### Build fails with `TreatWarningsAsErrors`

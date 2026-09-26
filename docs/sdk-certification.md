@@ -43,6 +43,23 @@ required gaps so broader support cannot be inferred from the narrower release
 profile. Adding or removing an exclusion changes the generated ledger and its
 tested denominator partition.
 
+## FeatureServer edits
+
+The certification server starts with `Licensing__Mode=Disabled`, the supported
+2026.1 mode. That activates every catalog entitlement, including
+`editing.featureserver-edits`, and does not use `Licensing__DevGrantEdition`.
+`FeatureServerApplyEdits_AddUpdateDelete_RoundTrips` adds, updates, and deletes
+on that target. Cleanup is fail-closed. A 402 is a failed edit, not a skip.
+The pinned image is server `87966c3f7b6c840ffc4d4da0b451714ab717b18a`
+(`sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a`).
+Certification refuses floating `:nightly` and `:nightly-aot` tags.
+The earlier rc-cert image `e3ab87ce` / `sha256:d7a45c87` remains the historical
+unentitled 402 receipt and is not rewritten as a pass.
+Postgres starts empty apart from PostGIS. The server applies its migrations,
+and only then does the lane load `tests/seed/base-schema.sql`. Loading that
+seed first leaves migration-owned tables without a journal and the candidate
+never becomes ready.
+
 ## Commands
 
 Regenerate the operation ledger after changing a public client:
@@ -64,3 +81,18 @@ missing result, identity mismatch, or observed failure can never be converted
 to a passing cell.
 The evidence `operation_scope` binds the release-profile ID, denominator count,
 and exact excluded operation IDs to the matrix digest.
+
+## Source-import certification
+
+`certification/geoservices-source-import/` certifies lossless ArcGIS
+service/layer import through the installed `Honua.Sdk.GeoServices` package, for
+[honua-sdk-dotnet#341](https://github.com/honua-io/honua-sdk-dotnet/issues/341).
+Unlike the operation ledger, it treats the digest-pinned candidate as a live
+ArcGIS REST *source*. A versioned fixture is published through the supported
+admin API, and a consumer restores the SDK from nuget.org by version.
+
+Metadata cells require every member of the source's own JSON to survive the
+typed model. Data cells compare decoded values with an oracle written by hand
+from the fixture. A negative-control run with a corrupted oracle must fail. See
+the [directory README](../certification/geoservices-source-import/README.md)
+for the cells, released cells and run instructions.

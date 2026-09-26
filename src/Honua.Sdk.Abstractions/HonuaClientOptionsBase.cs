@@ -41,7 +41,7 @@ public abstract class HonuaClientOptionsBase : IHonuaClientOptions
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
 
     /// <summary>
-    /// Maximum number of retry attempts (default: 3). Must be in the inclusive
+    /// Maximum number of total sends, including the original call (default: 3). Must be in the inclusive
     /// range [2, 5]; the setter throws <see cref="ArgumentOutOfRangeException"/>
     /// for values outside that range. Only applies when <see cref="EnableRetry"/> is <c>true</c>.
     /// </summary>

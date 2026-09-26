@@ -1,0 +1,97 @@
+{
+  "fixtureVersion": "source-import-fixture.v1",
+  "serviceName": "cert341_source",
+  "layerId": 1,
+  "layerName": "source_sites",
+  "objectIds": [1, 2, 3, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122],
+  "objectIdField": "objectid",
+  "fieldTypes": {
+    "objectid": "esriFieldTypeOID",
+    "site_guid": "esriFieldTypeGUID",
+    "name": "esriFieldTypeString",
+    "note": "esriFieldTypeString",
+    "inspected_at": "esriFieldTypeDate",
+    "install_date": "esriFieldTypeDate",
+    "amount": "esriFieldTypeDouble",
+    "status_code": "esriFieldTypeInteger",
+    "big_counter": "esriFieldTypeBigInteger"
+  },
+  "domain": {
+    "field": "status_code",
+    "alias": "Status",
+    "name": "SiteStatus",
+    "type": "codedValue",
+    "codedValues": [
+      { "code": 1, "name": "Active" },
+      { "code": 2, "name": "Retired" },
+      { "code": 3, "name": "Planned" }
+    ]
+  },
+  "timeInfo": {
+    "startTimeField": "inspected_at",
+    "endTimeField": "install_date"
+  },
+  "rows": {
+    "1": {
+      "attributes": {
+        "site_guid": "6f1c2a4e-0b7d-4c1e-9a55-3e2f4b6d8c01",
+        "name": "alpha",
+        "note": "",
+        "inspected_at": 1767323045678,
+        "install_date": 1767312000000,
+        "amount": 1.5,
+        "status_code": 1,
+        "big_counter": 9007199254740993
+      },
+      "geometry": { "x": -122.41, "y": 37.77, "z": 125.5, "m": 42.0 }
+    },
+    "2": {
+      "attributes": {
+        "site_guid": null,
+        "name": null,
+        "note": null,
+        "inspected_at": null,
+        "install_date": null,
+        "amount": null,
+        "status_code": null,
+        "big_counter": null
+      },
+      "geometry": null
+    },
+    "3": {
+      "attributes": {
+        "site_guid": "a0b1c2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
+        "name": "",
+        "note": "x",
+        "inspected_at": -1000,
+        "install_date": -2208988800000,
+        "amount": 0.1,
+        "status_code": 2,
+        "big_counter": -9223372036854775807
+      },
+      "geometry": { "x": -122.40, "y": 37.78, "z": -3.25, "m": 0.5 }
+    },
+    "101": {
+      "attributes": { "name": "row-1", "amount": 0.25, "status_code": 2, "big_counter": 4611686018427387905 },
+      "geometry": { "z": 1, "m": 10 }
+    },
+    "122": {
+      "attributes": { "name": "row-22", "amount": 5.5, "status_code": 2, "big_counter": 4611686018427387926 },
+      "geometry": { "z": 22, "m": 220 }
+    }
+  },
+  "released": [
+    {
+      "cell": "data.attachments",
+      "reason": "The pinned candidate advertises hasAttachments only for a resource annotated honua.io/attachments=true with attachment uploads wired; no supported admin publish or metadata operation sets that annotation, so a live attachment source cannot be authored without patching the compiled metadata snapshot. SDK attachment list/download coverage stays in Honua.Sdk.GeoServices.Tests."
+    },
+    {
+      "cell": "schema.subtypes",
+      "reason": "The pinned candidate has no supported authoring path for subtypes/types on a published layer (admin field configuration accepts codedValue domains only), so the live source cannot emit them. SDK preservation of raw subtype JSON is covered by the metadata round-trip cells once a source emits them."
+    },
+    {
+      "cell": "geometry.true-curves",
+      "reason": "The pinned candidate advertises supportsTrueCurve=false and never emits curvePaths/curveRings for a published layer, so a live curve source is not available."
+    }
+  ]
+}

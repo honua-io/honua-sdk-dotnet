@@ -22,3 +22,34 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Dispatch the .NET SDK publish
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      # The tag release-please just pushed cannot start this on its own. GitHub
+      # does not fire workflows from events created by GITHUB_TOKEN, so the tag
+      # is inert and the release silently stops one step short of publishing -
+      # dotnet-sdk-v1.6.4 was created and nothing ran; v1.6.3 only published
+      # because someone pushed its tag by hand (#365).
+      #
+      # workflow_dispatch and repository_dispatch are the documented exceptions
+      # to that guard, so dispatching explicitly works with the default token and
+      # nothing needs wider permissions than `actions: write` on this job.
+      - name: Dispatch publish-dotnet-sdk.yml on the new tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${TAG}" ]]; then
+            echo "::error::release-please reported a release but produced no tag_name; not dispatching." >&2
+            exit 1
+          fi
+          gh workflow run publish-dotnet-sdk.yml             --repo "${GITHUB_REPOSITORY}"             --ref "${TAG}"             -f dry_run=false
+          echo "::notice::Dispatched publish-dotnet-sdk.yml on ${TAG}. It still pauses for the public-nuget environment approval."
