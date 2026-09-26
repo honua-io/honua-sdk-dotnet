@@ -46,6 +46,8 @@ env:
   # and returns 402 for FeatureServer edits; that receipt stays the unentitled result.
   PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:0b16046533e5330ecdd48255c06b5397e869191299e1e5e8cc7b4b2ded60b388"
   PINNED_SERVER_SOURCE_SHA: "886206527cc97bad1bbaa5fa6358910ebc45e9c0"
+  PINNED_SERVER_FIXTURE_REVISION: "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
+  PINNED_CANDIDATE_CUT: "2026-09-16T02:20:00Z"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -101,8 +103,8 @@ jobs:
           image="${INPUT_IMAGE:-${PINNED_SERVER_IMAGE}}"
           source_sha="${INPUT_SOURCE_SHA:-${PINNED_SERVER_SOURCE_SHA}}"
           seed_ref="${INPUT_SEED_REF:-${source_sha}}"
-          expected_fixture_revision="${INPUT_FIXTURE_REVISION:-}"
-          release_cut="${INPUT_RELEASE_CUT:-}"
+          expected_fixture_revision="${INPUT_FIXTURE_REVISION:-${PINNED_SERVER_FIXTURE_REVISION}}"
+          release_cut="${INPUT_RELEASE_CUT:-${PINNED_CANDIDATE_CUT}}"
           image_metadata="$(docker buildx imagetools inspect "${image}" --format '{{json .}}')"
           resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
           requested_digest="${image##*@}"
@@ -220,6 +222,9 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
+          # 2026.1 runs Licensing__Mode=Disabled, the non-secret entitlement for FeatureServer edits.
+          # The flag only allows the test to execute; a 402 or any other failure is not a pass.
+          HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "true"
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
         shell: bash

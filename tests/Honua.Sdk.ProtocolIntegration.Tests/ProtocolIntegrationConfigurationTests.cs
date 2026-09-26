@@ -10,6 +10,7 @@ public sealed class ProtocolIntegrationConfigurationTests
         Assert.False(string.IsNullOrWhiteSpace(options.ServiceName));
         Assert.False(string.IsNullOrWhiteSpace(options.WfsTypeName));
         Assert.False(string.IsNullOrWhiteSpace(options.OgcCollectionId));
+        Assert.False(options.FeatureServerEditsSupported);
         Assert.Contains("apiKey=", options.ToRedactedSummary(), StringComparison.Ordinal);
         Assert.DoesNotContain(options.ApiKey ?? "not-present-api-key", options.ToRedactedSummary(), StringComparison.Ordinal);
         Assert.DoesNotContain(options.BearerToken ?? "not-present-bearer-token", options.ToRedactedSummary(), StringComparison.Ordinal);
@@ -34,6 +35,34 @@ public sealed class ProtocolIntegrationConfigurationTests
         Assert.Equal(0, options.LayerId);
         Assert.Null(options.ReverseGeocodeLatitude);
         Assert.Null(options.ReverseGeocodeLongitude);
+    }
+
+    [Fact]
+    public void FeatureServerEdits_RunOnlyWhenTheGovernedEntitlementFlagIsSet()
+    {
+        using (new EnvironmentVariableScope(
+            ("HONUA_PROTOCOL_INTEGRATION", "true"),
+            ("HONUA_PROTOCOL_EXTERNAL_BASE_URL", "http://127.0.0.1:8080"),
+            ("HONUA_PROTOCOL_DESTRUCTIVE", "true"),
+            ("HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED", null)))
+        {
+            var skipped = new ProtocolIntegrationFactAttribute(
+                true,
+                ProtocolIntegrationRequiredFixture.FeatureServerEditEntitlement);
+            Assert.Contains("honua-sdk-dotnet#308", skipped.Skip, StringComparison.Ordinal);
+        }
+
+        using (new EnvironmentVariableScope(
+            ("HONUA_PROTOCOL_INTEGRATION", "true"),
+            ("HONUA_PROTOCOL_EXTERNAL_BASE_URL", "http://127.0.0.1:8080"),
+            ("HONUA_PROTOCOL_DESTRUCTIVE", "true"),
+            ("HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED", "true")))
+        {
+            var running = new ProtocolIntegrationFactAttribute(
+                true,
+                ProtocolIntegrationRequiredFixture.FeatureServerEditEntitlement);
+            Assert.Null(running.Skip);
+        }
     }
 
     private sealed class EnvironmentVariableScope : IDisposable
