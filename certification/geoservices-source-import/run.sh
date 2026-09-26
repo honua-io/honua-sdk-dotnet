@@ -12,11 +12,11 @@
 # Environment:
 #   WORK_DIR             scratch directory (key ring, package cache, Caddy files); required
 #   OUT_DIR              receipt/wire output directory; required
-#   SDK_PACKAGE_VERSION  published Honua.Sdk.GeoServices version (default 1.8.0)
+#   SDK_PACKAGE_VERSION  published Honua.Sdk.GeoServices version (default 1.10.0)
 #   SERVER_IMAGE         digest-pinned candidate image
 #   SERVER_SOURCE_SHA    source commit of SERVER_IMAGE
 #   PREFIX               container/network name prefix (default c341)
-#   SUBNET_PREFIX        /24 prefix for the private network (default 172.31.241)
+#   SUBNET_PREFIX        /24 prefix for the private network (default 172.30.241)
 #   PORT_PREFIX          two-digit host port prefix (default 28)
 #   LOCAL_PACKAGE_DIR    optional folder of locally packed Honua.Sdk.* nupkgs; certifies
 #                        those bytes instead of nuget.org (never a published-bytes receipt)
@@ -26,11 +26,11 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK_DIR="${WORK_DIR:?set WORK_DIR to a scratch directory on real disk}"
 OUT_DIR="${OUT_DIR:?set OUT_DIR to the evidence output directory}"
-SDK_PACKAGE_VERSION="${SDK_PACKAGE_VERSION:-1.8.0}"
-SERVER_IMAGE="${SERVER_IMAGE:-ghcr.io/honua-io/honua-server@sha256:61e06ef3a94d00e4c8fc57ce93e008a5e31b2dcf1da5deb22781fdd42d2d4e51}"
-SERVER_SOURCE_SHA="${SERVER_SOURCE_SHA:-2cc221388ea47d78c29e79eaee62737e4c792351}"
+SDK_PACKAGE_VERSION="${SDK_PACKAGE_VERSION:-1.10.0}"
+SERVER_IMAGE="${SERVER_IMAGE:-ghcr.io/honua-io/honua-server@sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a}"
+SERVER_SOURCE_SHA="${SERVER_SOURCE_SHA:-87966c3f7b6c840ffc4d4da0b451714ab717b18a}"
 P="${PREFIX:-c341}"
-SUBNET="${SUBNET_PREFIX:-172.31.241}"
+SUBNET="${SUBNET_PREFIX:-172.30.241}"
 PP="${PORT_PREFIX:-28}"
 NET="${P}-net"
 CADDY_IP="${SUBNET}.10"

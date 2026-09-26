@@ -41,6 +41,9 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
+  # Attested 2026.1 candidate (platform-manifest snapshot 2026-09-16, server 8862065).
+  # The historical rc-cert image e3ab87ce / sha256:d7a45c87 predates Licensing__Mode
+  # and returns 402 for FeatureServer edits; that receipt stays the unentitled result.
   PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:0b16046533e5330ecdd48255c06b5397e869191299e1e5e8cc7b4b2ded60b388"
   PINNED_SERVER_SOURCE_SHA: "886206527cc97bad1bbaa5fa6358910ebc45e9c0"
   PINNED_SERVER_FIXTURE_REVISION: "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
@@ -156,7 +159,7 @@ jobs:
       - name: Validate operation ledger
         run: python3 scripts/generate-sdk-certification.py --check
 
-      - name: Fetch and apply exact seed
+      - name: Fetch exact seed
         id: seed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -174,7 +177,10 @@ jobs:
             exit 1
           fi
           echo "fixture-revision=${fixture_revision}" >> "${GITHUB_OUTPUT}"
-          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
+          # Extensions only. The seed's tables are applied after migrations; loading
+          # them first trips the candidate's schema-floor check and never becomes ready.
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_raster;"
 
       - name: Start exact honua-server image
         env:
@@ -184,6 +190,7 @@ jobs:
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-server --network host \
             -e ASPNETCORE_ENVIRONMENT=Development \
+            -e Licensing__Mode=Disabled \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
@@ -192,7 +199,6 @@ jobs:
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
             -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
-            -e Licensing__Mode=Disabled \
             "${SERVER_IMAGE}"
           for i in $(seq 1 60); do
             [[ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/healthz/ready || true)" == 200 ]] && exit 0
@@ -200,6 +206,11 @@ jobs:
           done
           docker logs honua-server || true
           exit 1
+
+      - name: Apply exact seed
+        env:
+          PGPASSWORD: honua
+        run: psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
 
       - name: Run public SDK operations
         id: tests

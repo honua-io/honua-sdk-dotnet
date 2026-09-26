@@ -49,6 +49,23 @@ support cannot be inferred from the narrower release profile. Adding or
 removing an exclusion changes the generated ledger and its tested denominator
 partition.
 
+## FeatureServer edits
+
+The certification server starts with `Licensing__Mode=Disabled`, the supported
+2026.1 mode. That activates every catalog entitlement, including
+`editing.featureserver-edits`, and does not use `Licensing__DevGrantEdition`.
+`FeatureServerApplyEdits_AddUpdateDelete_RoundTrips` adds, updates, and deletes
+on that target. Cleanup is fail-closed. A 402 is a failed edit, not a skip.
+The pinned image is the attested platform-manifest candidate
+`886206527cc97bad1bbaa5fa6358910ebc45e9c0`
+(`sha256:0b16046533e5330ecdd48255c06b5397e869191299e1e5e8cc7b4b2ded60b388`).
+The earlier rc-cert image `e3ab87ce` / `sha256:d7a45c87` remains the historical
+unentitled 402 receipt and is not rewritten as a pass.
+Postgres starts empty apart from PostGIS. The server applies its migrations,
+and only then does the lane load `tests/seed/base-schema.sql`. Loading that
+seed first leaves migration-owned tables without a journal and the candidate
+never becomes ready.
+
 ## Commands
 
 Regenerate the operation ledger after changing a public client:
