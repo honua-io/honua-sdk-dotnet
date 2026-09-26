@@ -147,6 +147,8 @@ internal sealed class SourceImportCertification
     public async Task<int> RunAsync()
     {
         await RunCellAsync("package.published-bytes", "AC6 normal versioned PackageReference from the published package", PublishedPackageAsync).ConfigureAwait(false);
+        await RunCellAsync("package.typed-importer-metadata", "AC1/AC2 published typed members preserve an independently authored source fixture", PublishedMetadataFixture.VerifyAsync).ConfigureAwait(false);
+        await RunCellAsync("metadata.raw-source-documents", "AC1/AC2 importer raw metadata APIs preserve source member presence and values", RawMetadataAsync).ConfigureAwait(false);
 
         await RunCellAsync("discovery.service-layers", "AC1 service/layer discovery", ServiceLayersAsync).ConfigureAwait(false);
         await RunCellAsync("discovery.service-tables", "AC1 table discovery", () => ServiceMetadataPathAsync("$.tables")).ConfigureAwait(false);
@@ -354,6 +356,27 @@ internal sealed class SourceImportCertification
     }
 
     // ── Discovery and metadata ──────────────────────────────────────────
+
+    private async Task<string> RawMetadataAsync()
+    {
+        var (provider, client, _) = CreateClient(BaseUrl);
+        using (provider)
+        {
+            var sourceClient = (HonuaFeatureServerClient)client;
+            using var timeout = Timeout();
+            using var service = await sourceClient.GetServiceMetadataAsync(_serviceName, timeout.Token).ConfigureAwait(false);
+            using var layer = await sourceClient.GetLayerMetadataAsync(_serviceName, _layerId, timeout.Token).ConfigureAwait(false);
+            var serviceWire = await GetSourceWireAsync($"/rest/services/{_serviceName}/FeatureServer?f=json").ConfigureAwait(false);
+            var layerWire = await GetSourceWireAsync($"/rest/services/{_serviceName}/FeatureServer/{_layerId}?f=json").ConfigureAwait(false);
+            if (!JsonNode.DeepEquals(serviceWire, JsonNode.Parse(service.RootElement.GetRawText()))
+                || !JsonNode.DeepEquals(layerWire, JsonNode.Parse(layer.RootElement.GetRawText())))
+            {
+                throw new CellFailure("raw metadata differs from independently fetched source JSON, including member presence");
+            }
+
+            return "service and layer raw metadata equal the source, including explicit nulls and absent members";
+        }
+    }
 
     private async Task<string> ServiceLayersAsync()
     {

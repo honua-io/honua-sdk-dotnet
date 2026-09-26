@@ -12,7 +12,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <HonuaSdkPackageVersion Condition="'$(HonuaSdkPackageVersion)' == ''">1.7.0</HonuaSdkPackageVersion>
+    <!-- Keep default local build artifacts out when run.sh redirects intermediates. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
+    <HonuaSdkPackageVersion Condition="'$(HonuaSdkPackageVersion)' == ''">1.10.0</HonuaSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
