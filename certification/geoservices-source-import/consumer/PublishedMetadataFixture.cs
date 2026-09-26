@@ -73,7 +73,18 @@ internal static class PublishedMetadataFixture
         {
             cancellationToken.ThrowIfCancellationRequested();
             var body = request.RequestUri!.AbsolutePath.EndsWith("/0", StringComparison.Ordinal) ? Layer : Service;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body) });
+            // Ownership moves to HttpClient. HonuaFeatureServerClient.GetStringAsync disposes the response.
+            return Task.FromResult(CreateResponse(body));
+        }
+
+        private static HttpResponseMessage CreateResponse(string body)
+        {
+            // codeql[cs/local-not-disposed] Caller (HttpClient) owns this response and disposes it.
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(body),
+            };
+            return response;
         }
     }
 }

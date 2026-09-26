@@ -4,8 +4,9 @@ This table lists every source operation and wire field that honua-server's impor
 transport reads, mapped to the `Honua.Sdk.GeoServices` API that covers it. The importer
 transport is `src/Honua.Core/Features/Migration/Services/ArcGisRestClient.cs` on
 the manifest-pinned honua-server `87966c3f7b6c840ffc4d4da0b451714ab717b18a`
-(rechecked 2026-09-26). The operation and wire-field denominator is unchanged
-from the previous `2cc2213` inventory.
+(rechecked 2026-09-26). Operations match the previous `2cc2213` inventory.
+`spatialReference.latestWkid` is named here because the pinned importer model
+binds it; the SDK types it on `FeatureServerSpatialReference`.
 
 Status values:
 
@@ -20,10 +21,12 @@ Status values:
 All rows are now available in published 1.10.0. Version labels below record when
 each API first became available; they are not unresolved publication work.
 The 1.10.0 consumer also exercises `GetServiceMetadataAsync` and
-`GetLayerMetadataAsync` (published in 1.9.0 by #389): the
+`GetLayerMetadataAsync` (published in 1.9.0 by #389). The
 `metadata.raw-source-documents` live cell checks exact member presence and values
-against independent source reads. These are the SDK-owned reads used by the newer
-server importer adapter; no customer-authored HTTP is needed.
+against independent source reads. The pinned `87966c3` importer does not call
+those methods: service discovery uses `GetServiceInfoAsync`, and layer JSON is
+still read by the importer's own model. No customer-authored HTTP is required
+for any row below.
 
 The certification cell or unit test that proves each row is named in the last column.
 
@@ -56,15 +59,21 @@ The certification cell or unit test that proves each row is named in the last co
 
 | Response | Field | SDK member | Status |
 | --- | --- | --- | --- |
-| service | `serviceDescription`, `maxRecordCount`, `capabilities`, `supportedQueryFormats`, `spatialReference`, `layers[].id/name`, `tables` | `FeatureServerServiceInfo` | typed 1.8.0 |
+| service | `serviceDescription`, `maxRecordCount`, `capabilities`, `supportedQueryFormats`, `spatialReference.wkid`/`latestWkid`, `layers[].id/name`, `tables` | `FeatureServerServiceInfo` | typed 1.8.0 |
 | service | `description`, `currentVersion` | `Description`, `CurrentVersion` | preserved 1.8.0; typed 1.9.0 |
-| layer | `id`, `name`, `description`, `type`, `geometryType`, `hasZ`, `hasM`, `supportsPagination`, `advancedQueryCapabilities.supportsPagination`, `maxRecordCount`, `hasAttachments`, `extent` (+`spatialReference.wkid`), `fields`, `drawingInfo`, `typeIdField`, `types`, `subtypes` | `FeatureServerLayerInfo` | typed 1.8.0 |
+| layer | `id`, `name`, `description`, `type`, `geometryType`, `hasZ`, `hasM`, `supportsPagination`, `advancedQueryCapabilities.supportsPagination`, `maxRecordCount`, `hasAttachments`, `extent` (+`spatialReference.wkid`/`latestWkid`), `fields`, `drawingInfo`, `typeIdField`, `types`, `subtypes` | `FeatureServerLayerInfo` | typed 1.8.0 |
 | layer | `minScale`, `maxScale`, `subtypeField`, `defaultSubtypeCode`, `attributeRules` | `MinScale`, `MaxScale`, `SubtypeField`, `DefaultSubtypeCode`, `AttributeRules` | preserved 1.8.0; typed 1.9.0 |
 | field | `name`, `type`, `alias`, `length`, `nullable`, `domain` (+ `editable`, `defaultValue`) | `FeatureServerField` | typed 1.8.0 |
 | count / IDs | `count`, `objectIds` | `QueryCountAsync`, `QueryIdsAsync` | typed 1.8.0 |
-| features | `features[].attributes` (raw `JsonElement`: int64, GUID, null, dates exact), `features[].geometry` (raw, including Z/M and `curvePaths`/`curveRings`), `exceededTransferLimit`, `spatialReference` | `FeatureServerQueryResponse` | typed 1.8.0 |
+| features | `features[].attributes` (raw `JsonElement`: int64, GUID, null, dates exact), `features[].geometry` (raw, including Z/M and `curvePaths`/`curveRings`), `exceededTransferLimit`, `spatialReference.wkid`/`latestWkid` | `FeatureServerQueryResponse` | typed 1.8.0 |
 | error | `error.code`, `error.message`, `error.details` | `HonuaFeatureServerException` | typed 1.8.0 |
 | attachments | `attachmentGroups[].parentObjectId/parentGlobalId/attachmentInfos[].id/name/contentType/size/keywords` | `FeatureServerAttachmentModels` | typed 1.8.0 |
+
+`tables` is not a member of the pinned importer's service model. AC1 still requires
+table discovery, and `FeatureServerServiceInfo.Tables` covers it (`discovery.service-tables`).
+The importer binds `spatialReference.latestWkid` but does not project it; an omitted
+value deserializes as `0` on the non-nullable SDK `int`, same as `wkid`. Raw metadata
+reads keep an omitted member absent.
 
 True-curve geometry is preserved verbatim as raw JSON. `GeoServicesGeometryConverter.ReadGeometry`
 rejects it with a `JsonException` instead of linearising it (pinned by
