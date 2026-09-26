@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,6 +15,16 @@ public sealed class FeatureServerServiceInfo
     /// <summary>Service description.</summary>
     [JsonPropertyName("serviceDescription")]
     public string? ServiceDescription { get; init; }
+
+    /// <summary>The service's own description, distinct from <see cref="ServiceDescription"/>.</summary>
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
+    /// <summary>
+    /// The provider-native server version (a number such as 11.3 on ArcGIS, sometimes a string), preserved verbatim.
+    /// </summary>
+    [JsonPropertyName("currentVersion")]
+    public JsonElement? CurrentVersion { get; init; }
 
     /// <summary>Whether the service supports query operations.</summary>
     [JsonPropertyName("hasVersionedData")]
@@ -47,6 +58,18 @@ public sealed class FeatureServerServiceInfo
     /// <summary>Layers in the service.</summary>
     [JsonPropertyName("layers")]
     public IReadOnlyList<FeatureServerLayerSummary>? Layers { get; init; }
+
+    /// <summary>Non-spatial tables in the service.</summary>
+    [JsonPropertyName("tables")]
+    public IReadOnlyList<FeatureServerLayerSummary>? Tables { get; init; }
+
+    /// <summary>
+    /// Every source member not modelled by a typed property, preserved verbatim so metadata
+    /// survives import without loss.
+    /// </summary>
+    [JsonExtensionData]
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "System.Text.Json source generation requires a setter for JsonExtensionData.")]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
 }
 
 internal sealed class CommaSeparatedStringOrArrayConverter : JsonConverter<string?>
@@ -103,4 +126,12 @@ public sealed class FeatureServerLayerSummary
     /// <summary>Layer name.</summary>
     [JsonPropertyName("name")]
     public string Name { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Every source member not modelled by a typed property, preserved verbatim so metadata
+    /// survives import without loss.
+    /// </summary>
+    [JsonExtensionData]
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "System.Text.Json source generation requires a setter for JsonExtensionData.")]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
 }

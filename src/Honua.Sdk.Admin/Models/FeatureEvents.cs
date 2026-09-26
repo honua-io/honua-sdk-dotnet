@@ -121,6 +121,22 @@ public sealed class FeatureChangeEvent
     [JsonPropertyName("requestId")]
     public string RequestId { get; init; } = string.Empty;
 
+    /// <summary>Canonical governed operation instance supplied by the server.</summary>
+    [JsonPropertyName("operationInstanceId")]
+    public string? OperationInstanceId { get; init; }
+
+    /// <summary>Canonical request correlation identity supplied by the server.</summary>
+    [JsonPropertyName("correlationId")]
+    public string? CorrelationId { get; init; }
+
+    /// <summary>Durable acceptance-audit identity supplied by the server.</summary>
+    [JsonPropertyName("auditId")]
+    public string? AuditId { get; init; }
+
+    /// <summary>Approved proposal identity supplied by the server, when applicable.</summary>
+    [JsonPropertyName("proposalId")]
+    public string? ProposalId { get; init; }
+
     /// <summary>
     /// Changed attributes when available.
     /// </summary>

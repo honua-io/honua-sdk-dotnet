@@ -192,19 +192,23 @@ public sealed class HonuaGrpcClient :
         ArgumentNullException.ThrowIfNull(request);
 
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
+        AsyncUnaryCall<Proto.QueryFeaturesResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("QueryFeatures", cancellationToken).ConfigureAwait(false);
-            var protoResponse = await _client.QueryFeaturesAsync(
+            call = _client.QueryFeaturesAsync(
                 protoRequest,
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var protoResponse = await call.ResponseAsync.ConfigureAwait(false);
             return ProtoAdapter.FromProtoResponse(protoResponse);
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -235,19 +239,23 @@ public sealed class HonuaGrpcClient :
         ArgumentNullException.ThrowIfNull(request);
 
         var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
+        AsyncUnaryCall<Proto.ApplyEditsResponse>? call = null;
         try
         {
             var metadata = await BuildMetadataAsync("ApplyEdits", cancellationToken).ConfigureAwait(false);
-            var protoResponse = await _client.ApplyEditsAsync(
+            call = _client.ApplyEditsAsync(
                 protoRequest,
                 metadata,
                 deadline: CreateDeadline(),
                 cancellationToken: cancellationToken);
+            var protoResponse = await call.ResponseAsync.ConfigureAwait(false);
             return ProtoAdapter.FromProtoApplyEditsResponse(protoResponse);
         }
         catch (RpcException ex)
         {
-            throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
         }
     }
 
@@ -318,7 +326,9 @@ public sealed class HonuaGrpcClient :
                 }
                 catch (RpcException ex)
                 {
-                    throw new HonuaGrpcException(ex.StatusCode, ex.Status.Detail, ex);
+                    throw HonuaGrpcException.FromRpcException(
+                        ex,
+                        await HonuaGrpcException.TryGetInitialMetadataAsync(call.ResponseHeadersAsync).ConfigureAwait(false));
                 }
 
                 var page = ProtoAdapter.FromProtoPage(protoPage);

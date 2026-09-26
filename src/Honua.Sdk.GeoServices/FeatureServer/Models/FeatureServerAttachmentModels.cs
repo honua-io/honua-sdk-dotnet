@@ -16,6 +16,34 @@ public sealed class FeatureServerAttachmentQueryResponse
 }
 
 /// <summary>
+/// Layer <c>queryAttachments</c> response: attachment metadata grouped by parent feature.
+/// </summary>
+public sealed class FeatureServerAttachmentGroupsResponse
+{
+    /// <summary>One group per parent feature that has attachments.</summary>
+    [JsonPropertyName("attachmentGroups")]
+    public IReadOnlyList<FeatureServerAttachmentGroup> AttachmentGroups { get; init; } = [];
+}
+
+/// <summary>
+/// The attachments of one parent feature in a <c>queryAttachments</c> response.
+/// </summary>
+public sealed class FeatureServerAttachmentGroup
+{
+    /// <summary>Parent feature object ID.</summary>
+    [JsonPropertyName("parentObjectId")]
+    public long ParentObjectId { get; init; }
+
+    /// <summary>Parent feature global ID, when the layer has one.</summary>
+    [JsonPropertyName("parentGlobalId")]
+    public string? ParentGlobalId { get; init; }
+
+    /// <summary>Attachments associated with the parent feature.</summary>
+    [JsonPropertyName("attachmentInfos")]
+    public IReadOnlyList<FeatureServerAttachmentInfo> AttachmentInfos { get; init; } = [];
+}
+
+/// <summary>
 /// FeatureServer attachment metadata.
 /// </summary>
 public sealed class FeatureServerAttachmentInfo

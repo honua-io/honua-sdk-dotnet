@@ -46,6 +46,8 @@ PR_OPERATIONS = frozenset(
         "IHonuaGrpcClient.QueryFeaturesAsync",
         "IHonuaFeatureServerClient.GetServiceInfoAsync",
         "IHonuaFeatureServerClient.GetLayerInfoAsync",
+        "HonuaFeatureServerClient.GetServiceMetadataAsync",
+        "HonuaFeatureServerClient.GetLayerMetadataAsync",
         "IHonuaFeatureServerClient.QueryAsync",
         "IHonuaFeatureServerClient.QueryCountAsync",
         "IHonuaFeatureServerClient.QueryIdsAsync",
@@ -76,7 +78,6 @@ PAGINATED_OPERATIONS = frozenset(
 
 RC_UNAVAILABLE_TESTS = frozenset(
     {
-        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips",
         "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable",
         "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable",
@@ -176,6 +177,8 @@ def _certification_request_url(
             action = {
                 "GetServiceInfoAsync": "",
                 "GetLayerInfoAsync": f"/{layer}",
+                "GetServiceMetadataAsync": "",
+                "GetLayerMetadataAsync": f"/{layer}",
                 "GetEditCapabilitiesAsync": f"/{layer}",
                 "GetFeatureAsync": f"/{layer}/query",
                 "AddFeaturesAsync": f"/{layer}/addFeatures",
@@ -684,12 +687,7 @@ def build_document() -> dict[str, Any]:
                 )
             else:
                 disposition = (
-                    (
-                        "The pinned 2026.1 candidate runs Community edition and has no immutable, "
-                        "non-secret FeatureServer edit entitlement for release certification."
-                        if any("FeatureServerApplyEdits" in test for test in unavailable_tests)
-                        else "The pinned 2026.1 candidate does not provision this deterministic release fixture."
-                    )
+                    "The pinned 2026.1 candidate does not provision this deterministic release fixture."
                     if unavailable_tests
                     else "The pinned 2026.1 candidate does not expose a realtime certification transport fixture."
                     if operation["id"] in RC_UNAVAILABLE_OPERATIONS

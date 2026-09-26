@@ -1,3 +1,10 @@
+---
+type: reference
+title: "Spec and workspace contracts"
+description: "Honua.Sdk.Spec as the client-stable contract package: what it guarantees across versions and what belongs behind it."
+resource: "honua://capability/ai.spec-artifacts"
+tags: [spec, workspace, contracts]
+---
 # Spec Workspace Contracts
 
 `Honua.Sdk.Spec` is the client-stable contract package for Honua spec

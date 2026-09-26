@@ -14,7 +14,7 @@ public static class ConformanceFixtures
     public const string FixturesDirEnv = "HONUA_CONFORMANCE_FIXTURES_DIR";
 
     /// <summary>Pinned fixture version this suite expects by default (see conformance/FIXTURE_VERSION).</summary>
-    public const string PinnedVersion = "0.2.0-alpha.1";
+    public const string PinnedVersion = "1.0.0";
 
     /// <summary>
     /// Resolves the directory that contains <c>fixtures/</c>, <c>golden/</c>, and

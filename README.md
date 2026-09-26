@@ -1,7 +1,7 @@
 # Honua .NET SDK
 
 [![.NET SDK CI](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml)
-[![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://honua-io.github.io/honua-sdk-dotnet/)
+[![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
@@ -18,16 +18,16 @@ sharing one options/auth/resilience pattern.
 > - Just want to call the server in 5 minutes → [docs/quickstart.md](docs/quickstart.md)
 > - Want a map of the 15 packages and the separate CLI tool before you choose → [docs/architecture.md](docs/architecture.md)
 > - Want to browse the public docs → [docs/README.md](docs/README.md)
-> - Want to set up the package feed (all versions install from GitHub Packages today) → [INSTALL.md](INSTALL.md)
+> - Want to install public stable packages or configure the prerelease feed → [INSTALL.md](INSTALL.md)
 > - Hit a problem → [docs/troubleshooting.md](docs/troubleshooting.md)
 
 ## Status
 
 | | |
 |---|---|
-| Current version | 1.6.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
+| Current version | 1.10.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
 | Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
-| Package feed | **GitHub Packages today** (authenticated; see [Install](#install)) for every version, stable or prerelease. nuget.org publishing is planned but deliberately deferred until the `Geospatial.Grpc` protocol dependency has a stable public release there. |
+| Package feed | Stable packages are publicly available on [nuget.org](https://www.nuget.org/packages/Honua.Sdk/) and install anonymously. GitHub Packages is the authenticated stable mirror and the only prerelease feed; see [Install](#install). |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
 | License | [Apache 2.0](LICENSE) |
 
@@ -63,24 +63,11 @@ schedulers, and display renderers stay out of SDK core.
 
 ## Install
 
-Packages are not yet on nuget.org: stable release tags will publish there once
-the `Geospatial.Grpc` protocol dependency has a stable public release. Until
-then, all packages (stable and preview) install from the authenticated GitHub
-Packages feed. Follow [INSTALL.md](INSTALL.md) to add the `honua` source with a
-GitHub classic PAT (`read:packages` scope) and map the package patterns, then:
+Every `Honua.Sdk*` package is on
+[nuget.org](https://www.nuget.org/packages/Honua.Sdk/) and installs anonymously:
 
 ```bash
-# Easiest: install the umbrella to get every Honua.Sdk.* package at once.
-dotnet add package Honua.Sdk --source honua
-```
-
-Channel policy is explicit and fail-closed: the first stable tag after the public dependency is
-available must publish the complete package inventory to both nuget.org and GitHub Packages, or the
-release fails. Prereleases remain on GitHub Packages only. Once
-[Honua.Sdk appears on nuget.org](https://www.nuget.org/packages/Honua.Sdk), stable users can use the
-standard command with no Honua feed configuration:
-
-```bash
+# Easiest: the umbrella pulls in every Honua.Sdk.* package.
 dotnet add package Honua.Sdk
 ```
 
@@ -88,30 +75,33 @@ dotnet add package Honua.Sdk
 <summary>Want narrower dependencies? Install per-package instead.</summary>
 
 ```bash
-dotnet add package Honua.Sdk.Abstractions --source honua
-dotnet add package Honua.Sdk.Offline --source honua
-dotnet add package Honua.Sdk.Grpc --source honua
-dotnet add package Honua.Sdk.Admin --source honua
-dotnet add package Honua.Sdk.Processes --source honua
-dotnet add package Honua.Sdk.Spec --source honua
-dotnet add package Honua.Sdk.Studio --source honua
-dotnet add package Honua.Sdk.ConsoleShare --source honua
-dotnet add package Honua.Sdk.Field --source honua
-dotnet add package Honua.Sdk.Geometry --source honua
-dotnet add package Honua.Sdk.GeoServices --source honua
-dotnet add package Honua.Sdk.Scenes --source honua
-dotnet add package Honua.Sdk.OgcFeatures --source honua
-dotnet add package Honua.Sdk.Catalogs --source honua
+dotnet add package Honua.Sdk.Abstractions
+dotnet add package Honua.Sdk.Offline
+dotnet add package Honua.Sdk.Grpc
+dotnet add package Honua.Sdk.Admin
+dotnet add package Honua.Sdk.Processes
+dotnet add package Honua.Sdk.Spec
+dotnet add package Honua.Sdk.Studio
+dotnet add package Honua.Sdk.ConsoleShare
+dotnet add package Honua.Sdk.Field
+dotnet add package Honua.Sdk.Geometry
+dotnet add package Honua.Sdk.GeoServices
+dotnet add package Honua.Sdk.Scenes
+dotnet add package Honua.Sdk.OgcFeatures
+dotnet add package Honua.Sdk.Catalogs
 ```
 
 </details>
 
-Install the support-safe diagnostics tool separately. `dotnet tool install`
-does not read a repository `NuGet.config`, so pass the feed explicitly (the
-credentials configured in [INSTALL.md](INSTALL.md) are matched by source URL):
+Channel policy is explicit and fail-closed: a stable tag must publish the
+complete package inventory to both nuget.org and GitHub Packages, or the release
+fails. **Prereleases stay on the authenticated GitHub Packages feed only** - see
+[INSTALL.md](INSTALL.md#prereleases-and-the-github-packages-mirror) if you need one.
+
+Install the support-safe diagnostics tool separately:
 
 ```bash
-dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli
 honua doctor --help
 ```
 
@@ -129,10 +119,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Honua.Sdk;
 using Honua.Sdk.Grpc;
+using Honua.Sdk.Grpc.Extensions;   // AddHonuaGrpc
 using Honua.Sdk.Grpc.Models;
 
 var builder = Host.CreateApplicationBuilder(args);
-var serverUri = new Uri("https://localhost:5001");
+var serverUri = new Uri("http://localhost:8080");
 
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
@@ -144,6 +135,12 @@ builder.Services.AddHonua(o =>
     o.BaseAddress = serverUri;
     // o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
 });
+
+// honua-server serves the HTTP protocols on 8080 and gRPC as HTTP/2 cleartext
+// on 8081, so one BaseAddress cannot reach both. AddHonua delegates to
+// AddHonuaGrpc internally, so registering it again here wins for the gRPC client.
+// Without this, gRPC calls fail at runtime with HTTP_1_1_REQUIRED.
+builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("http://localhost:8081"));
 
 using var host = builder.Build();
 var grpc = host.Services.GetRequiredService<IHonuaGrpcClient>();
@@ -273,9 +270,11 @@ third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc s
 
 ## Documentation
 
-- **[Hosted API reference](https://honua-io.github.io/honua-sdk-dotnet/)** --
-  full DocFX-generated reference for every public type and member, deployed
-  from `trunk`
+- **Hosted API reference** -- a full DocFX reference for every public type and
+  member. **Not published yet:** the site builds on every push, but the deploy
+  steps are gated on the `DEPLOY_GITHUB_PAGES` repository variable, which is
+  unset ([#292](https://github.com/honua-io/honua-sdk-dotnet/issues/292)). Build
+  it locally with `docfx docs/docfx.json --serve` until that is turned on.
 - **[Documentation index](docs/README.md)** -- every getting-started,
   capability, and operations guide in one place
 - **[Quickstart](docs/quickstart.md)** -- 60-second hello-features, then a

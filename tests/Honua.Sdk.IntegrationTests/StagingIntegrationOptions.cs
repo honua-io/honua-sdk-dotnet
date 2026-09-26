@@ -3,6 +3,7 @@ namespace Honua.Sdk.IntegrationTests;
 public sealed class StagingIntegrationOptions
 {
     private const string BaseUrlKey = "HONUA_STAGING_BASE_URL";
+    private const string GrpcBaseUrlKey = "HONUA_STAGING_GRPC_BASE_URL";
     private const string ApiKeyKey = "HONUA_STAGING_API_KEY";
     private const string BearerTokenKey = "HONUA_STAGING_BEARER_TOKEN";
     private const string ServiceNameKey = "HONUA_STAGING_SERVICE_NAME";
@@ -20,6 +21,18 @@ public sealed class StagingIntegrationOptions
     private const string FeatureServerEditGeometryJsonKey = "HONUA_STAGING_FEATURESERVER_EDIT_GEOMETRY_JSON";
 
     public Uri BaseUri { get; init; } = new("https://localhost");
+
+    /// <summary>
+    /// Where the gRPC client connects. Defaults to <see cref="BaseUri"/>, which is
+    /// correct for a deployment that terminates TLS at an ingress: ALPN negotiates
+    /// HTTP/2 on the same origin as everything else.
+    ///
+    /// It is separable because plaintext h2c cannot work that way. Kestrel's
+    /// Http1AndHttp2 relies on ALPN, so without TLS it serves HTTP/1.1 and a gRPC
+    /// call fails with HTTP_1_1_REQUIRED. A plaintext server therefore needs a
+    /// dedicated Http2 endpoint, and the client needs to be told about it.
+    /// </summary>
+    public Uri GrpcBaseUri { get; init; } = new("https://localhost");
 
     public string? ApiKey { get; init; }
 
@@ -107,6 +120,21 @@ public sealed class StagingIntegrationOptions
                 $"{BaseUrlKey} must use the http or https scheme.");
         }
 
+        var grpcBaseUrl = Read(GrpcBaseUrlKey);
+        var grpcBaseUri = baseUri;
+        if (!string.IsNullOrWhiteSpace(grpcBaseUrl))
+        {
+            if (!Uri.TryCreate(grpcBaseUrl, UriKind.Absolute, out var parsedGrpcUri) ||
+                (!string.Equals(parsedGrpcUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(parsedGrpcUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(
+                    $"{GrpcBaseUrlKey} must be an absolute HTTP or HTTPS URI. Value: '{grpcBaseUrl}'.");
+            }
+
+            grpcBaseUri = parsedGrpcUri;
+        }
+
         var layerIdValue = ReadRequired(LayerIdKey);
         if (!int.TryParse(layerIdValue, out var layerId) || layerId < 0)
         {
@@ -117,6 +145,7 @@ public sealed class StagingIntegrationOptions
         return new StagingIntegrationOptions
         {
             BaseUri = baseUri,
+            GrpcBaseUri = grpcBaseUri,
             ApiKey = Read(ApiKeyKey),
             BearerToken = Read(BearerTokenKey),
             ServiceName = ReadRequired(ServiceNameKey),

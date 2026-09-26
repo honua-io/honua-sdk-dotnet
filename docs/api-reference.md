@@ -1,3 +1,10 @@
+---
+type: reference
+title: "API reference"
+description: "Where the hosted DocFX reference lives and how it is organised, for readers who want type-level detail rather than task-level guidance."
+resource: "https://honua-io.github.io/honua-sdk-dotnet/"
+tags: [api-reference, docfx]
+---
 # API reference
 
 ## Hosted reference
@@ -128,7 +135,7 @@ using Microsoft.Extensions.Hosting;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.BaseAddress = new Uri("https://localhost:5001");
+    options.BaseAddress = new Uri("http://localhost:8081"); // gRPC is h2c on 8081
 });
 
 using var host = builder.Build();

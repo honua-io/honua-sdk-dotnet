@@ -1,3 +1,10 @@
+---
+type: reference
+title: "Contracts Honua Console depends on"
+description: "Console uses this SDK as its .NET contract boundary for the Blazor host, shared Razor components and the MAUI hybrid host. What that pins, and what may not change without coordination."
+resource: "https://github.com/honua-io/honua-console"
+tags: [console, blazor, contracts]
+---
 # Console Client Contracts
 
 Honua Console uses the SDK as its .NET contract boundary for the Blazor Web

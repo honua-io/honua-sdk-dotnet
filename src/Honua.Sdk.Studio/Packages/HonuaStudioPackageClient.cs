@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -182,6 +183,160 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             "CreatePublishRequest",
             cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<StudioContentItemPointers?> GetContentItemPointersAsync(
+        Guid itemId,
+        CancellationToken cancellationToken = default)
+    {
+        if (itemId == Guid.Empty)
+        {
+            throw new ArgumentException("A content item identifier is required.", nameof(itemId));
+        }
+
+        const string operation = "GetContentItemPointers";
+        var seenCursors = new HashSet<string>(StringComparer.Ordinal);
+        var seenItems = new HashSet<Guid>();
+        long largestTotal = 0;
+        string? cursor = null;
+        for (var page = 0; page < 100; page++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var path = $"{BasePath}/content-items?limit=100";
+            if (cursor is not null)
+            {
+                path += "&cursor=" + Uri.EscapeDataString(cursor);
+            }
+
+            using var message = new HttpRequestMessage(HttpMethod.Get, path);
+            using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            var envelope = await StudioHttpResponseReader.ReadAsync(response,
+                StudioPackageJsonContext.Default.StudioContentPointerEnvelope, operation, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != HttpStatusCode.OK || !envelope.Success || envelope.Data?.Items is not { } items
+                || envelope.Data.Total is not { } total || total < 0 || items.Count > total
+                || items.Any(item => item is null || item.ItemId == Guid.Empty
+                    || item.CurrentVersionId == Guid.Empty || item.PublishedVersionId == Guid.Empty))
+            {
+                throw new HonuaStudioContractException("Content-item listing did not contain a valid pointer page.", operation);
+            }
+
+            largestTotal = Math.Max(largestTotal, total);
+            foreach (var item in items)
+            {
+                if (!seenItems.Add(item.ItemId))
+                {
+                    throw new HonuaStudioContractException("Content-item listing repeated an item identity.", operation);
+                }
+            }
+
+            var match = items.FirstOrDefault(item => item.ItemId == itemId);
+            if (match is not null)
+            {
+                return match;
+            }
+
+            cursor = envelope.Data.NextCursor;
+            if (string.IsNullOrWhiteSpace(cursor))
+            {
+                if (seenItems.Count != largestTotal)
+                {
+                    throw new HonuaStudioContractException("Content-item listing ended before its advertised total was observed; item presence is unknown.", operation);
+                }
+
+                return null;
+            }
+
+            if (!seenCursors.Add(cursor))
+            {
+                throw new HonuaStudioContractException("Content-item listing repeated a pagination cursor.", operation);
+            }
+        }
+
+        throw new HonuaStudioContractException("Content-item listing exceeded the 100-page scan limit; item presence is unknown.", operation);
+    }
+
+    /// <inheritdoc />
+    public async Task<StudioPublicationSubmission> SubmitPublishRequestAsync(
+        Guid itemId,
+        Guid versionId,
+        CreateStudioPublicationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        const string operation = "SubmitPublishRequest";
+        using var message = new HttpRequestMessage(HttpMethod.Post,
+            $"{BasePath}/content-items/{itemId}/versions/{versionId}/publish-requests")
+        {
+            Content = JsonBody(request, StudioPackageJsonContext.Default.CreateStudioPublicationRequest)
+        };
+        using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        var envelope = await StudioHttpResponseReader.ReadAsync(response,
+            StudioPackageJsonContext.Default.StudioPublicationSubmissionEnvelope, operation, cancellationToken).ConfigureAwait(false);
+        var data = envelope.Data;
+        if (!envelope.Success || data.ValueKind != JsonValueKind.Object)
+        {
+            throw new HonuaStudioContractException("Publication submission response is missing a successful data payload.", operation);
+        }
+
+        try
+        {
+            if (response.StatusCode == HttpStatusCode.Accepted)
+            {
+                // A governance operation is not a persisted publication request. Reject ambiguous shapes.
+                if (data.TryGetProperty("requestId", out _) || data.TryGetProperty("versionId", out _))
+                {
+                    throw new HonuaStudioContractException("Approval response also contains publication identity.", operation);
+                }
+
+                if (data.TryGetProperty("resourceIds", out var resources) && resources.ValueKind != JsonValueKind.Object)
+                {
+                    throw new HonuaStudioContractException("Approval response resource identities must be an object when supplied.", operation);
+                }
+
+                var pending = data.Deserialize(StudioPackageJsonContext.Default.HonuaOperationHandle)
+                    ?? throw new HonuaStudioContractException("Approval response has no operation.", operation);
+                if (!string.Equals(pending.OperationId, "studio.content.create-publication-request", StringComparison.Ordinal)
+                    || !MatchesResource(pending.ResourceIds, "itemId", itemId)
+                    || !MatchesResource(pending.ResourceIds, "versionId", versionId))
+                {
+                    throw new HonuaStudioContractException("Approval response identifies another operation or content version.", operation);
+                }
+
+                return StudioPublicationSubmission.AwaitingApproval(pending);
+            }
+
+            if (response.StatusCode != HttpStatusCode.Created
+                || data.TryGetProperty("operationInstanceId", out _)
+                || data.TryGetProperty("proposalId", out _))
+            {
+                throw new HonuaStudioContractException("Publication submission returned an unexpected status or ambiguous payload.", operation);
+            }
+
+            var publication = data.Deserialize(StudioPackageJsonContext.Default.StudioPublicationRequest)
+                ?? throw new HonuaStudioContractException("Publication response has no publication request.", operation);
+            if (publication.RequestId == Guid.Empty || publication.ItemId != itemId || publication.VersionId != versionId
+                || !Enum.IsDefined(publication.Status))
+            {
+                throw new HonuaStudioContractException("Publication response does not identify the requested content version.", operation);
+            }
+
+            return StudioPublicationSubmission.FromPublication(publication);
+        }
+        catch (JsonException ex)
+        {
+            throw new HonuaStudioContractException("Publication submission payload did not match its response status.", operation, responseBody: null, innerException: ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new HonuaStudioContractException("Approval response did not identify a pending approval operation.", operation, responseBody: null, innerException: ex);
+        }
+    }
+
+    // Decision handles currently omit resource IDs; validate any target identities supplied
+    // by later server versions without requiring execution-only metadata before approval.
+    private static bool MatchesResource(IReadOnlyDictionary<string, string> resources, string key, Guid expected)
+        => !resources.TryGetValue(key, out var value)
+            || (Guid.TryParse(value, out var actual) && actual == expected);
 
     /// <inheritdoc />
     public Task<StudioPackageDraft> ReopenVersionAsync(

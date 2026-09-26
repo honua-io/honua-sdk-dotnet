@@ -35,13 +35,19 @@ release certification profile. It is not silently skipped or counted as a
 pass: the ledger enumerates its operation ID, owner issue, and reason, and its
 cell remains an owned `gap` or `non-addressable` entry.
 
-The 2026.1 exclusions are limited to operations whose deterministic Spec,
-Scene, Routing, Realtime, or Geocoding fixture is absent from the pinned
-candidate, plus FeatureServer edits when that candidate has no immutable
-governed entitlement. Nightly certification retains these operations as
-required gaps so broader support cannot be inferred from the narrower release
-profile. Adding or removing an exclusion changes the generated ledger and its
-tested denominator partition.
+The 2026.1 exclusions are the Spec, Scene, Routing, and Geocoding operations
+whose deterministic fixture is absent from the pinned candidate. Realtime
+stream operations stay `non-addressable` and are owned by
+[honua-sdk-dotnet#308](https://github.com/honua-io/honua-sdk-dotnet/issues/308)
+because that candidate has no certification transport and no concrete stream
+client. FeatureServer edits stay in the denominator. The certification server
+sets `Licensing__Mode=Disabled`, the non-secret 2026.1 entitlement, and the
+edit round-trip must pass. A 402 response is a failure, not evidence of a
+successful mutation. Catalog lookup stays on `GET /api/v1/admin/services/`.
+Nightly certification retains excluded operations as required gaps so broader
+support cannot be inferred from the narrower release profile. Adding or
+removing an exclusion changes the generated ledger and its tested denominator
+partition.
 
 ## Commands
 
@@ -64,3 +70,18 @@ missing result, identity mismatch, or observed failure can never be converted
 to a passing cell.
 The evidence `operation_scope` binds the release-profile ID, denominator count,
 and exact excluded operation IDs to the matrix digest.
+
+## Source-import certification
+
+`certification/geoservices-source-import/` certifies lossless ArcGIS
+service/layer import through the installed `Honua.Sdk.GeoServices` package, for
+[honua-sdk-dotnet#341](https://github.com/honua-io/honua-sdk-dotnet/issues/341).
+Unlike the operation ledger, it treats the digest-pinned candidate as a live
+ArcGIS REST *source*. A versioned fixture is published through the supported
+admin API, and a consumer restores the SDK from nuget.org by version.
+
+Metadata cells require every member of the source's own JSON to survive the
+typed model. Data cells compare decoded values with an oracle written by hand
+from the fixture. A negative-control run with a corrupted oracle must fail. See
+the [directory README](../certification/geoservices-source-import/README.md)
+for the cells, released cells and run instructions.

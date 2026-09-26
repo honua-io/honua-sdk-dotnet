@@ -41,10 +41,10 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:373aa1fdf1bd4153df9cb21e25e43dfc463c0e194fcac13b40a39c4bb390eb72"
-  PINNED_SERVER_SOURCE_SHA: "ac30266fbd153363bebdbed13130accc8ab0c94a"
-  PINNED_SERVER_FIXTURE_REVISION: "sha256:97d35505c77ac4e8c2707364bd499f780cbf63e0e7152e84cd3ef4994ff42914"
-  PINNED_CANDIDATE_CUT: "2026-08-27T03:54:36Z"
+  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:0b16046533e5330ecdd48255c06b5397e869191299e1e5e8cc7b4b2ded60b388"
+  PINNED_SERVER_SOURCE_SHA: "886206527cc97bad1bbaa5fa6358910ebc45e9c0"
+  PINNED_SERVER_FIXTURE_REVISION: "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
+  PINNED_CANDIDATE_CUT: "2026-09-16T02:20:00Z"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -74,7 +74,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
 
       - name: Resolve tier and immutable identity
         id: identity
@@ -192,6 +192,7 @@ jobs:
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
             -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
+            -e Licensing__Mode=Disabled \
             "${SERVER_IMAGE}"
           for i in $(seq 1 60); do
             [[ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/healthz/ready || true)" == 200 ]] && exit 0
@@ -210,15 +211,15 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
-          # The 2026.1 candidate is Community edition. Keep edits as an owned fail-closed gap;
-          # a 402 response is never certification evidence for a successful mutation.
-          HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "false"
+          # 2026.1 runs Licensing__Mode=Disabled, the non-secret entitlement for FeatureServer edits.
+          # The flag only allows the test to execute; a 402 or any other failure is not a pass.
+          HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "true"
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
         shell: bash
         run: |
           mkdir -p artifacts/test-results
-          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
+          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
           conformance_filter='FullyQualifiedName~GrpcQueryFeatures_RoundTripsCanonicalResponseShape|FullyQualifiedName~GrpcQuery_GeometryOmission_IsHonored|FullyQualifiedName~FeatureServerQuery_RoundTripsCanonicalAttributeProjection|FullyQualifiedName~OgcItems_RoundTripCanonicalPropertyProjection'
           if [[ "${TIER}" != pr ]]; then
             filter='Category=ProtocolIntegration'

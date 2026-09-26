@@ -70,17 +70,33 @@ public sealed class HonuaAdminApiException : Honua.Sdk.Abstractions.HonuaExcepti
     /// </summary>
     public string? ResponseBody { get; }
 
+    /// <inheritdoc />
+    public override Honua.Sdk.Abstractions.HonuaFailureReceipt? FailureReceipt { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaAdminApiException"/> class.
     /// </summary>
     /// <param name="statusCode">The HTTP status code returned by the server.</param>
     /// <param name="message">A human-readable error message.</param>
     /// <param name="responseBody">The raw response body, if available.</param>
-    public HonuaAdminApiException(HttpStatusCode statusCode, string message, string? responseBody = null)
+    public HonuaAdminApiException(
+        HttpStatusCode statusCode,
+        string message,
+        string? responseBody = null)
+        : this(statusCode, message, responseBody, (Honua.Sdk.Abstractions.HonuaFailureReceipt?)null)
+    {
+    }
+
+    internal HonuaAdminApiException(
+        HttpStatusCode statusCode,
+        string message,
+        string? responseBody,
+        Honua.Sdk.Abstractions.HonuaFailureReceipt? failureReceipt)
         : base(message)
     {
         StatusCode = statusCode;
         ResponseBody = responseBody;
+        FailureReceipt = failureReceipt;
     }
 
     /// <summary>

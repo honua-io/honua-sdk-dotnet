@@ -408,14 +408,15 @@ class SdkCertificationTests(unittest.TestCase):
         )
         self.assertEqual("gap", apply_edits["status"])
         self.assertEqual(4, len(apply_edits["implementations"]))
-        self.assertEqual(4, len(apply_edits["missingImplementations"]))
+        self.assertEqual(3, len(apply_edits["missingImplementations"]))
         feature_server = next(
             implementation
             for implementation in apply_edits["implementations"]
             if implementation.endswith("HonuaFeatureServerClient")
         )
-        self.assertFalse(apply_edits["implementationTests"][feature_server])
-        self.assertEqual(MODULE.RC_FIXTURE_GAP_ISSUE, apply_edits["ownerIssue"])
+        self.assertTrue(apply_edits["implementationTests"][feature_server])
+        self.assertEqual("included", apply_edits["releaseDenominator"])
+        self.assertNotEqual(MODULE.RC_FIXTURE_GAP_ISSUE, apply_edits["ownerIssue"])
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()

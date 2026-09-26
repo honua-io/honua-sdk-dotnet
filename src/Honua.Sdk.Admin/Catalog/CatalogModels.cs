@@ -68,7 +68,12 @@ public sealed record CatalogQueryOptions
     /// <summary>Catalog item kinds to include when using the unified search API.</summary>
     public IReadOnlyList<CatalogItemKind>? Kinds { get; init; }
 
-    /// <summary>Service protocol or service type filters, such as FeatureServer, MapServer, OgcFeatures, OData, or Grpc.</summary>
+    /// <summary>
+    /// Service protocol or service type filters. Any per-service protocol identifier is accepted —
+    /// FeatureServer, MapServer, ImageServer, GPServer, VectorTileServer, OgcFeatures,
+    /// OGC-API-Maps, OGC-API-Coverages, OGC-API-Tiles, Wfs20, Wms, Wmts, Wcs, OData, Grpc,
+    /// Stac, SensorThings, Terrain or Elevation.
+    /// </summary>
     public IReadOnlyList<string>? ServiceTypes { get; init; }
 
     /// <summary>Tags that must be present on the catalog item.</summary>

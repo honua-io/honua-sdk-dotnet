@@ -472,6 +472,287 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         return data ?? throw new HonuaAdminOperationException("Server returned null migration inventory artifact.", "ScanMigrationSource");
     }
 
+    // ── GeoServices import lifecycle (single layer) ─────────────────────────
+
+    /// <summary>
+    /// Discovers the layers and metadata exposed by an ArcGIS service.
+    /// </summary>
+    public async Task<GeoservicesDiscoverResponse> DiscoverGeoservicesServiceAsync(
+        GeoservicesDiscoverRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/import/geoservices/discover",
+            request,
+            HonuaAdminJsonContext.Default.GeoservicesDiscoverRequest,
+            HonuaAdminJsonContext.Default.GeoservicesDiscoverResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null discovery response.", "DiscoverGeoservicesService");
+    }
+
+    /// <summary>
+    /// Queues a single-layer GeoServices import job. The server assigns the job id and starts
+    /// processing asynchronously; poll with <see cref="GetGeoservicesImportJobStatusAsync"/> or
+    /// <see cref="WaitForGeoservicesImportJobAsync"/>. This call is not idempotent: retrying it after
+    /// a network failure without first checking whether the job was already queued can start a
+    /// duplicate import.
+    /// </summary>
+    public async Task<GeoservicesImportJobResponse> StartGeoservicesImportAsync(
+        GeoservicesStartImportRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/import/geoservices/start",
+            request,
+            HonuaAdminJsonContext.Default.GeoservicesStartImportRequest,
+            HonuaAdminJsonContext.Default.GeoservicesImportJobResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null import job response.", "StartGeoservicesImport");
+    }
+
+    /// <summary>
+    /// Lists active (non-terminal) GeoServices import jobs.
+    /// </summary>
+    public async Task<IReadOnlyList<GeoservicesImportProgress>> ListGeoservicesImportJobsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var data = await GetRawAsync(
+            $"{ApiPrefix}/import/geoservices/jobs",
+            HonuaAdminJsonContext.Default.GeoservicesImportJobsResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data?.Jobs ?? [];
+    }
+
+    /// <summary>
+    /// Gets the current status of a GeoServices import job. Use this to reconnect to a job that is
+    /// already running rather than calling <see cref="StartGeoservicesImportAsync"/> again.
+    /// </summary>
+    public async Task<GeoservicesImportProgress> GetGeoservicesImportJobStatusAsync(
+        string jobId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
+
+        var data = await GetRawAsync(
+            $"{ApiPrefix}/import/geoservices/jobs/{Uri.EscapeDataString(jobId)}",
+            HonuaAdminJsonContext.Default.GeoservicesImportProgress,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null import job status.", "GetGeoservicesImportJobStatus");
+    }
+
+    /// <summary>
+    /// Requests cancellation of a running GeoServices import job.
+    /// </summary>
+    public async Task<GeoservicesImportCancelResponse> CancelGeoservicesImportJobAsync(
+        string jobId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
+
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/import/geoservices/jobs/{Uri.EscapeDataString(jobId)}/cancel",
+            HonuaAdminJsonContext.Default.GeoservicesImportCancelResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null cancel response.", "CancelGeoservicesImportJob");
+    }
+
+    /// <summary>
+    /// Polls a GeoServices import job until it reaches a terminal status
+    /// (<see cref="GeoservicesImportStatus.Completed"/>, <see cref="GeoservicesImportStatus.NeedsReview"/>,
+    /// <see cref="GeoservicesImportStatus.Failed"/>, or <see cref="GeoservicesImportStatus.Cancelled"/>)
+    /// or the bound elapses. This reconnects to the existing job via status polling only; it never
+    /// calls <see cref="StartGeoservicesImportAsync"/> again, so it is safe to call after a client
+    /// restart without risking a duplicate import.
+    /// </summary>
+    /// <param name="jobId">The job id returned by <see cref="StartGeoservicesImportAsync"/>.</param>
+    /// <param name="pollInterval">Delay between status polls. Defaults to 2 seconds.</param>
+    /// <param name="timeout">
+    /// Maximum time to wait for a terminal status. Defaults to 30 minutes. A <see cref="TimeoutException"/>
+    /// is thrown if this elapses first; the job itself keeps running server-side.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The job's terminal (or timed-out, still-running) progress snapshot.</returns>
+    public async Task<GeoservicesImportProgress> WaitForGeoservicesImportJobAsync(
+        string jobId,
+        TimeSpan? pollInterval = null,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
+
+        var interval = pollInterval ?? TimeSpan.FromSeconds(2);
+        var bound = timeout ?? TimeSpan.FromMinutes(30);
+        using var timeoutCts = new CancellationTokenSource(bound);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+        try
+        {
+            while (true)
+            {
+                var progress = await GetGeoservicesImportJobStatusAsync(jobId, linkedCts.Token).ConfigureAwait(false);
+                if (IsTerminalGeoservicesImportStatus(progress.Status))
+                {
+                    return progress;
+                }
+
+                await Task.Delay(interval, linkedCts.Token).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"GeoServices import job '{jobId}' did not reach a terminal status within {bound}.");
+        }
+    }
+
+    private static bool IsTerminalGeoservicesImportStatus(GeoservicesImportStatus status) => status is
+        GeoservicesImportStatus.Completed or
+        GeoservicesImportStatus.NeedsReview or
+        GeoservicesImportStatus.Failed or
+        GeoservicesImportStatus.Cancelled;
+
+    // ── Migration batch (multi-layer) import lifecycle ──────────────────────
+
+    /// <summary>
+    /// Starts an ordered, resumable batch (multi-layer) migration run from a footprint selection.
+    /// Layers with no <see cref="MigrationBatchLayerSpec.DependsOn"/> predecessors start first;
+    /// dependent layers wait for their predecessors to reach a terminal per-child status.
+    /// </summary>
+    public async Task<MigrationBatchResponse> StartMigrationBatchAsync(
+        MigrationBatchStartRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/import/migrations/",
+            request,
+            HonuaAdminJsonContext.Default.MigrationBatchStartRequest,
+            HonuaAdminJsonContext.Default.MigrationBatchResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null batch response.", "StartMigrationBatch");
+    }
+
+    /// <summary>
+    /// Gets the rolled-up status and per-child progress of a batch migration run.
+    /// </summary>
+    public async Task<MigrationBatchResponse> GetMigrationBatchAsync(
+        string batchId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(batchId);
+
+        var data = await GetRawAsync(
+            $"{ApiPrefix}/import/migrations/{Uri.EscapeDataString(batchId)}",
+            HonuaAdminJsonContext.Default.MigrationBatchResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null batch response.", "GetMigrationBatch");
+    }
+
+    // ── Migration run reconciliation report retrieval ───────────────────────
+
+    /// <summary>
+    /// Lists migration runs (most recent first, paged).
+    /// </summary>
+    public async Task<MigrationRunListResponse> ListMigrationRunsAsync(
+        MigrationRunListQuery? query = null,
+        CancellationToken cancellationToken = default)
+    {
+        var q = BuildQuery(
+            ("limit", query?.Limit?.ToString(CultureInfo.InvariantCulture)),
+            ("offset", query?.Offset?.ToString(CultureInfo.InvariantCulture)),
+            ("sourceKind", query?.SourceKind),
+            ("status", query?.Status));
+
+        var data = await GetRawAsync(
+            $"{ApiPrefix}/migration/runs/{q}",
+            HonuaAdminJsonContext.Default.MigrationRunListResponse,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null migration run list.", "ListMigrationRuns");
+    }
+
+    /// <summary>
+    /// Gets a single migration run by id.
+    /// </summary>
+    public async Task<MigrationRunDto> GetMigrationRunAsync(
+        string runId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var data = await GetRawAsync(
+            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}",
+            HonuaAdminJsonContext.Default.MigrationRunDto,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null migration run.", "GetMigrationRun");
+    }
+
+    /// <summary>
+    /// Marks a running migration run as cancelled.
+    /// </summary>
+    public async Task<MigrationRunDto> CancelMigrationRunAsync(
+        string runId,
+        string? reason = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}/cancel",
+            new MigrationRunCancelApiRequest { Reason = reason },
+            HonuaAdminJsonContext.Default.MigrationRunCancelApiRequest,
+            HonuaAdminJsonContext.Default.MigrationRunDto,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null migration run.", "CancelMigrationRun");
+    }
+
+    /// <summary>
+    /// Downloads the evidence pack recorded for a migration run. The evidence pack schema is
+    /// versioned independently of this SDK's typed models (it can carry constructs the SDK has not
+    /// yet learned to type), so the body is returned verbatim as JSON text rather than deserialized
+    /// into a typed model; parse the fields you need with <see cref="System.Text.Json.JsonDocument"/>.
+    /// </summary>
+    public async Task<MigrationRunArtifactDownload> GetMigrationRunEvidencePackAsync(
+        string runId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        return await GetRawTextAsync(
+            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}/evidence-pack",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Downloads and parses the signed reconciliation scorecard recorded for a migration run.
+    /// </summary>
+    public async Task<MigrationReconciliationScorecard> GetMigrationRunReconciliationScorecardAsync(
+        string runId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var data = await GetRawAsync(
+            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}/scorecard",
+            HonuaAdminJsonContext.Default.MigrationReconciliationScorecard,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null reconciliation scorecard.", "GetMigrationRunReconciliationScorecard");
+    }
+
     // ── Styles ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
@@ -1200,6 +1481,28 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize(body, responseTypeInfo);
+    }
+
+    private async Task<TResponse?> PostRawAsync<TResponse>(
+        string url,
+        JsonTypeInfo<TResponse> responseTypeInfo,
+        CancellationToken cancellationToken)
+    {
+        using var content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
+        using var response = await _http.PostAsync(CreateRequestUri(url), content, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+
+        return JsonSerializer.Deserialize(body, responseTypeInfo);
+    }
+
+    private async Task<MigrationRunArtifactDownload> GetRawTextAsync(string url, CancellationToken cancellationToken)
+    {
+        using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+
+        return new MigrationRunArtifactDownload { Body = body, ETag = GetETag(response) };
     }
 
     private async Task<TResponse?> PutAsync<TResponse>(

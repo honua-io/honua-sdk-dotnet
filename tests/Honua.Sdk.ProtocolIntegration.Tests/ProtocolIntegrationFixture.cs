@@ -51,6 +51,8 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
 
     public IHonuaFeatureServerClient FeatureServerClient => Services.GetRequiredService<IHonuaFeatureServerClient>();
 
+    public HonuaFeatureServerClient SourceMetadataClient => (HonuaFeatureServerClient)FeatureServerClient;
+
     public IHonuaFeatureServerEditClient FeatureServerEditClient => Services.GetRequiredService<IHonuaFeatureServerEditClient>();
 
     public IHonuaOgcFeaturesClient OgcFeaturesClient => Services.GetRequiredService<IHonuaOgcFeaturesClient>();
