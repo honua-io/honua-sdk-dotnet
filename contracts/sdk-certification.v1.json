@@ -6,8 +6,8 @@
   "complete": false,
   "summary": {
     "total": 322,
-    "exercised": 24,
-    "gap": 280,
+    "exercised": 25,
+    "gap": 279,
     "non-addressable": 18
   },
   "releaseProfile": {
@@ -3100,7 +3100,7 @@
       "client": "Honua.Sdk.Admin.IHonuaAdminLicenseClient",
       "operation": "GetLicenseEntitlementsAsync",
       "signature": "GetLicenseEntitlementsAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -3108,19 +3108,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+      ],
       "implementations": [
         "Honua.Sdk.Admin.HonuaAdminClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Admin.HonuaAdminClient": []
+        "Honua.Sdk.Admin.HonuaAdminClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests.FeatureServerApplyEdits_AddUpdateDelete_RoundTrips"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Admin.HonuaAdminClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Admin.IHonuaAdminLicenseClient.GetLicenseStatusAsync(CancellationToken)",
