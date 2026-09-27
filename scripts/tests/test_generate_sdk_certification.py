@@ -85,6 +85,8 @@ class SdkCertificationTests(unittest.TestCase):
                 tier="release",
                 sdk_commit="a" * 40,
                 sdk_version="1.0.0",
+                sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "f" * 64,
+                sdk_package_source_sha="a" * 40,
                 server_source_sha="b" * 40,
                 image_source_revision="b" * 40,
                 server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
@@ -94,6 +96,31 @@ class SdkCertificationTests(unittest.TestCase):
                 seed_revision="d" * 40,
                 **self._request_context(),
             ))
+
+    def test_release_identity_rejects_floating_nightly_tags(self):
+        sha = "b" * 40
+        for image in (
+            "ghcr.io/honua-io/honua-server:nightly",
+            "ghcr.io/honua-io/honua-server:nightly-aot",
+            "ghcr.io/honua-io/honua-server:nightly-87966c3",
+            "ghcr.io/honua-io/honua-server:nightly@sha256:" + "c" * 64,
+        ):
+            with self.subTest(image=image), self.assertRaisesRegex(ValueError, "floating nightly tag"):
+                MODULE._identity(Namespace(
+                    tier="release",
+                    sdk_commit="a" * 40,
+                    sdk_version="1.6.0",
+                    sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "f" * 64,
+                    sdk_package_source_sha="a" * 40,
+                    server_source_sha=sha,
+                    image_source_revision=sha,
+                    server_image=image,
+                    release_cut="2026-01-01T00:00:00Z",
+                    candidate_cut="2026-01-01T00:00:00Z", evidence_uri="https://example.test/run/1",
+                    fixture_revision="sha256:" + "e" * 64,
+                    seed_revision=sha,
+                    **self._request_context(),
+                ))
 
     def test_missing_required_result_fails_closed(self):
         document = {
@@ -216,6 +243,17 @@ class SdkCertificationTests(unittest.TestCase):
 
             fragment = json.loads(evidence.read_text(encoding="utf-8"))
             self.assertGreater(len(fragment["observations"]), 0)
+            feature_server_edit_observations = [
+                observation for observation in fragment["observations"]
+                if "IHonuaFeatureServerEditClient" in observation["operation"]
+            ]
+            self.assertTrue(feature_server_edit_observations)
+            self.assertTrue(all(
+                observation["licensed"] is True
+                and observation["entitlement_policy_revision"]
+                == MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY
+                for observation in feature_server_edit_observations
+            ))
             for observation in fragment["observations"]:
                 self.assertEqual(observation["canonical_client"], observation["client_id"])
                 self.assertEqual("sdk-dotnet-certification", observation["runner_lane"])
@@ -415,8 +453,26 @@ class SdkCertificationTests(unittest.TestCase):
             if implementation.endswith("HonuaFeatureServerClient")
         )
         self.assertTrue(apply_edits["implementationTests"][feature_server])
+        self.assertEqual(MODULE.TRACKING_ISSUE, apply_edits["ownerIssue"])
         self.assertEqual("included", apply_edits["releaseDenominator"])
         self.assertNotEqual(MODULE.RC_FIXTURE_GAP_ISSUE, apply_edits["ownerIssue"])
+
+    def test_featureserver_edit_operations_are_exercised_by_governed_round_trip(self):
+        document = MODULE.build_document()
+        edit_operations = [
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaFeatureServerEditClient")
+            and cell["operation"] in {"AddFeaturesAsync", "DeleteFeaturesAsync"}
+        ]
+
+        self.assertEqual(2, len(edit_operations))
+        self.assertTrue(all(cell["status"] == "exercised" for cell in edit_operations))
+        self.assertTrue(all(cell["releaseDenominator"] == "included" for cell in edit_operations))
+        self.assertTrue(all(
+            "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests."
+            "FeatureServerApplyEdits_AddUpdateDelete_RoundTrips" in cell["tests"]
+            for cell in edit_operations
+        ))
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()

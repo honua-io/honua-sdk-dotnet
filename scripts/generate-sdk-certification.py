@@ -31,6 +31,7 @@ RC_FIXTURE_GAP_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/308"
 RELEASE_PROFILE_ID = "honua-sdk-dotnet-2026.1"
 CERTIFICATION_CLIENT_ID = "Honua SDK .NET"
 CERTIFICATION_RUNNER_LANE = "sdk-dotnet-certification"
+FEATURESERVER_EDIT_ENTITLEMENT_POLICY = "honua-pro-featureserver-edits-v1"
 
 IMPLEMENTATION_TEST_PROVIDERS = {
     "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests."
@@ -827,6 +828,9 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
     values = {
         "sdkCommit": args.sdk_commit or os.environ.get("GITHUB_SHA"),
         "sdkVersion": args.sdk_version or "unreleased",
+        "sdkPackageId": getattr(args, "sdk_package_id", None),
+        "sdkPackageDigest": getattr(args, "sdk_package_digest", None),
+        "sdkPackageSourceSha": getattr(args, "sdk_package_source_sha", None),
         "serverSourceSha": args.server_source_sha,
         "imageSourceRevision": args.image_source_revision,
         "serverImage": args.server_image,
@@ -842,6 +846,12 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "layerId": getattr(args, "layer_id", None) or os.environ.get("HONUA_PROTOCOL_LAYER_ID", "0"),
         "collectionId": getattr(args, "collection_id", None) or os.environ.get("HONUA_PROTOCOL_OGC_COLLECTION_ID", "0"),
     }
+    if args.tier == "release" and not re.fullmatch(
+        r"ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}", args.server_image or ""
+    ):
+        raise ValueError(
+            "release server image must be digest-addressed and must not use a floating nightly tag"
+        )
     if args.tier == "release":
         missing = [key for key, value in values.items() if not value]
         if missing:
@@ -852,10 +862,14 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
             raise ValueError("release seed revision must exactly equal the server source SHA")
         if args.image_source_revision != args.server_source_sha:
             raise ValueError("verified image source revision must exactly equal the release server source SHA")
-        if not re.search(r"@sha256:[0-9a-f]{64}$", args.server_image, re.I):
-            raise ValueError("release server image must be immutable and addressed by sha256 digest")
         if not re.fullmatch(r"sha256:[0-9a-f]{64}", args.fixture_revision or "", re.I):
             raise ValueError("release fixture revision must be the SHA-256 of the applied fixture")
+        if values["sdkPackageId"] != "Honua.Sdk":
+            raise ValueError("release client package must be Honua.Sdk")
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", values["sdkPackageDigest"] or ""):
+            raise ValueError("release client package digest must be a SHA-256")
+        if not re.fullmatch(r"[0-9a-f]{40}", values["sdkPackageSourceSha"] or ""):
+            raise ValueError("release client package source SHA must be a full commit")
         try:
             cut = datetime.fromisoformat((args.release_cut or "").replace("Z", "+00:00"))
         except ValueError as error:
@@ -948,6 +962,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         request_url = _certification_request_url(operation, identity)
         exercised_capabilities = scenario_facets if result == "pass" else []
         receipt_facets = {facet: result for facet in scenario_facets}
+        licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
+        entitlement_policy_revision = (
+            FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None
+        )
         evidence_receipt = None if result == "skip" else {
             "schema": "honua.certification-evidence-receipt/v1",
             "identity": {
@@ -963,6 +981,8 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "fixture_revision": identity["fixtureRevision"],
                 "contract_revision": contract_revision,
                 "auth_policy_revision": "api-key-protected-v1",
+                "licensed": licensed,
+                "entitlement_policy_revision": entitlement_policy_revision,
                 "started_at": started_at,
                 "completed_at": now,
             },
@@ -988,6 +1008,9 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "request_url": request_url,
             "exercised_capabilities": exercised_capabilities,
             "client_version": identity["sdkVersion"],
+            "client_package": identity["sdkPackageId"],
+            "client_package_digest": identity["sdkPackageDigest"],
+            "client_package_source_sha": identity["sdkPackageSourceSha"],
             "deployment_target": "local-docker",
             "result": result,
             "skip_reason": skip_reason,
@@ -997,6 +1020,8 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": contract_revision,
             "auth_policy_revision": "api-key-protected-v1",
+            "licensed": licensed,
+            "entitlement_policy_revision": entitlement_policy_revision,
             "evidence_uri": (
                 None if result == "skip"
                 else f"https://evidence.honua.io/data/sha256/{evidence_digest[7:]}"
@@ -1020,6 +1045,12 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "source_sha": identity["serverSourceSha"],
             "image_digest": identity["serverImageDigest"],
             "cut_at": identity["candidateCut"],
+        },
+        "client_artifact": {
+            "package_id": identity["sdkPackageId"],
+            "package_version": identity["sdkVersion"],
+            "package_digest": identity["sdkPackageDigest"],
+            "source_sha": identity["sdkPackageSourceSha"],
         },
         "operation_scope": {
             "complete": True,
@@ -1051,6 +1082,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--started-at")
     parser.add_argument("--sdk-commit")
     parser.add_argument("--sdk-version")
+    parser.add_argument("--sdk-package-id")
+    parser.add_argument("--sdk-package-digest")
+    parser.add_argument("--sdk-package-source-sha")
     parser.add_argument("--server-source-sha")
     parser.add_argument("--image-source-revision")
     parser.add_argument("--server-image", default="")

@@ -8,6 +8,7 @@ on:
       - "tests/Honua.Sdk.ProtocolIntegration.Tests/**"
       - "tests/Honua.Sdk.Conformance.Tests/**"
       - "scripts/generate-sdk-certification.py"
+      - "scripts/prepare-installed-package-certification.py"
       - "contracts/sdk-certification.v1.json"
       - "Directory.Build.props"
       - "Directory.Packages.props"
@@ -41,13 +42,21 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  # Attested 2026.1 candidate (platform-manifest snapshot 2026-09-16, server 8862065).
+  # honua-release origin/trunk candidate. Digest only; never :nightly or :nightly-aot.
   # The historical rc-cert image e3ab87ce / sha256:d7a45c87 predates Licensing__Mode
   # and returns 402 for FeatureServer edits; that receipt stays the unentitled result.
-  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:0b16046533e5330ecdd48255c06b5397e869191299e1e5e8cc7b4b2ded60b388"
-  PINNED_SERVER_SOURCE_SHA: "886206527cc97bad1bbaa5fa6358910ebc45e9c0"
+  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a"
+  PINNED_SERVER_SOURCE_SHA: "87966c3f7b6c840ffc4d4da0b451714ab717b18a"
+  # sha256 of honua-server tests/seed/base-schema.sql.
   PINNED_SERVER_FIXTURE_REVISION: "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
+  # Independently frozen 2026.1 release cut.
   PINNED_CANDIDATE_CUT: "2026-09-16T02:20:00Z"
+  PINNED_SDK_PACKAGE_ID: "Honua.Sdk"
+  PINNED_SDK_PACKAGE_VERSION: "1.6.0"
+  PINNED_SDK_PACKAGE_DIGEST: "sha256:e5c3bf0a243822cb3d76cca6ef090b226f8502480c6a6699d7e34e24c1aeeadc"
+  PINNED_SDK_PACKAGE_SOURCE_SHA: "a88a7fbb3643cb046e70d6ef4d38ae70a025a2a4"
+  PINNED_SDK_PACKAGE_PUBLICATION_STATE: "published"
+  PINNED_SDK_PACKAGE_REGISTRY: "github-packages"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -105,6 +114,15 @@ jobs:
           seed_ref="${INPUT_SEED_REF:-${source_sha}}"
           expected_fixture_revision="${INPUT_FIXTURE_REVISION:-${PINNED_SERVER_FIXTURE_REVISION}}"
           release_cut="${INPUT_RELEASE_CUT:-${PINNED_CANDIDATE_CUT}}"
+          if [[ ! "${image}" =~ ^ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}$ ]]; then
+            echo '::error::Refusing a floating or tagged server image. Certification requires ghcr.io/honua-io/honua-server@sha256:<digest>.'
+            exit 1
+          fi
+          if [[ "${tier}" == release ]]; then
+            [[ "${image}" == "${PINNED_SERVER_IMAGE}" ]] || { echo '::error::Release image is not the manifest candidate digest.'; exit 1; }
+            [[ "${source_sha}" == "${PINNED_SERVER_SOURCE_SHA}" ]] || { echo '::error::Release source SHA is not the manifest server pin.'; exit 1; }
+            [[ "${expected_fixture_revision}" == "${PINNED_SERVER_FIXTURE_REVISION}" ]] || { echo '::error::Release fixture revision is not the candidate pin.'; exit 1; }
+          fi
           image_metadata="$(docker buildx imagetools inspect "${image}" --format '{{json .}}')"
           resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
           requested_digest="${image##*@}"
@@ -143,18 +161,27 @@ jobs:
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Resolve SDK package version
-        id: sdk-version
+      - name: Restore and verify exact installed SDK package
+        id: sdk-package
         shell: bash
         run: |
-          version="$(python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          root = ET.parse("Directory.Build.props").getroot()
-          print(next(node.text for node in root.iter("HonuaSdkVersion") if node.text))
-          PY
-          )"
-          [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]] || { echo '::error::SDK version is not semantic.'; exit 1; }
-          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          mkdir -p artifacts/package
+          python3 scripts/prepare-installed-package-certification.py \
+            --tier "${{ steps.identity.outputs.tier }}" \
+            --package-id "${PINNED_SDK_PACKAGE_ID}" \
+            --package-version "${PINNED_SDK_PACKAGE_VERSION}" \
+            --package-digest "${PINNED_SDK_PACKAGE_DIGEST}" \
+            --package-source-sha "${PINNED_SDK_PACKAGE_SOURCE_SHA}" \
+            --publication-state "${PINNED_SDK_PACKAGE_PUBLICATION_STATE}" \
+            --registry "${PINNED_SDK_PACKAGE_REGISTRY}" \
+            --server-image "${{ steps.identity.outputs.image }}" \
+            --server-source-sha "${{ steps.identity.outputs.source-sha }}" \
+            --fixture-revision "${{ steps.identity.outputs.expected-fixture-revision }}" \
+            --release-cut "${{ steps.identity.outputs.release-cut }}" \
+            --nuget-config NuGet.config \
+            --output "${RUNNER_TEMP}/honua-sdk-installed-consumer" \
+            --identity-output artifacts/package/installed-package.json
+          echo "project=${RUNNER_TEMP}/honua-sdk-installed-consumer/Honua.Sdk.InstalledCertification.csproj" >> "${GITHUB_OUTPUT}"
 
       - name: Validate operation ledger
         run: python3 scripts/generate-sdk-certification.py --check
@@ -237,14 +264,16 @@ jobs:
             conformance_filter='FullyQualifiedName~LiveConformanceTests'
           fi
           protocol_code=0
-          dotnet test tests/Honua.Sdk.ProtocolIntegration.Tests/Honua.Sdk.ProtocolIntegration.Tests.csproj \
+          dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --no-restore \
             --filter "${filter}" \
             --logger 'trx;LogFileName=protocol-integration.trx' \
             --results-directory artifacts/test-results || protocol_code=$?
           conformance_code=0
-          dotnet test tests/Honua.Sdk.Conformance.Tests/Honua.Sdk.Conformance.Tests.csproj \
+          dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --no-restore \
             --filter "${conformance_filter}" \
             --logger 'trx;LogFileName=live-conformance.trx' \
             --results-directory artifacts/test-results || conformance_code=$?
@@ -260,7 +289,10 @@ jobs:
           SEED_REF: ${{ steps.identity.outputs.seed-ref }}
           FIXTURE_REVISION: ${{ steps.seed.outputs.fixture-revision }}
           IMAGE_SOURCE_REVISION: ${{ steps.identity.outputs.image-source-revision }}
-          SDK_VERSION: ${{ steps.sdk-version.outputs.version }}
+          SDK_VERSION: ${{ env.PINNED_SDK_PACKAGE_VERSION }}
+          SDK_PACKAGE_ID: ${{ env.PINNED_SDK_PACKAGE_ID }}
+          SDK_PACKAGE_DIGEST: ${{ env.PINNED_SDK_PACKAGE_DIGEST }}
+          SDK_PACKAGE_SOURCE_SHA: ${{ env.PINNED_SDK_PACKAGE_SOURCE_SHA }}
           RELEASE_CUT: ${{ steps.identity.outputs.release-cut }}
           STARTED_AT: ${{ steps.identity.outputs.started-at }}
           SDK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -278,6 +310,9 @@ jobs:
             --started-at "${STARTED_AT}" \
             --sdk-commit "${SDK_COMMIT}" \
             --sdk-version "${SDK_VERSION}" \
+            --sdk-package-id "${SDK_PACKAGE_ID}" \
+            --sdk-package-digest "${SDK_PACKAGE_DIGEST}" \
+            --sdk-package-source-sha "${SDK_PACKAGE_SOURCE_SHA}" \
             --server-source-sha "${SERVER_SOURCE_SHA}" \
             --image-source-revision "${IMAGE_SOURCE_REVISION}" \
             --server-image "${SERVER_IMAGE}" \
