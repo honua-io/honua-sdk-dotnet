@@ -688,12 +688,7 @@ def build_document() -> dict[str, Any]:
                 )
             else:
                 disposition = (
-                    (
-                        "The pinned 2026.1 candidate runs Community edition and has no immutable, "
-                        "non-secret FeatureServer edit entitlement for release certification."
-                        if any("FeatureServerApplyEdits" in test for test in unavailable_tests)
-                        else "The pinned 2026.1 candidate does not provision this deterministic release fixture."
-                    )
+                    "The pinned 2026.1 candidate does not provision this deterministic release fixture."
                     if unavailable_tests
                     else "The pinned 2026.1 candidate does not expose a realtime certification transport fixture."
                     if operation["id"] in RC_UNAVAILABLE_OPERATIONS

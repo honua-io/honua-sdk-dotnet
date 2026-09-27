@@ -454,6 +454,8 @@ class SdkCertificationTests(unittest.TestCase):
         )
         self.assertTrue(apply_edits["implementationTests"][feature_server])
         self.assertEqual(MODULE.TRACKING_ISSUE, apply_edits["ownerIssue"])
+        self.assertEqual("included", apply_edits["releaseDenominator"])
+        self.assertNotEqual(MODULE.RC_FIXTURE_GAP_ISSUE, apply_edits["ownerIssue"])
 
     def test_featureserver_edit_operations_are_exercised_by_governed_round_trip(self):
         document = MODULE.build_document()
@@ -465,6 +467,7 @@ class SdkCertificationTests(unittest.TestCase):
 
         self.assertEqual(2, len(edit_operations))
         self.assertTrue(all(cell["status"] == "exercised" for cell in edit_operations))
+        self.assertTrue(all(cell["releaseDenominator"] == "included" for cell in edit_operations))
         self.assertTrue(all(
             "Honua.Sdk.ProtocolIntegration.Tests.DestructiveProtocolIntegrationTests."
             "FeatureServerApplyEdits_AddUpdateDelete_RoundTrips" in cell["tests"]
