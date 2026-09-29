@@ -1,6 +1,6 @@
 # GeoServices source-import certification
 
-This directory certifies lossless ArcGIS service/layer import through the
+This directory certifies the supported ArcGIS service/layer source representations through the
 **installed** `Honua.Sdk.GeoServices` package against a live ArcGIS REST source,
 for [honua-sdk-dotnet#341](https://github.com/honua-io/honua-sdk-dotnet/issues/341).
 
@@ -94,7 +94,6 @@ published-bytes receipt and cannot close #341.
 | `evidence/548b7a5/published-1.7.0` | nuget.org 1.7.0 | `548b7a5` (`sha256:29974ee7…`) | 29 / 10 / 3 |
 | `evidence/548b7a5/unpublished-1.7.1-cert341` | local pack of #372 (not published) | `548b7a5` | 39 / 0 / 3 |
 | `evidence/2cc2213/published-1.8.0` | nuget.org 1.8.0, nupkg SHA-512 `m5wSCMoU…pkaQw==`, assembly SHA-256 `b276ee31…` | `nightly-2cc2213` (`sha256:61e06ef3…`, dbSchema 120) | **39 / 0 / 3** |
-
 | `evidence/87966c3/published-1.10.0` | nuget.org 1.10.0, nupkg SHA-512 `rBn/8ASX…Uta8Q==` | manifest pin `87966c3` (`sha256:069f196b…`) | **41 / 0 / 3** |
 
 The negative control failed exactly `data.int64-precision` in the 1.10.0 replay
@@ -117,9 +116,19 @@ curves. The pinned source still emits `hasAttachments=false`,
 `supportsTrueCurve=false` and no subtype definitions. The supported fixture
 publication path does not author these representations; the reasons remain in
 `fixture/expected.v1.json` and in every receipt. Supplemental SDK fixture checks
-cannot replace that live-source qualification. This replay therefore uses
-`Refs #341 (released: live attachment, subtype and true-curve source qualification
-is unavailable through the pinned candidate's supported fixture authoring path)`.
-It does not claim universal lossless import or certify the downstream server
-importer's source-to-target mapping, which remains owned by server#4599/#4600
-and release#317.
+cannot replace that live-source qualification.
+
+The [2026.1 operator ruling](https://github.com/honua-io/honua-sdk-dotnet/issues/341#issuecomment-5883909477)
+accepts these three cells as **not supported in 2026.1**, superseding the earlier
+blocked disposition. Each is recorded in the
+[support matrix](../../docs/compatibility.md#20261-source-import-support-matrix)
+and the [import-fidelity section consumed by release#317](../../docs/sdk-certification.md#import-fidelity-for-20261).
+The ruling permits closing #341 when those rows land; source authoring and
+lossless round-trip qualification for these representations remain 2026.2 work.
+
+The receipt remains 41 pass / 0 fail / 3 released. No released cell becomes a
+pass, and no historical evidence is rewritten. The 41-cell result must be rerun
+on the RC with the rest of the SDK evidence. This disposition does not claim
+universal lossless import or certify the downstream server importer's
+source-to-target mapping, which remains owned by server#4599/#4600 and
+release#317.
