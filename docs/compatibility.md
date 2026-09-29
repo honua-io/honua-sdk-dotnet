@@ -27,6 +27,29 @@ Supported release channels, from lowest to highest, are `nightly`, `dev`,
 `alpha`, `preview`, `beta`, `rc`, `stable`, and `lts`. The current SDK baseline
 requires `preview` or higher.
 
+## 2026.1 Source-Import Support Matrix
+
+ArcGIS service/layer import through `Honua.Sdk.GeoServices` is qualified only
+for the supported representations in the
+[source-import certification](sdk-certification.md#import-fidelity-for-20261).
+Package API availability alone does not establish lossless import support.
+The [2026.1 acceptance ruling](https://github.com/honua-io/honua-sdk-dotnet/issues/341#issuecomment-5883909477)
+records these explicit limits:
+
+| Representation | Certification cell | 2026.1 support | Reason |
+| --- | --- | --- | --- |
+| Live attachments | `data.attachments` | **Not supported in 2026.1** | The pinned server's supported publishing API cannot author an attachment-enabled source; `hasAttachments=false`. Attachment list/download APIs and SDK tests do not qualify a live lossless import. |
+| Subtypes | `schema.subtypes` | **Not supported in 2026.1** | The supported publishing/field-configuration APIs cannot author layer subtype definitions. Preserving authored subtype JSON in an SDK fixture does not prove a live subtype round-trip. |
+| True curves | `geometry.true-curves` | **Not supported in 2026.1** | The pinned source advertises `supportsTrueCurve=false` and cannot author `curvePaths`/`curveRings`. Linearized geometry is not lossless curve preservation. |
+
+These are documented unsupported findings for 2026.1. Source authoring support
+and lossless round-trip qualification are deferred to 2026.2 by the ruling;
+2026.2 support is not certified here. The recorded source-import receipt remains
+41 pass / 0 fail / 3 released, with the three rows retained as `released`, never
+counted as passes. The full 44-cell certification must be rerun on the release
+candidate, retaining all 41 passing and 3 released cells, with the rest of the
+SDK evidence.
+
 ## Package API Compatibility Gate
 
 CI validates public package API compatibility by packing the baseline ref and
