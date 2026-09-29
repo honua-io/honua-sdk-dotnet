@@ -127,8 +127,9 @@ The ruling permits closing #341 when those rows land; source authoring and
 lossless round-trip qualification for these representations remain 2026.2 work.
 
 The receipt remains 41 pass / 0 fail / 3 released. No released cell becomes a
-pass, and no historical evidence is rewritten. The 41-cell result must be rerun
-on the RC with the rest of the SDK evidence. This disposition does not claim
+pass, and no historical evidence is rewritten. The full 44-cell certification
+must be rerun on the RC, retaining all 41 passing and 3 released cells, with the
+rest of the SDK evidence. This disposition does not claim
 universal lossless import or certify the downstream server importer's
 source-to-target mapping, which remains owned by server#4599/#4600 and
 release#317.

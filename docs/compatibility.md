@@ -46,8 +46,9 @@ These are documented unsupported findings for 2026.1. Source authoring support
 and lossless round-trip qualification are deferred to 2026.2 by the ruling;
 2026.2 support is not certified here. The recorded source-import receipt remains
 41 pass / 0 fail / 3 released, with the three rows retained as `released`, never
-counted as passes. The 41-cell result must be rerun on the release candidate
-with the rest of the SDK evidence.
+counted as passes. The full 44-cell certification must be rerun on the release
+candidate, retaining all 41 passing and 3 released cells, with the rest of the
+SDK evidence.
 
 ## Package API Compatibility Gate
 
