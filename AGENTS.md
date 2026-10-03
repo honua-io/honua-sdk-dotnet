@@ -102,7 +102,12 @@ conformance/             Conformance gate helpers: fetch-fixtures.sh (pull pinne
                          fixtures), check-version.sh, FIXTURE_VERSION, PINS.md
 .github/workflows/       ci.yml, conformance.yml, codeql.yml, docs.yml, publish-dotnet-sdk.yml, release-please.yml, staging-integration.yml
 Honua.Sdk.sln            Solution; Directory.Build.props / Directory.Packages.props at root
+release/                 component-versions.json, read by the honua-release nightly resolver
 ```
+
+## Release version declaration
+
+`release/component-versions.json` declares the contract and schema versions this repository serves. The honua-release nightly resolver reads that file at the published source commit and refuses the component when it is missing or invalid, so any contract or schema version bump must change the declaration in the same pull request. The declaration takes effect only after a release-please publication contains it.
 
 ## Conventions & Gotchas
 
