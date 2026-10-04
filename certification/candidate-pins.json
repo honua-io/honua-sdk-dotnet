@@ -1,0 +1,11 @@
+{
+  "sdkPackageId": "Honua.Sdk",
+  "sdkPackageVersion": "1.10.2",
+  "sdkPackageRegistry": "nuget.org",
+  "sdkPackageSha512": "ZK4Ec7LWhagABAD0dD0NzqO4k6JAOekir3TGi515dGwn7bVoUCfYXrtfOQUVc6KicC7J0MxIjTtM/x9VSJogWw==",
+  "sdkPackageDigest": "sha256:f699463e9dc1119024b216478654a7d91a5683cc6addcf494fc8263d2ee6f88c",
+  "sdkSourceSha": "ed05745cbd0783970c218eb9857ea130a1e2354a",
+  "serverSourceSha": "ff5f5671903e96e13cffac7b73546c3ed0f853c5",
+  "serverImageDigest": "sha256:3ef3bd41a2f84d1f3a6194c11db496f741cc4d869b54bf57e9d7067dd9cf3d39",
+  "fixtureRevision": "sha256:3bba01b45aa9c90589f03b7c72cd49918a14b0700cb125fd26d987a1bc743f3e"
+}

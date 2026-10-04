@@ -9,6 +9,7 @@ on:
       - "tests/Honua.Sdk.Conformance.Tests/**"
       - "scripts/generate-sdk-certification.py"
       - "scripts/prepare-installed-package-certification.py"
+      - "certification/candidate-pins.json"
       - "contracts/sdk-certification.v1.json"
       - "Directory.Build.props"
       - "Directory.Packages.props"
@@ -42,21 +43,13 @@ env:
   DOTNET_VERSION: "10.0.x"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  # honua-release origin/trunk candidate. Digest only; never :nightly or :nightly-aot.
+  # The server candidate and the published Honua.Sdk package are pinned in
+  # certification/candidate-pins.json; the "Load candidate pins" step exports them as
+  # PINNED_SERVER_* and PINNED_SDK_*. Digest only; never :nightly or :nightly-aot.
   # The historical rc-cert image e3ab87ce / sha256:d7a45c87 predates Licensing__Mode
   # and returns 402 for FeatureServer edits; that receipt stays the unentitled result.
-  PINNED_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a"
-  PINNED_SERVER_SOURCE_SHA: "87966c3f7b6c840ffc4d4da0b451714ab717b18a"
-  # sha256 of honua-server tests/seed/base-schema.sql.
-  PINNED_SERVER_FIXTURE_REVISION: "sha256:31f3509f1176826f480321f586ff44c77ca1562c65216997b7212852bb234dfb"
   # Independently frozen 2026.1 release cut.
   PINNED_CANDIDATE_CUT: "2026-09-16T02:20:00Z"
-  PINNED_SDK_PACKAGE_ID: "Honua.Sdk"
-  PINNED_SDK_PACKAGE_VERSION: "1.6.0"
-  PINNED_SDK_PACKAGE_DIGEST: "sha256:e5c3bf0a243822cb3d76cca6ef090b226f8502480c6a6699d7e34e24c1aeeadc"
-  PINNED_SDK_PACKAGE_SOURCE_SHA: "a88a7fbb3643cb046e70d6ef4d38ae70a025a2a4"
-  PINNED_SDK_PACKAGE_PUBLICATION_STATE: "published"
-  PINNED_SDK_PACKAGE_REGISTRY: "github-packages"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -84,6 +77,27 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Load candidate pins
+        run: python3 scripts/prepare-installed-package-certification.py --pins certification/candidate-pins.json --emit-env >> "${GITHUB_ENV}"
+
+      - name: Verify candidate pins against nuget.org and honua-release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Pull requests check only a pin advance; external drift reds the scheduled run, not unrelated PRs.
+          if [[ "${EVENT_NAME}" == pull_request ]]; then
+            git fetch --no-tags --depth=1 origin "${BASE_REF}"
+            if git diff --quiet FETCH_HEAD HEAD -- certification/candidate-pins.json; then
+              echo "certification/candidate-pins.json is unchanged from ${BASE_REF}."
+              exit 0
+            fi
+          fi
+          python3 scripts/prepare-installed-package-certification.py --pins certification/candidate-pins.json --check
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
@@ -167,18 +181,12 @@ jobs:
         run: |
           mkdir -p artifacts/package
           python3 scripts/prepare-installed-package-certification.py \
+            --pins certification/candidate-pins.json \
             --tier "${{ steps.identity.outputs.tier }}" \
-            --package-id "${PINNED_SDK_PACKAGE_ID}" \
-            --package-version "${PINNED_SDK_PACKAGE_VERSION}" \
-            --package-digest "${PINNED_SDK_PACKAGE_DIGEST}" \
-            --package-source-sha "${PINNED_SDK_PACKAGE_SOURCE_SHA}" \
-            --publication-state "${PINNED_SDK_PACKAGE_PUBLICATION_STATE}" \
-            --registry "${PINNED_SDK_PACKAGE_REGISTRY}" \
             --server-image "${{ steps.identity.outputs.image }}" \
             --server-source-sha "${{ steps.identity.outputs.source-sha }}" \
             --fixture-revision "${{ steps.identity.outputs.expected-fixture-revision }}" \
             --release-cut "${{ steps.identity.outputs.release-cut }}" \
-            --nuget-config NuGet.config \
             --output "${RUNNER_TEMP}/honua-sdk-installed-consumer" \
             --identity-output artifacts/package/installed-package.json
           echo "project=${RUNNER_TEMP}/honua-sdk-installed-consumer/Honua.Sdk.InstalledCertification.csproj" >> "${GITHUB_OUTPUT}"

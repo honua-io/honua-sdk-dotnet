@@ -56,8 +56,9 @@ The certification server starts with `Licensing__Mode=Disabled`, the supported
 `editing.featureserver-edits`, and does not use `Licensing__DevGrantEdition`.
 `FeatureServerApplyEdits_AddUpdateDelete_RoundTrips` adds, updates, and deletes
 on that target. Cleanup is fail-closed. A 402 is a failed edit, not a skip.
-The pinned image is server `87966c3f7b6c840ffc4d4da0b451714ab717b18a`
-(`sha256:069f196bfa5c7201223d4d89868934242c4ace8805a6e48c122a88d84fa6eb1a`).
+The pinned server image and published `Honua.Sdk` package are recorded in
+[`certification/candidate-pins.json`](../certification/candidate-pins.json); see
+[`certification/README.md`](../certification/README.md) to advance them.
 Certification refuses floating `:nightly` and `:nightly-aot` tags.
 The earlier rc-cert image `e3ab87ce` / `sha256:d7a45c87` remains the historical
 unentitled 402 receipt and is not rewritten as a pass.
