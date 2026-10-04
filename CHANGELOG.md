@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.10.2](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.1...dotnet-sdk-v1.10.2) (2026-10-04)
+
+
+### Documentation
+
+* make the getting-started blocks run against the 2026.1 candidate ([#409](https://github.com/honua-io/honua-sdk-dotnet/issues/409)) ([38edc98](https://github.com/honua-io/honua-sdk-dotnet/commit/38edc9827431d991c633ce7b9ea74ecae309a14f)), closes [#407](https://github.com/honua-io/honua-sdk-dotnet/issues/407)
+* record accepted 2026.1 source-import support limits ([#397](https://github.com/honua-io/honua-sdk-dotnet/issues/397)) ([09d86ac](https://github.com/honua-io/honua-sdk-dotnet/commit/09d86ac78506b1b0e3ff9968f056055355721bd9))
+
 ## [1.10.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.0...dotnet-sdk-v1.10.1) (2026-09-29)
 
 
