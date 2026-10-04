@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Honua.Sdk.Offline;
 using Honua.Sdk.Offline.Abstractions;
 
@@ -202,6 +203,95 @@ public sealed class ReplicaSyncClientTests
         Assert.Equal(100, result.ServerGen);
         Assert.NotNull(capturedUri);
         Assert.Contains("rest/services/assets/FeatureServer/synchronizeReplica", capturedUri!.PathAndQuery);
+    }
+
+    [Theory]
+    [InlineData("add")]
+    [InlineData("update")]
+    [InlineData("delete")]
+    public async Task SynchronizeReplicaAsync_RemoteChangeBetweenSyncs_IsAvailableBeforeCursorIsPersisted(string operation)
+    {
+        var localFeatures = new Dictionary<long, string> { [2] = "original" };
+        var storedServerGen = 10L;
+        var currentServerGen = 10L;
+        var remoteChanges = "[]";
+        var handler = new StubHttpMessageHandler((request, _) =>
+        {
+            // Model the pinned server: synchronize delivers edits and advances its stored
+            // cursor; a subsequent generation-less extract cannot recover those edits.
+            var changes = storedServerGen < currentServerGen ? remoteChanges : "[]";
+            var property = request.RequestUri!.AbsolutePath.EndsWith("synchronizeReplica", StringComparison.Ordinal)
+                ? "edits" : "layerChanges";
+            if (property == "edits")
+            {
+                storedServerGen = currentServerGen;
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent($"{{\"serverGen\":{currentServerGen},\"{property}\":{changes}}}", Encoding.UTF8, "application/json"),
+            });
+        });
+        var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
+        var initial = await client.SynchronizeReplicaAsync("assets", "replica");
+        Assert.Equal(10, initial.ServerGen);
+        Assert.Empty(initial.LayerChanges);
+
+        currentServerGen = 11;
+        remoteChanges = operation switch
+        {
+            "add" => """[{"id":0,"addFeatures":[{"attributes":{"objectid":1,"name":"remote"}}]}]""",
+            "update" => """[{"id":0,"updateFeatures":[{"attributes":{"objectid":2,"name":"remote"}}]}]""",
+            _ => """[{"id":0,"deleteIds":[2]}]""",
+        };
+        var result = await client.SynchronizeReplicaAsync("assets", "replica");
+        var laterExtract = await client.ExtractChangesAsync("assets", "replica");
+        Assert.Empty(laterExtract.LayerChanges);
+        Assert.Equal(11, storedServerGen);
+        var layer = Assert.Single(result.LayerChanges);
+        foreach (var json in (layer.AddFeaturesJson ?? []).Concat(layer.UpdateFeaturesJson ?? []))
+        {
+            using var feature = JsonDocument.Parse(json);
+            var attributes = feature.RootElement.GetProperty("attributes");
+            localFeatures[attributes.GetProperty("objectid").GetInt64()] = attributes.GetProperty("name").GetString()!;
+        }
+
+        foreach (var id in layer.DeleteIds ?? [])
+        {
+            localFeatures.Remove(id);
+        }
+
+        // Persisting the delivered generation is safe only after applying its payload.
+        var appliedGeneration = result.ServerGen;
+        Assert.Equal(11, appliedGeneration);
+        if (operation == "delete")
+        {
+            Assert.Empty(localFeatures);
+        }
+        else
+        {
+            Assert.Equal("remote", localFeatures[operation == "add" ? 1 : 2]);
+        }
+    }
+
+    [Fact]
+    public async Task SynchronizeReplicaAsync_LimitedDelivery_PreservesLimitAndLayerGenerations()
+    {
+        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+                {"serverGen":11,"edits":[{"id":3,"deleteIds":[99]}],
+                 "exceededTransferLimit":true,"layerServerGens":[{"id":3,"serverGen":11}]}
+                """, Encoding.UTF8, "application/json"),
+        }));
+        var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
+
+        var result = await client.SynchronizeReplicaAsync("assets", "replica");
+
+        Assert.True(result.ExceededTransferLimit);
+        Assert.Equal(new ReplicaLayerServerGeneration(3, 11), Assert.Single(result.LayerServerGens));
+        Assert.Equal([99L], Assert.Single(result.LayerChanges).DeleteIds);
+        Assert.Equal(11, result.ServerGen);
     }
 
     [Fact]

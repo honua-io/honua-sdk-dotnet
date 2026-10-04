@@ -102,7 +102,25 @@ public sealed record CreateReplicaResult(string ReplicaId, long ServerGen);
 /// </summary>
 /// <param name="ReplicaId">The replica identifier.</param>
 /// <param name="ServerGen">The updated server generation number after synchronization.</param>
-public sealed record SynchronizeResult(string ReplicaId, long ServerGen);
+public sealed record SynchronizeResult(string ReplicaId, long ServerGen)
+{
+    /// <summary>Delivered adds, updates, and tombstones, grouped by layer.</summary>
+    public IReadOnlyList<LayerChangeSet> LayerChanges { get; init; } = [];
+
+    /// <summary>
+    /// Whether more download changes remain. Apply this delivery before requesting the next
+    /// window using its <see cref="ServerGen"/>.
+    /// </summary>
+    public bool ExceededTransferLimit { get; init; }
+
+    /// <summary>Per-layer generations reached by this download delivery.</summary>
+    public IReadOnlyList<ReplicaLayerServerGeneration> LayerServerGens { get; init; } = [];
+}
+
+/// <summary>Generation reached by a delivered layer change set.</summary>
+/// <param name="LayerId">The layer identifier.</param>
+/// <param name="ServerGen">The generation delivered through for this layer.</param>
+public sealed record ReplicaLayerServerGeneration(int LayerId, long ServerGen);
 
 /// <summary>
 /// Contains layer-level change sets extracted from the server.
