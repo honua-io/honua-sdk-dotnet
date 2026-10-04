@@ -83,8 +83,8 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
 
         // Scope the extract to changes since the supplied server generation. The GeoServices
         // replica protocol expects an array of per-layer generations; a single value is broadcast
-        // to all layers by the server. Without it the server returns the full change set every
-        // run, defeating delta sync.
+        // to all layers by the server. Without it the server uses its stored delivery cursor,
+        // which may be ahead of the generation actually applied by the caller.
         if (!string.IsNullOrWhiteSpace(sinceServerGen))
         {
             parameters["serverGens"] = $"[{sinceServerGen}]";
@@ -95,30 +95,41 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         var root = doc.RootElement;
 
         var serverGen = root.GetProperty("serverGen").GetInt64();
-        var layerChanges = new List<LayerChangeSet>();
-
-        if (root.TryGetProperty("layerChanges", out var layerChangesElement)
-            && layerChangesElement.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var layerElement in layerChangesElement.EnumerateArray())
-            {
-                layerChanges.Add(ParseLayerChangeSet(layerElement));
-            }
-        }
-
         return new ExtractChangesResult
         {
-            LayerChanges = layerChanges,
+            LayerChanges = ParseLayerChanges(root, "layerChanges"),
             ServerGen = serverGen,
+            ExceededTransferLimit = HasExceededTransferLimit(root),
+            LayerServerGens = ParseLayerServerGens(root),
         };
     }
 
     /// <inheritdoc />
-    public async Task<SynchronizeResult> SynchronizeReplicaAsync(
+    public Task<SynchronizeResult> SynchronizeReplicaAsync(
         string serviceId,
         string replicaId,
         string syncDirection = "download",
         CancellationToken cancellationToken = default)
+        => SynchronizeReplicaCoreAsync(serviceId, replicaId, null, syncDirection, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<SynchronizeResult> SynchronizeReplicaAsync(
+        string serviceId,
+        string replicaId,
+        long receivedServerGen,
+        string syncDirection = "download",
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(receivedServerGen);
+        return SynchronizeReplicaCoreAsync(serviceId, replicaId, receivedServerGen, syncDirection, cancellationToken);
+    }
+
+    private async Task<SynchronizeResult> SynchronizeReplicaCoreAsync(
+        string serviceId,
+        string replicaId,
+        long? receivedServerGen,
+        string syncDirection,
+        CancellationToken cancellationToken)
     {
         ValidateServiceId(serviceId);
         var url = $"rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer/synchronizeReplica";
@@ -129,10 +140,21 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
             ["f"] = "json",
         };
 
-        using var doc = await PostAsync(url, parameters, cancellationToken).ConfigureAwait(false);
-        var serverGen = doc.RootElement.GetProperty("serverGen").GetInt64();
+        if (receivedServerGen is { } generation)
+        {
+            parameters["replicaServerGen"] = generation.ToString(CultureInfo.InvariantCulture);
+        }
 
-        return new SynchronizeResult(replicaId, serverGen);
+        using var doc = await PostAsync(url, parameters, cancellationToken).ConfigureAwait(false);
+        var root = doc.RootElement;
+        var serverGen = root.GetProperty("serverGen").GetInt64();
+
+        return new SynchronizeResult(replicaId, serverGen)
+        {
+            LayerChanges = ParseLayerChanges(root, "edits"),
+            ExceededTransferLimit = HasExceededTransferLimit(root),
+            LayerServerGens = ParseLayerServerGens(root),
+        };
     }
 
     /// <inheritdoc />
@@ -183,6 +205,32 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         {
             response?.Dispose();
         }
+    }
+
+    private static bool HasExceededTransferLimit(JsonElement root)
+        => root.TryGetProperty("exceededTransferLimit", out var limit) && limit.ValueKind == JsonValueKind.True;
+
+    private static LayerChangeSet[] ParseLayerChanges(JsonElement root, string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var changes) || changes.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return changes.EnumerateArray().Select(ParseLayerChangeSet).ToArray();
+    }
+
+    private static ReplicaLayerServerGeneration[] ParseLayerServerGens(JsonElement root)
+    {
+        if (!root.TryGetProperty("layerServerGens", out var generations) || generations.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        return generations.EnumerateArray()
+            .Select(layer => new ReplicaLayerServerGeneration(
+                layer.GetProperty("id").GetInt32(), layer.GetProperty("serverGen").GetInt64()))
+            .ToArray();
     }
 
     private static LayerChangeSet ParseLayerChangeSet(JsonElement element)

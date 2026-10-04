@@ -366,7 +366,18 @@ class SdkCertificationTests(unittest.TestCase):
             if cell["client"].endswith("IReplicaSyncClient")
         ]
 
-        self.assertEqual(5, len(replica))
+        self.assertEqual(6, len(replica))
+        self.assertEqual(
+            {
+                "CreateReplicaAsync(string,string,IReadOnlyList<int>?,CancellationToken)",
+                "ExtractChangesAsync(string,string,CancellationToken)",
+                "ExtractChangesAsync(string,string,string?,CancellationToken)",
+                "SynchronizeReplicaAsync(string,string,string,CancellationToken)",
+                "SynchronizeReplicaAsync(string,string,long,string,CancellationToken)",
+                "UnRegisterReplicaAsync(string,string,CancellationToken)",
+            },
+            {cell["signature"] for cell in replica},
+        )
         self.assertEqual(
             {
                 "CreateReplicaAsync",

@@ -26,12 +26,12 @@ public interface IReplicaSyncClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Extracts feature changes (adds, updates, deletes) from the server since the last synchronization.
+    /// Extracts feature changes (adds, updates, deletes) from the server's recorded replica cursor.
     /// </summary>
     /// <param name="serviceId">The feature service identifier.</param>
     /// <param name="replicaId">The replica ID obtained from <see cref="CreateReplicaAsync"/>.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>Layer-level change sets and the current server generation number.</returns>
+    /// <returns>Layer-level changes, delivered generations, and transfer-limit metadata.</returns>
     Task<ExtractChangesResult> ExtractChangesAsync(
         string serviceId,
         string replicaId,
@@ -43,20 +43,20 @@ public interface IReplicaSyncClient
     /// </summary>
     /// <remarks>
     /// The GeoServices replica protocol scopes <c>extractChanges</c> by the replica's last-known
-    /// server generation. Passing the persisted generation here yields only the delta since the
-    /// previous sync; omitting it (or using the parameterless overload) re-extracts the full change
-    /// set every run, which defeats delta sync. The default implementation delegates to the
+    /// server generation. Pass the generation applied locally to extract its subsequent delta.
+    /// Omitting it uses the server's recorded replica cursor, which may have advanced after a
+    /// download that was not applied locally. The default implementation delegates to the
     /// generation-less overload for backward compatibility with existing implementations.
     /// </remarks>
     /// <param name="serviceId">The feature service identifier.</param>
     /// <param name="replicaId">The replica ID obtained from <see cref="CreateReplicaAsync"/>.</param>
     /// <param name="sinceServerGen">
-    /// The server generation the local replica last synchronized to, used as the lower bound
+    /// The server generation the local replica last applied, used as the lower bound
     /// ("since") for the extract. When <see langword="null"/> or whitespace, the server returns
-    /// the full change set (equivalent to extracting from the replica's creation generation).
+    /// changes since its recorded replica cursor.
     /// </param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>Layer-level change sets and the current server generation number.</returns>
+    /// <returns>Layer-level changes, delivered generations, and transfer-limit metadata.</returns>
     Task<ExtractChangesResult> ExtractChangesAsync(
         string serviceId,
         string replicaId,
@@ -65,18 +65,49 @@ public interface IReplicaSyncClient
         => ExtractChangesAsync(serviceId, replicaId, cancellationToken);
 
     /// <summary>
-    /// Acknowledges received changes and advances the replica's server generation number.
+    /// Synchronizes a replica and exposes any downloaded feature changes.
     /// </summary>
+    /// <remarks>
+    /// Download synchronization advances the server's delivery cursor. It is not an acknowledgement
+    /// that the caller applied the changes locally. Apply every returned change before persisting
+    /// the returned generation; use the generation-aware overload to retry an unapplied delivery.
+    /// </remarks>
     /// <param name="serviceId">The feature service identifier.</param>
     /// <param name="replicaId">The replica ID.</param>
     /// <param name="syncDirection">Sync direction (for example, <c>"download"</c>).</param>
     /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>The updated replica ID and server generation number.</returns>
+    /// <returns>The replica ID, delivered generation, changes, and transfer-limit metadata.</returns>
     Task<SynchronizeResult> SynchronizeReplicaAsync(
         string serviceId,
         string replicaId,
         string syncDirection = "download",
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Synchronizes a replica using the generation already received and applied locally as the
+    /// download lower bound (<c>replicaServerGen</c>).
+    /// </summary>
+    /// <remarks>
+    /// Pass the generation of the locally applied snapshot or preceding delivery. Apply the
+    /// returned changes and save their generation together before continuing. If local application
+    /// fails, retry with the preceding applied generation, even if the server cursor advanced.
+    /// If <see cref="SynchronizeResult.ExceededTransferLimit"/> is true, repeat after applying
+    /// this window. This downloads intervening edits; it does not merely acknowledge an extract.
+    /// Implementations that do not support an explicit generation throw rather than ignore it.
+    /// </remarks>
+    /// <param name="serviceId">The feature service identifier.</param>
+    /// <param name="replicaId">The replica ID.</param>
+    /// <param name="receivedServerGen">The nonnegative server generation already applied locally.</param>
+    /// <param name="syncDirection">Sync direction (for example, <c>"download"</c>).</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>The replica ID, delivered generation, changes, and transfer-limit metadata.</returns>
+    Task<SynchronizeResult> SynchronizeReplicaAsync(
+        string serviceId,
+        string replicaId,
+        long receivedServerGen,
+        string syncDirection = "download",
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("This replica client does not support an explicit received server generation.");
 
     /// <summary>
     /// Unregisters a replica from the server, freeing server-side resources.
@@ -101,7 +132,11 @@ public sealed record CreateReplicaResult(string ReplicaId, long ServerGen);
 /// Result of synchronizing a replica.
 /// </summary>
 /// <param name="ReplicaId">The replica identifier.</param>
-/// <param name="ServerGen">The updated server generation number after synchronization.</param>
+/// <param name="ServerGen">
+/// The generation delivered through by a download. Persist it locally only after applying all
+/// <see cref="SynchronizeResult.LayerChanges"/>; it is not a locally applied acknowledgement.
+/// Upload-only synchronization retains the server's preceding download cursor.
+/// </param>
 public sealed record SynchronizeResult(string ReplicaId, long ServerGen)
 {
     /// <summary>Delivered adds, updates, and tombstones, grouped by layer.</summary>
@@ -133,9 +168,16 @@ public sealed class ExtractChangesResult
     public required IReadOnlyList<LayerChangeSet> LayerChanges { get; init; }
 
     /// <summary>
-    /// The server generation number at the time changes were extracted.
+    /// The generation delivered through. Persist it locally only after applying all changes.
+    /// A limited delivery may stop before the current server generation.
     /// </summary>
     public long ServerGen { get; init; }
+
+    /// <summary>Whether more changes remain after this delivered window.</summary>
+    public bool ExceededTransferLimit { get; init; }
+
+    /// <summary>Per-layer generations reached by this extract delivery.</summary>
+    public IReadOnlyList<ReplicaLayerServerGeneration> LayerServerGens { get; init; } = [];
 }
 
 /// <summary>

@@ -122,3 +122,8 @@ override Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.GetHashCode
 override Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.ToString() -> string!
 static Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.operator !=(Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? left, Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? right) -> bool
 static Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.operator ==(Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? left, Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? right) -> bool
+Honua.Sdk.Offline.Abstractions.IReplicaSyncClient.SynchronizeReplicaAsync(string! serviceId, string! replicaId, long receivedServerGen, string! syncDirection = "download", System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.SynchronizeResult!>!
+Honua.Sdk.Offline.Abstractions.ExtractChangesResult.ExceededTransferLimit.get -> bool
+Honua.Sdk.Offline.Abstractions.ExtractChangesResult.ExceededTransferLimit.init -> void
+Honua.Sdk.Offline.Abstractions.ExtractChangesResult.LayerServerGens.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration!>!
+Honua.Sdk.Offline.Abstractions.ExtractChangesResult.LayerServerGens.init -> void
