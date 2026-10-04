@@ -25,6 +25,9 @@
 
 - .NET 10.0 SDK or later
 - A running Honua Server instance
+- For the runnable samples below: a project to add the packages to (`dotnet new console`), a
+  published feature layer, and an admin API key. The samples read them from the environment
+  variables described under [Quick Start](#quick-start).
 
 ## Install
 
@@ -74,11 +77,16 @@ The GitHub Packages NuGet endpoint requires authentication even for public
 packages, and accepts only a **classic** personal access token with the
 `read:packages` scope - fine-grained tokens are rejected:
 
+Replace `<your-github-username>` with your GitHub user name and `<your-classic-pat>` with a
+classic token you create under GitHub **Settings → Developer settings → Personal access tokens
+(classic)** with only the `read:packages` scope:
+
+<!-- doc-run: skip reason="prerelease-only channel: needs the reader's own GitHub classic PAT, and installs a prerelease that no release pins; a release reader installs the stable packages from nuget.org with the Install block above" -->
 ```bash
 dotnet nuget add source "https://nuget.pkg.github.com/honua-io/index.json" \
   --name honua \
-  --username YOUR_GITHUB_USERNAME \
-  --password YOUR_GITHUB_PAT \
+  --username <your-github-username> \
+  --password <your-classic-pat> \
   --store-password-in-clear-text
 
 dotnet add package Honua.Sdk --prerelease \
@@ -98,25 +106,65 @@ corresponding GitHub Actions run.
 
 ## Quick Start
 
+The samples on this page are complete `Program.cs` files for a console project that has the
+packages above. They use the .NET Generic Host:
+
+```bash
+dotnet add package Microsoft.Extensions.Hosting
+```
+
+They read your server's addresses, an admin API key and a published layer from environment
+variables. Set them first, replacing the `<...>` values (the
+[quickstart](docs/quickstart.md#before-you-start-point-the-samples-at-your-server) explains where
+each value comes from):
+
+```bash
+export HONUA_URL="http://localhost:8080"        # the server's HTTP address
+export HONUA_GRPC_URL="http://localhost:8081"   # the server's gRPC (HTTP/2 cleartext) address
+export HONUA_API_KEY="<your-api-key>"           # an admin API key
+export HONUA_SERVICE_ID="<your-service-id>"     # the serviceName of a published layer
+export HONUA_LAYER_ID="<your-layer-id>"         # that layer's layerId (a number)
+```
+
+Register the gRPC client in DI and use it from a service of your own:
+
+<!-- doc-run: file=Program.cs -->
 ```csharp
 using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Grpc.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-// Register in DI
+var builder = Host.CreateApplicationBuilder(args);
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+// Register in DI. gRPC has its own (HTTP/2 cleartext) address.
 builder.Services.AddHonuaGrpc(options =>
 {
-    options.BaseAddress = new Uri("https://your-honua-server.com");
+    options.BaseAddress = new Uri(Env("HONUA_GRPC_URL"));
+    options.ApiKey = Env("HONUA_API_KEY");
 });
+builder.Services.AddTransient<MyService>();
+
+using var host = builder.Build();
+
+var features = await host.Services.GetRequiredService<MyService>()
+    .GetFeaturesAsync(Env("HONUA_SERVICE_ID"), int.Parse(Env("HONUA_LAYER_ID")));
+Console.WriteLine($"Got {features.Count} features.");
+
+static string Env(string name) =>
+    Environment.GetEnvironmentVariable(name) ?? throw new InvalidOperationException($"Set {name} first.");
 
 // Use in a service
 public class MyService(IHonuaGrpcClient client)
 {
-    public async Task<IReadOnlyList<Feature>> GetFeaturesAsync(int layerId)
+    public async Task<IReadOnlyList<Feature>> GetFeaturesAsync(string serviceId, int layerId)
     {
         var response = await client.QueryFeaturesAsync(new QueryFeaturesRequest
         {
-            ServiceId = "my-service",
+            ServiceId = serviceId,
             LayerId = layerId,
             ReturnGeometry = true,
         });
@@ -124,6 +172,10 @@ public class MyService(IHonuaGrpcClient client)
         return response.Features;
     }
 }
+```
+
+```bash
+dotnet run
 ```
 
 ## Version Policy
@@ -148,8 +200,24 @@ coarse feature flags for metadata and manifest workflows.
 
 Typical startup flow:
 
+<!-- doc-run: file=Program.cs -->
 ```csharp
 using Honua.Sdk.Admin;
+using Honua.Sdk.Admin.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
+builder.Services.AddHonuaAdmin(o =>
+{
+    o.BaseAddress = new Uri(Env("HONUA_URL"));
+    o.ApiKey = Env("HONUA_API_KEY");
+});
+
+using var host = builder.Build();
+var adminClient = host.Services.GetRequiredService<IHonuaAdminClient>();
 
 var compatibility = await adminClient.CheckCompatibilityAsync();
 
@@ -160,10 +228,26 @@ if (!compatibility.IsSupported)
         "The connected Honua Server is not supported by this SDK.");
 }
 
+Console.WriteLine("The connected Honua Server is supported by this SDK.");
+
 if (compatibility.Features.ManifestExport)
 {
     var manifest = await adminClient.GetManifestAsync();
 }
+
+static string Env(string name) =>
+    Environment.GetEnvironmentVariable(name) ?? throw new InvalidOperationException($"Set {name} first.");
+```
+
+```bash
+dotnet run
+```
+
+On a supported server it prints:
+
+<!-- doc-run: output -->
+```text
+The connected Honua Server is supported by this SDK.
 ```
 
 The same compatibility gate is the first remote step in the
@@ -185,14 +269,43 @@ The only HTTP exception is loopback / `localhost` for local development, which
 is the path used by the admin bootstrap sample against local Docker Compose
 defaults.
 
-Use credential providers for refresh, revocation, and key rotation:
+Use credential providers for refresh, revocation, and key rotation. This sample reads the key
+through a small key store of its own; an OIDC app sets `BearerTokenProvider` the same way, for
+example `o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);`:
 
+<!-- doc-run: file=Program.cs -->
 ```csharp
+using Honua.Sdk.Admin;
+using Honua.Sdk.Admin.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+var keyStore = new KeyStore();
 builder.Services.AddHonuaAdmin(o =>
 {
-    o.BaseAddress = new Uri("https://honua.example.com");
-    o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
+    o.BaseAddress = new Uri(Environment.GetEnvironmentVariable("HONUA_URL")!);
+    o.ApiKeyProvider = ct => keyStore.GetCurrentKeyAsync(ct);
 });
+
+using var host = builder.Build();
+var compatibility = await host.Services.GetRequiredService<IHonuaAdminClient>().CheckCompatibilityAsync();
+Console.WriteLine($"Server supported by this SDK: {compatibility.IsSupported}");
+
+// Stands in for your application's secure store; the provider runs before every request,
+// so a rotated key is picked up without restarting.
+public sealed class KeyStore
+{
+    public Task<string?> GetCurrentKeyAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Environment.GetEnvironmentVariable("HONUA_API_KEY"));
+}
+```
+
+```bash
+dotnet run
 ```
 
 Providers run before each request or RPC. Returning null or an empty string

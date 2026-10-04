@@ -110,20 +110,38 @@ consent, privacy, and replay guidance.
 
 ## Quick usage
 
-A complete `Program.cs` you can drop into a `dotnet new console` project
-(after installing the packages you use — see [docs/quickstart.md](docs/quickstart.md)
-for the minimal install set):
+A complete `Program.cs` for a `dotnet new console` project. Besides the
+`Honua.Sdk` package from [Install](#install), it uses the .NET Generic Host:
 
+```bash
+dotnet add package Microsoft.Extensions.Hosting
+```
+
+It reads your server's addresses, an admin API key and a published layer from
+environment variables. Set them first, replacing the `<...>` values (the
+[quickstart](docs/quickstart.md#before-you-start-point-the-samples-at-your-server)
+explains where each value comes from):
+
+```bash
+export HONUA_URL="http://localhost:8080"        # the server's HTTP address
+export HONUA_GRPC_URL="http://localhost:8081"   # the server's gRPC (HTTP/2 cleartext) address
+export HONUA_API_KEY="<your-api-key>"           # an admin API key
+export HONUA_SERVICE_ID="<your-service-id>"     # the serviceName of a published layer
+export HONUA_LAYER_ID="<your-layer-id>"         # that layer's layerId (a number)
+```
+
+<!-- doc-run: file=Program.cs -->
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Honua.Sdk;
 using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;   // AddHonuaGrpc
 using Honua.Sdk.Grpc.Models;
 
 var builder = Host.CreateApplicationBuilder(args);
-var serverUri = new Uri("http://localhost:8080");
+builder.Logging.SetMinimumLevel(LogLevel.Warning);   // keep per-request logs out of the output
 
 // One call registers every enabled Honua SDK client. Defaults register the
 // common gRPC, Admin + Catalog, Geocoding, OGC API Features, OGC API
@@ -132,40 +150,62 @@ var serverUri = new Uri("http://localhost:8080");
 // ImageServer (raster).
 builder.Services.AddHonua(o =>
 {
-    o.BaseAddress = serverUri;
-    // o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
+    o.BaseAddress = new Uri(Env("HONUA_URL"));
+    o.ApiKey = Env("HONUA_API_KEY");
+    // or: o.BearerTokenProvider = ct => tokenCache.GetAccessTokenAsync(ct);
 });
 
-// honua-server serves the HTTP protocols on 8080 and gRPC as HTTP/2 cleartext
-// on 8081, so one BaseAddress cannot reach both. AddHonua delegates to
-// AddHonuaGrpc internally, so registering it again here wins for the gRPC client.
+// honua-server serves the HTTP protocols and gRPC (HTTP/2 cleartext) on separate
+// ports, so one BaseAddress cannot reach both. AddHonua delegates to AddHonuaGrpc
+// internally, so registering it again here wins for the gRPC client.
 // Without this, gRPC calls fail at runtime with HTTP_1_1_REQUIRED.
-builder.Services.AddHonuaGrpc(o => o.BaseAddress = new Uri("http://localhost:8081"));
+builder.Services.AddHonuaGrpc(o =>
+{
+    o.BaseAddress = new Uri(Env("HONUA_GRPC_URL"));
+    o.ApiKey = Env("HONUA_API_KEY");
+});
 
 using var host = builder.Build();
 var grpc = host.Services.GetRequiredService<IHonuaGrpcClient>();
 
 var response = await grpc.QueryFeaturesAsync(new QueryFeaturesRequest
 {
-    ServiceId      = "parks",
-    LayerId        = 0,
-    Where          = "status = 'open'",
-    ReturnGeometry = true,
+    ServiceId         = Env("HONUA_SERVICE_ID"),
+    LayerId           = int.Parse(Env("HONUA_LAYER_ID")),
+    Where             = "1=1",   // or a filter on your own fields, e.g. "status = 'open'"
+    ReturnGeometry    = true,
+    ResultRecordCount = 10,
 });
 
 foreach (var feature in response.Features)
 {
-    Console.WriteLine($"{feature.Id}: {feature.Attributes["name"]}");
+    Console.WriteLine($"{feature.Id}: " +
+        string.Join(", ", feature.Attributes.Select(a => $"{a.Key}={a.Value}")));
 }
+
+static string Env(string name) =>
+    Environment.GetEnvironmentVariable(name) ?? throw new InvalidOperationException($"Set {name} first.");
 ```
+
+```bash
+dotnet run
+```
+
+It prints one line per feature (at most 10): the feature id and its attributes.
 
 <details>
 <summary>Want to register individually instead of using the umbrella?</summary>
 
 The per-package `AddHonua*` extensions remain available and unchanged for
-callers who want explicit, narrow control:
+callers who want explicit, narrow control. This `Program.cs` registers the
+clients one by one and runs the Admin client's server compatibility check:
 
+<!-- doc-run: file=Program.cs -->
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Honua.Sdk.Admin;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.OgcFeatures.Wfs.Extensions;
@@ -173,13 +213,32 @@ using Honua.Sdk.OgcFeatures.Extensions;
 using Honua.Sdk.Processes.Extensions;
 using Honua.Sdk.Studio.Extensions;
 
-builder.Services.AddHonuaGrpc       (o => o.BaseAddress = serverUri);
-builder.Services.AddHonuaAdmin      (o => o.BaseAddress = serverUri); // + IHonuaCatalogClient
-builder.Services.AddHonuaGeocoding  (o => o.BaseAddress = serverUri);
-builder.Services.AddHonuaWfs        (o => o.BaseAddress = serverUri);
-builder.Services.AddHonuaOgcFeatures(o => o.BaseAddress = serverUri);
-builder.Services.AddHonuaProcesses  (o => o.BaseAddress = serverUri);
-builder.Services.AddHonuaStudio     (o => o.BaseAddress = serverUri);
+var builder = Host.CreateApplicationBuilder(args);
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+var serverUri = new Uri(Env("HONUA_URL"));
+var apiKey = Env("HONUA_API_KEY");
+
+builder.Services.AddHonuaGrpc       (o => { o.BaseAddress = new Uri(Env("HONUA_GRPC_URL")); o.ApiKey = apiKey; });
+builder.Services.AddHonuaAdmin      (o => { o.BaseAddress = serverUri; o.ApiKey = apiKey; }); // + IHonuaCatalogClient
+builder.Services.AddHonuaGeocoding  (o => { o.BaseAddress = serverUri; o.ApiKey = apiKey; });
+builder.Services.AddHonuaWfs        (o => { o.BaseAddress = serverUri; o.ApiKey = apiKey; });
+builder.Services.AddHonuaOgcFeatures(o => { o.BaseAddress = serverUri; o.ApiKey = apiKey; });
+builder.Services.AddHonuaProcesses  (o => { o.BaseAddress = serverUri; o.ApiKey = apiKey; });
+builder.Services.AddHonuaStudio     (o => { o.BaseAddress = serverUri; o.ApiKey = apiKey; });
+
+using var host = builder.Build();
+var admin = host.Services.GetRequiredService<IHonuaAdminClient>();
+
+var compatibility = await admin.CheckCompatibilityAsync();
+Console.WriteLine($"Server supported by this SDK: {compatibility.IsSupported}");
+
+static string Env(string name) =>
+    Environment.GetEnvironmentVariable(name) ?? throw new InvalidOperationException($"Set {name} first.");
+```
+
+```bash
+dotnet run
 ```
 
 </details>
@@ -278,7 +337,7 @@ third_party/geospatial-grpc/     Vendored proto input from the geospatial-grpc s
 - **[Documentation index](docs/README.md)** -- every getting-started,
   capability, and operations guide in one place
 - **[Quickstart](docs/quickstart.md)** -- 60-second hello-features, then a
-  five-step guided tour
+  seven-step guided tour
 - **[INSTALL.md](INSTALL.md)** -- feed setup, version policy, and the server
   compatibility baseline
 - **[Troubleshooting](docs/troubleshooting.md)** -- concrete failure modes and
