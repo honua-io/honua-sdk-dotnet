@@ -102,3 +102,23 @@ Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Rejected = 7 -> Honua.Sdk
 Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Cancelled = 8 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
 Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Failed = 9 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
 Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Indeterminate = 10 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.<Clone>$() -> Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration!
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.Deconstruct(out int LayerId, out long ServerGen) -> void
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.Equals(Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? other) -> bool
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.LayerId.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.LayerId.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.ReplicaLayerServerGeneration(int LayerId, long ServerGen) -> void
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.ServerGen.get -> long
+Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.ServerGen.init -> void
+Honua.Sdk.Offline.Abstractions.SynchronizeResult.ExceededTransferLimit.get -> bool
+Honua.Sdk.Offline.Abstractions.SynchronizeResult.ExceededTransferLimit.init -> void
+Honua.Sdk.Offline.Abstractions.SynchronizeResult.LayerChanges.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.LayerChangeSet!>!
+Honua.Sdk.Offline.Abstractions.SynchronizeResult.LayerChanges.init -> void
+Honua.Sdk.Offline.Abstractions.SynchronizeResult.LayerServerGens.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration!>!
+Honua.Sdk.Offline.Abstractions.SynchronizeResult.LayerServerGens.init -> void
+override Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.Equals(object? obj) -> bool
+override Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.GetHashCode() -> int
+override Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.ToString() -> string!
+static Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.operator !=(Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? left, Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? right) -> bool
+static Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration.operator ==(Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? left, Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration? right) -> bool
