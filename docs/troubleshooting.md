@@ -88,9 +88,10 @@ Both work. `BaseAddress` (`Uri`) is preferred for parity with the REST SDK clien
 
 ### Calls return immediately with `OperationCanceledException` even though the server is healthy
 
-Your `Options.Timeout` is shorter than the request actually needs. The same value gates both the
-per-attempt and the total-pipeline budget. Raise `Timeout`, or disable retries with
-`EnableRetry = false` while you isolate the slow call.
+Your `Options.Timeout` is shorter than the request actually needs. The total pipeline budget is
+`Timeout`; each attempt, including the response body, is limited to about 45% of that value
+(45 seconds when `Timeout` is left at its default of 100 seconds). Raise `Timeout`, or disable
+retries with `EnableRetry = false` while you isolate the slow call.
 
 ### Setting `MaxRetryAttempts` throws `ArgumentOutOfRangeException`
 

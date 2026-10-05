@@ -34,9 +34,14 @@ builder.Services.AddHonuaWfs(options =>
 
 For HTTP clients, `Timeout` is the overall resilience-pipeline budget when
 automatic retry is enabled. The pipeline derives a shorter per-attempt budget
-of approximately 45% of `Timeout` and reserves time for retries. With retry
-disabled, `Timeout` is applied directly to `HttpClient`. For gRPC, `Timeout`
-is converted to a per-call deadline. All public async methods also accept a
+of approximately 45% of `Timeout` and reserves time for retries. With the
+default `Timeout` of 100 seconds, that per-attempt budget is 45 seconds. It
+covers the complete response: headers and the body, including a streaming read
+started with `HttpCompletionOption.ResponseHeadersRead`. `HttpClient.Timeout`
+is infinite in this mode so it does not cut off a later retry that is still
+inside `Timeout`. With retry disabled, `Timeout` is applied directly to
+`HttpClient`, which bounds a buffered read. For gRPC, `Timeout` is converted
+to a per-call deadline. All public async methods also accept a
 `CancellationToken`; use it for caller-driven cancellation.
 
 ## Retries

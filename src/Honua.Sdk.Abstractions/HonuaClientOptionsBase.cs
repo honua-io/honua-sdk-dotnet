@@ -36,7 +36,10 @@ public abstract class HonuaClientOptionsBase : IHonuaClientOptions
 
     /// <summary>
     /// Overall timeout for each request, including retry attempts (default: 100 seconds).
-    /// Must be greater than 10 milliseconds and less than 24 hours.
+    /// Must be greater than 10 milliseconds and less than 24 hours. When retry is
+    /// enabled, each attempt is limited to about 45% of this value (45 seconds by
+    /// default). That per-attempt limit covers response headers and the full
+    /// response body, including streaming reads.
     /// </summary>
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
 

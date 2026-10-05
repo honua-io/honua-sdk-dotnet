@@ -28,6 +28,16 @@ namespace Honua.Sdk.Abstractions;
 /// genuinely permits a single attempt of up to ~45 s (and a 24 h budget scales up
 /// accordingly), rather than aborting every attempt at a hard-coded 14 s ceiling.
 /// </para>
+/// <para>
+/// That per-attempt budget covers the whole attempt: connecting, response headers,
+/// and the response body. Buffered reads and streaming reads that continue after
+/// headers arrive share it. With the default <see cref="IHonuaClientOptions.Timeout"/>
+/// of 100 seconds, each attempt — body included — is therefore limited to 45 seconds.
+/// <see cref="System.Net.Http.HttpClient.Timeout"/> stays
+/// <see cref="System.Threading.Timeout.InfiniteTimeSpan"/> while retry is enabled so
+/// it cannot cancel a later attempt that is still inside the overall budget; the
+/// REST registration carries the attempt deadline on the response content instead.
+/// </para>
 /// </remarks>
 [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 public static class HonuaResilienceTimeouts
@@ -54,9 +64,10 @@ public static class HonuaResilienceTimeouts
     /// the caller's overall <paramref name="totalTimeout"/> budget. The result
     /// scales with the budget (≈45% of it) so a long single call is allowed to
     /// run for a meaningful fraction of the configured budget instead of being
-    /// aborted at a fixed ceiling, while still leaving room for a retry. Pair this
-    /// with <see cref="SamplingDuration(TimeSpan)"/> when configuring the handler
-    /// so that <c>SamplingDuration &gt;= 2 * AttemptTimeout</c> always holds.
+    /// aborted at a fixed ceiling, while still leaving room for a retry. The
+    /// deadline covers response headers and the full body, including a streaming
+    /// read. Pair this with <see cref="SamplingDuration(TimeSpan)"/> when configuring
+    /// the handler so that <c>SamplingDuration &gt;= 2 * AttemptTimeout</c> always holds.
     /// </summary>
     /// <param name="totalTimeout">The overall request budget (the option <c>Timeout</c>).</param>
     /// <returns>A per-attempt timeout suitable for <c>AttemptTimeout.Timeout</c>.</returns>
@@ -94,8 +105,10 @@ public static class HonuaResilienceTimeouts
     /// client. When the resilience pipeline is enabled it owns all timing, so the
     /// outer <c>HttpClient.Timeout</c> must not pre-empt the total budget (otherwise
     /// a 100 s budget is silently capped at the same single value used for one
-    /// attempt). When retry is disabled, the option <paramref name="totalTimeout"/>
-    /// is honored directly.
+    /// attempt). The per-attempt deadline from <see cref="AttemptTimeout(TimeSpan)"/>
+    /// still bounds the response body in that mode. When retry is disabled, the
+    /// option <paramref name="totalTimeout"/> is honored directly as
+    /// <c>HttpClient.Timeout</c>, which bounds a buffered read.
     /// </summary>
     /// <param name="totalTimeout">The overall request budget (the option <c>Timeout</c>).</param>
     /// <param name="resilienceEnabled">Whether the standard resilience pipeline is registered.</param>
