@@ -153,7 +153,9 @@ internal static class HonuaRestHttpClientRegistration
                 return base.Send(request, cancellationToken);
             }
 
+            // codeql[cs/missed-using-statement] AttemptDeadlineContent owns this source after a successful send. A using would dispose it before the body is read.
             CancellationTokenSource? deadline = new CancellationTokenSource(_attemptTimeout);
+            // codeql[cs/missed-using-statement] The caller owns this response after a successful send. A using would dispose it before the body is read.
             HttpResponseMessage? response = null;
             try
             {
@@ -182,7 +184,9 @@ internal static class HonuaRestHttpClientRegistration
                 return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
 
+            // codeql[cs/missed-using-statement] AttemptDeadlineContent owns this source after a successful send. A using would dispose it before the body is read.
             CancellationTokenSource? deadline = new CancellationTokenSource(_attemptTimeout);
+            // codeql[cs/missed-using-statement] The caller owns this response after a successful send. A using would dispose it before the body is read.
             HttpResponseMessage? response = null;
             try
             {
@@ -257,9 +261,19 @@ internal static class HonuaRestHttpClientRegistration
             return false;
         }
 
+        protected override Stream CreateContentReadStream(CancellationToken cancellationToken)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline.Token);
+            return new AttemptDeadlineStream(_inner.ReadAsStream(linked.Token), _deadline.Token);
+        }
+
         protected override async Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken)
         {
-            var innerStream = await _inner.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            // Custom content reached through PrimaryHttpMessageHandlerFactory can block
+            // inside this call. The deadline is linked the same way as CopyToAsync;
+            // later reads of the returned stream link it again.
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline.Token);
+            var innerStream = await _inner.ReadAsStreamAsync(linked.Token).ConfigureAwait(false);
             return new AttemptDeadlineStream(innerStream, _deadline.Token);
         }
 

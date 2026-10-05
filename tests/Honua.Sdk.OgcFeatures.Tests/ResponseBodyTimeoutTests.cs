@@ -77,6 +77,27 @@ public sealed class ResponseBodyTimeoutTests
         Assert.InRange(started.Elapsed, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(2));
     }
 
+    [Fact]
+    public async Task DefaultResilience_StalledStreamCreation_CompletesWithinAttemptTimeout()
+    {
+        using var provider = BuildProvider(new StalledStreamCreationHandler());
+        var http = GetHttpClient(provider);
+        var started = Stopwatch.StartNew();
+
+        using var response = await http.GetAsync(
+            new Uri("https://example.test/collections"),
+            HttpCompletionOption.ResponseHeadersRead);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var open = response.Content.ReadAsStreamAsync();
+        var completed = await Task.WhenAny(open, Task.Delay(HangBound));
+
+        Assert.Same(open, completed);
+        var exception = await Record.ExceptionAsync(() => open);
+        Assert.IsAssignableFrom<OperationCanceledException>(exception);
+        Assert.InRange(started.Elapsed, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(2));
+    }
+
     private static ServiceProvider BuildProvider(HttpMessageHandler handler)
     {
         var services = new ServiceCollection();
@@ -117,7 +138,9 @@ public sealed class ResponseBodyTimeoutTests
         {
             var content = new StringContent(_body);
             content.Headers.ContentType = new MediaTypeHeaderValue(_mediaType);
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+            // codeql[cs/local-not-disposed] HttpMessageHandler transfers this response to HttpClient, which disposes it.
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+            return Task.FromResult(response);
         }
     }
 
@@ -130,10 +153,56 @@ public sealed class ResponseBodyTimeoutTests
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
-            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            // codeql[cs/local-not-disposed] HttpMessageHandler transfers this response to HttpClient, which disposes it.
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StalledBodyContent(),
-            });
+            };
+            return Task.FromResult(response);
+        }
+    }
+
+    /// <summary>
+    /// Returns headers immediately. Opening the body blocks in
+    /// <see cref="HttpContent.CreateContentReadStreamAsync(CancellationToken)"/>
+    /// until that token is cancelled, which is the gap before the returned
+    /// stream's reads are wrapped.
+    /// </summary>
+    private sealed class StalledStreamCreationHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // codeql[cs/local-not-disposed] HttpMessageHandler transfers this response to HttpClient, which disposes it.
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StalledStreamCreationContent(),
+            };
+            return Task.FromResult(response);
+        }
+    }
+
+    private sealed class StalledStreamCreationContent : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            => Task.FromException(new InvalidOperationException("Stream creation must not buffer the body."));
+
+        protected override Task SerializeToStreamAsync(
+            Stream stream, TransportContext? context, CancellationToken cancellationToken)
+            => Task.FromException(new InvalidOperationException("Stream creation must not buffer the body."));
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+
+        protected override async Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            return Stream.Null;
+        }
     }
 
     private sealed class StalledBodyContent : HttpContent
