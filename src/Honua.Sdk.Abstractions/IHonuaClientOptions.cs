@@ -22,7 +22,9 @@ public interface IHonuaClientOptions
 
     /// <summary>
     /// Overall request budget per call, including retry attempts.
-    /// Must be in the range (10 ms, 24 h).
+    /// Must be in the range (10 ms, 24 h). When retry is enabled, each attempt
+    /// is limited to about 45% of this budget, and that limit covers response
+    /// headers and the response body, including streaming reads.
     /// </summary>
     TimeSpan Timeout { get; set; }
 

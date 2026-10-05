@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
 using Honua.Sdk.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -27,6 +28,7 @@ internal static class HonuaRestHttpClientRegistration
     /// otherwise the credential-safe no-redirect default) and, when
     /// <see cref="IHonuaClientOptions.EnableRetry"/> is set, the standard resilience
     /// pipeline with the shared timeout budget from <see cref="HonuaResilienceTimeouts"/>.
+    /// That per-attempt budget also covers the response body, including streaming reads.
     /// </summary>
     /// <param name="httpBuilder">The typed-client builder to configure.</param>
     /// <param name="options">The captured client options snapshot.</param>
@@ -66,10 +68,15 @@ internal static class HonuaRestHttpClientRegistration
 
         if (options.EnableRetry)
         {
+            // 45% of Timeout by default: 45 seconds when Timeout is the default 100 seconds.
+            // Polly's attempt timeout ends when headers arrive, and HttpClient.Timeout is
+            // infinite while this pipeline is registered, so the same budget is applied to
+            // the response content below.
+            var attemptTimeout = HonuaResilienceTimeouts.AttemptTimeout(options.Timeout);
             httpBuilder.AddStandardResilienceHandler(resilience =>
             {
                 resilience.TotalRequestTimeout.Timeout = HonuaResilienceTimeouts.TotalRequestTimeout(options.Timeout);
-                resilience.AttemptTimeout.Timeout = HonuaResilienceTimeouts.AttemptTimeout(options.Timeout);
+                resilience.AttemptTimeout.Timeout = attemptTimeout;
                 resilience.CircuitBreaker.SamplingDuration = HonuaResilienceTimeouts.SamplingDuration(options.Timeout);
                 // The SDK option counts the initial send, while Polly counts only
                 // retries after that send. Convert the public total-attempt contract
@@ -87,6 +94,11 @@ internal static class HonuaRestHttpClientRegistration
                     configureRetry(resilience.Retry);
                 }
             });
+
+            // Registered after the resilience handler so it runs inside each attempt,
+            // closest to the transport. The deadline starts with the attempt and stays
+            // with the response until the body is read or the response is disposed.
+            httpBuilder.AddHttpMessageHandler(() => new HonuaAttemptResponseTimeoutHandler(attemptTimeout));
         }
 
         return httpBuilder;
@@ -118,5 +130,236 @@ internal static class HonuaRestHttpClientRegistration
             => exception is HttpRequestException
                 || exception is TimeoutRejectedException
                 || exception is TaskCanceledException && !cancellationToken.IsCancellationRequested;
+    }
+
+    /// <summary>
+    /// Keeps <see cref="HonuaResilienceTimeouts.AttemptTimeout"/> in force for the
+    /// response body. The standard resilience attempt timeout completes when the
+    /// inner handler returns headers, and <see cref="HttpClient.Timeout"/> is
+    /// infinite while retry is enabled, so neither of those budgets covers
+    /// <c>LoadIntoBufferAsync</c> or a later streaming read.
+    /// </summary>
+    private sealed class HonuaAttemptResponseTimeoutHandler : DelegatingHandler
+    {
+        private readonly TimeSpan _attemptTimeout;
+
+        public HonuaAttemptResponseTimeoutHandler(TimeSpan attemptTimeout)
+            => _attemptTimeout = attemptTimeout;
+
+        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (!ShouldEnforce(_attemptTimeout))
+            {
+                return base.Send(request, cancellationToken);
+            }
+
+            // Not a using: AttemptDeadlineContent keeps this source until the body
+            // is finished. A using, or a finally that always disposes, would end
+            // the attempt budget when Send returns.
+            var deadline = new CancellationTokenSource(_attemptTimeout);
+            try
+            {
+                return WithBodyDeadline(base.Send(request, cancellationToken), deadline);
+            }
+            catch
+            {
+                deadline.Dispose();
+                throw;
+            }
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (!ShouldEnforce(_attemptTimeout))
+            {
+                return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+
+            // Not a using: AttemptDeadlineContent keeps this source until the body
+            // is finished. A using, or a finally that always disposes, would end
+            // the attempt budget when SendAsync returns.
+            var deadline = new CancellationTokenSource(_attemptTimeout);
+            try
+            {
+                var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                return WithBodyDeadline(response, deadline);
+            }
+            catch
+            {
+                deadline.Dispose();
+                throw;
+            }
+        }
+
+        private static HttpResponseMessage WithBodyDeadline(HttpResponseMessage response, CancellationTokenSource deadline)
+        {
+            try
+            {
+                response.Content = new AttemptDeadlineContent(response.Content, deadline);
+                return response;
+            }
+            catch
+            {
+                response.Dispose();
+                throw;
+            }
+        }
+
+        private static bool ShouldEnforce(TimeSpan attemptTimeout)
+            => attemptTimeout > TimeSpan.Zero && attemptTimeout != Timeout.InfiniteTimeSpan;
+    }
+
+    /// <summary>
+    /// Response content whose reads observe the attempt deadline that started
+    /// when the attempt's send began, including reads that happen after the
+    /// resilience handler has already returned.
+    /// </summary>
+    private sealed class AttemptDeadlineContent : HttpContent
+    {
+        private readonly HttpContent _inner;
+        private readonly CancellationTokenSource _deadline;
+        private bool _disposed;
+
+        public AttemptDeadlineContent(HttpContent inner, CancellationTokenSource deadline)
+        {
+            _inner = inner;
+            _deadline = deadline;
+            foreach (var header in inner.Headers)
+            {
+                Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            => SerializeToStreamAsync(stream, context, CancellationToken.None);
+
+        protected override async Task SerializeToStreamAsync(
+            Stream stream,
+            TransportContext? context,
+            CancellationToken cancellationToken)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline.Token);
+            await _inner.CopyToAsync(stream, context, linked.Token).ConfigureAwait(false);
+        }
+
+        protected override void SerializeToStream(Stream stream, TransportContext? context, CancellationToken cancellationToken)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline.Token);
+            _inner.CopyTo(stream, context, linked.Token);
+        }
+
+        protected override bool TryComputeLength(out long length)
+        {
+            if (_inner.Headers.ContentLength is long contentLength)
+            {
+                length = contentLength;
+                return true;
+            }
+
+            length = 0;
+            return false;
+        }
+
+        protected override Stream CreateContentReadStream(CancellationToken cancellationToken)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline.Token);
+            return new AttemptDeadlineStream(_inner.ReadAsStream(linked.Token), _deadline.Token);
+        }
+
+        protected override async Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken)
+        {
+            // Custom content reached through PrimaryHttpMessageHandlerFactory can block
+            // inside this call. The deadline is linked the same way as CopyToAsync;
+            // later reads of the returned stream link it again.
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline.Token);
+            var innerStream = await _inner.ReadAsStreamAsync(linked.Token).ConfigureAwait(false);
+            return new AttemptDeadlineStream(innerStream, _deadline.Token);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _disposed = true;
+                base.Dispose(disposing);
+                _inner.Dispose();
+                _deadline.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Stream wrapper that cancels reads when the attempt deadline elapses,
+    /// even if the caller passes <see cref="CancellationToken.None"/>.
+    /// </summary>
+    private sealed class AttemptDeadlineStream : Stream
+    {
+        private readonly Stream _inner;
+        private readonly CancellationToken _deadline;
+        private bool _disposed;
+
+        public AttemptDeadlineStream(Stream inner, CancellationToken deadline)
+        {
+            _inner = inner;
+            _deadline = deadline;
+        }
+
+        public override bool CanRead => _inner.CanRead;
+
+        public override bool CanSeek => _inner.CanSeek;
+
+        public override bool CanWrite => false;
+
+        public override long Length => _inner.Length;
+
+        public override long Position
+        {
+            get => _inner.Position;
+            set => _inner.Position = value;
+        }
+
+        public override void Flush() => _inner.Flush();
+
+        public override int Read(byte[] buffer, int offset, int count)
+            => ReadAsync(buffer.AsMemory(offset, count), CancellationToken.None).AsTask().GetAwaiter().GetResult();
+
+        public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _deadline);
+            return await _inner.ReadAsync(buffer, linked.Token).ConfigureAwait(false);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _disposed = true;
+                _inner.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                await _inner.DisposeAsync().ConfigureAwait(false);
+            }
+
+            await base.DisposeAsync().ConfigureAwait(false);
+        }
     }
 }
