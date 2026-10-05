@@ -230,10 +230,7 @@ public sealed class ReplicaSyncClientTests
                 storedServerGen = currentServerGen;
             }
 
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent($"{{\"serverGen\":{currentServerGen},\"{property}\":{changes}}}", Encoding.UTF8, "application/json"),
-            });
+            return Task.FromResult(JsonResponse($"{{\"serverGen\":{currentServerGen},\"{property}\":{changes}}}"));
         });
         var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
         var initial = await client.SynchronizeReplicaAsync("assets", "replica");
@@ -252,11 +249,11 @@ public sealed class ReplicaSyncClientTests
         Assert.Empty(laterExtract.LayerChanges);
         Assert.Equal(11, storedServerGen);
         var layer = Assert.Single(result.LayerChanges);
-        foreach (var json in (layer.AddFeaturesJson ?? []).Concat(layer.UpdateFeaturesJson ?? []))
+        var deliveredFeatures = (layer.AddFeaturesJson ?? []).Concat(layer.UpdateFeaturesJson ?? [])
+            .Select(ReadFeatureName);
+        foreach (var (objectId, name) in deliveredFeatures)
         {
-            using var feature = JsonDocument.Parse(json);
-            var attributes = feature.RootElement.GetProperty("attributes");
-            localFeatures[attributes.GetProperty("objectid").GetInt64()] = attributes.GetProperty("name").GetString()!;
+            localFeatures[objectId] = name;
         }
 
         foreach (var id in layer.DeleteIds ?? [])
@@ -280,13 +277,10 @@ public sealed class ReplicaSyncClientTests
     [Fact]
     public async Task SynchronizeReplicaAsync_LimitedDelivery_PreservesLimitAndLayerGenerations()
     {
-        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("""
+        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(JsonResponse("""
                 {"serverGen":11,"edits":[{"id":3,"deleteIds":[99]}],
                  "exceededTransferLimit":true,"layerServerGens":[{"id":3,"serverGen":11}]}
-                """, Encoding.UTF8, "application/json"),
-        }));
+                """)));
         var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
 
         var result = await client.SynchronizeReplicaAsync("assets", "replica");
@@ -327,10 +321,7 @@ public sealed class ReplicaSyncClientTests
                 response = $"{{\"serverGen\":11,\"edits\":{(since < 11 ? remoteChanges : "[]")}}}";
             }
 
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(response, Encoding.UTF8, "application/json"),
-            };
+            return JsonResponse(response);
         });
         IReplicaSyncClient client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
         var extract = await client.ExtractChangesAsync("assets", "replica", "9");
@@ -368,10 +359,7 @@ public sealed class ReplicaSyncClientTests
         var handler = new StubHttpMessageHandler(async (request, cancellationToken) =>
         {
             capturedBody = await request.Content!.ReadAsStringAsync(cancellationToken);
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("""{"serverGen":10,"edits":null,"layerServerGens":null,"exceededTransferLimit":null}""", Encoding.UTF8, "application/json"),
-            };
+            return JsonResponse("""{"serverGen":10,"edits":null,"layerServerGens":null,"exceededTransferLimit":null}""");
         });
         var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
 
@@ -404,10 +392,7 @@ public sealed class ReplicaSyncClientTests
             var response = parameters["replicaServerGen"] == "10"
                 ? """{"serverGen":11,"edits":[{"id":0,"deleteIds":[1]}],"exceededTransferLimit":true,"layerServerGens":[{"id":0,"serverGen":11}]}"""
                 : """{"serverGen":12,"edits":[{"id":0,"deleteIds":[2]}],"layerServerGens":[{"id":0,"serverGen":12}]}""";
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(response, Encoding.UTF8, "application/json"),
-            };
+            return JsonResponse(response);
         });
         var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
         var localIds = new HashSet<long> { 1, 2 };
@@ -432,13 +417,10 @@ public sealed class ReplicaSyncClientTests
     [Fact]
     public async Task ExtractChangesAsync_LimitedDelivery_PreservesDeliveryMetadata()
     {
-        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent("""
+        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(JsonResponse("""
                 {"serverGen":11,"layerChanges":[{"id":3,"deleteIds":[99]}],
                  "exceededTransferLimit":true,"layerServerGens":[{"id":3,"serverGen":11}]}
-                """, Encoding.UTF8, "application/json"),
-        }));
+                """)));
         var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
 
         var result = await client.ExtractChangesAsync("assets", "replica", "10");
@@ -752,6 +734,19 @@ public sealed class ReplicaSyncClientTests
     {
         Assert.Throws<ArgumentNullException>(() => new ReplicaSyncClient(null!));
     }
+
+    private static (long ObjectId, string Name) ReadFeatureName(string featureJson)
+    {
+        using var feature = JsonDocument.Parse(featureJson);
+        var attributes = feature.RootElement.GetProperty("attributes");
+        return (attributes.GetProperty("objectid").GetInt64(), attributes.GetProperty("name").GetString()!);
+    }
+
+    // The returned message is owned and disposed by the HttpClient pipeline.
+    private static HttpResponseMessage JsonResponse(string json) => new(HttpStatusCode.OK)
+    {
+        Content = new StringContent(json, Encoding.UTF8, "application/json"),
+    };
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
     {
