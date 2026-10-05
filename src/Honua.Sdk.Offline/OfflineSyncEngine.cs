@@ -190,8 +190,10 @@ public sealed partial class OfflineSyncEngine : IOfflineSyncRunner
     /// </para>
     /// <para>
     /// Callers that need server-driven delta sync (a <c>serverGen</c> high-water
-    /// mark) should use <see cref="ReplicaSyncClient"/> instead, which threads the
-    /// server generation through extract-changes requests.
+    /// mark) should use <see cref="ReplicaSyncClient"/> instead. Pass the locally applied
+    /// generation to its extract or synchronization requests, apply the delivered adds,
+    /// updates, and tombstones, then persist the delivered generation. Download synchronization
+    /// can return intervening changes and is not merely an acknowledgement of an extract.
     /// </para>
     /// </remarks>
     /// <param name="manifest">Offline package manifest.</param>

@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 322,
+    "total": 323,
     "exercised": 25,
-    "gap": 279,
+    "gap": 280,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 290,
+    "denominator": 291,
     "excluded": [
       {
         "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.FindClosestFacilityAsync(ClosestFacilityRequest,CancellationToken)",
@@ -7314,6 +7314,34 @@
       ],
       "scenarioFacets": [
         "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Offline.ReplicaSyncClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Offline.ReplicaSyncClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Offline.ReplicaSyncClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Offline.Abstractions.IReplicaSyncClient.SynchronizeReplicaAsync(string,string,long,string,CancellationToken)",
+      "surface": "abstractions",
+      "client": "Honua.Sdk.Offline.Abstractions.IReplicaSyncClient",
+      "operation": "SynchronizeReplicaAsync",
+      "signature": "SynchronizeReplicaAsync(string,string,long,string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
       ],
       "tests": [],
       "implementations": [

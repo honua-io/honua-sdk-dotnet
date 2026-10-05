@@ -59,6 +59,42 @@ OfflinePullResult pulled = await engine.PullAsync(manifest, cancellationToken);
 OfflineSyncRunResult run = await engine.SyncAsync(manifest, cancellationToken);
 ```
 
+## Replica delta downloads
+
+Use `ReplicaSyncClient` for server-driven replica changes. A synchronization
+downloads changes and advances the server's delivery cursor. The returned
+`ServerGen` describes that delivery; it does not mean the changes were applied
+to your local store.
+
+Pass the generation already applied locally as `receivedServerGen`. Apply all
+`LayerChanges` (including `DeleteIds` tombstones) and persist the returned
+generation together with those changes in your local transaction. If local
+application fails, retry with the preceding applied generation so the server
+can redeliver that window even if its stored cursor has advanced.
+
+```csharp
+// Begin with the generation of the replica snapshot stored locally.
+long appliedGeneration = /* load the local replica checkpoint */;
+SynchronizeResult delivery;
+do
+{
+    delivery = await replicaClient.SynchronizeReplicaAsync(
+        serviceId, replicaId, receivedServerGen: appliedGeneration,
+        cancellationToken: cancellationToken);
+
+    // In one local transaction: apply adds/updates/deletes from LayerChanges,
+    // then save delivery.ServerGen as the checkpoint. Commit before continuing.
+    await ApplyAndCheckpointAsync(delivery.LayerChanges, delivery.ServerGen, cancellationToken);
+    appliedGeneration = delivery.ServerGen;
+} while (delivery.ExceededTransferLimit);
+```
+
+`ExceededTransferLimit` means another delivery remains. `LayerServerGens`
+retains the generations delivered for individual layers. `ExtractChangesAsync`
+also exposes this metadata; after applying an extract, pass its delivered
+generation to synchronization and apply that synchronization's changes too,
+since remote edits may arrive between the two requests.
+
 ## Documentation
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)
