@@ -153,25 +153,18 @@ internal static class HonuaRestHttpClientRegistration
                 return base.Send(request, cancellationToken);
             }
 
-            // codeql[cs/missed-using-statement] AttemptDeadlineContent owns this source after a successful send. A using would dispose it before the body is read.
-            CancellationTokenSource? deadline = new CancellationTokenSource(_attemptTimeout);
-            // codeql[cs/missed-using-statement] The caller owns this response after a successful send. A using would dispose it before the body is read.
-            HttpResponseMessage? response = null;
+            // Not a using: AttemptDeadlineContent keeps this source until the body
+            // is finished. A using, or a finally that always disposes, would end
+            // the attempt budget when Send returns.
+            var deadline = new CancellationTokenSource(_attemptTimeout);
             try
             {
-                response = base.Send(request, cancellationToken);
-                response.Content = new AttemptDeadlineContent(response.Content, deadline);
-                deadline = null;
-                return response;
+                return WithBodyDeadline(base.Send(request, cancellationToken), deadline);
             }
-            finally
+            catch
             {
-                if (deadline is not null)
-                {
-                    response?.Dispose();
-                }
-
-                deadline?.Dispose();
+                deadline.Dispose();
+                throw;
             }
         }
 
@@ -184,25 +177,33 @@ internal static class HonuaRestHttpClientRegistration
                 return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             }
 
-            // codeql[cs/missed-using-statement] AttemptDeadlineContent owns this source after a successful send. A using would dispose it before the body is read.
-            CancellationTokenSource? deadline = new CancellationTokenSource(_attemptTimeout);
-            // codeql[cs/missed-using-statement] The caller owns this response after a successful send. A using would dispose it before the body is read.
-            HttpResponseMessage? response = null;
+            // Not a using: AttemptDeadlineContent keeps this source until the body
+            // is finished. A using, or a finally that always disposes, would end
+            // the attempt budget when SendAsync returns.
+            var deadline = new CancellationTokenSource(_attemptTimeout);
             try
             {
-                response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                return WithBodyDeadline(response, deadline);
+            }
+            catch
+            {
+                deadline.Dispose();
+                throw;
+            }
+        }
+
+        private static HttpResponseMessage WithBodyDeadline(HttpResponseMessage response, CancellationTokenSource deadline)
+        {
+            try
+            {
                 response.Content = new AttemptDeadlineContent(response.Content, deadline);
-                deadline = null;
                 return response;
             }
-            finally
+            catch
             {
-                if (deadline is not null)
-                {
-                    response?.Dispose();
-                }
-
-                deadline?.Dispose();
+                response.Dispose();
+                throw;
             }
         }
 

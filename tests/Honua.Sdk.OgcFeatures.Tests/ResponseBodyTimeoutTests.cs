@@ -138,9 +138,7 @@ public sealed class ResponseBodyTimeoutTests
         {
             var content = new StringContent(_body);
             content.Headers.ContentType = new MediaTypeHeaderValue(_mediaType);
-            // codeql[cs/local-not-disposed] HttpMessageHandler transfers this response to HttpClient, which disposes it.
-            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
-            return Task.FromResult(response);
+            return Task.FromResult(Ok(content));
         }
     }
 
@@ -153,14 +151,7 @@ public sealed class ResponseBodyTimeoutTests
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            // codeql[cs/local-not-disposed] HttpMessageHandler transfers this response to HttpClient, which disposes it.
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StalledBodyContent(),
-            };
-            return Task.FromResult(response);
-        }
+            => Task.FromResult(Ok(new StalledBodyContent()));
     }
 
     /// <summary>
@@ -173,14 +164,16 @@ public sealed class ResponseBodyTimeoutTests
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            // codeql[cs/local-not-disposed] HttpMessageHandler transfers this response to HttpClient, which disposes it.
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StalledStreamCreationContent(),
-            };
-            return Task.FromResult(response);
-        }
+            => Task.FromResult(Ok(new StalledStreamCreationContent()));
+    }
+
+    /// <summary>
+    /// Handler responses are owned by <see cref="HttpClient"/>. Returning the
+    /// new message from this method is what keeps that transfer visible.
+    /// </summary>
+    private static HttpResponseMessage Ok(HttpContent content)
+    {
+        return new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
     }
 
     private sealed class StalledStreamCreationContent : HttpContent
