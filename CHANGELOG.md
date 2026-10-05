@@ -2,6 +2,15 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.10.3](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.2...dotnet-sdk-v1.10.3) (2026-10-05)
+
+
+### Bug Fixes
+
+* **certification:** pin the certified SDK package and server candidate in one file ([#412](https://github.com/honua-io/honua-sdk-dotnet/issues/412)) ([dfcb83f](https://github.com/honua-io/honua-sdk-dotnet/commit/dfcb83f64df66ffd35858656a08af106f349d656))
+* **offline:** preserve replica download edits and applied generations ([#416](https://github.com/honua-io/honua-sdk-dotnet/issues/416)) ([c4c106e](https://github.com/honua-io/honua-sdk-dotnet/commit/c4c106e9a87869d2cc080a26a1063d5898108080))
+* **sdk:** bound REST attempt timeouts through the response body ([#417](https://github.com/honua-io/honua-sdk-dotnet/issues/417)) ([dde57dc](https://github.com/honua-io/honua-sdk-dotnet/commit/dde57dc3d5cfe27d62f1d9c61fd25b17994ddad6))
+
 ## [1.10.2](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.1...dotnet-sdk-v1.10.2) (2026-10-04)
 
 
