@@ -85,4 +85,7 @@ lag the nightly resolver.
 An unpublished `publicationState`, or a version that nuget.org does not serve,
 fails the run and does not open a pull request. The workflow opens or updates
 one pull request, branch `chore/certification-pin-follow` into `trunk`. It
-does not merge.
+does not merge. The push uses the repository `GITHUB_TOKEN`, which does not
+start `pull_request` workflows, so the same job dispatches
+`sdk-certification.yml` with `tier=pr` on that commit. Commits on the branch
+use the repository owner identity.

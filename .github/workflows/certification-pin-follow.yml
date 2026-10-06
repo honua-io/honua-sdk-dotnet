@@ -19,6 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
+      # contents: write pushes the pin branch. pull-requests: write opens or
+      # updates that one pull request. actions: write dispatches
+      # sdk-certification.yml. A GITHUB_TOKEN push or pull request does not
+      # start pull_request workflows; workflow_dispatch is the documented
+      # exception, same as the publish job in release-please.yml. Job-level
+      # write is the least privilege that still lets this job publish the pin.
+      actions: write
       contents: write
       pull-requests: write
     steps:
@@ -34,8 +41,31 @@ jobs:
         run: |
           set -euo pipefail
           branch="chore/certification-pin-follow"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # workflow_dispatch is the exception that still runs when the caller
+          # is GITHUB_TOKEN. Pin the run to the commit the pull request will
+          # review, on the pr tier the pull_request lane would have used.
+          # Skip when that commit already has a certification run so a later
+          # schedule does not start a second one. A missing run is retried:
+          # once the pin commit is on the branch, the next schedule sees a
+          # clean tree and would otherwise never dispatch.
+          dispatch_certification() {
+            local sha="$1"
+            local count
+            count="$(gh run list --repo "${GITHUB_REPOSITORY}" --workflow sdk-certification.yml --commit "${sha}" --json databaseId --jq 'length')"
+            if [[ "${count}" != "0" ]]; then
+              echo "sdk-certification.yml already has ${count} run(s) on ${sha}."
+              return 0
+            fi
+            gh workflow run sdk-certification.yml \
+              --repo "${GITHUB_REPOSITORY}" \
+              --ref "${sha}" \
+              -f tier=pr
+            echo "Dispatched sdk-certification.yml tier=pr on ${sha}."
+          }
+
+          git config user.name "Mike McDougall"
+          git config user.email "mike@honua.io"
           git fetch origin trunk
           if git ls-remote --exit-code --heads origin "${branch}" >/dev/null 2>&1; then
             git fetch origin "${branch}"
@@ -49,6 +79,12 @@ jobs:
             --follow-manifest
           if git diff --quiet -- certification/candidate-pins.json; then
             echo "Pin file already matches the published honua-release manifest."
+            # HEAD may be a local merge of trunk that this run does not push.
+            # Retry dispatch only for the commit already on the remote branch.
+            if git rev-parse --verify --quiet "origin/${branch}" >/dev/null \
+              && ! git diff --quiet origin/trunk "origin/${branch}" -- certification/candidate-pins.json; then
+              dispatch_certification "$(git rev-parse "origin/${branch}")"
+            fi
             exit 0
           fi
           # Same verifier the certification workflow runs. A failure here does not open a PR.
@@ -65,6 +101,8 @@ jobs:
           The pin file now names Honua.Sdk ${version}. \`--follow-manifest\` copied the published manifest coordinate and took the SHA-512 from the nuget.org bytes. \`--check\` then verified those bytes against nuget.org and the manifest again. Server pins are unchanged.
 
           This pull request does not merge itself.
+
+          Certification is dispatched on this commit with tier pr. A repository-token push does not start pull_request workflows.
           EOF
           )"
           existing="$(gh pr list --repo "${GITHUB_REPOSITORY}" --head "${branch}" --base trunk --state open --json number --jq '.[0].number')"
@@ -79,3 +117,4 @@ jobs:
             gh pr edit "${existing}" --repo "${GITHUB_REPOSITORY}" --body "${body}"
             echo "Updated pull request #${existing}"
           fi
+          dispatch_certification "$(git rev-parse HEAD)"
