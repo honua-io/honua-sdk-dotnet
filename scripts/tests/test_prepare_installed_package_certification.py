@@ -229,12 +229,12 @@ class InstalledPackageCertificationTests(unittest.TestCase):
 
     def test_check_reports_drifted_version_against_the_release_manifest(self):
         pins, sources = self._consistent()
-        sources.manifest["clientArtifacts"]["honua-sdk-dotnet"]["version"] = "1.10.3"
-        sources.manifest["components"]["honua-sdk-dotnet"]["version"] = "1.10.3"
+        sources.manifest["clientArtifacts"]["honua-sdk-dotnet"]["version"] = "9.9.9"
+        sources.manifest["components"]["honua-sdk-dotnet"]["version"] = "9.9.9"
         problems = MODULE.check_pins(pins, sources)
         self.assertTrue(problems)
         self.assertIn("release certification requires the manifest-pinned Honua.Sdk package", problems[0])
-        self.assertIn(f"pin file has {pins['sdkPackageVersion']}, honua-release manifest has 1.10.3", problems[0])
+        self.assertIn(f"pin file has {pins['sdkPackageVersion']}, honua-release manifest has 9.9.9", problems[0])
 
     def test_check_reports_drifted_source_against_the_release_manifest(self):
         pins, sources = self._consistent()
@@ -353,6 +353,91 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertNotIn("NuGetSignatureValidationMode", script)
         self.assertNotIn("WarningsNotAsErrors", script)
         self.assertNotIn("signatureValidationMode", script)
+        self.assertLess(
+            workflow.index("Resolve certification tier"),
+            workflow.index("Verify candidate pins against nuget.org and honua-release"),
+        )
+        self.assertIn("schedule) tier=nightly ;;", workflow)
+        self.assertIn("TIER: ${{ steps.tier.outputs.tier }}", workflow)
+        emit = workflow.split("Emit and enforce normalized certification evidence", 1)[1]
+        self.assertIn("schedule) tier=nightly ;;", emit)
+        self.assertIn('--tier "${tier}"', emit)
+        follow = (MODULE.ROOT / ".github/workflows/certification-pin-follow.yml").read_text(encoding="utf-8")
+        self.assertIn("schedule:", follow)
+        self.assertIn("workflow_dispatch:", follow)
+        self.assertIn("--follow-manifest", follow)
+        self.assertIn("--check", follow)
+        self.assertIn("chore/certification-pin-follow", follow)
+        self.assertNotIn("gh pr merge", follow)
+        for value in (
+            PINS["sdkPackageVersion"], PINS["sdkPackageSha512"], PINS["sdkPackageDigest"],
+            PINS["sdkSourceSha"], PINS["serverSourceSha"], PINS["serverImageDigest"], PINS["fixtureRevision"],
+        ):
+            with self.subTest(follow=value):
+                self.assertNotIn(value, follow)
+
+    def test_follow_is_a_no_op_when_the_manifest_matches_nuget_org(self):
+        pins, sources = self._consistent()
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertFalse(changed)
+        self.assertEqual(updated, pins)
+
+    def test_follow_updates_package_fields_and_keeps_the_server_pin(self):
+        pins, sources = self._consistent()
+        version = "1.10.3"
+        source = "d" * 40
+        package = _nupkg(source, version)
+        sources.packages[version] = package
+        sources.catalog[version] = {
+            "id": "Honua.Sdk",
+            "version": version,
+            "listed": True,
+            "packageHash": _sha512(package),
+            "packageHashAlgorithm": "SHA512",
+            "repository": {"commit": source},
+        }
+        artifact = sources.manifest["clientArtifacts"]["honua-sdk-dotnet"]
+        artifact["version"] = version
+        artifact["sourceSha"] = source
+        artifact["digest"] = _sha256(package)
+        sources.manifest["components"]["honua-sdk-dotnet"]["version"] = version
+        sources.manifest["components"]["honua-sdk-dotnet"]["sha"] = source
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertTrue(changed)
+        self.assertEqual(updated["sdkPackageVersion"], version)
+        self.assertEqual(updated["sdkPackageDigest"], _sha256(package))
+        self.assertEqual(updated["sdkPackageSha512"], _sha512(package))
+        self.assertEqual(updated["sdkSourceSha"], source)
+        self.assertEqual(updated["serverSourceSha"], pins["serverSourceSha"])
+        self.assertEqual(updated["serverImageDigest"], pins["serverImageDigest"])
+        self.assertEqual(updated["fixtureRevision"], pins["fixtureRevision"])
+        self.assertEqual(pins["sdkPackageVersion"], PINS["sdkPackageVersion"])
+
+    def test_follow_refuses_an_unpublished_manifest_artifact(self):
+        pins, sources = self._consistent()
+        for state in ("staged", "placeholder", "source-built", None):
+            sources.manifest["clientArtifacts"]["honua-sdk-dotnet"]["publicationState"] = state
+            with self.subTest(state=state), self.assertRaisesRegex(ValueError, "unpublished"):
+                MODULE.follow_release_manifest(pins, sources)
+
+    def test_follow_refuses_a_version_missing_from_nuget_org(self):
+        pins, sources = self._consistent()
+        sources.manifest["clientArtifacts"]["honua-sdk-dotnet"]["version"] = "9.9.9"
+        sources.manifest["components"]["honua-sdk-dotnet"]["version"] = "9.9.9"
+        with self.assertRaisesRegex(ValueError, "9.9.9 is not on nuget.org"):
+            MODULE.follow_release_manifest(pins, sources)
+
+    def test_follow_refuses_when_nuget_bytes_disagree_with_the_manifest_digest(self):
+        pins, sources = self._consistent()
+        sources.manifest["clientArtifacts"]["honua-sdk-dotnet"]["digest"] = "sha256:" + "9" * 64
+        with self.assertRaisesRegex(ValueError, "manifest digest"):
+            MODULE.follow_release_manifest(pins, sources)
+
+    def test_follow_refuses_when_the_component_sha_disagrees(self):
+        pins, sources = self._consistent()
+        sources.manifest["components"]["honua-sdk-dotnet"]["sha"] = "a" * 40
+        with self.assertRaisesRegex(ValueError, "does not match"):
+            MODULE.follow_release_manifest(pins, sources)
 
 
 class CommittedPinFileTests(unittest.TestCase):

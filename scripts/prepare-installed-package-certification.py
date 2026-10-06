@@ -4,7 +4,8 @@
 certification/candidate-pins.json is the only place the certified SDK package and
 server candidate are written down. The workflow reads it through --emit-env, the
 restore reads it directly, and --check verifies it against nuget.org and the
-honua-release platform manifest.
+honua-release platform manifest. --follow-manifest copies a published manifest
+package coordinate into the pin file after the nuget.org bytes match it.
 """
 
 from __future__ import annotations
@@ -480,12 +481,129 @@ def check_pins(pins: dict[str, Any], sources: Sources) -> list[str]:
     )
 
 
+def _published_manifest_artifact(manifest: dict[str, Any]) -> dict[str, Any]:
+    artifact = (manifest.get("clientArtifacts") or {}).get("honua-sdk-dotnet") or {}
+    component = (manifest.get("components") or {}).get("honua-sdk-dotnet") or {}
+    state = artifact.get("publicationState")
+    if state != "published":
+        raise ValueError(
+            "refusing to pin an unpublished Honua.Sdk package: "
+            f"clientArtifacts.honua-sdk-dotnet.publicationState is {state}, not published"
+        )
+    required = ("package", "version", "digest", "sourceSha", "registry")
+    missing = [field for field in required if not isinstance(artifact.get(field), str) or not artifact[field]]
+    if missing:
+        raise ValueError(
+            "honua-release manifest clientArtifacts.honua-sdk-dotnet is missing " + ", ".join(missing)
+        )
+    if component.get("version") != artifact["version"] or component.get("sha") != artifact["sourceSha"]:
+        raise ValueError(
+            "honua-release manifest components.honua-sdk-dotnet does not match "
+            "clientArtifacts.honua-sdk-dotnet"
+        )
+    if artifact["package"] != "Honua.Sdk" or artifact["registry"] != "nuget.org":
+        raise ValueError("honua-release manifest does not pin Honua.Sdk on nuget.org")
+    if not VERSION_RE.fullmatch(artifact["version"]):
+        raise ValueError("manifest package version must be an exact semantic version")
+    if not SHA256_RE.fullmatch(artifact["digest"]):
+        raise ValueError("manifest package digest must be a lowercase sha256:<hex> digest")
+    if not SHA_RE.fullmatch(artifact["sourceSha"]):
+        raise ValueError("manifest package sourceSha must be a full lowercase commit")
+    return artifact
+
+
+def _nuget_package_identity(package_id: str, version: str, sources: Sources) -> dict[str, str]:
+    """SHA-512, sha256, and nuspec commit of a package that nuget.org actually serves."""
+    coordinate = f"{package_id} {version}"
+    entry = sources.nuget_catalog_entry(package_id, version)
+    if entry is None:
+        raise ValueError(f"refusing to pin an unpublished version: {coordinate} is not on nuget.org")
+    if entry.get("listed") is False:
+        raise ValueError(f"refusing to pin an unlisted package: {coordinate} is unlisted on nuget.org")
+    catalog_hash = entry.get("packageHash")
+    if entry.get("packageHashAlgorithm") != "SHA512" or not isinstance(catalog_hash, str) or not catalog_hash:
+        raise ValueError(
+            f"nuget.org catalog records {entry.get('packageHashAlgorithm')}, not SHA512, for {coordinate}"
+        )
+    data = sources.nuget_package(package_id, version)
+    if data is None:
+        raise ValueError(f"refusing to pin an unpublished version: {coordinate} bytes are not on nuget.org")
+    sha512 = _sha512(data)
+    if sha512 != catalog_hash:
+        raise ValueError(
+            f"nuget.org served {coordinate} bytes with SHA-512 {sha512}, "
+            f"which is not its catalog SHA-512 {catalog_hash}"
+        )
+    commit = _nuspec_commit(data)
+    catalog_commit = (entry.get("repository") or {}).get("commit")
+    if not commit or commit != catalog_commit:
+        raise ValueError(
+            f"installed package source mismatch: nuget.org catalog records {catalog_commit or 'missing'} "
+            f"and the nuspec records {commit or 'missing'} for {coordinate}"
+        )
+    return {
+        "sha512": sha512,
+        "digest": "sha256:" + hashlib.sha256(data).hexdigest(),
+        "commit": commit,
+    }
+
+
+def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dict[str, Any], bool]:
+    """Return pin fields aligned to the published manifest package, and whether they moved.
+
+    Server pins are copied through. An unpublished manifest coordinate or a
+    nuget.org package whose bytes disagree with the manifest raises ValueError
+    and must not be written.
+    """
+    artifact = _published_manifest_artifact(sources.release_manifest())
+    identity = _nuget_package_identity(artifact["package"], artifact["version"], sources)
+    coordinate = f"{artifact['package']} {artifact['version']}"
+    if identity["digest"] != artifact["digest"]:
+        raise ValueError(
+            f"nuget.org download of {coordinate} is {identity['digest']}, "
+            f"honua-release manifest digest is {artifact['digest']}"
+        )
+    if identity["commit"] != artifact["sourceSha"]:
+        raise ValueError(
+            f"installed package source mismatch: nuget.org records {identity['commit']}, "
+            f"honua-release manifest sourceSha is {artifact['sourceSha']}"
+        )
+    updated = dict(pins)
+    updated["sdkPackageId"] = artifact["package"]
+    updated["sdkPackageVersion"] = artifact["version"]
+    updated["sdkPackageRegistry"] = artifact["registry"]
+    updated["sdkPackageSha512"] = identity["sha512"]
+    updated["sdkPackageDigest"] = identity["digest"]
+    updated["sdkSourceSha"] = identity["commit"]
+    validate_pins(updated)
+    package_fields = (
+        "sdkPackageId",
+        "sdkPackageVersion",
+        "sdkPackageRegistry",
+        "sdkPackageSha512",
+        "sdkPackageDigest",
+        "sdkSourceSha",
+    )
+    changed = any(updated[field] != pins[field] for field in package_fields)
+    return updated, changed
+
+
+def write_pins(path: Path, pins: dict[str, Any]) -> None:
+    ordered = {field: pins[field] for field in PIN_FIELDS}
+    path.write_text(json.dumps(ordered, indent=2) + "\n", encoding="utf-8")
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pins", type=Path, default=DEFAULT_PINS)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="verify the pin file against nuget.org and honua-release")
     mode.add_argument("--emit-env", action="store_true", help="print the pins as GITHUB_ENV lines")
+    mode.add_argument(
+        "--follow-manifest",
+        action="store_true",
+        help="write the published honua-release package coordinate when nuget.org bytes match it",
+    )
     parser.add_argument("--tier", choices=("pr", "nightly", "release"))
     parser.add_argument("--server-image")
     parser.add_argument("--server-source-sha")
@@ -494,7 +612,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--identity-output", type=Path)
     args = parser.parse_args(argv)
-    if not (args.check or args.emit_env):
+    if not (args.check or args.emit_env or args.follow_manifest):
         missing = [flag for flag, value in (
             ("--tier", args.tier), ("--output", args.output), ("--identity-output", args.identity_output),
         ) if value is None]
@@ -509,6 +627,18 @@ def main(argv: list[str] | None = None) -> int:
         pins = load_pins(args.pins)
         if args.emit_env:
             sys.stdout.write(emit_env(pins))
+            return 0
+        if args.follow_manifest:
+            updated, changed = follow_release_manifest(pins, LiveSources())
+            if changed:
+                write_pins(args.pins, updated)
+                print(
+                    f"updated {args.pins} to {updated['sdkPackageId']} {updated['sdkPackageVersion']} "
+                    f"{updated['sdkPackageDigest']} {updated['sdkSourceSha']}"
+                )
+            else:
+                print(f"{args.pins} already matches the published honua-release manifest")
+            print(f"changed={'true' if changed else 'false'}")
             return 0
         if args.check:
             problems = check_pins(pins, LiveSources())

@@ -70,3 +70,22 @@ so external drift does not fail unrelated PRs.
 Do not advance the package past what honua-release has adopted in
 `clientArtifacts.honua-sdk-dotnet`, because `--check` refuses it. Advance
 honua-release first (R25), then this file.
+
+## Following the release manifest
+
+`.github/workflows/certification-pin-follow.yml` runs daily and on
+`workflow_dispatch`. It compares this file with
+`clientArtifacts.honua-sdk-dotnet` on honua-release `trunk`. When that
+published coordinate differs, `--follow-manifest` updates only the SDK package
+fields. Version, digest, and source commit come from the manifest. The SHA-512
+comes from the nuget.org bytes of that version. The workflow then runs
+`--check`. Server pins stay as they are: the manifest's server snapshot may
+lag the nightly resolver.
+
+An unpublished `publicationState`, or a version that nuget.org does not serve,
+fails the run and does not open a pull request. The workflow opens or updates
+one pull request, branch `chore/certification-pin-follow` into `trunk`. It
+does not merge. The push uses the repository `GITHUB_TOKEN`, which does not
+start `pull_request` workflows, so the same job dispatches
+`sdk-certification.yml` with `tier=pr` on that commit. Commits on the branch
+use the repository owner identity.
