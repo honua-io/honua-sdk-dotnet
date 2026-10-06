@@ -63,7 +63,7 @@ In a library `.csproj`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Honua.Sdk.Abstractions" Version="1.10.3" /> <!-- x-release-please-version -->
+  <PackageReference Include="Honua.Sdk.Abstractions" Version="1.10.4" /> <!-- x-release-please-version -->
 </ItemGroup>
 ```
 
