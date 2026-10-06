@@ -25,6 +25,7 @@ jobs:
   build-docs:
     name: Build DocFX site
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

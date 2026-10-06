@@ -33,6 +33,7 @@ jobs:
   staging-preflight:
     name: Staging Configuration Preflight
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: staging
     outputs:
       configured: ${{ steps.validate-config.outputs.configured }}
