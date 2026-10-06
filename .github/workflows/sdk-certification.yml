@@ -78,6 +78,27 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Resolve certification tier
+        id: tier
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TIER: ${{ inputs.tier }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # inputs.tier is empty on schedule, and a later pin failure skips the
+          # identity step. Resolve the tier here so evidence still receives it.
+          case "${EVENT_NAME}" in
+            schedule) tier=nightly ;;
+            pull_request) tier=pr ;;
+            workflow_dispatch)
+              tier="${INPUT_TIER}"
+              [[ -n "${tier}" ]] || { echo '::error::workflow_dispatch tier input is empty.'; exit 1; }
+              ;;
+            *) tier=pr ;;
+          esac
+          echo "tier=${tier}" >> "${GITHUB_OUTPUT}"
+
       - name: Load candidate pins
         run: python3 scripts/prepare-installed-package-certification.py --pins certification/candidate-pins.json --emit-env >> "${GITHUB_ENV}"
 
@@ -105,8 +126,7 @@ jobs:
       - name: Resolve tier and immutable identity
         id: identity
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          INPUT_TIER: ${{ inputs.tier }}
+          CERT_TIER: ${{ steps.tier.outputs.tier }}
           INPUT_IMAGE: ${{ inputs.server_image }}
           INPUT_SOURCE_SHA: ${{ inputs.server_source_sha }}
           INPUT_SEED_REF: ${{ inputs.server_seed_ref }}
@@ -116,9 +136,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tier="${INPUT_TIER:-pr}"
-          [[ "${EVENT_NAME}" == schedule ]] && tier=nightly
-          [[ "${EVENT_NAME}" == pull_request ]] && tier=pr
+          tier="${CERT_TIER}"
+          [[ -n "${tier}" ]] || { echo '::error::Certification tier is empty.'; exit 1; }
           if [[ "${tier}" == release ]]; then
             [[ -n "${INPUT_IMAGE}" ]] || { echo '::error::Release server_image input is required.'; exit 1; }
             [[ -n "${INPUT_SOURCE_SHA}" ]] || { echo '::error::Release server_source_sha input is required.'; exit 1; }
@@ -291,7 +310,9 @@ jobs:
       - name: Emit and enforce normalized certification evidence
         if: always()
         env:
-          TIER: ${{ steps.identity.outputs.tier }}
+          TIER: ${{ steps.tier.outputs.tier }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TIER: ${{ inputs.tier }}
           SERVER_IMAGE: ${{ steps.identity.outputs.image }}
           SERVER_SOURCE_SHA: ${{ steps.identity.outputs.source-sha }}
           SEED_REF: ${{ steps.identity.outputs.seed-ref }}
@@ -308,8 +329,22 @@ jobs:
           HONUA_PROTOCOL_EXTERNAL_BASE_URL: "http://localhost:8080"
           HONUA_PROTOCOL_GRPC_BASE_URL: "http://localhost:8081"
         run: |
+          set -euo pipefail
+          tier="${TIER}"
+          if [[ -z "${tier}" ]]; then
+            case "${EVENT_NAME}" in
+              schedule) tier=nightly ;;
+              pull_request) tier=pr ;;
+              workflow_dispatch) tier="${INPUT_TIER:-nightly}" ;;
+              *) tier=pr ;;
+            esac
+          fi
+          [[ "${tier}" == pr || "${tier}" == nightly || "${tier}" == release ]] || {
+            echo "::error::Certification tier must be pr, nightly, or release."
+            exit 1
+          }
           python3 scripts/generate-sdk-certification.py \
-            --tier "${TIER}" \
+            --tier "${tier}" \
             --trx artifacts/test-results/protocol-integration.trx \
             --trx artifacts/test-results/live-conformance.trx \
             --trx-exit-code "${{ steps.tests.outputs.protocol_exit_code }}" \

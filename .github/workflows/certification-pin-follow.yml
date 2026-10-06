@@ -1,0 +1,81 @@
+name: Certification pin follow
+
+on:
+  schedule:
+    # After the 15:30 protocol certification schedule, so a drifted pin gets a
+    # pull request the same day.
+    - cron: "0 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: certification-pin-follow
+  cancel-in-progress: false
+
+jobs:
+  follow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: trunk
+          fetch-depth: 0
+
+      - name: Open or update one pin pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="chore/certification-pin-follow"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin trunk
+          if git ls-remote --exit-code --heads origin "${branch}" >/dev/null 2>&1; then
+            git fetch origin "${branch}"
+            git checkout -B "${branch}" "origin/${branch}"
+            git merge origin/trunk -m "merge trunk into certification pin follow"
+          else
+            git checkout -B "${branch}" origin/trunk
+          fi
+          python3 scripts/prepare-installed-package-certification.py \
+            --pins certification/candidate-pins.json \
+            --follow-manifest
+          if git diff --quiet -- certification/candidate-pins.json; then
+            echo "Pin file already matches the published honua-release manifest."
+            exit 0
+          fi
+          # Same verifier the certification workflow runs. A failure here does not open a PR.
+          python3 scripts/prepare-installed-package-certification.py \
+            --pins certification/candidate-pins.json \
+            --check
+          git add certification/candidate-pins.json
+          git commit -m "chore(certification): follow the published Honua.Sdk pin"
+          git push origin "HEAD:${branch}"
+          version="$(python3 -c 'import json; print(json.load(open("certification/candidate-pins.json"))["sdkPackageVersion"])')"
+          body="$(cat <<EOF
+          Follows \`clientArtifacts.honua-sdk-dotnet\` on honua-release \`trunk\`.
+
+          The pin file now names Honua.Sdk ${version}. \`--follow-manifest\` copied the published manifest coordinate and took the SHA-512 from the nuget.org bytes. \`--check\` then verified those bytes against nuget.org and the manifest again. Server pins are unchanged.
+
+          This pull request does not merge itself.
+          EOF
+          )"
+          existing="$(gh pr list --repo "${GITHUB_REPOSITORY}" --head "${branch}" --base trunk --state open --json number --jq '.[0].number')"
+          if [[ -z "${existing}" || "${existing}" == "null" ]]; then
+            gh pr create \
+              --repo "${GITHUB_REPOSITORY}" \
+              --base trunk \
+              --head "${branch}" \
+              --title "chore(certification): follow the published Honua.Sdk pin" \
+              --body "${body}"
+          else
+            gh pr edit "${existing}" --repo "${GITHUB_REPOSITORY}" --body "${body}"
+            echo "Updated pull request #${existing}"
+          fi
