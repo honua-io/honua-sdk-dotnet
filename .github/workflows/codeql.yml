@@ -21,10 +21,20 @@ permissions:
   actions: read
   packages: read
 
+concurrency:
+  # Supersede stale pull-request heads only: a newer push to the same PR cancels the
+  # in-flight run for the old head. push/schedule/dispatch runs get a unique group
+  # (run_id), so trunk and manual runs are never cancelled or coalesced. Only a first
+  # attempt cancels: a re-run (run_attempt > 1) of an older head keeps that head's PR
+  # group and would otherwise cancel the newest head's run, so it queues instead.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.run_attempt == '1' }}
+
 jobs:
   analyze:
     name: Analyze (csharp)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
