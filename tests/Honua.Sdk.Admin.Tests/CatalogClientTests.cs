@@ -22,6 +22,72 @@ public sealed class CatalogClientTests
         return new HonuaCatalogClient(httpClient);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("park")]
+    public async Task DefaultSearchAndLayerReads_UseCanonicalRoutes(string? query)
+    {
+        var requests = new List<string>();
+        var client = CreateCatalogClient(req =>
+        {
+            var path = req.RequestUri!.PathAndQuery;
+            requests.Add(path);
+            return Task.FromResult(path switch
+            {
+                "/api/v1/admin/services/" => TestHelpers.CreateJsonResponse(new[]
+                {
+                    new { serviceName = "parks", description = "Park service", layerCount = 1, enabledProtocols = new[] { "FeatureServer" } }
+                }),
+                "/rest/services/parks/FeatureServer?f=json" => TestHelpers.CreateRawJsonResponse(new
+                {
+                    capabilities = "Query", layers = new[] { new { id = 0, name = "Parks" } }
+                }),
+                "/rest/services/parks/FeatureServer/0?f=json" => TestHelpers.CreateRawJsonResponse(new
+                {
+                    id = 0, name = "Parks", geometryType = "esriGeometryPoint", capabilities = "Query"
+                }),
+                _ => TestHelpers.CreateErrorResponse(HttpStatusCode.NotFound, "route not served")
+            });
+        });
+
+        var search = await client.SearchAsync(new CatalogQueryOptions { Query = query });
+        var layerSearch = await client.SearchAsync(new CatalogQueryOptions
+        {
+            Kinds = [CatalogItemKind.Layer], ServiceTypes = ["FeatureServer"], Limit = 10
+        });
+        var layers = await client.ListLayersAsync(new CatalogQueryOptions { Query = query });
+        var layer = await client.GetLayerAsync("parks", 0);
+        Assert.Equal(2, search.TotalCount);
+        Assert.Single(layerSearch.Items);
+        Assert.Single(layers);
+        Assert.NotNull(layer);
+        Assert.Equal("parks/0", layer.Id);
+        Assert.DoesNotContain(requests, path => path.Contains("metadata", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.NotFound)]
+    public async Task DefaultSearch_PropagatesServiceFailures(HttpStatusCode status)
+    {
+        var client = CreateCatalogClient(_ => Task.FromResult(TestHelpers.CreateErrorResponse(status, "server failure")));
+        var error = await Assert.ThrowsAsync<HonuaAdminApiException>(() => client.SearchAsync());
+        Assert.Equal(status, error.StatusCode);
+    }
+
+    [Fact]
+    public async Task ExplicitMetadataKinds_PropagateUnsupportedRouteFailure()
+    {
+        var client = CreateCatalogClient(_ => Task.FromResult(TestHelpers.CreateErrorResponse(HttpStatusCode.NotFound, "route not served")));
+        var error = await Assert.ThrowsAsync<HonuaAdminApiException>(() => client.SearchAsync(new CatalogQueryOptions
+        {
+            Kinds = [CatalogItemKind.Group, CatalogItemKind.SourceDescriptor]
+        }));
+        Assert.Equal(HttpStatusCode.NotFound, error.StatusCode);
+    }
+
     [Fact]
     public async Task ServiceListAndLookup_UseCanonicalServiceEndpointWithoutLegacyMetadataRoutes()
     {
@@ -174,7 +240,10 @@ public sealed class CatalogClientTests
             };
         });
 
-        var result = await client.SearchAsync();
+        var result = await client.SearchAsync(new CatalogQueryOptions
+        {
+            Kinds = [CatalogItemKind.Service, CatalogItemKind.Layer, CatalogItemKind.Group, CatalogItemKind.SourceDescriptor]
+        });
 
         Assert.Equal(4, result.TotalCount);
         Assert.Null(result.NextOffset);
@@ -352,17 +421,49 @@ public sealed class CatalogClientTests
         Assert.Equal(1, requests["/rest/services/beta/FeatureServer/1?f=json"]);
     }
 
-    [Fact]
-    public async Task GetSourceDescriptorAsync_ReturnsNullForMissingResource()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MetadataLookups_PropagateUnsupportedApiFailure(bool group)
     {
-        var client = CreateCatalogClient(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)
+        var client = CreateCatalogClient(_ => Task.FromResult(TestHelpers.CreateErrorResponse(HttpStatusCode.NotFound, "route not served")));
+        var error = await Assert.ThrowsAsync<HonuaAdminApiException>(async () =>
         {
-            Content = new StringContent("""{"message":"Resource not found."}""")
-        }));
+            if (group)
+            {
+                await client.GetGroupAsync("default", "missing");
+            }
+            else
+            {
+                await client.GetSourceDescriptorAsync("default", "missing");
+            }
+        });
+        Assert.Equal(HttpStatusCode.NotFound, error.StatusCode);
+    }
 
-        var result = await client.GetSourceDescriptorAsync("default", "missing");
+    [Fact]
+    public async Task MetadataLookups_ReturnNullOnlyAfterSuccessfulEmptyListing()
+    {
+        var client = CreateCatalogClient(_ => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())));
+        Assert.Null(await client.GetGroupAsync("default", "missing"));
+        Assert.Null(await client.GetSourceDescriptorAsync("default", "missing"));
+    }
 
-        Assert.Null(result);
+    [Fact]
+    public async Task GetGroupAsync_ResolvesExactIdentityFromLegacyListing()
+    {
+        var client = CreateCatalogClient(req =>
+        {
+            Assert.Equal("/api/v1/admin/metadata/resources?kind=Group", req.RequestUri!.PathAndQuery);
+            return Task.FromResult(TestHelpers.CreateJsonResponse(new[]
+            {
+                MetadataResource("Group", "another", "field-ops"),
+                MetadataResource("Group", "default", "field-ops")
+            }));
+        });
+        var group = await client.GetGroupAsync("default", "field-ops");
+        Assert.NotNull(group);
+        Assert.Equal("default", group.Namespace);
     }
 
     private static object MetadataResource(

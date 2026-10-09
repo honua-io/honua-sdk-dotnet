@@ -18,6 +18,123 @@ public sealed class StudioPackageClientTests
     private static readonly Guid ItemId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid VersionId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
+    private const string PublishedEnvelope = """
+        {"success":true,"data":{
+          "route":"/approved-map","visibility":"public",
+          "publicationId":"44444444-4444-4444-4444-444444444444",
+          "itemId":"22222222-2222-2222-2222-222222222222",
+          "versionId":"33333333-3333-3333-3333-333333333333",
+          "versionNumber":2,"packageKey":"my-map","family":"map",
+          "contentHash":"sha256:approved-content","publishedAt":"2026-10-09T12:00:00Z",
+          "envelope":{"family":"map","schemaVersion":"honua_map_package.v1","bindings":[],"dependencies":[],"provenance":[]}
+        }}
+        """;
+
+    [Fact]
+    public async Task GetPublishedArtifactAsync_ReadsFinalPublicationIdentityAndEnvelope()
+    {
+        using var http = CreateHttpClient(request =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("/api/v1/studio/published/approved-map", request.RequestUri!.PathAndQuery);
+            return JsonResponse(PublishedEnvelope);
+        });
+        IHonuaStudioPackageClient client = new HonuaStudioPackageClient(http);
+        var artifact = await client.GetPublishedArtifactAsync("approved-map");
+        Assert.Equal("/approved-map", artifact.Route);
+        Assert.Equal("public", artifact.Visibility);
+        Assert.Equal(Guid.Parse("44444444-4444-4444-4444-444444444444"), artifact.PublicationId);
+        Assert.Equal(ItemId, artifact.ItemId);
+        Assert.Equal(VersionId, artifact.VersionId);
+        Assert.Equal(2, artifact.VersionNumber);
+        Assert.Equal("my-map", artifact.PackageKey);
+        Assert.Equal(StudioPackageFamily.Map, artifact.Family);
+        Assert.Equal("sha256:approved-content", artifact.ContentHash);
+        Assert.Equal(new DateTimeOffset(2026, 10, 9, 12, 0, 0, TimeSpan.Zero), artifact.PublishedAt);
+        Assert.Equal("honua_map_package.v1", artifact.Envelope.SchemaVersion);
+    }
+
+    [Theory]
+    [InlineData("maps/approved map")]
+    [InlineData("/maps/approved map")]
+    public async Task GetPublishedArtifactAsync_EncodesGovernedRouteSegments(string route)
+    {
+        using var http = CreateHttpClient(request =>
+        {
+            Assert.Equal("/api/v1/studio/published/maps/approved%20map", request.RequestUri!.AbsolutePath);
+            return JsonResponse(PublishedEnvelope.Replace("/approved-map", "/maps/approved map", StringComparison.Ordinal));
+        });
+        var artifact = await new HonuaStudioPackageClient(http).GetPublishedArtifactAsync(route);
+        Assert.Equal("/maps/approved map", artifact.Route);
+    }
+
+    [Fact]
+    public async Task GetPublishedArtifactAsync_Cancellation_ReachesTransport()
+    {
+        using var handler = new CancellationHandler();
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
+        using var cancellation = new CancellationTokenSource();
+        var task = new HonuaStudioPackageClient(http).GetPublishedArtifactAsync("approved-map", cancellation.Token);
+        await handler.Started.Task;
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+        Assert.True(handler.TransportToken.IsCancellationRequested);
+    }
+
+    [Theory]
+    [InlineData("https://other.example/api/v1/studio/published/map")]
+    [InlineData("../map")]
+    [InlineData("..")]
+    [InlineData("//other.example/map")]
+    [InlineData("map\\other")]
+    public async Task GetPublishedArtifactAsync_RejectsUrlsAndPathsBeforeSending(string route)
+    {
+        using var http = CreateHttpClient(_ => throw new InvalidOperationException("Unexpected request"));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetPublishedArtifactAsync(route));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    public async Task GetPublishedArtifactAsync_PropagatesHttpFailure(HttpStatusCode status)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse("{}", status));
+        var client = new HonuaStudioPackageClient(http);
+        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetPublishedArtifactAsync("approved-map"));
+        Assert.Equal(status, error.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"success\":true,\"data\":{}}")]
+    [InlineData("null")]
+    [InlineData("not-json")]
+    public async Task GetPublishedArtifactAsync_RejectsMalformedPublication(string json)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(json));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetPublishedArtifactAsync("approved-map"));
+    }
+
+    [Theory]
+    [InlineData("approved-map", "another-map")]
+    [InlineData("sha256:approved-content", "")]
+    [InlineData("44444444-4444-4444-4444-444444444444", "00000000-0000-0000-0000-000000000000")]
+    [InlineData("\"success\":true", "\"success\":false")]
+    [InlineData("my-map", "")]
+    [InlineData("\"versionNumber\":2", "\"versionNumber\":0")]
+    [InlineData("honua_map_package.v1", "")]
+    [InlineData("\"envelope\":{\"family\":\"map\"", "\"envelope\":{\"family\":\"query\"")]
+    public async Task GetPublishedArtifactAsync_RejectsInvalidIdentity(string original, string replacement)
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(PublishedEnvelope.Replace(original, replacement, StringComparison.Ordinal)));
+        var client = new HonuaStudioPackageClient(http);
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetPublishedArtifactAsync("approved-map"));
+    }
+
     [Fact]
     public async Task GetPackageFamiliesAsync_UnwrapsEnvelopeData()
     {

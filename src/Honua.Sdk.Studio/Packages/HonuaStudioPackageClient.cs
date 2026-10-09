@@ -28,6 +28,46 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
     }
 
     /// <inheritdoc />
+    public async Task<StudioPublishedArtifact> GetPublishedArtifactAsync(
+        string route,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        var routeKey = route[0] == '/' ? route : "/" + route;
+        var segments = routeKey[1..].Split('/');
+        if (route.Contains('\\', StringComparison.Ordinal)
+            || (!route.StartsWith('/') && Uri.TryCreate(route, UriKind.Absolute, out _))
+            || segments.Any(static segment => segment is "" or "." or ".."))
+        {
+            throw new ArgumentException("Supply a publication route key without traversal segments, not a URL.", nameof(route));
+        }
+
+        var path = $"{BasePath}/published/" + string.Join('/', segments.Select(Uri.EscapeDataString));
+        using var response = await _http.GetAsync(
+            new Uri(path, UriKind.Relative), cancellationToken).ConfigureAwait(false);
+        var envelope = await StudioHttpResponseReader.ReadAsync(
+            response, StudioPackageJsonContext.Default.StudioApiResponseStudioPublishedArtifact,
+            "GetPublishedArtifact", cancellationToken).ConfigureAwait(false);
+        if (!envelope.Success || envelope.Data is null)
+        {
+            throw new HonuaStudioContractException("Published artifact response was unsuccessful or missing data.", "GetPublishedArtifact");
+        }
+
+        var artifact = envelope.Data;
+        if (!string.Equals(artifact.Route, routeKey, StringComparison.Ordinal)
+            || artifact.PublicationId == Guid.Empty || artifact.ItemId == Guid.Empty || artifact.VersionId == Guid.Empty
+            || string.IsNullOrWhiteSpace(artifact.ContentHash) || string.IsNullOrWhiteSpace(artifact.PackageKey)
+            || artifact.VersionNumber < 1 || artifact.PublishedAt == default
+            || !Enum.IsDefined(artifact.Family) || artifact.Envelope is null
+            || artifact.Family != artifact.Envelope.Family || string.IsNullOrWhiteSpace(artifact.Envelope.SchemaVersion))
+        {
+            throw new HonuaStudioContractException("Published artifact does not identify the requested publication.", "GetPublishedArtifact");
+        }
+
+        return artifact;
+    }
+
+    /// <inheritdoc />
     public Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default)
         => SendAsync(
             HttpMethod.Get,

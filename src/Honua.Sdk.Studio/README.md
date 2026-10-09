@@ -198,3 +198,19 @@ AI-specific result shapes and are tracked separately.
 - [Client behavior](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/client-behavior.md)
 - [Browser / WASM support](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/browser-wasm-support.md)
 - [Studio analysis report sample](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/examples/StudioAnalysisReportConsole/README.md)
+
+### Reading a final publication
+
+Read the governed route to inspect the publication that viewers receive:
+
+```csharp
+var artifact = await packages.GetPublishedArtifactAsync("approved-map", cancellationToken);
+Console.WriteLine($"{artifact.PublicationId}: {artifact.VersionId} {artifact.ContentHash}");
+var envelope = artifact.Envelope;
+```
+
+The response includes route, visibility, publication/item/version identifiers,
+version number, package key/family, content hash, publication time and the sealed
+package envelope. Supply the route key rather than a URL. Missing/inaccessible
+routes and server failures raise `HonuaStudioApiException`; malformed publication
+responses raise `HonuaStudioContractException`.

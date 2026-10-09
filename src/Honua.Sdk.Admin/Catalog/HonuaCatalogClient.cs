@@ -36,7 +36,10 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     public async Task<CatalogSearchResult> SearchAsync(CatalogQueryOptions? options = null, CancellationToken cancellationToken = default)
     {
         var normalizedOptions = NormalizeOptions(options);
-        var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
+        var metadata = RequiresServiceMetadata(normalizedOptions)
+            || normalizedOptions.Kinds?.Any(static kind => kind is CatalogItemKind.Group or CatalogItemKind.SourceDescriptor) == true
+            ? await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false)
+            : CatalogMetadataIndex.Empty;
         var serviceLoad = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
         var services = serviceLoad.Services;
 
@@ -99,7 +102,9 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         CancellationToken cancellationToken = default)
     {
         var normalizedOptions = NormalizeOptions(options);
-        var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
+        var metadata = RequiresServiceMetadata(normalizedOptions)
+            ? await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false)
+            : CatalogMetadataIndex.Empty;
         var serviceLoad = await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false);
         var layers = await LoadLayersAsync(serviceLoad, metadata, cancellationToken).ConfigureAwait(false);
         return ApplyDetailQuery(layers, WithoutKindFilter(normalizedOptions), ToItem, static item => item.Layer!);
@@ -110,7 +115,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
-        var metadata = await LoadMetadataIndexAsync(cancellationToken).ConfigureAwait(false);
+        var metadata = CatalogMetadataIndex.Empty;
         var service = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services
             .FirstOrDefault(candidate => string.Equals(candidate.Name, serviceName, StringComparison.OrdinalIgnoreCase));
         if (service is null)
@@ -310,18 +315,12 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         string name,
         CancellationToken cancellationToken)
     {
-        var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
-        try
-        {
-            return await GetAdminEnvelopeAsync<MetadataResource>(
-                url,
-                HonuaAdminJsonContext.Default.ApiResponseMetadataResource,
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch (HonuaAdminApiException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+        // A detail-route 404 cannot distinguish a missing resource from an absent API.
+        // Confirm the requested kind through its listing so unsupported APIs stay errors.
+        var resources = await ListMetadataResourcesByKindAsync(kind, cancellationToken).ConfigureAwait(false);
+        return resources.FirstOrDefault(resource =>
+            string.Equals(resource.Metadata?.Namespace, ns, StringComparison.Ordinal)
+            && string.Equals(resource.Metadata?.Name, name, StringComparison.Ordinal));
     }
 
     private async Task<CatalogFeatureServerServiceInfo?> GetFeatureServerServiceInfoOrNullAsync(
@@ -696,7 +695,9 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
            values.Any(value => string.Equals(value, candidate, StringComparison.OrdinalIgnoreCase));
 
     private static bool IncludesKind(CatalogQueryOptions options, CatalogItemKind kind)
-        => options.Kinds is null or { Count: 0 } || options.Kinds.Contains(kind);
+        => options.Kinds is null or { Count: 0 }
+            ? kind is CatalogItemKind.Service or CatalogItemKind.Layer
+            : options.Kinds.Contains(kind);
 
     private static bool CanPageLayersFromSummaries(CatalogQueryOptions options)
         => options.Limit.HasValue &&
@@ -710,8 +711,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
            options.SortBy is CatalogSortBy.Kind or CatalogSortBy.ServiceName;
 
     private static bool RequiresServiceMetadata(CatalogQueryOptions options)
-        => !string.IsNullOrWhiteSpace(options.Query) ||
-           !IsEmpty(options.Tags) ||
+        => !IsEmpty(options.Tags) ||
            !string.IsNullOrWhiteSpace(options.Owner) ||
            !string.IsNullOrWhiteSpace(options.Namespace) ||
            options.SortBy is CatalogSortBy.CreatedAt or CatalogSortBy.UpdatedAt;

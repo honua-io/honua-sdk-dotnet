@@ -760,3 +760,8 @@ static Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation.operator !=(H
 static Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation.operator ==(Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation? left, Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationScorecardLayer.operator !=(Honua.Sdk.Admin.Models.MigrationScorecardLayer? left, Honua.Sdk.Admin.Models.MigrationScorecardLayer? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationScorecardLayer.operator ==(Honua.Sdk.Admin.Models.MigrationScorecardLayer? left, Honua.Sdk.Admin.Models.MigrationScorecardLayer? right) -> bool
+
+Honua.Sdk.Admin.Models.PublishLayerRequest.StorageMode.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.StorageMode.init -> void
+Honua.Sdk.Admin.Models.PublishLayerRequest.Capabilities.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.PublishLayerRequest.Capabilities.init -> void
