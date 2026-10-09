@@ -18,6 +18,7 @@ namespace Honua.Sdk.Studio.Packages;
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(StudioApiResponse<StudioPackageFamilyCapabilities>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioPackageDraft>))]
+[JsonSerializable(typeof(StudioApiResponse<StudioPublishedArtifact>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioValidationSummary>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioPreviewPlan>))]
 [JsonSerializable(typeof(StudioApiResponse<StudioContentVersion>))]

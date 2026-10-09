@@ -26,6 +26,36 @@ public sealed class LayerPublishingTests
         serviceName = "default"
     };
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PublishLayerAsync_OptionalEditConfigurationPreservesDefaults(bool editable)
+    {
+        var client = TestHelpers.CreateClient(async req =>
+        {
+            using var body = JsonDocument.Parse(await req.Content!.ReadAsStringAsync());
+            var root = body.RootElement;
+            if (editable)
+            {
+                Assert.Equal("managed", root.GetProperty("storageMode").GetString());
+                Assert.Equal(new[] { "Query", "Create", "Update", "Delete" }, root.GetProperty("capabilities").EnumerateArray().Select(value => value.GetString()));
+            }
+            else
+            {
+                Assert.False(root.TryGetProperty("storageMode", out _));
+                Assert.False(root.TryGetProperty("capabilities", out _));
+            }
+
+            return TestHelpers.CreateJsonResponse(CreateLayerSummary(42), HttpStatusCode.Created);
+        });
+        await client.PublishLayerAsync(ConnectionId, new PublishLayerRequest
+        {
+            Schema = "public", Table = "test_table", LayerName = "test_layer",
+            StorageMode = editable ? "managed" : null,
+            Capabilities = editable ? ["Query", "Create", "Update", "Delete"] : null
+        });
+    }
+
     [Fact]
     public async Task ListLayersAsync_ReturnsLayers()
     {

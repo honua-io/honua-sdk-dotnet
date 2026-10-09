@@ -9,7 +9,8 @@ namespace Honua.Sdk.Admin.Catalog;
 public interface IHonuaCatalogClient
 {
     /// <summary>
-    /// Searches across services, layers, groups, and saved source descriptors.
+    /// Searches services and layers by default. Explicit group/source-descriptor kinds
+    /// and metadata filters require the legacy metadata-resource API; server errors propagate.
     /// </summary>
     /// <param name="options">Search, filter, sort, and paging options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

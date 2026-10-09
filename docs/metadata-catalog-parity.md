@@ -17,7 +17,7 @@ inventing a separate catalog model for every protocol.
 | Need | SDK surface | Notes |
 | --- | --- | --- |
 | Public standards catalog discovery | `IHonuaOgcRecordsClient` in `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`) | Use for landing, conformance, record collections, record search, record detail, paging, bbox/time/free-text filters, and raw JSON access. |
-| Operator/control-plane discovery | `IHonuaCatalogClient` in `Honua.Sdk.Admin.Catalog` | Aggregates admin service summaries, FeatureServer metadata, metadata resources, groups, and saved source descriptors. Requires admin/control-plane auth. |
+| Operator/control-plane discovery | `IHonuaCatalogClient` in `Honua.Sdk.Admin.Catalog` | Uses admin service summaries and FeatureServer metadata for default service/layer discovery. Explicit groups, saved source descriptors and metadata filters require a server exposing the legacy metadata-resource API. Requires admin/control-plane auth. |
 | STAC asset cataloging | `IHonuaStacClient` in `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Stac`) | Use for STAC catalog discovery, collections, item pages, item detail, GET/POST search, asset links, bbox/time filters, fields projection, paging, and raw JSON access. |
 | Migration source assessment | Admin migration models and client extensions in `Honua.Sdk.Admin` | Use for external ArcGIS/GeoServer inventory artifacts, compatibility assessments, manifests, and readiness evidence. |
 | Exact protocol capabilities | Native protocol clients | Use `Honua.Sdk.GeoServices` for FeatureServer metadata, `Honua.Sdk.OgcFeatures` for collections/queryables/items and the `Honua.Sdk.OgcFeatures.Wfs` types for capabilities and DescribeFeatureType, and `Honua.Sdk.Scenes` for scene metadata. |
@@ -134,3 +134,11 @@ await foreach (var page in stacClient.SearchPagesAsync(new StacSearchRequest
 - Keep future endpoint additions aligned with `honua-io/honua-server#955` so
   JS, Python, and .NET SDKs can share names, paging behavior, error behavior,
   auth forwarding, and fixtures.
+
+Default `SearchAsync`, `ListServicesAsync`, `GetServiceAsync`, `ListLayersAsync` and
+`GetLayerAsync` do not call `/api/v1/admin/metadata/resources`. Free-text queries
+search the available canonical names and descriptions. Group/source-descriptor
+kinds, tags, owner, namespace and creation/update sorting explicitly opt into
+legacy metadata reads. On current servers without that API these operations
+raise `HonuaAdminApiException` with the server status; they do not return an empty
+catalog or rely on the `metadataResources` capability flag.

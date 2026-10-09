@@ -59,13 +59,16 @@ public enum CatalogSortDirection
 
 /// <summary>
 /// Search, filter, paging, and sorting options for catalog operations.
+/// Tags, owner, namespace and timestamp sorting require the legacy metadata-resource API;
+/// unsupported routes and other server errors are propagated.
 /// </summary>
 public sealed record CatalogQueryOptions
 {
     /// <summary>Free-text search applied to names, descriptions, service names, tags, and owners.</summary>
     public string? Query { get; init; }
 
-    /// <summary>Catalog item kinds to include when using the unified search API.</summary>
+    /// <summary>Catalog item kinds to include. Defaults to services and layers.
+    /// Explicit groups and saved source descriptors require the legacy metadata-resource API.</summary>
     public IReadOnlyList<CatalogItemKind>? Kinds { get; init; }
 
     /// <summary>
