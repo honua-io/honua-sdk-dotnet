@@ -102,12 +102,16 @@ conformance/             Conformance gate helpers: fetch-fixtures.sh (pull pinne
                          fixtures), check-version.sh, FIXTURE_VERSION, PINS.md
 .github/workflows/       ci.yml, conformance.yml, codeql.yml, docs.yml, publish-dotnet-sdk.yml, release-please.yml, staging-integration.yml
 Honua.Sdk.sln            Solution; Directory.Build.props / Directory.Packages.props at root
-release/                 component-versions.json, read by the honua-release nightly resolver
+release/                 component-versions.json and sdk-capability-baseline.json, read by the honua-release nightly resolver
 ```
 
 ## Release version declaration
 
 `release/component-versions.json` declares the contract and schema versions this repository serves. The honua-release nightly resolver reads that file at the published source commit and refuses the component when it is missing or invalid, so any contract or schema version bump must change the declaration in the same pull request. The declaration takes effect only after a release-please publication contains it.
+
+## SDK capability baseline
+
+`release/sdk-capability-baseline.json` (`honua.sdk-capability-baseline/v1`, defined by honua-release `schemas/sdk-capability-baseline.v1.schema.json` and `docs/SDK-SERVER-BASELINE-RULE.md`) declares the honua-server capabilities this repository requires and the `minimumServerVersion` derived from them. The honua-release nightly resolver reads it at the source revision of every published NuGet package, and refuses the component when it is missing, invalid, or when those revisions declare different `minimumServerVersion` values. It takes effect only after a release-please publication contains it. Every required capability must be a key in honua-server `docs/gis/data/capability-keys.v1.json`, and `capabilities` must hold exactly one introduction entry per required capability. Add or remove a required capability in the same PR that starts or stops depending on it.
 
 ## Conventions & Gotchas
 
