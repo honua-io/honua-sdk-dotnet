@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.11.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.4...dotnet-sdk-v1.11.0) (2026-10-11)
+
+
+### Features
+
+* **studio:** contentHashInput on version reads and publicationUrl on publish requests ([#425](https://github.com/honua-io/honua-sdk-dotnet/issues/425)) ([ce5635d](https://github.com/honua-io/honua-sdk-dotnet/commit/ce5635d6fa7d7a4b231a9c2dadc73e89ea711889))
+
 ## [1.10.4](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.3...dotnet-sdk-v1.10.4) (2026-10-06)
 
 
