@@ -293,6 +293,18 @@ public sealed record StudioContentVersion
     /// <summary>SHA-256 hash of the immutable package envelope with volatile validation timestamps excluded.</summary>
     public required string ContentHash { get; init; }
 
+    /// <summary>
+    /// Canonical content-hash input (honua-server#5449): base64 (RFC 4648, standard alphabet,
+    /// padded) of the exact UTF-8 bytes the server hashed, so that <see cref="ContentHash"/> is the
+    /// lower-case hexadecimal SHA-256 of the decoded bytes. Lets a client recompute the digest
+    /// without reproducing the server's envelope serialization; see <see cref="VerifyContentHash"/>.
+    /// Returned by the single-version read and the save-version response; omitted from version
+    /// enumerations, by servers that predate it, and when the server cannot supply bytes that hash
+    /// to <see cref="ContentHash"/> (bridged Form/Analysis versions, or a legacy version whose
+    /// stored envelope no longer reproduces it).
+    /// </summary>
+    public string? ContentHashInput { get; init; }
+
     /// <summary>Immutable package envelope.</summary>
     public required StudioPackageEnvelope Envelope { get; init; }
 
@@ -319,6 +331,17 @@ public sealed record StudioContentVersion
 
     /// <summary>Timestamp when the immutable version was created.</summary>
     public required DateTimeOffset CreatedAt { get; init; }
+
+    /// <summary>
+    /// Recomputes <see cref="ContentHash"/> from <see cref="ContentHashInput"/>: the lower-case
+    /// hexadecimal SHA-256 of the base64-decoded input bytes.
+    /// </summary>
+    /// <returns>
+    /// <see langword="null"/> when the server supplied no <see cref="ContentHashInput"/> (nothing to
+    /// verify); <see langword="true"/> when the recomputed digest equals <see cref="ContentHash"/>;
+    /// <see langword="false"/> when it differs or the input is not valid base64.
+    /// </returns>
+    public bool? VerifyContentHash() => StudioContentHash.Verify(ContentHashInput, ContentHash);
 }
 
 /// <summary>Response body for listing immutable content versions.</summary>
@@ -373,6 +396,19 @@ public sealed record StudioPublicationRequest
 
     /// <summary>Timestamp when the request was created.</summary>
     public required DateTimeOffset CreatedAt { get; init; }
+
+    /// <summary>
+    /// Final publication URL (honua-server#5788): the root-relative published-route URL that
+    /// serves the item's Active version, the same value as the <c>activeUrl</c> the publication
+    /// operation handle reports. Present only when <see cref="Status"/> is
+    /// <see cref="StudioPublicationRequestStatus.Accepted"/> and the intent names a route; absent
+    /// while pending, on a rejected request, and from servers that predate it.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1056:URI-like properties should not be strings",
+        Justification = "Mirrors the server publicationUrl contract verbatim: a root-relative URL, which System.Uri parses as an absolute file URI on Unix.")]
+    public string? PublicationUrl { get; init; }
 }
 
 /// <summary>Result of a deterministic comparison between two immutable content versions.</summary>

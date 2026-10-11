@@ -187,6 +187,28 @@ The existing `CreatePublishRequestAsync` signature remains available for callers
 that expect only completed publication-request responses. The new submission API
 requires a release after 1.9.0; it is not included in 1.9.0.
 
+### Content-hash verification and publication URL
+
+A version read (`GetVersionAsync`) and the save response (`CreateContentVersionAsync`)
+carry `ContentHashInput` when the server supplies it (honua-server#5449): base64 of
+the exact bytes whose lower-case hex SHA-256 is `ContentHash`. Recompute the digest
+with `version.VerifyContentHash()` (or `StudioContentHash.Verify(input, hash)`)
+instead of re-serializing the envelope. It returns `null` when the server sent no
+input (version enumerations, servers that predate the field, bridged Form/Analysis
+versions), `true` on a match, and `false` on a mismatch or malformed base64.
+
+An accepted publication request carries `PublicationUrl` (honua-server#5788), the
+root-relative published-route URL serving the Active version; it is `null` while
+pending, on a rejected request, and from servers that predate the field.
+
+```csharp
+var saved = await packages.GetVersionAsync(itemId, versionId, ct);
+if (saved.VerifyContentHash() == false)
+{
+    throw new InvalidOperationException("Content hash does not match its canonical input.");
+}
+```
+
 ## Scope
 
 AI generate endpoints (`/api/v1/studio/{map,app}-packages/generate`) return
