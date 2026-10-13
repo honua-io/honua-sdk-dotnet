@@ -165,7 +165,7 @@ jobs:
             !contains(steps.package-version.outputs.value, '-') &&
             !(github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
           }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-nuget-org-prerequisites
           path: stable-nuget-org-prerequisites.json
@@ -332,7 +332,7 @@ jobs:
           done
 
       - name: Upload SBOM artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-sboms
           path: ./sboms/**/*.cdx.json
@@ -658,7 +658,7 @@ jobs:
           )
 
       - name: Upload immutable unsigned package inputs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-input-unsigned
           path: |
@@ -928,7 +928,7 @@ jobs:
 
       - name: Upload registry publication evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-registry-proof
           path: coordinate-evidence/
