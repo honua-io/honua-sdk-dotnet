@@ -35,6 +35,9 @@ Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Family.get -> Honua.Sdk.Studio
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Family.init -> void
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHash.get -> string!
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHash.init -> void
+Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHashInput.get -> string?
+Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHashInput.init -> void
+Honua.Sdk.Studio.Packages.StudioPublishedArtifact.VerifyContentHash() -> bool?
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PublishedAt.get -> System.DateTimeOffset
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PublishedAt.init -> void
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Envelope.get -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!

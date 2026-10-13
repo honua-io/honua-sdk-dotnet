@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Honua.Sdk.Abstractions.Operations;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Extensions;
@@ -50,8 +51,34 @@ public sealed class StudioPackageClientTests
         Assert.Equal("my-map", artifact.PackageKey);
         Assert.Equal(StudioPackageFamily.Map, artifact.Family);
         Assert.Equal("sha256:approved-content", artifact.ContentHash);
+        Assert.Null(artifact.ContentHashInput);
+        Assert.Null(artifact.VerifyContentHash());
         Assert.Equal(new DateTimeOffset(2026, 10, 9, 12, 0, 0, TimeSpan.Zero), artifact.PublishedAt);
         Assert.Equal("honua_map_package.v1", artifact.Envelope.SchemaVersion);
+    }
+
+    [Theory]
+    [InlineData("YWJj", true)]
+    [InlineData("YWJk", false)]
+    [InlineData("not base64!", false)]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    public async Task GetPublishedArtifactAsync_DeserializesCanonicalInputAndVerifiesContentHash(
+        string? contentHashInput, bool? expected)
+    {
+        // SHA-256 test vector for "abc": verify the server's bytes, not a reserialized envelope.
+        const string hash = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+        var response = PublishedEnvelope
+            .Replace("sha256:approved-content", hash, StringComparison.Ordinal)
+            .Replace("\"publishedAt\":", $"\"contentHashInput\":{JsonSerializer.Serialize(contentHashInput)},\"publishedAt\":", StringComparison.Ordinal);
+        using var http = CreateHttpClient(_ => JsonResponse(response));
+        var client = new HonuaStudioPackageClient(http);
+
+        var artifact = await client.GetPublishedArtifactAsync("approved-map");
+
+        Assert.Equal(contentHashInput, artifact.ContentHashInput);
+        Assert.Equal(hash, artifact.ContentHash);
+        Assert.Equal(expected, artifact.VerifyContentHash());
     }
 
     [Theory]
