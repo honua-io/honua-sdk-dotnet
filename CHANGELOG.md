@@ -2,6 +2,13 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.11.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.11.0...dotnet-sdk-v1.11.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* **sdk:** align discovery and publication clients ([#408](https://github.com/honua-io/honua-sdk-dotnet/issues/408), [#410](https://github.com/honua-io/honua-sdk-dotnet/issues/410), [#411](https://github.com/honua-io/honua-sdk-dotnet/issues/411)) ([#424](https://github.com/honua-io/honua-sdk-dotnet/issues/424)) ([02d233e](https://github.com/honua-io/honua-sdk-dotnet/commit/02d233e56c502b86c23f688bcb27e115265d6c3c))
+
 ## [1.11.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.4...dotnet-sdk-v1.11.0) (2026-10-11)
 
 
