@@ -13,6 +13,14 @@ namespace Honua.Sdk.Studio.Packages;
 /// </summary>
 public interface IHonuaStudioPackageClient
 {
+    /// <summary>Reads the active immutable artifact served by a governed publication route.</summary>
+    /// <param name="route">A governed route, with optional leading slash and multiple path segments; not a publication URL.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The publication identity, content hash and sealed package envelope.</returns>
+    /// <remarks>HTTP errors, including inaccessible or missing publications, are propagated.</remarks>
+    Task<StudioPublishedArtifact> GetPublishedArtifactAsync(string route, CancellationToken cancellationToken = default)
+        => Task.FromException<StudioPublishedArtifact>(new NotSupportedException("This client does not support published artifact reads."));
+
     /// <summary>Lists Studio package family capability descriptors for Console authoring.</summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default);

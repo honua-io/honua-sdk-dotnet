@@ -71,6 +71,20 @@ public sealed record PublishLayerRequest
     public string? ServiceName { get; init; }
 
     /// <summary>
+    /// Optional storage mode (source or managed). Omitted to preserve server defaults;
+    /// edit capabilities require managed storage.
+    /// </summary>
+    [JsonPropertyName("storageMode")]
+    public string? StorageMode { get; init; }
+
+    /// <summary>
+    /// Optional capabilities, such as Query, Create, Update and Delete.
+    /// Omitted to preserve server defaults; an empty list is sent as supplied.
+    /// </summary>
+    [JsonPropertyName("capabilities")]
+    public IReadOnlyList<string>? Capabilities { get; init; }
+
+    /// <summary>
     /// Whether to enable the layer after publishing.
     /// </summary>
     [JsonPropertyName("enabled")]

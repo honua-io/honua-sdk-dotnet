@@ -324,10 +324,10 @@ foreach (var item in catalog.Items)
 dotnet run
 ```
 
-> Against the 2026.1 release candidate this search fails with `Not Found`: the catalog client
-> reads an admin metadata route the server does not serve
-> ([#408](https://github.com/honua-io/honua-sdk-dotnet/issues/408)). `ListServicesAsync` above
-> works.
+> The published SDK pin used by this guide still reads an unavailable metadata route
+> ([#408](https://github.com/honua-io/honua-sdk-dotnet/issues/408)). The source fix uses
+> canonical service and FeatureServer routes for this search. This executable-docs
+> block remains until the corrected package is published, pinned and verified.
 
 Use `IHonuaOgcRecordsClient` when the server exposes the public OGC API Records catalog and the
 caller should discover standards-facing metadata records instead of operator/control-plane

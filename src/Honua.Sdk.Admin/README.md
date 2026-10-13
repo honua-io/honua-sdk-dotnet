@@ -241,3 +241,24 @@ for the policy and supported version matrix.
 ## License
 
 [Apache 2.0](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/LICENSE)
+
+### Publishing an editable layer
+
+Set both the storage mode and capabilities when publishing a layer intended for
+edits. Leaving either option null omits it and preserves the server default.
+
+```csharp
+var layer = await admin.PublishLayerAsync(connectionId, new PublishLayerRequest
+{
+    Schema = "public",
+    Table = "parcels",
+    LayerName = "Parcels",
+    StorageMode = "managed",
+    Capabilities = ["Query", "Create", "Update", "Delete"]
+}, cancellationToken);
+```
+
+The server validates storage modes and capability combinations. Catalog discovery
+uses service and FeatureServer routes by default; groups, saved source descriptors
+and metadata-only filters require the legacy metadata-resource API and propagate
+server errors when unsupported.

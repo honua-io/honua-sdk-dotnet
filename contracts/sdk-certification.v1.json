@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 323,
+    "total": 324,
     "exercised": 25,
-    "gap": 280,
+    "gap": 281,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 291,
+    "denominator": 292,
     "excluded": [
       {
         "operationId": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.FindClosestFacilityAsync(ClosestFacilityRequest,CancellationToken)",
@@ -8831,6 +8831,34 @@
       "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
       "operation": "GetPackageFamiliesAsync",
       "signature": "GetPackageFamiliesAsync(CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPublishedArtifactAsync(string,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "operation": "GetPublishedArtifactAsync",
+      "signature": "GetPublishedArtifactAsync(string,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",
