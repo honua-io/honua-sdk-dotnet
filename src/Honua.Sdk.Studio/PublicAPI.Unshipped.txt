@@ -41,3 +41,11 @@ Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Envelope.get -> Honua.Sdk.Stud
 Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Envelope.init -> void
 Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPublishedArtifactAsync(string! route, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublishedArtifact!>!
 Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPublishedArtifactAsync(string! route, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublishedArtifact!>!
+Honua.Sdk.Studio.Packages.StudioContentHash
+static Honua.Sdk.Studio.Packages.StudioContentHash.Compute(System.ReadOnlySpan<byte> input) -> string!
+static Honua.Sdk.Studio.Packages.StudioContentHash.Verify(string? contentHashInput, string? contentHash) -> bool?
+Honua.Sdk.Studio.Packages.StudioContentVersion.ContentHashInput.get -> string?
+Honua.Sdk.Studio.Packages.StudioContentVersion.ContentHashInput.init -> void
+Honua.Sdk.Studio.Packages.StudioContentVersion.VerifyContentHash() -> bool?
+Honua.Sdk.Studio.Packages.StudioPublicationRequest.PublicationUrl.get -> string?
+Honua.Sdk.Studio.Packages.StudioPublicationRequest.PublicationUrl.init -> void
