@@ -1027,7 +1027,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         entitlement_policy_revision = (
             FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None
         )
-        if licensed and result != "skip":
+        if licensed and result == "pass":
             # A green TRX or deployment setting cannot synthesize the live
             # entitlement/fingerprint assertion required by the strict consumer.
             result, verdict = "skip", "missing-entitlement-evidence"

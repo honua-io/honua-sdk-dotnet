@@ -93,6 +93,30 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIn("missing retained live entitlement", observed["skip_reason"])
             self.assertIsNone(observed["evidence_receipt"])
 
+    def test_failed_edit_trx_retains_failure_and_receipt_without_entitlement(self):
+        document = {"operations": [{
+            "id": "Fixture.AddFeaturesAsync", "surface": "geoservices", "operation": "AddFeaturesAsync",
+            "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+            "status": "exercised", "requiredTiers": ["pr"], "scenarioFacets": ["mutation"],
+            "tests": ["Fixture.Edit"],
+        }]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trx = root / "passed.trx"
+            trx.write_text('<TestRun><Results><UnitTestResult testName="Fixture.Edit" outcome="Failed" /></Results></TestRun>')
+            args = Namespace(tier="pr", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                             sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                             image_source_revision="b" * 40, server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                             release_cut=None, candidate_cut="2026-01-01T00:00:00Z", fixture_revision="sha256:" + "d" * 64,
+                             seed_revision="b" * 40, evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                             **self._request_context())
+            self.assertEqual(1, self._write_evidence(args, document))
+            observed = json.loads(args.evidence.read_text())["observations"][0]
+            self.assertEqual("fail", observed["result"])
+            self.assertIsNone(observed["skip_reason"])
+            self.assertEqual("fail", observed["evidence_receipt"]["result"])
+            self.assertEqual({"mutation": "fail"}, observed["evidence_receipt"]["facets"])
+
     def test_exact_operation_context_rejects_version_or_contract_drift(self):
         identity = {"sdkVersion": "1.2.3", "sdkCommit": "a" * 40, "fixtureRevision": "sha256:" + "d" * 64}
         operation = {"surface": "geoservices", "id": "Fixture.Query", "client": "Fixture.IClient"}
