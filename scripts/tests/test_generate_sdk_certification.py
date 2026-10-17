@@ -25,6 +25,92 @@ class SdkCertificationTests(unittest.TestCase):
             "collection_id": "places",
         }
 
+    def _write_evidence(self, args, document):
+        # Synthetic governed input for harness tests only, never a live receipt.
+        args.requirements = args.evidence.with_suffix(".requirements.json")
+        args.requirements_revision = "fixture-governed-revision"
+        rows = []
+        for operation in document["operations"]:
+            licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
+            rows.append({
+                "capability_key": "sdk-dotnet." + operation["surface"], "surface": operation["surface"],
+                "operation": operation["id"], "canonical_client": "Honua SDK .NET",
+                "client_version": args.sdk_version, "deployment_target": "local-docker",
+                "client_lane": "sdk-dotnet-certification", "maturity": "supported", "required_tier": "nightly",
+                "addressable_by_client": True, "licensed": licensed,
+                "entitlement_policy_revision": MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None,
+                "contract_revision": "sdk-dotnet-certification@" + args.sdk_commit,
+                "auth_policy_revision": "api-key-protected-v1", "fixture_revision": args.fixture_revision,
+                "scenario_facets": list(dict.fromkeys("positive" if x == "read-only" else x for x in operation["scenarioFacets"])),
+            })
+        args.requirements.write_text(json.dumps({"schema": "honua.protocol-certification-requirements/v1",
+                                                "revision": args.requirements_revision,
+                                                "receipt_schema_min": "v2", "complete": True, "requirements": rows}))
+        return MODULE.write_evidence(args, document)
+
+    def test_governed_context_refuses_missing_stale_duplicate_or_invalid_catalog(self):
+        row = {"capability_key": "sdk-dotnet.geoservices", "surface": "geoservices", "operation": "Fixture.Query",
+               "canonical_client": "Honua SDK .NET", "client_version": "1.2.3", "deployment_target": "local-docker",
+               "client_lane": "sdk-dotnet-certification", "maturity": "supported", "required_tier": "nightly"}
+        catalog = {"schema": "honua.protocol-certification-requirements/v1", "revision": "expected",
+                   "complete": True, "receipt_schema_min": "v2", "requirements": [row]}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "requirements.json"
+            with self.assertRaises(ValueError):
+                MODULE._requirements(Namespace())
+            for field, value in (("revision", "stale"), ("complete", False), ("receipt_schema_min", "v1"),
+                                 ("requirements", [row, row]),
+                                 ("requirements", [{**row, "maturity": "claimed-supported"}]),
+                                 ("requirements", [{**row, "required_tier": "optional"}])):
+                with self.subTest(field=field, value=value):
+                    path.write_text(json.dumps({**catalog, field: value}))
+                    with self.assertRaises(ValueError):
+                        MODULE._requirements(Namespace(requirements=path, requirements_revision="expected"))
+            path.write_text('{"schema":"first","schema":"second"}')
+            with self.assertRaisesRegex(ValueError, "duplicate"):
+                MODULE._requirements(Namespace(requirements=path, requirements_revision="expected"))
+
+    def test_passing_edit_trx_cannot_invent_live_entitlement_proof(self):
+        document = {"operations": [{
+            "id": "Fixture.AddFeaturesAsync", "surface": "geoservices", "operation": "AddFeaturesAsync",
+            "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+            "status": "exercised", "requiredTiers": ["pr"], "scenarioFacets": ["mutation"],
+            "tests": ["Fixture.Edit"],
+        }]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trx = root / "passed.trx"
+            trx.write_text('<TestRun><Results><UnitTestResult testName="Fixture.Edit" outcome="Passed" /></Results></TestRun>')
+            args = Namespace(tier="pr", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                             sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                             image_source_revision="b" * 40, server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                             release_cut=None, candidate_cut="2026-01-01T00:00:00Z", fixture_revision="sha256:" + "d" * 64,
+                             seed_revision="b" * 40, evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                             **self._request_context())
+            self.assertEqual(1, self._write_evidence(args, document))
+            observed = json.loads(args.evidence.read_text())["observations"][0]
+            self.assertEqual("skip", observed["result"])
+            self.assertIn("missing retained live entitlement", observed["skip_reason"])
+            self.assertIsNone(observed["evidence_receipt"])
+
+    def test_exact_operation_context_rejects_version_or_contract_drift(self):
+        identity = {"sdkVersion": "1.2.3", "sdkCommit": "a" * 40, "fixtureRevision": "sha256:" + "d" * 64}
+        operation = {"surface": "geoservices", "id": "Fixture.Query", "client": "Fixture.IClient"}
+        key = ("sdk-dotnet.geoservices", "geoservices", "Fixture.Query", "Honua SDK .NET", "1.2.3", "local-docker")
+        row = {"client_lane": "sdk-dotnet-certification", "addressable_by_client": True,
+               "licensed": False, "entitlement_policy_revision": None,
+               "contract_revision": "sdk-dotnet-certification@" + "a" * 40,
+               "auth_policy_revision": "api-key-protected-v1", "fixture_revision": identity["fixtureRevision"],
+               "scenario_facets": ["positive"], "maturity": "supported", "required_tier": "nightly"}
+        self.assertEqual(row, MODULE._governed_context({key: row}, operation, identity, ["positive"]))
+        with self.assertRaises(ValueError):
+            MODULE._governed_context({key: row}, operation, {**identity, "sdkVersion": "1.2.4"}, ["positive"])
+        for field, value in (("contract_revision", "unreviewed"), ("fixture_revision", "wrong"),
+                             ("scenario_facets", ["negative"]), ("addressable_by_client", False),
+                             ("licensed", True), ("auth_policy_revision", "anonymous-public-v1")):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                MODULE._governed_context({key: {**row, field: value}}, operation, identity, ["positive"])
+
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
         self.assertGreater(document["summary"]["total"], 0)
@@ -139,7 +225,7 @@ class SdkCertificationTests(unittest.TestCase):
             trx = Path(directory) / "empty.trx"
             trx.write_text('<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"><Results /></TestRun>', encoding="utf-8")
             evidence = Path(directory) / "evidence.json"
-            result = MODULE.write_evidence(Namespace(
+            result = self._write_evidence(Namespace(
                 tier="pr", trx=[trx], evidence=evidence, started_at=None,
                 sdk_commit="a" * 40, sdk_version="unreleased",
                 server_source_sha="b" * 40,
@@ -203,7 +289,7 @@ class SdkCertificationTests(unittest.TestCase):
                 encoding="utf-8",
             )
             evidence = Path(directory) / "evidence.json"
-            result = MODULE.write_evidence(Namespace(
+            result = self._write_evidence(Namespace(
                 tier="pr", trx=[trx], evidence=evidence, started_at=None,
                 sdk_commit="a" * 40, sdk_version="1.6.0",
                 server_source_sha="b" * 40, image_source_revision="b" * 40,
@@ -230,7 +316,7 @@ class SdkCertificationTests(unittest.TestCase):
                 encoding="utf-8",
             )
             evidence = Path(directory) / "evidence.json"
-            MODULE.write_evidence(Namespace(
+            self._write_evidence(Namespace(
                 tier="nightly", trx=[trx], evidence=evidence, started_at=None,
                 sdk_commit="a" * 40, sdk_version="1.6.0",
                 server_source_sha="b" * 40, image_source_revision="b" * 40,
@@ -562,7 +648,7 @@ class SdkCertificationTests(unittest.TestCase):
                 encoding="utf-8",
             )
             evidence = Path(directory) / "evidence.json"
-            result = MODULE.write_evidence(Namespace(
+            result = self._write_evidence(Namespace(
                 tier="pr", trx=[trx], evidence=evidence, started_at=None,
                 sdk_commit="a" * 40, sdk_version="1.6.0",
                 server_source_sha="b" * 40, image_source_revision="b" * 40,
@@ -597,7 +683,7 @@ class SdkCertificationTests(unittest.TestCase):
                 encoding="utf-8",
             )
             evidence = Path(directory) / "evidence.json"
-            result = MODULE.write_evidence(Namespace(
+            result = self._write_evidence(Namespace(
                 tier="pr", trx=[trx], evidence=evidence, started_at=None,
                 sdk_commit="a" * 40, sdk_version="1.6.0",
                 server_source_sha="b" * 40, image_source_revision="b" * 40,

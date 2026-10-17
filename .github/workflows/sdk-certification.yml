@@ -10,6 +10,10 @@ on:
       - "scripts/generate-sdk-certification.py"
       - "scripts/prepare-installed-package-certification.py"
       - "certification/candidate-pins.json"
+      - "certification/requirements-pins.json"
+      - "scripts/fetch-certification-requirements.py"
+      - "scripts/check-certification-receipt-contract.py"
+      - "scripts/tests/**"
       - "contracts/sdk-certification.v1.json"
       - "Directory.Build.props"
       - "Directory.Packages.props"
@@ -34,6 +38,12 @@ on:
         required: false
       release_cut:
         description: "Independently frozen ISO-8601 release cut (required for release)"
+        required: false
+      requirements_ref:
+        description: "Immutable honua-release protected-trunk ancestor SHA; pair with requirements_revision"
+        required: false
+      requirements_revision:
+        description: "Exact governed revision at requirements_ref; release must supply both"
         required: false
       fixture_revision:
         description: "Deterministic fixture/profile revision (required for release)"
@@ -98,6 +108,25 @@ jobs:
             *) tier=pr ;;
           esac
           echo "tier=${tier}" >> "${GITHUB_OUTPUT}"
+
+      - name: Retain immutable governed requirements and strict consumer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CERT_TIER: ${{ steps.tier.outputs.tier }}
+          REQUIREMENTS_REF: ${{ inputs.requirements_ref }}
+          REQUIREMENTS_REVISION: ${{ inputs.requirements_revision }}
+        run: |
+          set -euo pipefail
+          if [[ "${CERT_TIER}" == release && ( -z "${REQUIREMENTS_REF}" || -z "${REQUIREMENTS_REVISION}" ) ]]; then
+            echo '::error::Release requires exact requirements_ref and requirements_revision.'
+            exit 1
+          fi
+          args=()
+          if [[ -n "${REQUIREMENTS_REF}" || -n "${REQUIREMENTS_REVISION}" ]]; then
+            args+=(--source-sha "${REQUIREMENTS_REF}" --requirements-revision "${REQUIREMENTS_REVISION}")
+          fi
+          python3 scripts/fetch-certification-requirements.py --destination artifacts/governance "${args[@]}"
+          python3 scripts/check-certification-receipt-contract.py --governance-dir artifacts/governance
 
       - name: Load candidate pins
         run: python3 scripts/prepare-installed-package-certification.py --pins certification/candidate-pins.json --emit-env >> "${GITHUB_ENV}"
@@ -345,6 +374,8 @@ jobs:
           }
           python3 scripts/generate-sdk-certification.py \
             --tier "${tier}" \
+            --requirements artifacts/governance/protocol-certification-requirements.v1.json \
+            --requirements-revision "$(python3 -c 'import json; print(json.load(open("artifacts/governance/source-binding.json"))["requirementsRevision"])')" \
             --trx artifacts/test-results/protocol-integration.trx \
             --trx artifacts/test-results/live-conformance.trx \
             --trx-exit-code "${{ steps.tests.outputs.protocol_exit_code }}" \
