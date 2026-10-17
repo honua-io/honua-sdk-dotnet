@@ -65,6 +65,8 @@ Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.AdditionalP
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerLayerSummary.AdditionalProperties.set -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnM.get -> bool?
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnM.init -> void
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnTrueCurves.get -> bool?
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnTrueCurves.init -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnZ.get -> bool?
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams.ReturnZ.init -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerServiceInfo.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
