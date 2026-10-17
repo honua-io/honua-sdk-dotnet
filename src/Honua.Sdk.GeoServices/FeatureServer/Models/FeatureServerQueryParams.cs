@@ -36,6 +36,13 @@ public sealed record FeatureServerQueryParams
     /// </summary>
     public bool? ReturnM { get; init; }
 
+    /// <summary>
+    /// Whether to request original curve paths and rings instead of densified geometry.
+    /// Null leaves the source default unchanged. Raw query responses preserve the source's
+    /// curve JSON; this option does not enable linear geometry converters to interpret curves.
+    /// </summary>
+    public bool? ReturnTrueCurves { get; init; }
+
     /// <summary>Output format.</summary>
     public FeatureServerFormat? Format { get; init; }
 
