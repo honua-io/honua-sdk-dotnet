@@ -43,7 +43,7 @@ public sealed class ManifestTests
             manifestPruneSupported = true,
             compatibility = new
             {
-                serverVersion = "0.1.0",
+                serverVersion = "2026.1.0",
                 releaseChannel = "beta",
                 controlPlaneApi = new
                 {
@@ -78,7 +78,7 @@ public sealed class ManifestTests
 
         var result = await client.GetCapabilitiesAsync();
 
-        Assert.Equal("0.1.0", result.ServerVersion);
+        Assert.Equal("2026.1.0", result.ServerVersion);
         Assert.Equal("beta", result.ReleaseChannel);
         Assert.True(result.ManifestSupported);
         Assert.True(result.ManifestDryRunSupported);

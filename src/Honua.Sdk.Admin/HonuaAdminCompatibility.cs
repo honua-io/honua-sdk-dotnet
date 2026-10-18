@@ -13,7 +13,14 @@ public static class HonuaAdminCompatibility
     /// <summary>
     /// Minimum Honua Server version supported by this SDK baseline.
     /// </summary>
-    public const string MinimumSupportedServerVersion = "0.1.0";
+    /// <remarks>
+    /// Derived, not chosen: <c>release/sdk-capability-baseline.json</c> declares
+    /// <c>minimumServerVersion: first-release</c> (every required capability ships in the first
+    /// honua-server release), and honua-release <c>docs/SDK-SERVER-BASELINE-RULE.md</c> maps a
+    /// first-release baseline to <c>2026.1.0-0</c>, the least SemVer identity of the first release
+    /// line. <c>ServerFloorBaselineTests</c> fails when this constant and the baseline file disagree.
+    /// </remarks>
+    public const string MinimumSupportedServerVersion = "2026.1.0-0";
 
     /// <summary>
     /// Control-plane API major version expected by this SDK.

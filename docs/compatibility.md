@@ -14,7 +14,16 @@ for runtime behavior and package API compatibility for released .NET packages.
 
 | SDK package baseline | Honua Server baseline | Release channel baseline | Admin API major | Admin API base path |
 |----------------------|-----------------------|--------------------------|-----------------|---------------------|
-| `1.x` | `0.1.0` or newer | `preview` or later | `1` | `/api/v1/admin` |
+| `1.x` | `2026.1.0-0` or newer | `preview` or later | `1` | `/api/v1/admin` |
+
+The server baseline is derived, not chosen. `release/sdk-capability-baseline.json`
+declares `minimumServerVersion: first-release`, and the honua-release
+[baseline rule](https://github.com/honua-io/honua-release/blob/trunk/docs/SDK-SERVER-BASELINE-RULE.md)
+maps a first-release baseline to `2026.1.0-0`, the least SemVer identity of the
+first honua-server release line: its candidates (`2026.1.0-rc.N`), the release
+and every later server qualify. `ServerFloorBaselineTests` fails when the
+baseline file, `HonuaAdminCompatibility.MinimumSupportedServerVersion` and this
+table disagree.
 
 `Honua.Sdk.Admin` evaluates this matrix through
 `HonuaAdminCompatibility.Evaluate()` and `IHonuaAdminClient.CheckCompatibilityAsync()`.
