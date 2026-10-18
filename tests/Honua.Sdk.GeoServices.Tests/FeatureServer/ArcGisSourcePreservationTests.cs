@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Honua.Sdk.GeoServices.FeatureServer;
 using Honua.Sdk.GeoServices.FeatureServer.Models;
 using Honua.Sdk.GeoServices.Tests.Fixtures;
 
@@ -182,6 +183,85 @@ public sealed class ArcGisSourcePreservationTests
         Assert.DoesNotContain("returnM", requests[1], StringComparison.Ordinal);
         Assert.DoesNotContain("returnZ", requests[2], StringComparison.Ordinal);
         Assert.DoesNotContain("returnM", requests[2], StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(null, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(null, true)]
+    public async Task QueryRawAsync_TrueCurveOption_PreservesGetPostAndUnmodifiedCurvePayload(bool? returnTrueCurves, bool longQuery)
+    {
+        const string body = """{ "features": [ { "attributes": { "OBJECTID": 1 }, "geometry": { "curvePaths": [ [ [ 0, 0, 10, 100 ], { "c": [ [ 10, 0, 30, 300 ], [ 5, 5, 20, 200 ] ] } ] ], "spatialReference": { "wkid": 4326 } } } ] }""";
+        string? parameters = null;
+        HttpMethod? method = null;
+        var client = TestHelpers.CreateFeatureServerClient(async request =>
+        {
+            method = request.Method;
+            parameters = request.Method == HttpMethod.Post
+                ? await request.Content!.ReadAsStringAsync()
+                : request.RequestUri!.Query;
+            return TestHelpers.CreateRawJsonResponse(body);
+        });
+
+        using var response = await client.QueryRawAsync("Parcels", 0, new FeatureServerQueryParams
+        {
+            Where = longQuery ? new string('x', 3000) : "1=1",
+            ReturnTrueCurves = returnTrueCurves,
+            ReturnZ = true,
+            ReturnM = true
+        });
+
+        Assert.Equal(longQuery ? HttpMethod.Post : HttpMethod.Get, method);
+        Assert.NotNull(parameters);
+        if (returnTrueCurves.HasValue)
+            Assert.Contains("returnTrueCurves=" + (returnTrueCurves.Value ? "true" : "false"), parameters, StringComparison.Ordinal);
+        else
+            Assert.DoesNotContain("returnTrueCurves", parameters, StringComparison.Ordinal);
+        Assert.Contains("returnZ=true", parameters, StringComparison.Ordinal);
+        Assert.Contains("returnM=true", parameters, StringComparison.Ordinal);
+        Assert.Equal(body, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [InlineData(null)]
+    public void QueryParameters_SourceGeneratedJson_PreservesTrueFalseAndUnspecified(bool? returnTrueCurves)
+    {
+        var query = new FeatureServerQueryParams { ReturnTrueCurves = returnTrueCurves };
+        var json = JsonSerializer.Serialize(query, FeatureServerJsonContext.Default.FeatureServerQueryParams);
+        using var document = JsonDocument.Parse(json);
+        Assert.Equal(returnTrueCurves.HasValue, document.RootElement.TryGetProperty("returnTrueCurves", out var value));
+        if (returnTrueCurves.HasValue)
+            Assert.Equal(returnTrueCurves.Value, value.GetBoolean());
+        var restored = JsonSerializer.Deserialize(json, FeatureServerJsonContext.Default.FeatureServerQueryParams);
+        Assert.NotNull(restored);
+        Assert.Equal(returnTrueCurves, restored.ReturnTrueCurves);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_RetainsTrueCurveRequestAcrossOffsets()
+    {
+        var requests = new List<string>();
+        var client = TestHelpers.CreateFeatureServerClient(request =>
+        {
+            requests.Add(request.RequestUri!.Query);
+            var id = requests.Count;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                $$"""{ "objectIdFieldName": "OBJECTID", "features": [ { "attributes": { "OBJECTID": {{id}} } } ], "exceededTransferLimit": {{(id == 1 ? "true" : "false")}} }"""));
+        });
+
+        var pages = new List<FeatureServerQueryResponse>();
+        await foreach (var page in client.QueryPagesAsync("Parcels", 0, new FeatureServerQueryParams { ReturnTrueCurves = true, ResultRecordCount = 1 }))
+            pages.Add(page);
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal(2, requests.Count);
+        Assert.All(requests, query => Assert.Contains("returnTrueCurves=true", query, StringComparison.Ordinal));
+        Assert.Contains("resultOffset=1", requests[1], StringComparison.Ordinal);
     }
 
     [Fact]

@@ -16,6 +16,7 @@ namespace Honua.Sdk.GeoServices.FeatureServer;
 [JsonSerializable(typeof(FeatureServerServiceInfo))]
 [JsonSerializable(typeof(FeatureServerLayerInfo))]
 [JsonSerializable(typeof(FeatureServerQueryResponse))]
+[JsonSerializable(typeof(FeatureServerQueryParams))]
 [JsonSerializable(typeof(FeatureServerEditResponse))]
 [JsonSerializable(typeof(FeatureServerAttachmentQueryResponse))]
 [JsonSerializable(typeof(FeatureServerAttachmentGroupsResponse))]

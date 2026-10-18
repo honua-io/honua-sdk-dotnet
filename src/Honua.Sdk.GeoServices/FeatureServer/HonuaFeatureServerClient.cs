@@ -950,6 +950,9 @@ public sealed class HonuaFeatureServerClient :
         if (query.ReturnM.HasValue)
             parameters.Add(("returnM", query.ReturnM.Value ? "true" : "false"));
 
+        if (query.ReturnTrueCurves.HasValue)
+            parameters.Add(("returnTrueCurves", query.ReturnTrueCurves.Value ? "true" : "false"));
+
         if (query.ResultOffset.HasValue)
             parameters.Add(("resultOffset", query.ResultOffset.Value.ToString(CultureInfo.InvariantCulture)));
 
