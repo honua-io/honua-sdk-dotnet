@@ -879,8 +879,68 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
     return values
 
 
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise ValueError(f"duplicate requirements key: {key}")
+        value[key] = item
+    return value
+
+
+def _requirements(args: argparse.Namespace) -> tuple[dict[str, Any], dict[tuple[str, ...], dict[str, Any]]]:
+    path = getattr(args, "requirements", None)
+    revision = getattr(args, "requirements_revision", None)
+    if path is None or not isinstance(revision, str) or not revision.strip():
+        raise ValueError("evidence requires retained --requirements and --requirements-revision")
+    data = Path(path).read_bytes()
+    if not 0 < len(data) <= 32 * 1024 * 1024:
+        raise ValueError("requirements catalog exceeds its bounded size")
+    catalog = json.loads(data, object_pairs_hook=_unique_object)
+    if (not isinstance(catalog, dict)
+            or catalog.get("schema") != "honua.protocol-certification-requirements/v1"
+            or catalog.get("receipt_schema_min") != "v2" or catalog.get("complete") is not True
+            or catalog.get("revision") != revision or not isinstance(catalog.get("requirements"), list)):
+        raise ValueError("requirements must be a complete v2 catalog at the expected revision")
+    fields = ("capability_key", "surface", "operation", "canonical_client", "client_version", "deployment_target")
+    index: dict[tuple[str, ...], dict[str, Any]] = {}
+    for row in catalog["requirements"]:
+        if isinstance(row, dict) and row.get("client_lane") != CERTIFICATION_RUNNER_LANE:
+            continue
+        if not isinstance(row, dict) or any(not isinstance(row.get(key), str) or not row[key] for key in fields):
+            raise ValueError("requirements contain an invalid row identity")
+        key = tuple(row[field] for field in fields)
+        if key in index:
+            raise ValueError("requirements contain duplicate operation identities")
+        if (row.get("maturity") not in {"supported", "preview", "experimental", "roadmap", "deprecated", "internal"}
+                or row.get("required_tier") not in {"pr", "nightly", "release"}):
+            raise ValueError("requirements contain invalid governed context")
+        index[key] = row
+    return catalog, index
+
+
+def _governed_context(index: dict[tuple[str, ...], dict[str, Any]], operation: dict[str, Any],
+                      identity: dict[str, Any], facets: list[str]) -> dict[str, Any]:
+    key = (f"sdk-dotnet.{operation['surface']}", operation["surface"], operation["id"],
+           CERTIFICATION_CLIENT_ID, identity["sdkVersion"], "local-docker")
+    row = index.get(key)
+    if row is None:
+        raise ValueError(f"requirements have no exact published-client operation identity: {operation['id']}")
+    licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
+    if (row.get("client_lane") != CERTIFICATION_RUNNER_LANE or row.get("addressable_by_client") is not True
+            or row.get("licensed") is not licensed
+            or row.get("entitlement_policy_revision") != (FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None)
+            or row.get("contract_revision") != f"sdk-dotnet-certification@{identity['sdkCommit']}"
+            or row.get("auth_policy_revision") != "api-key-protected-v1"
+            or row.get("fixture_revision") != identity["fixtureRevision"]
+            or not isinstance(row.get("scenario_facets"), list) or set(row["scenario_facets"]) != set(facets)):
+        raise ValueError(f"requirements disagree with the actual operation contract: {operation['id']}")
+    return row
+
+
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
+    catalog, requirements = _requirements(args)
     for field in ("baseUrl", "grpcBaseUrl"):
         parsed = urlsplit(identity[field] or "")
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
@@ -956,6 +1016,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "positive" if facet == "read-only" else facet
             for facet in operation["scenarioFacets"]
         ))
+        governed = _governed_context(requirements, operation, identity, scenario_facets)
         started_at = args.started_at or now
         contract_revision = f"sdk-dotnet-certification@{identity['sdkCommit']}"
         protocol_version, protocol_profile = _certification_protocol_context(operation)
@@ -966,8 +1027,16 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         entitlement_policy_revision = (
             FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None
         )
+        if licensed and result == "pass":
+            # A green TRX or deployment setting cannot synthesize the live
+            # entitlement/fingerprint assertion required by the strict consumer.
+            result, verdict = "skip", "missing-entitlement-evidence"
+            skip_reason = "missing retained live entitlement/fingerprint proof; " + RC_FIXTURE_GAP_ISSUE
+            exercised_capabilities = []
+            receipt_facets = {facet: "skip" for facet in scenario_facets}
+            has_nonpass = has_incomplete_execution = True
         evidence_receipt = None if result == "skip" else {
-            "schema": "honua.certification-evidence-receipt/v1",
+            "schema": "honua.certification-evidence-receipt/v2",
             "identity": {
                 "capability_key": f"sdk-dotnet.{operation['surface']}",
                 "surface": operation["surface"],
@@ -981,8 +1050,9 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "fixture_revision": identity["fixtureRevision"],
                 "contract_revision": contract_revision,
                 "auth_policy_revision": "api-key-protected-v1",
-                "licensed": licensed,
-                "entitlement_policy_revision": entitlement_policy_revision,
+                "maturity": governed["maturity"],
+                "required_tier": governed["required_tier"],
+                "requirements_revision": catalog["revision"],
                 "started_at": started_at,
                 "completed_at": now,
             },
@@ -1079,6 +1149,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--trx", type=Path, action="append", default=[])
     parser.add_argument("--trx-exit-code", type=int, action="append", default=[])
     parser.add_argument("--evidence", type=Path)
+    parser.add_argument("--requirements", type=Path, help="Retained immutable full governed requirements catalog.")
+    parser.add_argument("--requirements-revision", help="Independently expected governed catalog revision.")
     parser.add_argument("--started-at")
     parser.add_argument("--sdk-commit")
     parser.add_argument("--sdk-version")

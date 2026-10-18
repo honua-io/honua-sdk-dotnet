@@ -138,3 +138,33 @@ The **full 44-cell certification must be rerun on the RC**, retaining all 41
 passing and 3 released cells, with the rest of the SDK evidence;
 this pre-cut disposition does not certify that future candidate or complete
 release#317's downstream source-to-target reconciliation.
+
+## Governed receipt context
+
+Certification evidence requires the retained full Honua release requirements
+catalog and an independently expected revision. The producer emits receipt v2
+with that row's `maturity`, `required_tier` and `requirements_revision`. It refuses
+missing, duplicate or stale operation/client/version identities and mismatched
+fixture, contract, authentication or facet context. The consumer does not infer
+this context. The source catalog is retained alongside the TRX and receipt.
+
+`certification/requirements-pins.json` binds the default catalog and strict release
+consumer to immutable reviewed bytes. The fetcher verifies the canonical release
+repository, protected `trunk`, source ancestry, Git blob identities and SHA-256
+pins before retaining either file. Release dispatches must explicitly supply
+`requirements_ref` (a full protected-trunk ancestor commit) and
+`requirements_revision`; mutable branch names are refused. An override retains
+its exact source and byte digests. No release Python from an unreviewed feature
+branch is executed.
+
+The producer/consumer self-test uses the actual retained release consumer. Its
+fixture positive and stale-context/v1 refusal checks establish contract behavior;
+they are not live candidate certification. Current historical requirements and
+published SDK pins may differ. That mismatch remains blocked until canonical
+source/pin convergence; a source change or closed issue cannot qualify new bytes.
+
+A passing edit TRX or a licensing configuration flag cannot supply the consumer's
+live entitlement and license-fingerprint assertion. Until an actual bound probe
+record is retained, licensed edit rows remain non-pass with their existing
+[qualification dependency](https://github.com/honua-io/honua-sdk-dotnet/issues/308).
+No license value or secret is inferred, and no requirement is removed.
