@@ -18,7 +18,7 @@ dotnet run --project examples/SpecPlanApplyConsole/SpecPlanApplyConsole.csproj
 
 ```bash
 export HONUA_SPEC_MODE=server
-export HONUA_SPEC_SERVER_URL=https://localhost:5001
+export HONUA_SPEC_SERVER_URL=http://localhost:8080
 export HONUA_SPEC_API_KEY=
 export HONUA_SPEC_BEARER_TOKEN=
 

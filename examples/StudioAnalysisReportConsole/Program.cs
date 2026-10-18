@@ -7,7 +7,7 @@ using Honua.Sdk.Studio.Exceptions;
 
 var mode = Environment.GetEnvironmentVariable("HONUA_STUDIO_MODE") ?? "simulated";
 var useServer = string.Equals(mode, "server", StringComparison.OrdinalIgnoreCase);
-var baseAddress = new Uri(Environment.GetEnvironmentVariable("HONUA_STUDIO_SERVER_URL") ?? "https://localhost:5001");
+var baseAddress = new Uri(Environment.GetEnvironmentVariable("HONUA_STUDIO_SERVER_URL") ?? "http://localhost:8080");
 var apiKey = Environment.GetEnvironmentVariable("HONUA_STUDIO_API_KEY");
 var bearerToken = Environment.GetEnvironmentVariable("HONUA_STUDIO_BEARER_TOKEN");
 var jobId = Environment.GetEnvironmentVariable("HONUA_STUDIO_JOB_ID") ?? "job-demo";

@@ -44,7 +44,7 @@ Current SDK capabilities are summarized in [docs/features/README.md](docs/featur
 | **Honua.Sdk.Admin** | Admin REST client -- services, layers, connections, styles, metadata, RBAC/users, alerts, observability, feature-event replay, streaming operations |
 | **Honua.Sdk.Processes** | Browser-safe OGC API Processes REST client -- process discovery, async jobs, polling, dismissal, results, shared job models |
 | **Honua.Sdk.Spec** | Spec workspace REST/SSE client -- validate, plan, apply stream, cancel, cached artifact retrieval |
-| **Honua.Sdk.Studio** | Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs |
+| **Honua.Sdk.Studio** | **Preview.** Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs. Studio is not a 2026.1 GA surface. |
 | **Honua.Sdk.ConsoleShare** | Console Share clients -- read share detail, update access, validate dependency closure, manage public-link / embed-token lifecycle, drive scheduled exports and traffic, and publish open-data (DCAT / STAC) |
 | **Honua.Sdk.Field** | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | **Honua.Sdk.Geometry** | NTS/ProjNet-backed geometry conversion, spatial references, projection, planar analysis, and geofence evaluation |
@@ -353,7 +353,7 @@ Operations docs: [release and NuGet publishing](docs/release.md),
 | Repo | What it is |
 |---|---|
 | [honua-server](https://github.com/honua-io/honua-server) | Flagship multi-protocol geospatial server this SDK talks to |
-| [honua-console](https://github.com/honua-io/honua-console) | Unified web console (Studio, Catalog, Operate, Share) |
+| [honua-console](https://github.com/honua-io/honua-console) | Web console. 2026.1 admits display-and-approve; Studio is Preview, and dashboards are not claimed. |
 | [honua-sdk-js](https://github.com/honua-io/honua-sdk-js) | JavaScript/TypeScript SDKs + MCP server |
 | [honua-sdk-python](https://github.com/honua-io/honua-sdk-python) | Python SDK |
 | [honua-mobile](https://github.com/honua-io/honua-mobile) | .NET MAUI mobile SDK building on these packages |

@@ -48,6 +48,15 @@ jobs:
           restore-keys: |
             ${{ github.repository }}-${{ runner.os }}-playwright-
 
+      - name: Require committed NuGet lock files
+        shell: bash
+        run: |
+          mapfile -t locks < <(git ls-files '**/packages.lock.json')
+          if [[ ${#locks[@]} -eq 0 ]]; then
+            echo "::error::No packages.lock.json is committed, so 'dotnet restore --locked-mode' does not pin the graph."
+            exit 1
+          fi
+
       - name: Restore browser trim projects
         run: dotnet restore tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --locked-mode
 

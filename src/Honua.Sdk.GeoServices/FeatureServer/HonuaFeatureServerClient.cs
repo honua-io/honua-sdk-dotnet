@@ -703,16 +703,27 @@ public sealed class HonuaFeatureServerClient :
         var vectorFormat = format ?? FeatureServerVectorFormats.FromFeatureServerFormat(query.Format);
         var protocolFormat = FeatureServerVectorFormats.ToFeatureServerFormat(vectorFormat);
 
-        // Stream the response straight into the payload reader (ResponseHeadersRead): no
-        // intermediate string allocation and no UTF-8 round-trip, so large/binary-ish vector
-        // payloads (PBF/FlatGeobuf/Parquet) are not buffered or corrupted. This converges the
-        // concrete client onto the same streaming path the third-party extension uses.
+        // JSON query formats, and any JSON content type, are buffered so a GeoServices
+        // HTTP 200 {"error":...} envelope is not parsed as an empty feature set. A body
+        // with no error object (including {"features":[]}) still succeeds. Binary
+        // payloads stay streamed.
         using var response = await SendQueryAsync(
             serviceId,
             layerId,
             BuildQueryParams(query with { Format = protocolFormat }),
             cancellationToken).ConfigureAwait(false);
-        await EnsureSuccessStreamingAsync(response, cancellationToken).ConfigureAwait(false);
+
+        var mediaType = response.Content.Headers.ContentType?.MediaType;
+        var inspectJson = !response.IsSuccessStatusCode
+            || vectorFormat is VectorPayloadFormat.EsriJson or VectorPayloadFormat.GeoJson
+            || IsJsonMediaType(mediaType);
+        if (inspectJson)
+        {
+            var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
+            GeoServicesHttp.EnsureSuccess(response, body);
+            using var jsonStream = new MemoryStream(Encoding.UTF8.GetBytes(body));
+            return await VectorPayloadReaders.ReadAsync(jsonStream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
 
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await VectorPayloadReaders.ReadAsync(stream, vectorFormat, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -757,21 +768,8 @@ public sealed class HonuaFeatureServerClient :
             CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Validates an unbuffered streaming response without consuming the body on success. On a
-    /// non-success status the (small) error body is read and routed through <see cref="GeoServicesHttp.EnsureSuccess"/>
-    /// so callers still observe the normal <see cref="HonuaFeatureServerException"/>.
-    /// </summary>
-    private async Task EnsureSuccessStreamingAsync(HttpResponseMessage response, CancellationToken cancellationToken)
-    {
-        if (response.IsSuccessStatusCode)
-        {
-            return;
-        }
-
-        var body = await GeoServicesHttp.ReadStringWithLimitAsync(response, _maxResponseBytes, cancellationToken).ConfigureAwait(false);
-        GeoServicesHttp.EnsureSuccess(response, body);
-    }
+    private static bool IsJsonMediaType(string? mediaType)
+        => mediaType is not null && mediaType.Contains("json", StringComparison.OrdinalIgnoreCase);
 
     // ── Helpers ──────────────────────────────────────────────────────────
 
