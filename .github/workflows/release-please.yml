@@ -23,6 +23,136 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+  refresh-release-pr-locks:
+    name: Refresh release PR NuGet locks
+    needs: release-please
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      packages: read
+      pull-requests: read
+    concurrency:
+      group: dotnet-sdk-release-pr-locks
+      cancel-in-progress: false
+    steps:
+      - name: Find the generated same-repository release PR
+        id: release-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch='release-please--branches--trunk--components--dotnet-sdk'
+          prs="$(gh pr list --repo "${GITHUB_REPOSITORY}" --state open --base trunk --head "${branch}" \
+            --limit 10 --json number,headRefName,headRefOid,baseRefName,isCrossRepository)"
+          count="$(jq 'length' <<<"${prs}")"
+          if [[ "${count}" == 0 ]]; then
+            echo 'No open .NET SDK release PR; nothing to refresh.'
+            exit 0
+          fi
+          if [[ "${count}" != 1 ]] || ! jq -e --arg branch "${branch}" \
+            '.[0] | .headRefName == $branch and .baseRefName == "trunk" and .isCrossRepository == false and (.headRefOid | test("^[0-9a-f]{40}$"))' \
+            <<<"${prs}" >/dev/null; then
+            echo '::error::Release PR identity is missing or ambiguous.' >&2
+            exit 1
+          fi
+          echo "branch=${branch}" >>"${GITHUB_OUTPUT}"
+          echo "sha=$(jq -r '.[0].headRefOid' <<<"${prs}")" >>"${GITHUB_OUTPUT}"
+
+      - name: Check out the exact generated PR head
+        if: steps.release-pr.outputs.sha != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.release-pr.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Set up the release toolchain
+        if: steps.release-pr.outputs.sha != ''
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: '10.0.400'
+
+      - name: Configure GitHub Packages
+        if: steps.release-pr.outputs.sha != ''
+        env:
+          NUGET_CONFIG: ${{ runner.temp }}/honua-sdk-release-nuget.config
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp NuGet.config "${NUGET_CONFIG}"
+          dotnet nuget update source github-honua --username "${{ github.actor }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text \
+            --configfile "${NUGET_CONFIG}"
+
+      - name: Regenerate, verify, and push only NuGet locks
+        if: steps.release-pr.outputs.sha != ''
+        env:
+          RELEASE_BRANCH: ${{ steps.release-pr.outputs.branch }}
+          RELEASE_HEAD: ${{ steps.release-pr.outputs.sha }}
+          NUGET_CONFIG: ${{ runner.temp }}/honua-sdk-release-nuget.config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$(dotnet --version)" != '10.0.400' ]] || [[ "$(git rev-parse HEAD)" != "${RELEASE_HEAD}" ]]; then
+            echo '::error::Release toolchain or checked-out PR head changed.' >&2
+            exit 1
+          fi
+          remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+          if [[ "${remote_head}" != "${RELEASE_HEAD}" ]]; then
+            echo '::error::Release PR moved after discovery; refusing to rewrite it.' >&2
+            exit 1
+          fi
+          mapfile -t locks < <(git ls-files '**/packages.lock.json')
+          if [[ ${#locks[@]} -eq 0 ]]; then
+            echo '::error::Release PR contains no committed NuGet lock files.' >&2
+            exit 1
+          fi
+          dotnet restore Honua.Sdk.sln --configfile "${NUGET_CONFIG}" --force-evaluate /p:RestoreLockedMode=false
+          git add -- "${locks[@]}"
+          if [[ -n "$(git status --porcelain --untracked-files=no | grep -vE '(^|/)packages\.lock\.json$' || true)" ]]; then
+            echo '::error::Restore staged or changed a tracked non-lock file.' >&2
+            exit 1
+          fi
+          dotnet restore Honua.Sdk.sln --configfile "${NUGET_CONFIG}" --locked-mode
+          git diff --exit-code -- "${locks[@]}"
+          if ! git diff --cached --quiet; then
+            git config user.name 'Mike McDougall'
+            git config user.email 'mike@honua.io'
+            git commit -m 'chore: refresh NuGet locks for release PR'
+            git push origin "HEAD:refs/heads/${RELEASE_BRANCH}"
+          fi
+          remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+          if [[ "${remote_head}" != "$(git rev-parse HEAD)" ]]; then
+            echo '::error::Release PR no longer matches the verified lockfile commit.' >&2
+            exit 1
+          fi
+
+      - name: Remove temporary NuGet credentials
+        if: always() && steps.release-pr.outputs.sha != ''
+        env:
+          NUGET_CONFIG: ${{ runner.temp }}/honua-sdk-release-nuget.config
+        run: rm -f "${NUGET_CONFIG}"
+
+      # GITHUB_TOKEN branch pushes do not start pull_request workflows. Dispatch
+      # exact-branch checks explicitly; docs.yml deploys Pages only from trunk.
+      - name: Verify the refreshed release PR head
+        if: steps.release-pr.outputs.sha != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCH: ${{ steps.release-pr.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for workflow in ci.yml browser-trim.yml docs.yml; do
+            remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+            if [[ "${remote_head}" != "$(git rev-parse HEAD)" ]]; then
+              echo '::error::Release PR moved before verification dispatch.' >&2
+              exit 1
+            fi
+            gh workflow run "${workflow}" --repo "${GITHUB_REPOSITORY}" --ref "${RELEASE_BRANCH}"
+          done
+
   publish:
     name: Dispatch the .NET SDK publish
     needs: release-please
