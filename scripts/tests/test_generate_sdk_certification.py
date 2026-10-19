@@ -23,6 +23,9 @@ class SdkCertificationTests(unittest.TestCase):
             "service_id": "places",
             "layer_id": "0",
             "collection_id": "places",
+            "route_service_id": "Routing", "route_layer": "Route",
+            "service_area_layer": "ServiceArea", "closest_facility_layer": "ClosestFacility",
+            "scene_id": "fixture-scene",
         }
 
     def _write_evidence(self, args, document):
@@ -439,6 +442,9 @@ class SdkCertificationTests(unittest.TestCase):
             "serviceId": "places",
             "layerId": "7",
             "collectionId": "places",
+            "operationTargets": {"routeServiceId": "Routing", "routeLayer": "Route",
+                                 "serviceAreaLayer": "ServiceArea", "closestFacilityLayer": "ClosestFacility",
+                                 "sceneId": "fixture-scene"},
         }
         cases = {
             ("Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient", "QueryAsync"):
@@ -446,7 +452,7 @@ class SdkCertificationTests(unittest.TestCase):
             ("Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient", "ApplyEditsAsync"):
                 "https://candidate.test/rest/services/places/FeatureServer/7/applyEdits",
             ("Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient", "GetDirectionsAsync"):
-                "https://candidate.test/rest/services/places/NAServer/Route",
+                "https://candidate.test/rest/services/Routing/NAServer/Route/solve",
             ("Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient", "ListScenesAsync"):
                 "https://candidate.test/api/scenes",
         }
@@ -457,6 +463,44 @@ class SdkCertificationTests(unittest.TestCase):
                     "surface": "abstractions", "client": client, "operation": method,
                 }, identity))
 
+    def test_spec_request_urls_match_each_exercised_operation(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "places", "layerId": "7", "collectionId": "places"}
+        for surface, client in [("spec", "Honua.Sdk.Spec.HonuaSpecClient"),
+                                ("abstractions", "Honua.Sdk.Abstractions.Spec.IHonuaSpecClient")]:
+            for method, action in [("ValidateAsync", "validate"), ("PlanAsync", "plan"), ("ApplyAsync", "apply")]:
+                with self.subTest(surface=surface, method=method):
+                    self.assertEqual(f"https://candidate.test/v1/spec/{action}",
+                                     MODULE._certification_request_url(
+                                         {"surface": surface, "client": client, "operation": method}, identity))
+            self.assertIsNone(MODULE._certification_request_url(
+                {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
+
+    def test_restored_fixture_urls_require_exact_operation_targets(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "WRONG-feature-service", "layerId": "0", "collectionId": "places",
+                    "operationTargets": {"routeServiceId": "routing fixture", "routeLayer": "Route",
+                                         "serviceAreaLayer": "ServiceArea", "closestFacilityLayer": "ClosestFacility",
+                                         "sceneId": "scene/id"}}
+        cases = [("Routing.IHonuaRoutingClient", "GetServiceMetadataAsync", "/rest/services/routing%20fixture/NAServer/Route"),
+                 ("Routing.IHonuaRoutingClient", "GetDirectionsAsync", "/rest/services/routing%20fixture/NAServer/Route/solve"),
+                 ("Routing.IHonuaRoutingClient", "GetServiceAreaAsync", "/rest/services/routing%20fixture/NAServer/ServiceArea/solveServiceArea"),
+                 ("Routing.IHonuaRoutingClient", "FindClosestFacilityAsync", "/rest/services/routing%20fixture/NAServer/ClosestFacility/solveClosestFacility"),
+                 ("Scenes.IHonuaSceneClient", "ListScenesAsync", "/api/scenes"),
+                 ("Scenes.IHonuaSceneClient", "GetSceneAsync", "/api/scenes/scene%2Fid"),
+                 ("Scenes.IHonuaSceneClient", "ResolveSceneAsync", "/api/scenes/scene%2Fid/resolve")]
+        for client, method, path in cases:
+            operation = {"surface": "abstractions", "client": "Honua.Sdk.Abstractions." + client, "operation": method}
+            self.assertEqual("https://candidate.test" + path, MODULE._certification_request_url(operation, identity))
+            if method != "ListScenesAsync":
+                with self.assertRaises(ValueError):
+                    MODULE._certification_request_url(operation, {**identity, "operationTargets": {}})
+        for method, action in [("ForwardGeocodeAsync", "findAddressCandidates"), ("ReverseGeocodeAsync", "reverseGeocode"),
+                               ("SuggestAsync", "suggest"), ("BatchGeocodeAsync", "geocodeAddresses")]:
+            self.assertEqual("https://candidate.test/rest/services/World/GeocodeServer/" + action,
+                             MODULE._certification_request_url({"surface": "admin", "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+                                                                "operation": method}, identity))
+
     def test_unproved_abstractions_families_have_no_request_url(self):
         identity = {
             "baseUrl": "https://candidate.test/root/",
@@ -464,6 +508,9 @@ class SdkCertificationTests(unittest.TestCase):
             "serviceId": "places",
             "layerId": "7",
             "collectionId": "places",
+            "operationTargets": {"routeServiceId": "Routing", "routeLayer": "Route",
+                                 "serviceAreaLayer": "ServiceArea", "closestFacilityLayer": "ClosestFacility",
+                                 "sceneId": "fixture-scene"},
         }
         clients_and_methods = [
             ("Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient", "ListAttachmentsAsync"),

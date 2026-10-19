@@ -133,22 +133,43 @@ def _certification_request_url(
     collection = quote(identity["collectionId"], safe="")
     base_url = identity["baseUrl"]
 
-    if operation["surface"] == "abstractions":
+    if operation["surface"] == "spec" or client.endswith(".IHonuaSpecClient"):
+        action = {"ValidateAsync": "validate", "PlanAsync": "plan", "ApplyAsync": "apply"}.get(method)
+        if action is None:
+            return None
+        path = f"/v1/spec/{action}"
+    elif client.endswith(".IHonuaRoutingClient") or ".Routing.HonuaRoutingClient" in client:
+        routes = {"GetServiceMetadataAsync": ("routeLayer", ""),
+                  "GetDirectionsAsync": ("routeLayer", "/solve"),
+                  "GetServiceAreaAsync": ("serviceAreaLayer", "/solveServiceArea"),
+                  "FindClosestFacilityAsync": ("closestFacilityLayer", "/solveClosestFacility")}
+        if method not in routes:
+            return None
+        layer_key, suffix = routes[method]
+        targets = identity.get("operationTargets", {})
+        if not targets.get("routeServiceId") or not targets.get(layer_key):
+            raise ValueError("routing request evidence requires the explicit live fixture service and layer identities")
+        route_service = quote(targets["routeServiceId"], safe="")
+        route_layer = quote(targets[layer_key], safe="")
+        path = f"/rest/services/{route_service}/NAServer/{route_layer}{suffix}"
+    elif client.endswith(".IHonuaSceneClient"):
+        path = "/api/scenes"
+        if method in {"GetSceneAsync", "ResolveSceneAsync"}:
+            scene_id = identity.get("operationTargets", {}).get("sceneId")
+            if not scene_id:
+                raise ValueError("scene request evidence requires the explicit live fixture scene identity")
+            path += "/" + quote(scene_id, safe="")
+            if method == "ResolveSceneAsync":
+                path += "/resolve"
+        elif method != "ListScenesAsync":
+            return None
+    elif operation["surface"] == "abstractions":
         # A facade can fan out to several protocols. Record one representative endpoint
         # that its proving integration test actually exercises; leave unproved families unset.
         if client.endswith(".IHonuaFeatureQueryClient") and method == "QueryAsync":
             path = f"/rest/services/{service}/FeatureServer/{layer}/query"
         elif client.endswith(".IHonuaFeatureEditClient") and method == "ApplyEditsAsync":
             path = f"/rest/services/{service}/FeatureServer/{layer}/applyEdits"
-        elif client.endswith(".IHonuaRoutingClient") and method in {
-            "GetServiceMetadataAsync",
-            "GetDirectionsAsync",
-            "GetServiceAreaAsync",
-            "FindClosestFacilityAsync",
-        }:
-            path = f"/rest/services/{service}/NAServer/Route"
-        elif client.endswith(".IHonuaSceneClient"):
-            path = "/api/scenes"
         else:
             return None
     elif operation["surface"] == "grpc":
@@ -162,7 +183,7 @@ def _certification_request_url(
             "ReverseGeocodeAsync": "reverseGeocode",
             "SuggestAsync": "suggest",
         }.get(method, "geocodeAddresses")
-        path = f"/rest/services/locator/GeocodeServer/{action}"
+        path = f"/rest/services/World/GeocodeServer/{action}"
     elif operation["surface"] == "geoservices":
         if ".GeometryServer." in client:
             path = f"/rest/services/Utilities/Geometry/GeometryServer/{method.removesuffix('Async').lower()}"
@@ -212,7 +233,6 @@ def _certification_request_url(
             "catalogs": "/stac",
             "consoleshare": "/api/v1/console",
             "processes": "/ogc/processes",
-            "spec": "/api/v1/spec",
             "studio": "/api/v1/studio",
         }
         path = prefixes[operation["surface"]]
@@ -841,6 +861,16 @@ def _identity(args: argparse.Namespace) -> dict[str, Any]:
         "serviceId": getattr(args, "service_id", None) or os.environ.get("HONUA_PROTOCOL_SERVICE_NAME", "test_service"),
         "layerId": getattr(args, "layer_id", None) or os.environ.get("HONUA_PROTOCOL_LAYER_ID", "0"),
         "collectionId": getattr(args, "collection_id", None) or os.environ.get("HONUA_PROTOCOL_OGC_COLLECTION_ID", "0"),
+        "operationTargets": {
+            key: getattr(args, argument, None) or os.environ.get(environment)
+            for key, argument, environment in (
+                ("routeServiceId", "route_service_id", "HONUA_PROTOCOL_ROUTE_SERVICE_ID"),
+                ("routeLayer", "route_layer", "HONUA_PROTOCOL_ROUTE_LAYER"),
+                ("serviceAreaLayer", "service_area_layer", "HONUA_PROTOCOL_SERVICE_AREA_LAYER"),
+                ("closestFacilityLayer", "closest_facility_layer", "HONUA_PROTOCOL_CLOSEST_FACILITY_LAYER"),
+                ("sceneId", "scene_id", "HONUA_PROTOCOL_SCENE_ID"),
+            )
+        },
     }
     if args.tier == "release" and not re.fullmatch(
         r"ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}", args.server_image or ""

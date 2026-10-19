@@ -11,9 +11,9 @@ internal static class RoutingQualificationAssertions
         Assert.Equal("esriGeometryPolygon", polygons.GetProperty("geometryType").GetString());
         var features = polygons.GetProperty("features");
         Assert.NotEmpty(features.EnumerateArray());
-        foreach (var feature in features.EnumerateArray())
+        foreach (var rings in features.EnumerateArray()
+            .Select(feature => feature.GetProperty("geometry").GetProperty("rings")))
         {
-            var rings = feature.GetProperty("geometry").GetProperty("rings");
             Assert.NotEmpty(rings.EnumerateArray());
             foreach (var ring in rings.EnumerateArray())
             {
@@ -52,8 +52,8 @@ internal static class RoutingQualificationAssertions
             Assert.InRange(path.GetArrayLength(), 2, int.MaxValue);
             RequireFinitePoints(path);
             Assert.Contains(path.EnumerateArray(), point =>
-                point[0].GetDouble() != path[0][0].GetDouble() ||
-                point[1].GetDouble() != path[0][1].GetDouble());
+                Math.Abs(point[0].GetDouble() - path[0][0].GetDouble()) > 1e-12 ||
+                Math.Abs(point[1].GetDouble() - path[0][1].GetDouble()) > 1e-12);
         }
     }
 
