@@ -65,6 +65,38 @@ public sealed class ProtocolIntegrationConfigurationTests
         }
     }
 
+    [Fact]
+    public void Routing_RequiresEveryOperationFixture()
+    {
+        var configured = new ProtocolIntegrationOptions
+        {
+            RouteServiceId = "routing",
+            RouteLayerName = "route",
+            ServiceAreaLayerName = "service-area",
+            ClosestFacilityLayerName = "closest-facility",
+            RouteOrigin = new(0, 0),
+            RouteDestination = new(0, 0),
+            ServiceAreaCenter = new(0, 0),
+            RouteIncident = new(0, 0),
+            RouteFacilityA = new(0, 0),
+            RouteFacilityB = new(0, 0)
+        };
+        Assert.True(configured.HasRoutingFixture);
+        Assert.False((configured with { RouteOrigin = null }).HasRoutingFixture);
+        Assert.False((configured with { RouteDestination = null }).HasRoutingFixture);
+        Assert.False((configured with { ServiceAreaCenter = null }).HasRoutingFixture);
+        Assert.False((configured with { RouteIncident = null }).HasRoutingFixture);
+        Assert.False((configured with { RouteFacilityA = null }).HasRoutingFixture);
+        Assert.False((configured with { RouteFacilityB = null }).HasRoutingFixture);
+        Assert.False((configured with { RouteOrigin = new(double.NaN, 0) }).HasRoutingFixture);
+        Assert.False((configured with { RouteDestination = new(181, 0) }).HasRoutingFixture);
+        Assert.False((configured with { ServiceAreaCenter = new(0, -91) }).HasRoutingFixture);
+        Assert.False((configured with { RouteServiceId = null }).HasRoutingFixture);
+        Assert.False((configured with { RouteLayerName = null }).HasRoutingFixture);
+        Assert.False((configured with { ServiceAreaLayerName = null }).HasRoutingFixture);
+        Assert.False((configured with { ClosestFacilityLayerName = null }).HasRoutingFixture);
+    }
+
     private sealed class EnvironmentVariableScope : IDisposable
     {
         private readonly IReadOnlyList<(string Name, string? Value)> _previousValues;

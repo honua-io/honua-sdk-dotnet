@@ -35,19 +35,29 @@ release certification profile. It is not silently skipped or counted as a
 pass: the ledger enumerates its operation ID, owner issue, and reason, and its
 cell remains an owned `gap` or `non-addressable` entry.
 
-The 2026.1 exclusions are the Spec, Scene, Routing, and Geocoding operations
-whose deterministic fixture is absent from the pinned candidate. Realtime
-stream operations stay `non-addressable` and are owned by
-[honua-sdk-dotnet#308](https://github.com/honua-io/honua-sdk-dotnet/issues/308)
-because that candidate has no certification transport and no concrete stream
-client. FeatureServer edits stay in the denominator. The certification server
-sets `Licensing__Mode=Disabled`, the non-secret 2026.1 entitlement, and the
-edit round-trip must pass. A 402 response is a failure, not evidence of a
-successful mutation. Catalog lookup stays on `GET /api/v1/admin/services/`.
-Nightly certification retains excluded operations as required gaps so broader
-support cannot be inferred from the narrower release profile. Adding or
-removing an exclusion changes the generated ledger and its tested denominator
-partition.
+Spec, Scene, Routing, and Geocoding operations remain required release
+obligations when deterministic fixtures are missing. Each operation has its own
+live test result. A missing or skipped result fails qualification, including
+when diagnostic nonpassing evidence is allowed. Missing fixtures do not establish
+unsupported behavior and cannot remove an operation from the release denominator.
+
+Routing certification requires the service ID and all route, service-area, and
+closest-facility layer names, plus explicit coordinate pairs for the origin,
+destination, service-area center, incident, and two facilities. Configure each
+pair with `HONUA_PROTOCOL_<POINT>_LONGITUDE` and `_LATITUDE`, where `<POINT>` is
+`ROUTE_ORIGIN`, `ROUTE_DESTINATION`, `SERVICE_AREA_CENTER`, `ROUTE_INCIDENT`,
+`ROUTE_FACILITY_A`, or `ROUTE_FACILITY_B`. Coordinates must be finite and within
+longitude/latitude ranges. Each operation executes unconditionally in its own
+test. Scene and Spec certification require their IDs; Geocoding requires search
+text and reverse-geocode coordinates. These settings must identify deterministic
+fixtures provisioned by the exact candidate's governed seed/configuration.
+
+Realtime stream operations stay `non-addressable`, owned by
+[honua-sdk-dotnet#308](https://github.com/honua-io/honua-sdk-dotnet/issues/308),
+because there is no concrete stream client. FeatureServer edits stay in the
+denominator. The certification server sets `Licensing__Mode=Disabled`, the
+non-secret 2026.1 entitlement, and the edit round-trip must pass. A 402 response
+is a failure. Catalog lookup stays on `GET /api/v1/admin/services/`.
 
 ## FeatureServer edits
 
