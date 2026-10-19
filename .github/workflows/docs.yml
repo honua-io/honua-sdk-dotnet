@@ -87,6 +87,13 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
           docfx docs/docfx.json
+          # Pages serves index.json at the site root when index.html is absent.
+          # README.html is the documentation homepage DocFX already builds.
+          if [[ ! -f docs/_site/README.html ]]; then
+            echo "::error::DocFX did not write docs/_site/README.html."
+            exit 1
+          fi
+          cp docs/_site/README.html docs/_site/index.html
 
       - name: Require GitHub Pages publication on trunk
         if: github.ref == 'refs/heads/trunk' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
