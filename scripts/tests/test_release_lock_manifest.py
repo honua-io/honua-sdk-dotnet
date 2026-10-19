@@ -132,6 +132,53 @@ class ReleaseLockManifestTests(unittest.TestCase):
         self.assertIn("does not match current PR", result.stderr)
         self.assertEqual(self.staged_paths(), "")
 
+    def test_verification_dispatches_complete_set_and_stops_if_branch_moves(self) -> None:
+        remote = self.root / "remote.git"
+        subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=self.root, check=True)
+        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.root, text=True).strip()
+        subprocess.run(["git", "push", "-q", "origin", f"HEAD:refs/heads/{BRANCH}"],
+                       cwd=self.root, check=True)
+        subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.com",
+                        "commit", "--allow-empty", "-qm", "advanced"], cwd=self.root, check=True)
+        moved = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.root, text=True).strip()
+        subprocess.run(["git", "push", "-q", "origin", "HEAD:refs/heads/other"],
+                       cwd=self.root, check=True)
+        subprocess.run(["git", "checkout", "-q", "--detach", head], cwd=self.root, check=True)
+        bin_dir = self.root / "bin"
+        bin_dir.mkdir()
+        fake_gh = bin_dir / "gh"
+        fake_gh.write_text(
+            "#!/usr/bin/env python3\nimport json, os, pathlib, subprocess, sys\n"
+            "log = pathlib.Path(os.environ['DISPATCH_LOG'])\n"
+            "with log.open('a') as output: output.write(json.dumps(sys.argv[1:]) + '\\n')\n"
+            "if os.environ.get('MOVE_BRANCH'):\n"
+            "    subprocess.run(['git', '--git-dir', os.environ['TEST_REMOTE'], 'update-ref', "
+            "'refs/heads/' + os.environ['RELEASE_BRANCH'], os.environ['MOVE_BRANCH']], check=True)\n"
+        )
+        fake_gh.chmod(0o755)
+        source = WORKFLOW.read_text()
+        start = source.index("      - name: Verify the refreshed release PR head\n")
+        end = source.index("\n  publish:\n", start)
+        script = textwrap.dedent(source[start:end].split("        run: |\n", 1)[1])
+        log = self.root / "dispatch.jsonl"
+        environment = {**self.environment, "GITHUB_REPOSITORY": "honua-io/honua-sdk-dotnet",
+                       "PATH": f"{bin_dir}:{os.environ['PATH']}", "DISPATCH_LOG": str(log),
+                       "TEST_REMOTE": str(remote)}
+        result = subprocess.run(["bash", "-c", script], cwd=self.root, env=environment,
+                                text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        calls = [json.loads(line) for line in log.read_text().splitlines()]
+        self.assertEqual(["ci.yml", "browser-trim.yml", "docs.yml", "codeql.yml"],
+                         [call[2] for call in calls])
+        self.assertTrue(all(call[-2:] == ["--ref", BRANCH] for call in calls))
+        log.unlink()
+        result = subprocess.run(["bash", "-c", script], cwd=self.root,
+                                env={**environment, "MOVE_BRANCH": moved}, text=True, capture_output=True)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("moved before verification dispatch", result.stderr)
+        self.assertEqual(1, len(log.read_text().splitlines()))
+
     def test_branch_move_is_refused_before_checkout(self) -> None:
         remote = self.root / "remote.git"
         subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)

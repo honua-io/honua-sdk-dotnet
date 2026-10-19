@@ -297,7 +297,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for workflow in ci.yml browser-trim.yml docs.yml; do
+          for workflow in ci.yml browser-trim.yml docs.yml codeql.yml; do
             remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
             if [[ "${remote_head}" != "$(git rev-parse HEAD)" ]]; then
               echo '::error::Release PR moved before verification dispatch.' >&2
