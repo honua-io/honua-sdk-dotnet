@@ -28,7 +28,7 @@ on:
     branches: [trunk]
 
 env:
-  DOTNET_VERSION: "10.0.400"
+  DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
