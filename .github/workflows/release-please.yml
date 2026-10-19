@@ -75,6 +75,11 @@ jobs:
         with:
           dotnet-version: '10.0.401'
 
+      - name: Pin and verify SDK workload tuple
+        if: steps.release-pr.outputs.sha != ''
+        shell: bash
+        run: python3 scripts/ci/prepare-dotnet-toolchain.py
+
       - name: Configure GitHub Packages
         if: steps.release-pr.outputs.sha != ''
         env:
