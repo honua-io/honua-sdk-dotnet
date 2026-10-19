@@ -168,3 +168,17 @@ live entitlement and license-fingerprint assertion. Until an actual bound probe
 record is retained, licensed edit rows remain non-pass with their existing
 [qualification dependency](https://github.com/honua-io/honua-sdk-dotnet/issues/308).
 No license value or secret is inferred, and no requirement is removed.
+
+## SDK and workload identity
+
+`global.json` pins both the SDK and its matching workload set. The SDK version
+alone does not fix the browser dependency graph: a newer installed Mono workload
+manifest can override the implicit WebAssembly SDK package version.
+
+Before restore, CI, release lock generation, and publishing run
+`python3 scripts/ci/prepare-dotnet-toolchain.py`. This provisions the exact set
+using a synthetic project outside the checkout, records ambient and selected
+identities and manifest import hashes, and rejects implicit WebAssembly or ILLink
+versions that differ from the committed browser lock. It does not evaluate
+repository MSBuild source while provisioning the toolchain. A successful setup
+is toolchain evidence; it does not qualify a server/client candidate.

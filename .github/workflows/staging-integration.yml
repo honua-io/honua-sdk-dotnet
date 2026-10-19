@@ -164,6 +164,10 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Pin and verify SDK workload tuple
+        shell: bash
+        run: python3 scripts/ci/prepare-dotnet-toolchain.py
+
       - name: Verify pinned .NET SDK
         shell: bash
         run: |
