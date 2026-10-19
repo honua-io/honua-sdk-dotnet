@@ -87,6 +87,23 @@ folder and set `LOCAL_PACKAGE_DIR` together with the packed
 nuget.org, and its receipt records the local source. It is **not** a
 published-bytes receipt and cannot close #341.
 
+The consumer restore runs in NuGet locked mode, so every package in its graph
+is pinned by content hash. Published runs use
+`consumer/locks/<SDK_PACKAGE_VERSION>.packages.lock.json` and fail when that
+version has no committed lock. Local runs must set `LOCAL_PACKAGE_LOCK` to a
+lock generated against the same `LOCAL_PACKAGE_DIR`. Generate a lock with a
+reviewed restore:
+
+```bash
+dotnet restore certification/geoservices-source-import/consumer/SourceImportCertification.csproj \
+  --configfile certification/geoservices-source-import/consumer/NuGet.config \
+  -p:HonuaSdkPackageVersion=<version> --use-lock-file \
+  -p:NuGetLockFilePath="$PWD/certification/geoservices-source-import/consumer/locks/<version>.packages.lock.json"
+```
+
+Before you commit a published lock, check that its `resolved` versions are the
+ones you intend to certify.
+
 ## Results
 
 | Evidence | Package bytes | Server | pass / fail / released |

@@ -20,6 +20,7 @@
 #   PORT_PREFIX          two-digit host port prefix (default 28)
 #   LOCAL_PACKAGE_DIR    optional folder of locally packed Honua.Sdk.* nupkgs; certifies
 #                        those bytes instead of nuget.org (never a published-bytes receipt)
+#   LOCAL_PACKAGE_LOCK   NuGet lock file pinning the LOCAL_PACKAGE_DIR restore; required with it
 #   KEEP_STACK=1         leave the containers running afterwards
 set -euo pipefail
 
@@ -208,10 +209,23 @@ else
   catalog="$(curl -sS --compressed "https://api.nuget.org/v3/registration5-gz-semver2/honua.sdk.geoservices/$SDK_PACKAGE_VERSION.json" | jq -er .catalogEntry)"
   published_hash="$(curl -sS "$catalog" | jq -er .packageHash)"
 fi
+# Every package in the consumer graph is pinned by content hash: published runs use
+# the committed lock for the version, local runs must supply one (see README).
+if [ -n "${LOCAL_PACKAGE_DIR:-}" ]; then
+  package_lock="${LOCAL_PACKAGE_LOCK:+$(realpath -m "$LOCAL_PACKAGE_LOCK")}"
+else
+  package_lock="$consumer/locks/$SDK_PACKAGE_VERSION.packages.lock.json"
+fi
+if [ -z "$package_lock" ] || [ ! -f "$package_lock" ]; then
+  echo "no NuGet lock file for Honua.Sdk.GeoServices $SDK_PACKAGE_VERSION (${package_lock:-LOCAL_PACKAGE_LOCK unset}); see README" >&2
+  exit 1
+fi
+log "restore pinned by $package_lock"
 # Per-run intermediate output keeps concurrent runs (and package versions) from sharing obj/.
 intermediate=(-p:BaseIntermediateOutputPath="$WORK_DIR/obj/" -p:MSBuildProjectExtensionsPath="$WORK_DIR/obj/")
-NUGET_PACKAGES="$packages" dotnet restore "$consumer/SourceImportCertification.csproj" \
-  --configfile "$nuget_config" -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION" "${intermediate[@]}"
+NUGET_PACKAGES="$packages" dotnet restore "$consumer/SourceImportCertification.csproj" --locked-mode \
+  --configfile "$nuget_config" -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION" \
+  -p:RestorePackagesWithLockFile=true -p:NuGetLockFilePath="$package_lock" "${intermediate[@]}"
 NUGET_PACKAGES="$packages" dotnet build "$consumer/SourceImportCertification.csproj" -c Release --no-restore \
   -p:HonuaSdkPackageVersion="$SDK_PACKAGE_VERSION" "${intermediate[@]}" -o "$WORK_DIR/consumer-$SDK_PACKAGE_VERSION"
 
