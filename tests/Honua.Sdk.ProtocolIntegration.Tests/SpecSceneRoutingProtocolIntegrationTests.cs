@@ -149,7 +149,7 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
                 }
             },
             timeout.Token).ConfigureAwait(false);
-        Assert.True(serviceArea.RawResponse.ValueKind is not JsonValueKind.Undefined);
+        RoutingQualificationAssertions.RequireServiceArea(serviceArea);
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Routing)]
@@ -173,7 +173,7 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
                 }
             },
             timeout.Token).ConfigureAwait(false);
-        Assert.True(closest.RawResponse.ValueKind is not JsonValueKind.Undefined);
+        RoutingQualificationAssertions.RequireClosestFacility(closest);
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Realtime)]
