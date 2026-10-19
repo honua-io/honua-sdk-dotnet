@@ -363,7 +363,7 @@ jobs:
 
       - name: Upload staging test results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ${{ github.event.repository.name }}-staging-integration-${{ github.run_id }}-test-results
           path: ${{ github.workspace }}/artifacts/test-results/
@@ -372,7 +372,7 @@ jobs:
 
       - name: Upload staging evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ${{ github.event.repository.name }}-staging-integration-${{ github.run_id }}-evidence
           path: ${{ github.workspace }}/artifacts/evidence/
