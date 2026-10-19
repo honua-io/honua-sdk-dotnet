@@ -47,16 +47,16 @@ jobs:
           set -euo pipefail
           branch='release-please--branches--trunk--components--dotnet-sdk'
           prs="$(gh pr list --repo "${GITHUB_REPOSITORY}" --state open --base trunk --head "${branch}" \
-            --limit 10 --json number,headRefName,headRefOid,baseRefName,isCrossRepository)"
+            --limit 10 --json number,headRefName,headRefOid,baseRefName,isCrossRepository,isDraft)"
           count="$(jq 'length' <<<"${prs}")"
           if [[ "${count}" == 0 ]]; then
             echo 'No open .NET SDK release PR; nothing to refresh.'
             exit 0
           fi
           if [[ "${count}" != 1 ]] || ! jq -e --arg branch "${branch}" \
-            '.[0] | .headRefName == $branch and .baseRefName == "trunk" and .isCrossRepository == false and (.headRefOid | test("^[0-9a-f]{40}$"))' \
+            '.[0] | .headRefName == $branch and .baseRefName == "trunk" and .isCrossRepository == false and .isDraft == true and (.headRefOid | test("^[0-9a-f]{40}$"))' \
             <<<"${prs}" >/dev/null; then
-            echo '::error::Release PR identity is missing or ambiguous.' >&2
+            echo '::error::Release PR identity is missing, ambiguous, or not draft.' >&2
             exit 1
           fi
           echo "branch=${branch}" >>"${GITHUB_OUTPUT}"
@@ -294,7 +294,10 @@ jobs:
           fi
 
       # GITHUB_TOKEN branch pushes do not start pull_request workflows. Dispatch
-      # exact-branch checks explicitly; docs.yml deploys Pages only from trunk.
+      # diagnostics explicitly. Dispatched job checks do not satisfy branch
+      # rulesets. After final stable apply, an authenticated maintainer marks the
+      # draft ready to trigger eligible pull_request checks; never infer admission
+      # from these dispatch results. docs.yml deploys Pages only from trunk.
       - name: Verify the refreshed release PR head
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

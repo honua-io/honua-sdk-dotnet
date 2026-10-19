@@ -132,6 +132,48 @@ class ReleaseLockManifestTests(unittest.TestCase):
         self.assertIn("does not match current PR", result.stderr)
         self.assertEqual(self.staged_paths(), "")
 
+    def test_managed_release_readiness_triggers_eligible_required_verification(self) -> None:
+        # A dispatch alone is deliberately insufficient for ruleset admission.
+        configuration = json.loads((ROOT / "release-please-config.json").read_text())
+        self.assertIs(configuration["draft-pull-request"], True)
+        for name in ("ci.yml", "browser-trim.yml", "codeql.yml", "docs.yml", "conformance.yml"):
+            workflow = (ROOT / ".github/workflows" / name).read_text()
+            trigger = workflow.split("  pull_request:\n", 1)[1].split("\n\n", 1)[0]
+            self.assertIn("branches: [trunk]", trigger, name)
+            self.assertIn("types: [opened, synchronize, reopened, ready_for_review]", trigger, name)
+        source = WORKFLOW.read_text()
+        generation = source.split("  generate-release-pr-locks:\n", 1)[1].split("  apply-release-pr-locks:\n", 1)[0]
+        self.assertIn(".isDraft == true", generation)
+        self.assertIn("Dispatched job checks do not satisfy branch", source)
+        self.assertNotIn("gh pr ready", source)  # GITHUB_TOKEN readiness cannot replace a maintainer event.
+
+    def test_generation_selects_only_a_draft_release_pr(self) -> None:
+        source = WORKFLOW.read_text()
+        step = source.split("      - name: Find the generated same-repository release PR\n", 1)[1]
+        script = textwrap.dedent(step.split("        run: |\n", 1)[1].split("\n      - name:", 1)[0])
+        bin_dir = self.root / "selector-bin"
+        bin_dir.mkdir()
+        fake_gh = bin_dir / "gh"
+        fake_gh.write_text("#!/usr/bin/env python3\nimport os\nprint(os.environ['TEST_PR_JSON'])\n")
+        fake_gh.chmod(0o755)
+        output = self.root / "selector-output"
+        for draft in (False, True):
+            output.write_text("")
+            pr = {"number": 436, "headRefName": BRANCH, "headRefOid": "a" * 40,
+                  "baseRefName": "trunk", "isCrossRepository": False, "isDraft": draft}
+            environment = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}",
+                           "TEST_PR_JSON": json.dumps([pr]), "GITHUB_OUTPUT": str(output),
+                           "GITHUB_REPOSITORY": "honua-io/honua-sdk-dotnet"}
+            result = subprocess.run(["bash", "-c", script], cwd=self.root, env=environment,
+                                    text=True, capture_output=True)
+            if draft:
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertEqual(f"branch={BRANCH}\nsha={'a' * 40}\n", output.read_text())
+            else:
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("not draft", result.stderr)
+                self.assertEqual("", output.read_text())
+
     def test_verification_dispatches_complete_set_and_stops_if_branch_moves(self) -> None:
         remote = self.root / "remote.git"
         subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
