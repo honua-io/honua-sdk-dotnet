@@ -7,7 +7,7 @@ The installed-package certification restored its consumer without a lock, so onl
 
 - `run.sh` restores with `dotnet restore --locked-mode` against a lock file. For published runs, that is the committed `consumer/locks/<SDK_PACKAGE_VERSION>.packages.lock.json`. For `LOCAL_PACKAGE_DIR` runs, the caller supplies `LOCAL_PACKAGE_LOCK`.
 - If no lock exists, the script stops before restore (fails closed).
-- `consumer/locks/1.10.0.packages.lock.json` pins all 37 packages of the default published 1.10.0 graph by NuGet content hash.
+- `consumer/locks/1.10.0.packages.lock.json` pins all 40 packages of the default published 1.10.0 graph by NuGet content hash.
 - The README documents how to generate a lock and the new `LOCAL_PACKAGE_LOCK` variable.
 
 The lock uses a `<version>.` prefix, so the `**/packages.lock.json` sets that CI and release-please regenerate do not include it.
