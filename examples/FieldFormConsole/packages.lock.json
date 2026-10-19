@@ -37,7 +37,7 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.11.1, )"
+          "Honua.Sdk.Abstractions": "[1.12.0, )"
         }
       }
     }
