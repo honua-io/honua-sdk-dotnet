@@ -32,6 +32,10 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
+    - name: Pin and verify SDK workload tuple
+      shell: bash
+      run: python3 scripts/ci/prepare-dotnet-toolchain.py
+
     - name: Configure GitHub Packages
       shell: bash
       run: dotnet nuget update source github-honua --username "${{ inputs.github-actor }}" --password "${{ inputs.github-token }}" --store-password-in-clear-text
