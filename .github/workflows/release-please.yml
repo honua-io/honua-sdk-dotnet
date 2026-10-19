@@ -23,6 +23,289 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+  # Do not use a shared job-concurrency group here: GitHub replaces an older
+  # pending job even with cancel-in-progress disabled. Each run instead checks
+  # the exact PR head before generation and before its normal fast-forward push.
+  generate-release-pr-locks:
+    name: Generate release PR NuGet locks without write access
+    needs: release-please
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: read
+    outputs:
+      branch: ${{ steps.release-pr.outputs.branch }}
+      sha: ${{ steps.release-pr.outputs.sha }}
+    steps:
+      - name: Find the generated same-repository release PR
+        id: release-pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch='release-please--branches--trunk--components--dotnet-sdk'
+          prs="$(gh pr list --repo "${GITHUB_REPOSITORY}" --state open --base trunk --head "${branch}" \
+            --limit 10 --json number,headRefName,headRefOid,baseRefName,isCrossRepository)"
+          count="$(jq 'length' <<<"${prs}")"
+          if [[ "${count}" == 0 ]]; then
+            echo 'No open .NET SDK release PR; nothing to refresh.'
+            exit 0
+          fi
+          if [[ "${count}" != 1 ]] || ! jq -e --arg branch "${branch}" \
+            '.[0] | .headRefName == $branch and .baseRefName == "trunk" and .isCrossRepository == false and (.headRefOid | test("^[0-9a-f]{40}$"))' \
+            <<<"${prs}" >/dev/null; then
+            echo '::error::Release PR identity is missing or ambiguous.' >&2
+            exit 1
+          fi
+          echo "branch=${branch}" >>"${GITHUB_OUTPUT}"
+          echo "sha=$(jq -r '.[0].headRefOid' <<<"${prs}")" >>"${GITHUB_OUTPUT}"
+
+      - name: Check out the exact generated PR head
+        if: steps.release-pr.outputs.sha != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.release-pr.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Set up the release toolchain
+        if: steps.release-pr.outputs.sha != ''
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        with:
+          dotnet-version: '10.0.401'
+
+      - name: Configure GitHub Packages
+        if: steps.release-pr.outputs.sha != ''
+        env:
+          NUGET_CONFIG: ${{ runner.temp }}/honua-sdk-release-nuget.config
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp NuGet.config "${NUGET_CONFIG}"
+          dotnet nuget update source github-honua --username "${{ github.actor }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text \
+            --configfile "${NUGET_CONFIG}"
+
+      - name: Regenerate and verify only NuGet locks
+        if: steps.release-pr.outputs.sha != ''
+        env:
+          RELEASE_BRANCH: ${{ steps.release-pr.outputs.branch }}
+          RELEASE_HEAD: ${{ steps.release-pr.outputs.sha }}
+          NUGET_CONFIG: ${{ runner.temp }}/honua-sdk-release-nuget.config
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$(dotnet --version)" != '10.0.401' ]] || [[ "$(git rev-parse HEAD)" != "${RELEASE_HEAD}" ]]; then
+            echo '::error::Release toolchain or checked-out PR head changed.' >&2
+            exit 1
+          fi
+          remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+          if [[ "${remote_head}" != "${RELEASE_HEAD}" ]]; then
+            echo '::error::Release PR moved after discovery; refusing to rewrite it.' >&2
+            exit 1
+          fi
+          mapfile -t locks < <(git ls-files '**/packages.lock.json')
+          if [[ ${#locks[@]} -eq 0 ]]; then
+            echo '::error::Release PR contains no committed NuGet lock files.' >&2
+            exit 1
+          fi
+          dotnet restore Honua.Sdk.sln --configfile "${NUGET_CONFIG}" --force-evaluate /p:RestoreLockedMode=false
+          git add -- "${locks[@]}"
+          if [[ -n "$(git status --porcelain --untracked-files=no | grep -vE '(^|/)packages\.lock\.json$' || true)" ]]; then
+            echo '::error::Restore staged or changed a tracked non-lock file.' >&2
+            exit 1
+          fi
+          dotnet restore Honua.Sdk.sln --configfile "${NUGET_CONFIG}" --locked-mode
+          git diff --exit-code -- "${locks[@]}"
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import subprocess
+
+          changed = subprocess.check_output(
+              ["git", "diff", "--cached", "--name-only", "-z"]
+          ).decode().rstrip("\0").split("\0")
+          files = []
+          for name in filter(None, changed):
+              data = pathlib.Path(name).read_bytes()
+              if len(data) > 4_000_000:
+                  raise SystemExit(f"Lock file exceeds bound: {name}")
+              files.append({
+                  "path": name,
+                  "sha256": hashlib.sha256(data).hexdigest(),
+                  "base64": base64.b64encode(data).decode("ascii"),
+              })
+          if len(files) > 500:
+              raise SystemExit("Too many lock files")
+          payload = {
+              "branch": os.environ["RELEASE_BRANCH"],
+              "sourceSha": os.environ["RELEASE_HEAD"],
+              "files": files,
+          }
+          pathlib.Path(os.environ["RUNNER_TEMP"], "release-locks.json").write_text(
+              json.dumps(payload, separators=(",", ":")), encoding="utf-8"
+          )
+          PY
+
+      - name: Remove temporary NuGet credentials
+        if: always() && steps.release-pr.outputs.sha != ''
+        env:
+          NUGET_CONFIG: ${{ runner.temp }}/honua-sdk-release-nuget.config
+        run: rm -f "${NUGET_CONFIG}"
+
+      - name: Transfer bounded lockfile data
+        if: steps.release-pr.outputs.sha != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-pr-locks
+          path: ${{ runner.temp }}/release-locks.json
+          if-no-files-found: error
+          retention-days: 1
+
+  apply-release-pr-locks:
+    name: Apply verified release PR NuGet locks
+    needs: generate-release-pr-locks
+    if: needs.generate-release-pr-locks.outputs.sha != ''
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Check out trusted workflow revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download generated lockfile data
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: release-pr-locks
+          path: ${{ runner.temp }}/release-locks
+
+      - name: Verify PR identity and apply only tracked locks
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCH: ${{ needs.generate-release-pr-locks.outputs.branch }}
+          RELEASE_HEAD: ${{ needs.generate-release-pr-locks.outputs.sha }}
+          LOCK_MANIFEST: ${{ runner.temp }}/release-locks/release-locks.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          prs="$(gh pr list --repo "${GITHUB_REPOSITORY}" --state open --base trunk --head "${RELEASE_BRANCH}" \
+            --limit 10 --json number,headRefName,headRefOid,baseRefName,isCrossRepository)"
+          if [[ "$(jq 'length' <<<"${prs}")" != 1 ]] || ! jq -e --arg branch "${RELEASE_BRANCH}" --arg sha "${RELEASE_HEAD}" \
+            '.[0] | .headRefName == $branch and .headRefOid == $sha and .baseRefName == "trunk" and .isCrossRepository == false' \
+            <<<"${prs}" >/dev/null; then
+            echo '::error::Release PR identity changed before lock application.' >&2
+            exit 1
+          fi
+          remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+          if [[ "${remote_head}" != "${RELEASE_HEAD}" ]]; then
+            echo '::error::Release branch advanced before lock application.' >&2
+            exit 1
+          fi
+          git fetch origin "${RELEASE_HEAD}"
+          git checkout --detach "${RELEASE_HEAD}"
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import re
+          import subprocess
+
+          manifest = pathlib.Path(os.environ["LOCK_MANIFEST"])
+          if manifest.stat().st_size > 64_000_000:
+              raise SystemExit("Lock manifest exceeds bound")
+          raw = manifest.read_bytes()
+          payload = json.loads(raw)
+          if set(payload) != {"branch", "sourceSha", "files"}:
+              raise SystemExit("Unexpected lock manifest fields")
+          if payload["branch"] != os.environ["RELEASE_BRANCH"] or payload["sourceSha"] != os.environ["RELEASE_HEAD"]:
+              raise SystemExit("Lock manifest does not match current PR")
+          files = payload["files"]
+          if not isinstance(files, list) or len(files) > 500:
+              raise SystemExit("Invalid lock file count")
+          seen = set()
+          validated = []
+          for entry in files:
+              if not isinstance(entry, dict) or set(entry) != {"path", "sha256", "base64"}:
+                  raise SystemExit("Invalid lock entry")
+              name = entry["path"]
+              parts = name.split("/") if isinstance(name, str) else []
+              if (len(parts) != 3 or parts[0] not in {"src", "tests", "examples"}
+                      or any(not re.fullmatch(r"[A-Za-z0-9_.-]+", p) or p in {".", ".."} for p in parts)
+                      or parts[-1] != "packages.lock.json" or name in seen):
+                  raise SystemExit("Invalid or duplicate lock path")
+              seen.add(name)
+              mode = subprocess.check_output(
+                  ["git", "ls-files", "--stage", "--", name], text=True
+              ).split()[0:1]
+              if mode != ["100644"]:
+                  raise SystemExit(f"Lock path is not a tracked regular file: {name}")
+              data = base64.b64decode(entry["base64"], validate=True)
+              if len(data) > 4_000_000 or hashlib.sha256(data).hexdigest() != entry["sha256"]:
+                  raise SystemExit(f"Lock digest or size mismatch: {name}")
+              validated.append((name, data))
+          # Validate the entire manifest before changing the checkout or index.
+          for name, data in validated:
+              pathlib.Path(name).write_bytes(data)
+              # Stage the exact validated bytes without invoking source-controlled
+              # Git attribute filters from the generated release branch.
+              oid = subprocess.check_output(
+                  ["git", "hash-object", "-w", "--stdin"], input=data, text=False
+              ).decode().strip()
+              subprocess.run(
+                  ["git", "update-index", "--cacheinfo", f"100644,{oid},{name}"],
+                  check=True,
+              )
+          staged = set(subprocess.check_output(
+              ["git", "diff", "--cached", "--name-only", "-z"]
+          ).decode().rstrip("\0").split("\0")) - {""}
+          if staged - seen:
+              raise SystemExit("Non-lock path staged")
+          PY
+          if [[ -n "$(git status --porcelain --untracked-files=no | grep -vE '(^|/)packages\.lock\.json$' || true)" ]]; then
+            echo '::error::Tracked non-lock file changed.' >&2
+            exit 1
+          fi
+          if ! git diff --cached --quiet; then
+            git config user.name 'Mike McDougall'
+            git config user.email 'mike@honua.io'
+            git -c core.hooksPath=/dev/null -c commit.gpgsign=false commit -m 'chore: refresh NuGet locks for release PR'
+            git push origin "HEAD:refs/heads/${RELEASE_BRANCH}"
+          fi
+          remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+          if [[ "${remote_head}" != "$(git rev-parse HEAD)" ]]; then
+            echo '::error::Release PR no longer matches the verified lockfile commit.' >&2
+            exit 1
+          fi
+
+      # GITHUB_TOKEN branch pushes do not start pull_request workflows. Dispatch
+      # exact-branch checks explicitly; docs.yml deploys Pages only from trunk.
+      - name: Verify the refreshed release PR head
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCH: ${{ needs.generate-release-pr-locks.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for workflow in ci.yml browser-trim.yml docs.yml; do
+            remote_head="$(git ls-remote origin "refs/heads/${RELEASE_BRANCH}" | cut -f1)"
+            if [[ "${remote_head}" != "$(git rev-parse HEAD)" ]]; then
+              echo '::error::Release PR moved before verification dispatch.' >&2
+              exit 1
+            fi
+            gh workflow run "${workflow}" --repo "${GITHUB_REPOSITORY}" --ref "${RELEASE_BRANCH}"
+          done
+
   publish:
     name: Dispatch the .NET SDK publish
     needs: release-please

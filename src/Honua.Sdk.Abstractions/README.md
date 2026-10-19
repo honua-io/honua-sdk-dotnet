@@ -46,17 +46,10 @@ release policy.
 
 ## Install
 
-Honua SDK packages are currently published to the authenticated GitHub Packages
-feed only — nuget.org publishing is planned but not yet available. One-time
-setup: configure the feed with a GitHub **classic** PAT that has the
-`read:packages` scope, then install with `--source honua`. Full setup (CI,
-package source mapping): [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
+Stable releases are on [nuget.org](https://www.nuget.org/packages/Honua.Sdk.Abstractions/) and install anonymously. An unversioned add resolves to the newest stable release (the current SDK version is in the [repo README](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/README.md#status)). Prereleases stay on the authenticated GitHub Packages feed; see [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
 
 ```bash
-dotnet nuget add source https://nuget.pkg.github.com/honua-io/index.json \
-  --name honua --username YOUR_GITHUB_USERNAME --password YOUR_CLASSIC_PAT \
-  --store-password-in-clear-text
-dotnet add package Honua.Sdk.Abstractions --source honua
+dotnet add package Honua.Sdk.Abstractions
 ```
 
 In a library `.csproj`:

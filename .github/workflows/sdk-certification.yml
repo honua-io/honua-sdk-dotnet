@@ -50,7 +50,7 @@ on:
         required: false
 
 env:
-  DOTNET_VERSION: "10.0.x"
+  DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # The server candidate and the published Honua.Sdk package are pinned in

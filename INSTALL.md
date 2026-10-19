@@ -10,7 +10,7 @@
 | `Honua.Sdk.Admin` | Admin client for managing services, layers, connections, styles, metadata, roles, users, alerts, observability, feature-event replay, and streaming subscriber operations. Also exposes Catalog discovery (`IHonuaCatalogClient`, `AddHonuaCatalog`) and Geocoding (`IHonuaGeocodingClient`, `AddHonuaGeocoding`) using the same options/auth handler. |
 | `Honua.Sdk.Processes` | OGC API Processes REST client for process discovery, async job submission, polling, dismissal, results, and shared job models |
 | `Honua.Sdk.Spec` | Spec workspace client for validate, plan, apply stream, cancel, and cached artifact retrieval |
-| `Honua.Sdk.Studio` | Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs |
+| `Honua.Sdk.Studio` | **Preview.** Console Studio analysis-report read client -- retrieve the structured report envelope and render Markdown/HTML for completed jobs. Studio is not a 2026.1 GA surface. |
 | `Honua.Sdk.ConsoleShare` | Console Share clients -- read share detail, update access, validate dependency closure, manage public-link / embed-token lifecycle, drive scheduled exports and traffic, and publish open-data (DCAT / STAC) |
 | `Honua.Sdk.Field` | Field form, validation, calculated field, duplicate detection, and record workflow contracts |
 | `Honua.Sdk.Grpc` | gRPC client for `FeatureService` queries/edits and native `ProcessService` job lifecycle access |

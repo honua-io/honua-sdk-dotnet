@@ -79,6 +79,52 @@ public sealed class FeatureServerVectorPayloadTests
     }
 
     [Fact]
+    public async Task QueryVectorAsync_200ErrorEnvelope_ThrowsHonuaFeatureServerException()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateGeoServicesErrorResponse(400, "Unable to complete operation.", ["Invalid where clause."])));
+
+        var exception = await Assert.ThrowsAsync<HonuaFeatureServerException>(
+            () => client.QueryVectorAsync("parks", 0, new FeatureServerQueryParams { Where = "bad syntax ((" }));
+
+        Assert.Equal("Unable to complete operation.", exception.Message);
+        Assert.Equal(400, exception.GeoServicesErrorCode);
+        Assert.Contains("Invalid where clause.", exception.Details!);
+    }
+
+    [Fact]
+    public async Task QueryVectorAsync_200EmptyFeatureSet_ReturnsEmptyResult()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateRawJsonResponse("""
+                {
+                  "objectIdFieldName": "OBJECTID",
+                  "features": []
+                }
+                """)));
+
+        var result = await client.QueryVectorAsync("parks", 0, new FeatureServerQueryParams { Where = "1=0" });
+
+        Assert.Equal(VectorPayloadFormat.EsriJson, result.Format);
+        Assert.Empty(result.Features);
+        Assert.Equal(0, result.NumberReturned);
+        Assert.False(result.HasMoreResults);
+    }
+
+    [Fact]
+    public async Task QueryVectorAsync_GeoJson200ErrorEnvelope_ThrowsHonuaFeatureServerException()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+            Task.FromResult(TestHelpers.CreateGeoServicesErrorResponse(400, "Unable to complete operation.", ["Invalid where clause."])));
+
+        var exception = await Assert.ThrowsAsync<HonuaFeatureServerException>(
+            () => client.QueryVectorAsync("parks", 0, new FeatureServerQueryParams(), VectorPayloadFormat.GeoJson));
+
+        Assert.Equal("Unable to complete operation.", exception.Message);
+        Assert.Equal(400, exception.GeoServicesErrorCode);
+    }
+
+    [Fact]
     public async Task QueryVectorAsync_GenericClient_200ErrorEnvelope_ThrowsHonuaFeatureServerException()
     {
         // The extension fallback path (non-HonuaFeatureServerClient implementations) goes through
