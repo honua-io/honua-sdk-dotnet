@@ -27,9 +27,6 @@ jobs:
     name: Build DocFX site
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
@@ -91,6 +88,17 @@ jobs:
           export PATH="$PATH:$HOME/.dotnet/tools"
           docfx docs/docfx.json
 
+      - name: Require GitHub Pages publication on trunk
+        if: github.ref == 'refs/heads/trunk' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          DEPLOY_GITHUB_PAGES: ${{ vars.DEPLOY_GITHUB_PAGES }}
+        run: |
+          if [[ "${DEPLOY_GITHUB_PAGES}" != "true" ]]; then
+            echo "::error::DEPLOY_GITHUB_PAGES is not true. This trunk run built the DocFX site and did not publish it."
+            exit 1
+          fi
+          echo "DEPLOY_GITHUB_PAGES is true. The following steps publish the DocFX site."
+
       - name: Configure GitHub Pages
         if: vars.DEPLOY_GITHUB_PAGES == 'true' && github.ref == 'refs/heads/trunk' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
@@ -101,7 +109,15 @@ jobs:
         with:
           path: docs/_site
 
+  deploy-docs:
+    name: Deploy DocFX site
+    needs: build-docs
+    if: vars.DEPLOY_GITHUB_PAGES == 'true' && github.ref == 'refs/heads/trunk' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        if: vars.DEPLOY_GITHUB_PAGES == 'true' && github.ref == 'refs/heads/trunk' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
