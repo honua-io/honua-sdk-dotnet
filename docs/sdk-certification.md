@@ -192,3 +192,20 @@ identities and manifest import hashes, and rejects implicit WebAssembly or ILLin
 versions that differ from the committed browser lock. It does not evaluate
 repository MSBuild source while provisioning the toolchain. A successful setup
 is toolchain evidence; it does not qualify a server/client candidate.
+
+### Managed release PR readiness
+
+ReleasePlease creates draft release PRs. Lock generation refuses a ready PR, so
+return an existing release PR to draft before refreshing it. Keep it draft until
+the final source changes have landed and the read-only generation and data-only
+apply jobs have completed against a stable head. Their workflow dispatches provide
+diagnostics; workflow-dispatched job checks do not satisfy branch rulesets, as
+explained in [GitHub’s required status check guidance](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#checks-from-some-workflow-jobs-are-not-evaluated).
+
+After verifying the final apply run and current head, an authenticated maintainer
+uses `gh pr ready <release-pr-number> --repo honua-io/honua-sdk-dotnet`.
+The resulting `pull_request: ready_for_review` event starts eligible CI, browser,
+CodeQL, docs, and conformance verification. Wait for every protected exact-head
+context and resolve review findings before the normal merge. Any subsequent
+managed refresh requires returning the PR to draft and repeating this sequence.
+No check result, candidate pin, package version, or publication is synthesized.
