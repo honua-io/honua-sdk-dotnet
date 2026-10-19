@@ -39,7 +39,7 @@ public sealed class AdminProtocolIntegrationTests(ProtocolIntegrationFixture fix
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Geocoding)]
-    public async Task Geocoding_ForwardReverseSuggestAndBatch_AreReachable()
+    public async Task GeocodingForward_IsReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope();
 
@@ -47,18 +47,33 @@ public sealed class AdminProtocolIntegrationTests(ProtocolIntegrationFixture fix
             _fixture.Options.GeocodeText!,
             cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotEmpty(forward);
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Geocoding)]
+    public async Task GeocodingReverse_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
         var reverse = await _fixture.GeocodingClient.ReverseGeocodeAsync(
             _fixture.Options.ReverseGeocodeLatitude!.Value,
             _fixture.Options.ReverseGeocodeLongitude!.Value,
             cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotNull(reverse);
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Geocoding)]
+    public async Task GeocodingSuggest_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
         var suggestions = await _fixture.GeocodingClient.SuggestAsync(
             _fixture.Options.GeocodeText!,
             cancellationToken: timeout.Token).ConfigureAwait(false);
         Assert.NotEmpty(suggestions);
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Geocoding)]
+    public async Task GeocodingBatch_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
         var batch = await _fixture.GeocodingClient.BatchGeocodeAsync(
             [_fixture.Options.GeocodeText!],
             cancellationToken: timeout.Token).ConfigureAwait(false);

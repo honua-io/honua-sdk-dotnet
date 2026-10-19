@@ -77,14 +77,10 @@ PAGINATED_OPERATIONS = frozenset(
     }
 )
 
-RC_UNAVAILABLE_TESTS = frozenset(
-    {
-        "Honua.Sdk.ProtocolIntegration.Tests.AdminProtocolIntegrationTests.Geocoding_ForwardReverseSuggestAndBatch_AreReachable",
-        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SpecValidatePlanAndApplyStream_AreReachable",
-        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.SceneListGetAndResolve_AreReachable",
-        "Honua.Sdk.ProtocolIntegration.Tests.SpecSceneRoutingProtocolIntegrationTests.RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable",
-    }
-)
+# Missing deterministic fixtures remain release obligations. A skipped or missing
+# live result is incomplete qualification, never an exclusion from the denominator.
+RC_UNAVAILABLE_TESTS: frozenset[str] = frozenset()
+
 
 RC_UNAVAILABLE_OPERATIONS = frozenset(
     {

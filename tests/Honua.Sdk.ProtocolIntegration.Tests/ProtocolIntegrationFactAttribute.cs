@@ -31,7 +31,7 @@ public sealed class ProtocolIntegrationFactAttribute : FactAttribute
         Skip = requiredFixture switch
         {
             ProtocolIntegrationRequiredFixture.Routing when !options.HasRoutingFixture =>
-                "Set HONUA_PROTOCOL_ROUTE_SERVICE_ID and HONUA_PROTOCOL_ROUTE_LAYER to run routing protocol integration tests.",
+                "Set HONUA_PROTOCOL_ROUTE_SERVICE_ID, HONUA_PROTOCOL_ROUTE_LAYER, HONUA_PROTOCOL_SERVICE_AREA_LAYER, and HONUA_PROTOCOL_CLOSEST_FACILITY_LAYER and all six routing fixture coordinate pairs to run routing protocol integration tests.",
             ProtocolIntegrationRequiredFixture.Realtime =>
                 "Realtime server transport integration is pending the Honua Server realtime fixture.",
             ProtocolIntegrationRequiredFixture.Geocoding when !options.HasGeocodingFixture =>

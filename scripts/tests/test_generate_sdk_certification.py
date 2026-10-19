@@ -145,6 +145,55 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertIn("ownerIssue", cell)
                 self.assertIn("disposition", cell)
 
+    def test_fixture_dependent_operations_remain_individual_release_obligations(self):
+        document = MODULE.build_document()
+        names = {
+            "GeocodingForward", "GeocodingReverse", "GeocodingSuggest", "GeocodingBatch",
+            "SpecValidate", "SpecPlan", "SpecApply", "SceneList", "SceneGet", "SceneResolve",
+            "RoutingMetadata", "RoutingDirections", "RoutingServiceArea", "RoutingClosestFacility",
+        }
+        operations = [cell for cell in document["operations"] if any(
+            test.rsplit(".", 1)[-1] == name + "_IsReachable"
+            for test in cell["tests"] for name in names
+        )]
+        self.assertEqual(14, len(operations))
+        self.assertEqual(14, len({test for cell in operations for test in cell["tests"]}))
+        for cell in operations:
+            self.assertEqual("included", cell["releaseDenominator"], cell["id"])
+            self.assertIn("release", cell["requiredTiers"], cell["id"])
+            self.assertEqual(1, len(cell["tests"]), cell["id"])
+
+    def test_fixture_skips_and_missing_results_cannot_qualify_release(self):
+        # Harness-only TRX; these are refusal controls, never candidate evidence.
+        document = {"operations": [{
+            "id": "Fixture.Geocode", "surface": "admin",
+            "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+            "operation": "ForwardGeocodeAsync", "status": "exercised",
+            "requiredTiers": ["release"], "scenarioFacets": ["read-only"],
+            "tests": ["Fixture.Geocode"],
+        }]}
+        for result in ("", '<UnitTestResult testName="Fixture.Geocode" outcome="NotExecuted" />'):
+            with self.subTest(result=result), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                trx = root / "fixture.trx"
+                trx.write_text("<TestRun><Results>" + result + "</Results></TestRun>")
+                args = Namespace(
+                    tier="release", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                    sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                    image_source_revision="b" * 40,
+                    server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
+                    sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "e" * 64,
+                    sdk_package_source_sha="a" * 40,
+                    release_cut="2026-01-01T00:00:00Z", candidate_cut="2026-01-01T00:00:00Z",
+                    fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                    evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                    **self._request_context(),
+                )
+                self.assertEqual(1, self._write_evidence(args, document))
+                observation = json.loads(args.evidence.read_text())["observations"][0]
+                self.assertEqual("skip", observation["result"])
+                self.assertIsNone(observation["evidence_receipt"])
+
     def test_rc_unavailable_surfaces_are_owned_by_release_gate(self):
         document = MODULE.build_document()
         unavailable = [
@@ -184,7 +233,7 @@ class SdkCertificationTests(unittest.TestCase):
                 if cell["releaseDenominator"] == "excluded"
             },
         )
-        self.assertTrue(exclusions)
+        self.assertEqual({}, exclusions)
         self.assertTrue(all("release" not in cell["requiredTiers"] for cell in operations if cell["id"] in exclusions))
         self.assertTrue(all(item["ownerIssue"] == MODULE.RC_FIXTURE_GAP_ISSUE for item in exclusions.values()))
         self.assertTrue(all(item["reason"] for item in exclusions.values()))

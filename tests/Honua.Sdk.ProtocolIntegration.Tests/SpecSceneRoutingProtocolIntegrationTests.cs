@@ -12,7 +12,7 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
     private readonly ProtocolIntegrationFixture _fixture = fixture;
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Spec)]
-    public async Task SpecValidatePlanAndApplyStream_AreReachable()
+    public async Task SpecValidate_IsReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
         var document = CreateSpecDocument(_fixture.Options.SpecId!, _fixture.Options.ServiceName);
@@ -25,11 +25,23 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
             },
             timeout.Token).ConfigureAwait(false);
         Assert.True(validation.IsValid, string.Join("; ", validation.Diagnostics.Select(diagnostic => diagnostic.Message)));
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Spec)]
+    public async Task SpecPlan_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
+        var document = CreateSpecDocument(_fixture.Options.SpecId!, _fixture.Options.ServiceName);
         var plan = await _fixture.SpecClient.PlanAsync(document, timeout.Token).ConfigureAwait(false);
         Assert.False(string.IsNullOrWhiteSpace(plan.PlanId));
         Assert.NotEmpty(plan.Nodes);
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Spec)]
+    public async Task SpecApply_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
+        var document = CreateSpecDocument(_fixture.Options.SpecId!, _fixture.Options.ServiceName);
         await using var apply = await _fixture.SpecClient.ApplyAsync(document, timeout.Token).ConfigureAwait(false);
         var events = new List<SpecApplyEvent>();
         await foreach (var applyEvent in apply.Events.WithCancellation(timeout.Token).ConfigureAwait(false))
@@ -45,10 +57,11 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
 
         Assert.NotEmpty(events);
         Assert.Contains(events, applyEvent => applyEvent.Kind == SpecApplyEventKind.ApplyStarted);
+        Assert.Equal(SpecApplyEventKind.ApplyCompleted, events[^1].Kind);
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Scene)]
-    public async Task SceneListGetAndResolve_AreReachable()
+    public async Task SceneList_IsReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope();
 
@@ -59,10 +72,20 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
             },
             timeout.Token).ConfigureAwait(false);
         Assert.Contains(scenes, scene => string.Equals(scene.Id, _fixture.Options.SceneId, StringComparison.OrdinalIgnoreCase));
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Scene)]
+    public async Task SceneGet_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
         var metadata = await _fixture.SceneClient.GetSceneAsync(_fixture.Options.SceneId!, timeout.Token).ConfigureAwait(false);
         Assert.Equal(_fixture.Options.SceneId, metadata.Id);
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Scene)]
+    public async Task SceneResolve_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope();
         var resolution = await _fixture.SceneClient.ResolveSceneAsync(
             _fixture.Options.SceneId!,
             new HonuaSceneResolveRequest
@@ -75,7 +98,7 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Routing)]
-    public async Task RoutingMetadataDirectionsServiceAreaAndClosestFacility_AreReachable()
+    public async Task RoutingMetadata_IsReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
 
@@ -87,12 +110,17 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
             },
             timeout.Token).ConfigureAwait(false);
         Assert.Equal(_fixture.Options.RouteServiceId, metadata.ServiceId);
+    }
 
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Routing)]
+    public async Task RoutingDirections_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
         var route = await _fixture.RoutingClient.GetDirectionsAsync(
             new RouteDirectionsRequest
             {
-                Origin = RoutingLocation.FromLongitudeLatitude(-157.8651, 21.3060, "Start"),
-                Destination = RoutingLocation.FromLongitudeLatitude(-157.8460, 21.3193, "Finish"),
+                Origin = RoutingLocation.FromLongitudeLatitude(_fixture.Options.RouteOrigin!.Longitude, _fixture.Options.RouteOrigin!.Latitude, "Start"),
+                Destination = RoutingLocation.FromLongitudeLatitude(_fixture.Options.RouteDestination!.Longitude, _fixture.Options.RouteDestination!.Latitude, "Finish"),
                 Options = new RouteSolveOptions
                 {
                     ServiceId = _fixture.Options.RouteServiceId,
@@ -103,45 +131,49 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
             },
             timeout.Token).ConfigureAwait(false);
         Assert.NotEmpty(route.Routes);
+    }
 
-        if (!string.IsNullOrWhiteSpace(_fixture.Options.ServiceAreaLayerName))
-        {
-            var serviceArea = await _fixture.RoutingClient.GetServiceAreaAsync(
-                new ServiceAreaRequest
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Routing)]
+    public async Task RoutingServiceArea_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
+        var serviceArea = await _fixture.RoutingClient.GetServiceAreaAsync(
+            new ServiceAreaRequest
+            {
+                Center = RoutingLocation.FromLongitudeLatitude(_fixture.Options.ServiceAreaCenter!.Longitude, _fixture.Options.ServiceAreaCenter!.Latitude, "Center"),
+                TravelTime = TimeSpan.FromMinutes(5),
+                Options = new ServiceAreaOptions
                 {
-                    Center = RoutingLocation.FromLongitudeLatitude(-157.8583, 21.3069, "Center"),
-                    TravelTime = TimeSpan.FromMinutes(5),
-                    Options = new ServiceAreaOptions
-                    {
-                        ServiceId = _fixture.Options.RouteServiceId,
-                        ServiceAreaLayerName = _fixture.Options.ServiceAreaLayerName
-                    }
-                },
-                timeout.Token).ConfigureAwait(false);
-            Assert.True(serviceArea.RawResponse.ValueKind is not JsonValueKind.Undefined);
-        }
+                    ServiceId = _fixture.Options.RouteServiceId,
+                    ServiceAreaLayerName = _fixture.Options.ServiceAreaLayerName
+                }
+            },
+            timeout.Token).ConfigureAwait(false);
+        Assert.True(serviceArea.RawResponse.ValueKind is not JsonValueKind.Undefined);
+    }
 
-        if (!string.IsNullOrWhiteSpace(_fixture.Options.ClosestFacilityLayerName))
-        {
-            var closest = await _fixture.RoutingClient.FindClosestFacilityAsync(
-                new ClosestFacilityRequest
+    [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Routing)]
+    public async Task RoutingClosestFacility_IsReachable()
+    {
+        using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
+        var closest = await _fixture.RoutingClient.FindClosestFacilityAsync(
+            new ClosestFacilityRequest
+            {
+                Incidents = [RoutingLocation.FromLongitudeLatitude(_fixture.Options.RouteIncident!.Longitude, _fixture.Options.RouteIncident!.Latitude, "Incident")],
+                Facilities =
+                [
+                    RoutingLocation.FromLongitudeLatitude(_fixture.Options.RouteFacilityA!.Longitude, _fixture.Options.RouteFacilityA!.Latitude, "Facility A"),
+                    RoutingLocation.FromLongitudeLatitude(_fixture.Options.RouteFacilityB!.Longitude, _fixture.Options.RouteFacilityB!.Latitude, "Facility B")
+                ],
+                Options = new ClosestFacilityOptions
                 {
-                    Incidents = [RoutingLocation.FromLongitudeLatitude(-157.85, 21.30, "Incident")],
-                    Facilities =
-                    [
-                        RoutingLocation.FromLongitudeLatitude(-157.80, 21.28, "Facility A"),
-                        RoutingLocation.FromLongitudeLatitude(-157.82, 21.31, "Facility B")
-                    ],
-                    Options = new ClosestFacilityOptions
-                    {
-                        ServiceId = _fixture.Options.RouteServiceId,
-                        ClosestFacilityLayerName = _fixture.Options.ClosestFacilityLayerName,
-                        TargetFacilityCount = 1
-                    }
-                },
-                timeout.Token).ConfigureAwait(false);
-            Assert.True(closest.RawResponse.ValueKind is not JsonValueKind.Undefined);
-        }
+                    ServiceId = _fixture.Options.RouteServiceId,
+                    ClosestFacilityLayerName = _fixture.Options.ClosestFacilityLayerName,
+                    TargetFacilityCount = 1
+                }
+            },
+            timeout.Token).ConfigureAwait(false);
+        Assert.True(closest.RawResponse.ValueKind is not JsonValueKind.Undefined);
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Realtime)]
