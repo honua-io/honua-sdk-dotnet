@@ -234,6 +234,7 @@ jobs:
           if not isinstance(files, list) or len(files) > 500:
               raise SystemExit("Invalid lock file count")
           seen = set()
+          validated = []
           for entry in files:
               if not isinstance(entry, dict) or set(entry) != {"path", "sha256", "base64"}:
                   raise SystemExit("Invalid lock entry")
@@ -252,6 +253,9 @@ jobs:
               data = base64.b64decode(entry["base64"], validate=True)
               if len(data) > 4_000_000 or hashlib.sha256(data).hexdigest() != entry["sha256"]:
                   raise SystemExit(f"Lock digest or size mismatch: {name}")
+              validated.append((name, data))
+          # Validate the entire manifest before changing the checkout or index.
+          for name, data in validated:
               pathlib.Path(name).write_bytes(data)
               # Stage the exact validated bytes without invoking source-controlled
               # Git attribute filters from the generated release branch.
