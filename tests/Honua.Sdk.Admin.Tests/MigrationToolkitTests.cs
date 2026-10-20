@@ -1,6 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
+using System.Text;
 using System.Text.Json;
 using Honua.Sdk.Admin.Models;
 using Honua.Sdk.Admin.Tests.Fixtures;
@@ -100,6 +102,92 @@ public sealed class MigrationToolkitTests
         });
 
         Assert.Equal(MigrationSourceInventoryArtifact.CurrentArtifactKind, result.ArtifactKind);
+    }
+
+    [Fact]
+    public async Task ScanMigrationSourceAsync_ArtifactSetAll_PostsRequestAndReturnsManifestEnvelope()
+    {
+        string? body = null;
+        IHonuaAdminClient client = TestHelpers.CreateClient(async req =>
+        {
+            Assert.Equal(HttpMethod.Post, req.Method);
+            Assert.Equal("/api/v1/admin/import/scan?export=json", req.RequestUri!.PathAndQuery);
+            body = await req.Content!.ReadAsStringAsync();
+            return RawJson("""
+                {
+                  "inventory": {
+                    "artifactKind": "honua.migration.source-inventory",
+                    "artifactVersion": "1.0",
+                    "sourceKind": "arcgis-geoservices-rest",
+                    "source": {
+                      "displayName": "Field Ops",
+                      "baseUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer"
+                    }
+                  },
+                  "manifest": {
+                    "artifactKind": "honua.migration.manifest",
+                    "artifactVersion": "1.0",
+                    "sourceKind": "arcgis-geoservices-rest",
+                    "summary": { "sourceResourceCount": 1, "targetResourceCount": 1 },
+                    "targetResources": [
+                      {
+                        "sourceResourceId": "resource:Inspections:layer:0",
+                        "action": "publish",
+                        "targetServiceName": "field-ops",
+                        "targetResourceName": "inspections"
+                      }
+                    ]
+                  },
+                  "parityEvidence": {
+                    "artifactKind": "honua.migration.parity-evidence-pack",
+                    "artifactVersion": "1.0",
+                    "sourceKind": "arcgis-geoservices-rest",
+                    "overallState": "unknown",
+                    "summary": "Manifest generated from the scan.",
+                    "manifestAvailable": true
+                  }
+                }
+                """);
+        });
+
+        var result = await client.ScanMigrationSourceAsync(
+            new MigrationInventoryScanRequest
+            {
+                SourceKind = "geoservices",
+                SourceUrl = "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                TargetServiceName = "field-ops"
+            },
+            artifactSet: "all",
+            exportJson: true);
+
+        using var sent = JsonDocument.Parse(body!);
+        Assert.Equal("all", sent.RootElement.GetProperty("artifactSet").GetString());
+        Assert.Equal("field-ops", sent.RootElement.GetProperty("targetServiceName").GetString());
+        Assert.Equal("geoservices", sent.RootElement.GetProperty("sourceKind").GetString());
+
+        Assert.Equal("arcgis-geoservices-rest", result.Inventory.SourceKind);
+        Assert.Equal("Field Ops", result.Inventory.Source.DisplayName);
+        Assert.Equal(MigrationManifestArtifact.CurrentArtifactKind, result.Manifest.ArtifactKind);
+        Assert.Equal("inspections", result.Manifest.TargetResources.Single().TargetResourceName);
+        Assert.Equal("field-ops", result.Manifest.TargetResources.Single().TargetServiceName);
+        Assert.Equal(MigrationParityEvidenceArtifact.CurrentArtifactKind, result.ParityEvidence.ArtifactKind);
+        Assert.True(result.ParityEvidence.ManifestAvailable);
+        Assert.Equal("unknown", result.ParityEvidence.OverallState);
+    }
+
+    [Fact]
+    public async Task ScanMigrationSourceAsync_ArtifactSetAllOnInventoryResult_Throws()
+    {
+        var client = TestHelpers.CreateClient(_ => throw new InvalidOperationException("scan should not be sent"));
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => client.ScanMigrationSourceAsync(
+            new MigrationInventoryScanRequest
+            {
+                SourceKind = "geoservices",
+                ArtifactSet = "all"
+            }));
+
+        Assert.Equal("request", ex.ParamName);
     }
 
     [Fact]
@@ -277,6 +365,12 @@ public sealed class MigrationToolkitTests
         Assert.Equal(MigrationEvidenceStates.Pass, attestationRoundTrip.Items.Single().State);
         Assert.Equal("ops", attestationRoundTrip.Items.Single().Owner);
     }
+
+    private static HttpResponseMessage RawJson(string json)
+        => new(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
 
     private static MigrationSourceInventoryArtifact CreateInventoryArtifact(string status = "complete")
         => new()
