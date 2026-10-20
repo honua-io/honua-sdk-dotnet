@@ -14,11 +14,11 @@ The lock uses a `<version>.` prefix, so the `**/packages.lock.json` sets that CI
 
 ## CodeQL generated-source warnings (dispatch premise): already fixed on trunk
 
-The `cs/useless-cast-to-self` alerts under `obj/**/generated/System.Text.Json.SourceGeneration` were closed by #337 (merged 2026-09-13). That PR added `.github/codeql/codeql-config.yml` with `paths-ignore: ['**/obj/**', '**/generated/**']` and `build-mode: none`, and disabled no rules. Code-scanning API, checked 2026-10-19:
+The `cs/useless-cast-to-self` alerts under `obj/**/generated/System.Text.Json.SourceGeneration` were closed by #337 (merged 2026-09-13). That PR added `.github/codeql/codeql-config.yml` with `paths-ignore: ['**/obj/**', '**/generated/**']` and `build-mode: none`, and disabled no rules. Code-scanning API, checked 2026-10-20:
 
 - Open alerts under `/obj/` or `/generated/`: **0**. Dismissed: **0**.
-- Fixed ("no longer detected") alerts under generated paths: 2,656 `cs/useless-cast-to-self` on 2026-09-13, plus 31 earlier and 77 of other rules.
-- Real code is still analysed. The trunk CodeQL analysis at `aada6d8` reports 267 results across 164 rules. Open `cs/useless-cast-to-self` alerts remain in `src/` (for example `src/Honua.Sdk.OgcFeatures/HonuaOgcFeaturesClient.cs`).
+- Fixed ("no longer detected") alerts under generated paths: 2,764 in total (2,687 `cs/useless-cast-to-self`, 77 of other rules); 2,733 of them closed on 2026-09-13.
+- Real code is still analysed. The trunk CodeQL analysis at `e417b19` (2026-10-20) reports 267 results across 164 rules. Open `cs/useless-cast-to-self` alerts remain in `src/` (for example `src/Honua.Sdk.OgcFeatures/HonuaOgcFeaturesClient.cs`).
 
 This PR does not change CodeQL configuration.
 
