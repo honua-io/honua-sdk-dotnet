@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Admin.Exceptions;
 using Honua.Sdk.Admin.Models;
 
@@ -450,7 +451,10 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <summary>
     /// Scans a supported source environment and returns the migration source inventory artifact.
     /// </summary>
-    /// <param name="request">The migration inventory scan request.</param>
+    /// <param name="request">
+    /// The migration inventory scan request. <see cref="MigrationInventoryScanRequest.ArtifactSet"/> of
+    /// <c>all</c> is rejected; use the overload that returns <see cref="MigrationScanArtifactSet"/>.
+    /// </param>
     /// <param name="exportJson">When true, requests the server's JSON attachment form with <c>export=json</c>.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The migration source inventory artifact returned by the server.</returns>
@@ -460,6 +464,12 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (string.Equals(request.ArtifactSet, "all", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "artifactSet 'all' returns inventory, manifest, and parity evidence. Use the ScanMigrationSourceAsync overload that returns MigrationScanArtifactSet.",
+                nameof(request));
+        }
 
         var query = exportJson ? BuildQuery(("export", "json")) : string.Empty;
         var data = await PostRawAsync(
@@ -470,6 +480,50 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             cancellationToken).ConfigureAwait(false);
 
         return data ?? throw new HonuaAdminOperationException("Server returned null migration inventory artifact.", "ScanMigrationSource");
+    }
+
+    /// <summary>
+    /// Scans a supported source with <c>artifactSet=all</c> and returns the inventory, manifest, and parity evidence.
+    /// </summary>
+    /// <param name="request">
+    /// The migration inventory scan request. <see cref="MigrationInventoryScanRequest.TargetServiceName"/> is forwarded
+    /// when set. <see cref="MigrationInventoryScanRequest.ArtifactSet"/> must be <c>all</c> or unset.
+    /// </param>
+    /// <param name="artifactSet">Must be <c>all</c>. The server then returns <c>{inventory, manifest, parityEvidence}</c>.</param>
+    /// <param name="exportJson">When true, requests the server's JSON attachment form with <c>export=json</c>.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The scan artifact envelope returned by the server.</returns>
+    public async Task<MigrationScanArtifactSet> ScanMigrationSourceAsync(
+        MigrationInventoryScanRequest request,
+        string artifactSet,
+        bool exportJson = false,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactSet);
+        if (!string.Equals(artifactSet, "all", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Only artifactSet 'all' returns the migration scan manifest envelope.", nameof(artifactSet));
+        }
+
+        if (request.ArtifactSet is not null &&
+            !string.Equals(request.ArtifactSet, "all", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "Request artifactSet must be 'all' or unset when requesting the scan manifest envelope.",
+                nameof(request));
+        }
+
+        var scanRequest = request with { ArtifactSet = "all" };
+        var query = exportJson ? BuildQuery(("export", "json")) : string.Empty;
+        var data = await PostRawAsync(
+            $"{ApiPrefix}/import/scan{query}",
+            scanRequest,
+            HonuaAdminJsonContext.Default.MigrationInventoryScanRequest,
+            HonuaAdminJsonContext.Default.MigrationScanArtifactSet,
+            cancellationToken).ConfigureAwait(false);
+
+        return data ?? throw new HonuaAdminOperationException("Server returned null migration scan artifact set.", "ScanMigrationSource");
     }
 
     // ── GeoServices import lifecycle (single layer) ─────────────────────────
@@ -625,6 +679,9 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// Starts an ordered, resumable batch (multi-layer) migration run from a footprint selection.
     /// Layers with no <see cref="MigrationBatchLayerSpec.DependsOn"/> predecessors start first;
     /// dependent layers wait for their predecessors to reach a terminal per-child status.
+    /// When <see cref="MigrationBatchStartRequest.RequireFullFidelity"/> is true and the server refuses
+    /// the selection, the thrown <see cref="HonuaAdminApiException"/> carries the 422
+    /// <see cref="HonuaAdminApiException.ConstructAccounting"/>.
     /// </summary>
     public async Task<MigrationBatchResponse> StartMigrationBatchAsync(
         MigrationBatchStartRequest request,
@@ -632,14 +689,51 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var data = await PostRawAsync(
-            $"{ApiPrefix}/import/migrations/",
-            request,
-            HonuaAdminJsonContext.Default.MigrationBatchStartRequest,
-            HonuaAdminJsonContext.Default.MigrationBatchResponse,
+        using var content = JsonContent.Create(request, HonuaAdminJsonContext.Default.MigrationBatchStartRequest);
+        using var response = await _http.PostAsync(
+            CreateRequestUri($"{ApiPrefix}/import/migrations/"),
+            content,
             cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw CreateMigrationBatchFailure(response, body);
+        }
 
+        var data = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.MigrationBatchResponse);
         return data ?? throw new HonuaAdminOperationException("Server returned null batch response.", "StartMigrationBatch");
+    }
+
+    private static HonuaAdminApiException CreateMigrationBatchFailure(HttpResponseMessage response, string body)
+    {
+        string? refusal = null;
+        MigrationConstructAccountingReport? accounting = null;
+        if (response.StatusCode == HttpStatusCode.UnprocessableEntity && !string.IsNullOrWhiteSpace(body))
+        {
+            try
+            {
+                var refused = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.MigrationBatchRefusedResponse);
+                refusal = refused?.Error;
+                accounting = refused?.ConstructAccounting;
+            }
+            catch (JsonException)
+            {
+                // Keep the generic admin error. The raw body stays on the exception.
+            }
+        }
+
+        var message = !string.IsNullOrWhiteSpace(refusal)
+            ? refusal
+            : AdminHttpHelper.TryExtractErrorMessage(body)
+                ?? response.ReasonPhrase
+                ?? "Request failed";
+
+        return new HonuaAdminApiException(
+            response.StatusCode,
+            message,
+            body,
+            HonuaFailureReceiptFactory.FromHttpResponse(response, body),
+            accounting);
     }
 
     /// <summary>

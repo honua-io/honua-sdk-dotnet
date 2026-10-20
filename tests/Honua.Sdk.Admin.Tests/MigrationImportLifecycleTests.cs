@@ -343,9 +343,13 @@ public sealed class MigrationImportLifecycleTests
         using var sent = JsonDocument.Parse(body!);
         Assert.Equal(2, sent.RootElement.GetProperty("layers").GetArrayLength());
         Assert.Equal("res:parcels", sent.RootElement.GetProperty("layers")[1].GetProperty("dependsOn")[0].GetString());
+        Assert.False(sent.RootElement.TryGetProperty("requireFullFidelity", out _));
 
         Assert.Equal("batch-77", result.BatchId);
         Assert.Equal("running", result.Status);
+        Assert.Null(result.FidelityVerdict);
+        Assert.Empty(result.FidelityDifferences);
+        Assert.Null(result.ConstructAccounting);
         Assert.Equal(2, result.Children.Count);
         Assert.Equal("succeeded", result.Children[0].Status);
         Assert.Equal(42, result.Children[0].PublishedLayerId);
@@ -381,6 +385,285 @@ public sealed class MigrationImportLifecycleTests
 
         Assert.Equal("needs-review", result.Status);
         Assert.Equal(DateTimeOffset.Parse("2026-09-10T12:05:00Z"), result.CompletedAt);
+        Assert.Null(result.FidelityVerdict);
+        Assert.Empty(result.FidelityDifferences);
+        Assert.Null(result.ConstructAccounting);
+    }
+
+    [Fact]
+    public async Task GetMigrationBatchAsync_DeserializesNeedsReviewIncompleteFidelity()
+    {
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Equal("/api/v1/admin/import/migrations/batch-77", req.RequestUri!.PathAndQuery);
+            return Task.FromResult(RawJson("""
+                {
+                  "batchId": "batch-77",
+                  "sourceKind": "arcgis-geoservices-rest",
+                  "sourceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                  "status": "needs-review",
+                  "startedAt": "2026-09-10T12:00:00Z",
+                  "completedAt": "2026-09-10T12:05:00Z",
+                  "totalChildren": 2,
+                  "succeededChildren": 1,
+                  "failedChildren": 0,
+                  "cancelledChildren": 0,
+                  "applyRelationships": false,
+                  "relationshipsApplied": false,
+                  "fidelityVerdict": "incomplete",
+                  "fidelityDifferences": [
+                    {
+                      "code": "fidelity.service.layer-incomplete",
+                      "severity": "blocking",
+                      "subject": "resource:Inspections:layer:1",
+                      "expected": "full-fidelity",
+                      "actual": "incomplete",
+                      "summary": "Layer 'resource:Inspections:layer:1' did not complete at full fidelity (incomplete)."
+                    },
+                    {
+                      "code": "fidelity.service.layer-unverified",
+                      "severity": "unverified",
+                      "subject": "resource:Inspections:layer:0",
+                      "expected": "full-fidelity",
+                      "actual": "unverified",
+                      "summary": "Layer 'resource:Inspections:layer:0' completed, but its import did not prove full fidelity."
+                    }
+                  ],
+                  "constructAccounting": {
+                    "matrixVersion": "2026.1",
+                    "executed": true,
+                    "discoveredResourceCount": 2,
+                    "selectedResourceCount": 2,
+                    "isBlocking": false,
+                    "entries": [
+                      {
+                        "construct": "service.resource",
+                        "sourceId": "resource:Inspections:layer:1",
+                        "resourceIds": ["resource:Inspections:layer:1"],
+                        "automationStatus": "automated",
+                        "codes": [],
+                        "disposition": "migrated",
+                        "verification": "data-reconciliation",
+                        "targetResourceId": "target:resource:Inspections:layer:1",
+                        "targetTable": "public.inspections"
+                      }
+                    ],
+                    "differences": []
+                  },
+                  "children": [
+                    {
+                      "ordinal": 0,
+                      "sourceResourceId": "resource:Inspections:layer:0",
+                      "serviceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                      "sourceLayerId": 0,
+                      "tableName": "hydrants",
+                      "dependsOn": [],
+                      "status": "succeeded",
+                      "jobId": "job-hydrants",
+                      "publishedLayerId": 42,
+                      "fidelityVerdict": "unverified"
+                    },
+                    {
+                      "ordinal": 1,
+                      "sourceResourceId": "resource:Inspections:layer:1",
+                      "serviceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                      "sourceLayerId": 1,
+                      "tableName": "inspections",
+                      "dependsOn": ["resource:Inspections:layer:0"],
+                      "status": "needs-review",
+                      "jobId": "job-inspections",
+                      "fidelityVerdict": "incomplete"
+                    }
+                  ]
+                }
+                """));
+        });
+
+        var result = await client.GetMigrationBatchAsync("batch-77");
+
+        Assert.Equal("needs-review", result.Status);
+        Assert.Equal("incomplete", result.FidelityVerdict);
+        Assert.Equal(2, result.FidelityDifferences.Count);
+        Assert.Equal("fidelity.service.layer-incomplete", result.FidelityDifferences[0].Code);
+        Assert.Equal("blocking", result.FidelityDifferences[0].Severity);
+        Assert.Equal("resource:Inspections:layer:1", result.FidelityDifferences[0].Subject);
+        Assert.Equal("full-fidelity", result.FidelityDifferences[0].Expected);
+        Assert.Equal("incomplete", result.FidelityDifferences[0].Actual);
+        Assert.Contains("did not complete", result.FidelityDifferences[0].Summary, StringComparison.Ordinal);
+        Assert.Equal("fidelity.service.layer-unverified", result.FidelityDifferences[1].Code);
+        Assert.Equal("unverified", result.Children[0].FidelityVerdict);
+        Assert.Equal("incomplete", result.Children[1].FidelityVerdict);
+        Assert.Equal("needs-review", result.Children[1].Status);
+
+        var accounting = result.ConstructAccounting;
+        Assert.NotNull(accounting);
+        Assert.Equal("2026.1", accounting.MatrixVersion);
+        Assert.True(accounting.Executed);
+        Assert.Null(accounting.NotExecutedReason);
+        Assert.Equal(2, accounting.DiscoveredResourceCount);
+        Assert.Equal(2, accounting.SelectedResourceCount);
+        Assert.False(accounting.IsBlocking);
+        Assert.Empty(accounting.Differences);
+        var entry = Assert.Single(accounting.Entries);
+        Assert.Equal("service.resource", entry.Construct);
+        Assert.Equal("resource:Inspections:layer:1", entry.SourceId);
+        Assert.Equal(["resource:Inspections:layer:1"], entry.ResourceIds);
+        Assert.Equal("automated", entry.AutomationStatus);
+        Assert.Empty(entry.Codes);
+        Assert.Equal("migrated", entry.Disposition);
+        Assert.Equal("data-reconciliation", entry.Verification);
+        Assert.Equal("target:resource:Inspections:layer:1", entry.TargetResourceId);
+        Assert.Equal("public.inspections", entry.TargetTable);
+    }
+
+    [Fact]
+    public async Task GetGeoservicesImportJobStatusAsync_DeserializesFidelityDifferences()
+    {
+        var client = TestHelpers.CreateClient(req =>
+        {
+            Assert.Equal("/api/v1/admin/import/geoservices/jobs/job-inspections", req.RequestUri!.PathAndQuery);
+            return Task.FromResult(RawJson("""
+                {
+                  "jobId": "job-inspections",
+                  "status": "needsReview",
+                  "featuresProcessed": 12,
+                  "estimatedTotalFeatures": 12,
+                  "sourceServiceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                  "sourceKind": "arcgis-geoservices-rest",
+                  "sourceLayerId": 1,
+                  "sourceLayerName": "Inspections",
+                  "tableName": "inspections",
+                  "serviceName": "field-ops",
+                  "startedAt": "2026-09-10T12:00:00Z",
+                  "completedAt": "2026-09-10T12:04:30Z",
+                  "fidelityVerdict": "incomplete",
+                  "fidelityDifferences": [
+                    {
+                      "code": "fidelity.publish.not-completed",
+                      "severity": "blocking",
+                      "subject": "inspections",
+                      "expected": "published layer",
+                      "actual": "not published",
+                      "summary": "The import was asked to publish its target layer, but no layer was published."
+                    },
+                    {
+                      "code": "fidelity.catalog-reconciliation.not-executed",
+                      "severity": "unverified",
+                      "subject": "inspections",
+                      "expected": "catalog reconciliation",
+                      "actual": "not executed",
+                      "summary": "The catalog reconciliation pass did not execute."
+                    }
+                  ]
+                }
+                """));
+        });
+
+        var progress = await client.GetGeoservicesImportJobStatusAsync("job-inspections");
+
+        Assert.Equal(GeoservicesImportStatus.NeedsReview, progress.Status);
+        Assert.Equal("incomplete", progress.FidelityVerdict);
+        Assert.Equal(2, progress.FidelityDifferences.Count);
+        Assert.Equal("fidelity.publish.not-completed", progress.FidelityDifferences[0].Code);
+        Assert.Equal("blocking", progress.FidelityDifferences[0].Severity);
+        Assert.Equal("inspections", progress.FidelityDifferences[0].Subject);
+        Assert.Equal("published layer", progress.FidelityDifferences[0].Expected);
+        Assert.Equal("not published", progress.FidelityDifferences[0].Actual);
+        Assert.Contains("no layer was published", progress.FidelityDifferences[0].Summary, StringComparison.Ordinal);
+        Assert.Equal("fidelity.catalog-reconciliation.not-executed", progress.FidelityDifferences[1].Code);
+        Assert.Equal("unverified", progress.FidelityDifferences[1].Severity);
+    }
+
+    [Fact]
+    public async Task StartMigrationBatchAsync_RequireFullFidelity_Surfaces422ConstructAccounting()
+    {
+        string? body = null;
+        var client = TestHelpers.CreateClient(async req =>
+        {
+            Assert.Equal(HttpMethod.Post, req.Method);
+            Assert.Equal("/api/v1/admin/import/migrations/", req.RequestUri!.PathAndQuery);
+            body = await req.Content!.ReadAsStringAsync();
+            return RawJson("""
+                {
+                  "error": "The migration selection was not started: construct accounting found 1 blocking difference(s). Layer resource:Inspections:layer:1 was discovered and left out of the selection.",
+                  "constructAccounting": {
+                    "matrixVersion": "2026.1",
+                    "executed": true,
+                    "discoveredResourceCount": 2,
+                    "selectedResourceCount": 1,
+                    "isBlocking": true,
+                    "entries": [
+                      {
+                        "construct": "service.resource",
+                        "sourceId": "resource:Inspections:layer:0",
+                        "resourceIds": ["resource:Inspections:layer:0"],
+                        "automationStatus": "automated",
+                        "codes": [],
+                        "disposition": "migrated",
+                        "verification": "data-reconciliation",
+                        "targetResourceId": "target:resource:Inspections:layer:0",
+                        "targetTable": "inspections"
+                      }
+                    ],
+                    "differences": [
+                      {
+                        "code": "fidelity.service.resource-unselected",
+                        "severity": "blocking",
+                        "subject": "resource:Inspections:layer:1",
+                        "expected": "selected",
+                        "actual": "not selected",
+                        "summary": "Layer resource:Inspections:layer:1 was discovered and left out of the selection."
+                      }
+                    ]
+                  }
+                }
+                """, HttpStatusCode.UnprocessableEntity);
+        });
+
+        var ex = await Assert.ThrowsAsync<HonuaAdminApiException>(() => client.StartMigrationBatchAsync(
+            new MigrationBatchStartRequest
+            {
+                SourceKind = "arcgis-geoservices-rest",
+                SourceUrl = "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                RequireFullFidelity = true,
+                Layers =
+                [
+                    new MigrationBatchLayerSpec
+                    {
+                        SourceResourceId = "resource:Inspections:layer:0",
+                        ServiceUrl = "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                        LayerId = 0,
+                        TableName = "inspections"
+                    }
+                ]
+            }));
+
+        using var sent = JsonDocument.Parse(body!);
+        Assert.True(sent.RootElement.GetProperty("requireFullFidelity").GetBoolean());
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, ex.StatusCode);
+        Assert.Contains("resource:Inspections:layer:1", ex.Message, StringComparison.Ordinal);
+        Assert.NotNull(ex.FailureReceipt);
+        Assert.Contains("constructAccounting", ex.ResponseBody, StringComparison.Ordinal);
+
+        var accounting = ex.ConstructAccounting;
+        Assert.NotNull(accounting);
+        Assert.Equal("2026.1", accounting.MatrixVersion);
+        Assert.True(accounting.Executed);
+        Assert.Equal(2, accounting.DiscoveredResourceCount);
+        Assert.Equal(1, accounting.SelectedResourceCount);
+        Assert.True(accounting.IsBlocking);
+        var difference = Assert.Single(accounting.Differences);
+        Assert.Equal("fidelity.service.resource-unselected", difference.Code);
+        Assert.Equal("blocking", difference.Severity);
+        Assert.Equal("resource:Inspections:layer:1", difference.Subject);
+        Assert.Equal("selected", difference.Expected);
+        Assert.Equal("not selected", difference.Actual);
+        Assert.Contains("left out of the selection", difference.Summary, StringComparison.Ordinal);
+        var entry = Assert.Single(accounting.Entries);
+        Assert.Equal("service.resource", entry.Construct);
+        Assert.Equal("migrated", entry.Disposition);
+        Assert.Equal("inspections", entry.TargetTable);
     }
 
     [Fact]

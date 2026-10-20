@@ -47,6 +47,41 @@ public sealed record MigrationInventoryScanRequest
     /// </summary>
     [JsonPropertyName("includeStyleContent")]
     public bool? IncludeStyleContent { get; init; }
+
+    /// <summary>
+    /// Artifact response mode. <c>all</c> asks the server for
+    /// <c>{inventory, manifest, parityEvidence}</c> instead of the inventory artifact alone.
+    /// Read that envelope with the <c>ScanMigrationSourceAsync</c> overload that returns
+    /// <see cref="MigrationScanArtifactSet"/>.
+    /// </summary>
+    [JsonPropertyName("artifactSet")]
+    public string? ArtifactSet { get; init; }
+
+    /// <summary>
+    /// Optional target service name used when <see cref="ArtifactSet"/> is <c>all</c> and the server
+    /// generates the migration manifest.
+    /// </summary>
+    [JsonPropertyName("targetServiceName")]
+    public string? TargetServiceName { get; init; }
+}
+
+/// <summary>
+/// Response envelope returned by <c>POST /api/v1/admin/import/scan</c> when
+/// <see cref="MigrationInventoryScanRequest.ArtifactSet"/> is <c>all</c>.
+/// </summary>
+public sealed record MigrationScanArtifactSet
+{
+    /// <summary>Source inventory artifact.</summary>
+    [JsonPropertyName("inventory")]
+    public required MigrationSourceInventoryArtifact Inventory { get; init; }
+
+    /// <summary>Migration manifest translated from <see cref="Inventory"/>.</summary>
+    [JsonPropertyName("manifest")]
+    public required MigrationManifestArtifact Manifest { get; init; }
+
+    /// <summary>Parity evidence generated with the manifest.</summary>
+    [JsonPropertyName("parityEvidence")]
+    public required MigrationParityEvidenceArtifact ParityEvidence { get; init; }
 }
 
 /// <summary>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Net;
+using Honua.Sdk.Admin.Models;
 
 namespace Honua.Sdk.Admin.Exceptions;
 
@@ -70,6 +71,12 @@ public sealed class HonuaAdminApiException : Honua.Sdk.Abstractions.HonuaExcepti
     /// </summary>
     public string? ResponseBody { get; }
 
+    /// <summary>
+    /// Pre-apply construct accounting from a migration-batch HTTP 422 refusal, when the response carried it.
+    /// Null for every other admin error.
+    /// </summary>
+    public MigrationConstructAccountingReport? ConstructAccounting { get; }
+
     /// <inheritdoc />
     public override Honua.Sdk.Abstractions.HonuaFailureReceipt? FailureReceipt { get; }
 
@@ -91,12 +98,14 @@ public sealed class HonuaAdminApiException : Honua.Sdk.Abstractions.HonuaExcepti
         HttpStatusCode statusCode,
         string message,
         string? responseBody,
-        Honua.Sdk.Abstractions.HonuaFailureReceipt? failureReceipt)
+        Honua.Sdk.Abstractions.HonuaFailureReceipt? failureReceipt,
+        MigrationConstructAccountingReport? constructAccounting = null)
         : base(message)
     {
         StatusCode = statusCode;
         ResponseBody = responseBody;
         FailureReceipt = failureReceipt;
+        ConstructAccounting = constructAccounting;
     }
 
     /// <summary>

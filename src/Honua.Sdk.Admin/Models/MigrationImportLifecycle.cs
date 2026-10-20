@@ -395,6 +395,28 @@ public sealed record GeoservicesImportProgress
     /// </summary>
     [JsonPropertyName("catalogReconciliationReport")]
     public JsonElement? CatalogReconciliationReport { get; init; }
+
+    /// <summary>
+    /// Migration fidelity verdict for the run, such as <c>full-fidelity</c>, <c>unverified</c>, or
+    /// <c>incomplete</c>. Null until the job reaches a terminal phase. Kept as a string so the server
+    /// can add verdicts without an SDK change. Status says whether the job finished; this says whether
+    /// the migrated layer is proven equivalent to the source.
+    /// </summary>
+    [JsonPropertyName("fidelityVerdict")]
+    public string? FidelityVerdict { get; init; }
+
+    /// <summary>
+    /// Per-resource differences and unexecuted checks behind <see cref="FidelityVerdict"/>, ordered by
+    /// code then subject. Empty when the server omits the field.
+    /// </summary>
+    [JsonPropertyName("fidelityDifferences")]
+    public IReadOnlyList<MigrationFidelityDifference> FidelityDifferences
+    {
+        get => _fidelityDifferences;
+        init => _fidelityDifferences = value ?? [];
+    }
+
+    private IReadOnlyList<MigrationFidelityDifference> _fidelityDifferences = [];
 }
 
 /// <summary>
@@ -738,6 +760,14 @@ public sealed record MigrationBatchStartRequest
     /// <summary>Whether to apply manifest relationship classes after all layers publish.</summary>
     [JsonPropertyName("applyRelationships")]
     public bool? ApplyRelationships { get; init; }
+
+    /// <summary>
+    /// When true, the server refuses the selection with HTTP 422 if pre-apply construct accounting finds
+    /// a blocking construct or cannot run. The refusal's accounting is available on
+    /// <see cref="Honua.Sdk.Admin.Exceptions.HonuaAdminApiException.ConstructAccounting"/>.
+    /// </summary>
+    [JsonPropertyName("requireFullFidelity")]
+    public bool? RequireFullFidelity { get; init; }
 }
 
 /// <summary>Per-child progress within a <see cref="MigrationBatchResponse"/>.</summary>
@@ -787,6 +817,15 @@ public sealed record MigrationBatchChildResponse
     /// <summary>Operator-visible note recorded on failure or review.</summary>
     [JsonPropertyName("statusNote")]
     public string? StatusNote { get; init; }
+
+    /// <summary>
+    /// Per-layer fidelity verdict reported by the child import job, such as <c>full-fidelity</c>,
+    /// <c>unverified</c>, or <c>incomplete</c>. Null until the child reaches a terminal status. Kept as a
+    /// string so the server can add verdicts. The child payload does not carry differences or construct
+    /// accounting; those are on <see cref="MigrationBatchResponse"/>.
+    /// </summary>
+    [JsonPropertyName("fidelityVerdict")]
+    public string? FidelityVerdict { get; init; }
 }
 
 /// <summary>
@@ -855,6 +894,197 @@ public sealed record MigrationBatchResponse
     /// <summary>Per-child progress, ordered by execution ordinal.</summary>
     [JsonPropertyName("children")]
     public IReadOnlyList<MigrationBatchChildResponse> Children { get; init; } = [];
+
+    /// <summary>
+    /// Service-level migration fidelity verdict, such as <c>full-fidelity</c>, <c>unverified</c>, or
+    /// <c>incomplete</c>. Null while the batch is running. Kept as a string so the server can add
+    /// verdicts. Status says whether the batch finished; this says whether the migrated service is
+    /// proven equivalent to the source.
+    /// </summary>
+    [JsonPropertyName("fidelityVerdict")]
+    public string? FidelityVerdict { get; init; }
+
+    /// <summary>
+    /// Per-resource differences that produced <see cref="FidelityVerdict"/>, ordered by code then subject.
+    /// Empty when the server omits the field.
+    /// </summary>
+    [JsonPropertyName("fidelityDifferences")]
+    public IReadOnlyList<MigrationFidelityDifference> FidelityDifferences
+    {
+        get => _fidelityDifferences;
+        init => _fidelityDifferences = value ?? [];
+    }
+
+    private IReadOnlyList<MigrationFidelityDifference> _fidelityDifferences = [];
+
+    /// <summary>
+    /// Pre-apply accounting of every construct discovered on the source against this batch's selection.
+    /// Present from the moment the batch starts; its differences fold into <see cref="FidelityVerdict"/>
+    /// when the batch finishes.
+    /// </summary>
+    [JsonPropertyName("constructAccounting")]
+    public MigrationConstructAccountingReport? ConstructAccounting { get; init; }
+}
+
+/// <summary>
+/// One source-to-target difference, or an unexecuted check, recorded against a migration run.
+/// </summary>
+public sealed record MigrationFidelityDifference
+{
+    /// <summary>Stable finding code. The server may add codes, so this stays a string.</summary>
+    [JsonPropertyName("code")]
+    public required string Code { get; init; }
+
+    /// <summary>
+    /// Severity such as <c>blocking</c> or <c>unverified</c>. Kept as a string so the server can add
+    /// severities.
+    /// </summary>
+    [JsonPropertyName("severity")]
+    public required string Severity { get; init; }
+
+    /// <summary>
+    /// Resource the difference applies to (layer name, field, relationship id, or similar). Disambiguates
+    /// multiple differences that share a <see cref="Code"/>.
+    /// </summary>
+    [JsonPropertyName("subject")]
+    public string? Subject { get; init; }
+
+    /// <summary>Expected value, sourced from the source service snapshot.</summary>
+    [JsonPropertyName("expected")]
+    public string? Expected { get; init; }
+
+    /// <summary>Observed value, sourced from the published target.</summary>
+    [JsonPropertyName("actual")]
+    public string? Actual { get; init; }
+
+    /// <summary>Operator-readable explanation of the difference and what it implies.</summary>
+    [JsonPropertyName("summary")]
+    public required string Summary { get; init; }
+}
+
+/// <summary>
+/// Pre-apply accounting of every construct discovered on the source against a service migration's selection.
+/// </summary>
+public sealed record MigrationConstructAccountingReport
+{
+    /// <summary>Construct-matrix version the accounting ran against.</summary>
+    [JsonPropertyName("matrixVersion")]
+    public string MatrixVersion { get; init; } = string.Empty;
+
+    /// <summary>
+    /// True when a source manifest was available and every discovered construct was accounted. When false,
+    /// <see cref="NotExecutedReason"/> says why and full fidelity cannot be proven.
+    /// </summary>
+    [JsonPropertyName("executed")]
+    public bool Executed { get; init; }
+
+    /// <summary>Why the accounting did not run, when <see cref="Executed"/> is false.</summary>
+    [JsonPropertyName("notExecutedReason")]
+    public string? NotExecutedReason { get; init; }
+
+    /// <summary>Layers and tables discovered on the source.</summary>
+    [JsonPropertyName("discoveredResourceCount")]
+    public int DiscoveredResourceCount { get; init; }
+
+    /// <summary>Layers and tables in the migration selection.</summary>
+    [JsonPropertyName("selectedResourceCount")]
+    public int SelectedResourceCount { get; init; }
+
+    /// <summary>One entry per accounted construct, ordered by source id then construct.</summary>
+    [JsonPropertyName("entries")]
+    public IReadOnlyList<MigrationConstructAccountingEntry> Entries
+    {
+        get => _entries;
+        init => _entries = value ?? [];
+    }
+
+    /// <summary>
+    /// Differences the accounting contributes to the fidelity verdict, ordered by code then subject.
+    /// Empty when the server omits the field.
+    /// </summary>
+    [JsonPropertyName("differences")]
+    public IReadOnlyList<MigrationFidelityDifference> Differences
+    {
+        get => _differences;
+        init => _differences = value ?? [];
+    }
+
+    private IReadOnlyList<MigrationConstructAccountingEntry> _entries = [];
+    private IReadOnlyList<MigrationFidelityDifference> _differences = [];
+
+    /// <summary>
+    /// True when at least one difference is <c>blocking</c>. Matches the server's <c>isBlocking</c> field,
+    /// which is derived from <see cref="Differences"/> rather than stored.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsBlocking => Differences is { } differences && differences.Any(static difference =>
+        string.Equals(difference.Severity, "blocking", StringComparison.Ordinal));
+}
+
+/// <summary>One accounted construct.</summary>
+public sealed record MigrationConstructAccountingEntry
+{
+    /// <summary>Construct key, such as <c>service.resource</c>.</summary>
+    [JsonPropertyName("construct")]
+    public required string Construct { get; init; }
+
+    /// <summary>Source identifier the construct was discovered on.</summary>
+    [JsonPropertyName("sourceId")]
+    public required string SourceId { get; init; }
+
+    /// <summary>Source resource ids that own the construct.</summary>
+    [JsonPropertyName("resourceIds")]
+    public IReadOnlyList<string> ResourceIds
+    {
+        get => _resourceIds;
+        init => _resourceIds = value ?? [];
+    }
+
+    /// <summary>Classification automation status, such as <c>automated</c>.</summary>
+    [JsonPropertyName("automationStatus")]
+    public required string AutomationStatus { get; init; }
+
+    /// <summary>Stable compatibility or fidelity codes behind the status.</summary>
+    [JsonPropertyName("codes")]
+    public IReadOnlyList<string> Codes
+    {
+        get => _codes;
+        init => _codes = value ?? [];
+    }
+
+    private IReadOnlyList<string> _resourceIds = [];
+    private IReadOnlyList<string> _codes = [];
+
+    /// <summary>Disposition, such as <c>migrated</c> or <c>unselected</c>.</summary>
+    [JsonPropertyName("disposition")]
+    public required string Disposition { get; init; }
+
+    /// <summary>Post-apply check that verifies the construct, such as <c>data-reconciliation</c>.</summary>
+    [JsonPropertyName("verification")]
+    public required string Verification { get; init; }
+
+    /// <summary>Planned target resource id from the manifest, when the construct belongs to one resource.</summary>
+    [JsonPropertyName("targetResourceId")]
+    public string? TargetResourceId { get; init; }
+
+    /// <summary>Target table the selection imports the resource into, when selected.</summary>
+    [JsonPropertyName("targetTable")]
+    public string? TargetTable { get; init; }
+}
+
+/// <summary>
+/// Body of an HTTP 422 from <c>POST /api/v1/admin/import/migrations</c> when full fidelity was required
+/// and construct accounting refused the selection.
+/// </summary>
+internal sealed record MigrationBatchRefusedResponse
+{
+    /// <summary>Operator-visible refusal reason.</summary>
+    [JsonPropertyName("error")]
+    public string? Error { get; init; }
+
+    /// <summary>Construct accounting that refused the selection.</summary>
+    [JsonPropertyName("constructAccounting")]
+    public MigrationConstructAccountingReport? ConstructAccounting { get; init; }
 }
 
 // ── Migration run reconciliation report retrieval ───────────────────────
