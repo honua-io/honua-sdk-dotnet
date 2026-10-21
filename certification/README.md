@@ -42,7 +42,9 @@ package and verifies the following:
   resolver selects newer trunk candidates. When the two commits are equal, the
   digests must match too.
 - `nightly-<sha7>` on GHCR resolves to `serverImageDigest`, and the seed at
-  `serverSourceSha` hashes to `fixtureRevision`.
+  `serverSourceSha` hashes to `fixtureRevision`. When the pin is exactly the
+  manifest server snapshot, a rebuilt tag is accepted if GHCR still serves the
+  manifest digest. Certification pulls that digest, not the tag.
 
 Each drift is reported on its own `::error::` line naming the field, the pinned
 value and the published value. Scheduled and dispatched runs execute `--check`
@@ -76,11 +78,15 @@ honua-release first (R25), then this file.
 `.github/workflows/certification-pin-follow.yml` runs daily and on
 `workflow_dispatch`. It compares this file with
 `clientArtifacts.honua-sdk-dotnet` on honua-release `trunk`. When that
-published coordinate differs, `--follow-manifest` updates only the SDK package
+published coordinate differs, `--follow-manifest` updates the SDK package
 fields. Version, digest, and source commit come from the manifest. The SHA-512
 comes from the nuget.org bytes of that version. The workflow then runs
-`--check`. Server pins stay as they are: the manifest's server snapshot may
-lag the nightly resolver.
+`--check`. A server pin that is behind `components.honua-server` moves up to
+that snapshot's commit, image digest, and the seed hash at that commit.
+GHCR must serve that digest, either as `nightly-<sha7>` or, after a rebuild of
+the same commit moves the tag, as the manifest digest itself. A server pin
+ahead of the snapshot stays: the manifest's hand snapshot may lag the nightly
+resolver. A diverged server pin is refused and is not rewritten.
 
 An unpublished `publicationState`, or a version that nuget.org does not serve,
 fails the run and does not open a pull request. The workflow opens or updates
