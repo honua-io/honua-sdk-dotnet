@@ -1,11 +1,11 @@
 {
   "sdkPackageId": "Honua.Sdk",
-  "sdkPackageVersion": "1.10.4",
+  "sdkPackageVersion": "1.11.0",
   "sdkPackageRegistry": "nuget.org",
-  "sdkPackageSha512": "yeP3S3+O9ZKRk4oOLS7PgXs3T5HxrheSyyYymLFeKt3lcSsn5kGs8GCWxPCSTbYo6VFZY64BMcM7k54scFQxxA==",
-  "sdkPackageDigest": "sha256:60253476b6a1be98e1cbd989c3fbcdcf3c148b11c16e57e4336c90160ba0b2b3",
-  "sdkSourceSha": "66413fe30f09533a008cf1552def8a2d05cc4fde",
-  "serverSourceSha": "ff5f5671903e96e13cffac7b73546c3ed0f853c5",
-  "serverImageDigest": "sha256:3ef3bd41a2f84d1f3a6194c11db496f741cc4d869b54bf57e9d7067dd9cf3d39",
+  "sdkPackageSha512": "9xavU7S5zkcP33C+wnwGfW6VVctE4G0Q1HtUyeYhrozfEix2gWU4h2I3hrkP/ZS68tmTCP+1WGLNr1LlRoH+Pg==",
+  "sdkPackageDigest": "sha256:89a1001f1a9c922413b88cc262c7f21ec2d64b95d7c49a07386b3eded1cc62bb",
+  "sdkSourceSha": "5f09e4fca08a4cc6b9877c81e549fc5bc8648dba",
+  "serverSourceSha": "0e03bdd06b3ca3fb1b82388110bb5dfa19b9f8fa",
+  "serverImageDigest": "sha256:dcf3296f17a456a876c23133fae50b5b32628d4ec710e8bdab58f57d2394d750",
   "fixtureRevision": "sha256:3bba01b45aa9c90589f03b7c72cd49918a14b0700cb125fd26d987a1bc743f3e"
 }

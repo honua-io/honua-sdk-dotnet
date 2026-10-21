@@ -69,8 +69,10 @@ on that target. Cleanup is fail-closed. A 402 is a failed edit, not a skip.
 The pinned server image and published `Honua.Sdk` package are recorded in
 [`certification/candidate-pins.json`](../certification/candidate-pins.json); see
 [`certification/README.md`](../certification/README.md) to advance them.
-A scheduled workflow follows the published honua-release package coordinate
-so that pin does not wait on a hand bump. The operation ledger is regenerated
+A scheduled workflow follows the published honua-release package coordinate,
+and advances a server pin that has fallen behind the manifest snapshot, so
+that pin does not wait on a hand bump. A newer server pin is left in place.
+The operation ledger is regenerated
 only when the public client surface changes, not when the pin moves.
 Certification refuses floating `:nightly` and `:nightly-aot` tags.
 The earlier rc-cert image `e3ab87ce` / `sha256:d7a45c87` remains the historical

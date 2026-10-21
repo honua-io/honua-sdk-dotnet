@@ -95,10 +95,11 @@ jobs:
           git commit -m "chore(certification): follow the published Honua.Sdk pin"
           git push origin "HEAD:${branch}"
           version="$(python3 -c 'import json; print(json.load(open("certification/candidate-pins.json"))["sdkPackageVersion"])')"
+          server="$(python3 -c 'import json; print(json.load(open("certification/candidate-pins.json"))["serverSourceSha"])')"
           body="$(cat <<EOF
           Follows \`clientArtifacts.honua-sdk-dotnet\` on honua-release \`trunk\`.
 
-          The pin file now names Honua.Sdk ${version}. \`--follow-manifest\` copied the published manifest coordinate and took the SHA-512 from the nuget.org bytes. \`--check\` then verified those bytes against nuget.org and the manifest again. Server pins are unchanged.
+          The pin file now names Honua.Sdk ${version} and server ${server}. \`--follow-manifest\` copied the published manifest package coordinate and took the SHA-512 from the nuget.org bytes. A server pin behind the manifest snapshot was advanced to that snapshot's commit, image digest, and seed hash; a newer server pin was left in place. \`--check\` then verified the package bytes, the manifest, and the server image.
 
           This pull request does not merge itself.
 
