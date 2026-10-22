@@ -413,6 +413,73 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertEqual(updated["fixtureRevision"], pins["fixtureRevision"])
         self.assertEqual(pins["sdkPackageVersion"], PINS["sdkPackageVersion"])
 
+    def test_follow_advances_a_server_pin_behind_the_manifest(self):
+        pins, sources = self._consistent()
+        sources.compare_status = "behind"
+        manifest_sha = sources.manifest["components"]["honua-server"]["sha"]
+        manifest_digest = sources.manifest["components"]["honua-server"]["digest"]
+        sources.image_digests[f"nightly-{manifest_sha[:7]}"] = manifest_digest
+        sources.fixture = b"-- manifest seed\n"
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertTrue(changed)
+        self.assertEqual(updated["sdkPackageVersion"], pins["sdkPackageVersion"])
+        self.assertEqual(updated["serverSourceSha"], manifest_sha)
+        self.assertEqual(updated["serverImageDigest"], manifest_digest)
+        self.assertEqual(updated["fixtureRevision"], _sha256(sources.fixture))
+        self.assertEqual(pins["serverSourceSha"], PINS["serverSourceSha"])
+
+    def test_follow_refuses_a_diverged_server_pin(self):
+        pins, sources = self._consistent()
+        sources.compare_status = "diverged"
+        with self.assertRaisesRegex(ValueError, "diverged"):
+            MODULE.follow_release_manifest(pins, sources)
+        self.assertEqual(pins["serverSourceSha"], PINS["serverSourceSha"])
+
+    def test_follow_refuses_a_behind_server_image_ghcr_does_not_serve(self):
+        pins, sources = self._consistent()
+        sources.compare_status = "behind"
+        with self.assertRaisesRegex(ValueError, "is not served"):
+            MODULE.follow_release_manifest(pins, sources)
+        self.assertEqual(pins["serverSourceSha"], PINS["serverSourceSha"])
+
+    def test_follow_keeps_the_manifest_digest_when_the_tag_was_rebuilt(self):
+        pins, sources = self._consistent()
+        sources.compare_status = "behind"
+        manifest_sha = sources.manifest["components"]["honua-server"]["sha"]
+        manifest_digest = sources.manifest["components"]["honua-server"]["digest"]
+        sources.image_digests[f"nightly-{manifest_sha[:7]}"] = "sha256:" + "e" * 64
+        sources.image_digests[manifest_digest] = manifest_digest
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertTrue(changed)
+        self.assertEqual(updated["serverSourceSha"], manifest_sha)
+        self.assertEqual(updated["serverImageDigest"], manifest_digest)
+
+    def test_check_accepts_the_manifest_digest_when_its_tag_was_rebuilt(self):
+        pins, sources = self._consistent()
+        sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
+        sources.image_digests[f"nightly-{pins['serverSourceSha'][:7]}"] = "sha256:" + "e" * 64
+        sources.image_digests[pins["serverImageDigest"]] = pins["serverImageDigest"]
+        self.assertEqual(MODULE.check_pins(pins, sources), [])
+
+    def test_check_refuses_a_rebuilt_tag_when_the_pinned_digest_is_gone(self):
+        pins, sources = self._consistent()
+        sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
+        sources.image_digests[f"nightly-{pins['serverSourceSha'][:7]}"] = "sha256:" + "e" * 64
+        problems = MODULE.check_pins(pins, sources)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("server image drifted", problems[0])
+
+    def test_follow_leaves_an_identical_server_pin_when_the_digest_already_matches(self):
+        pins, sources = self._consistent()
+        sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertFalse(changed)
+        self.assertEqual(updated["serverSourceSha"], pins["serverSourceSha"])
+        self.assertEqual(updated["serverImageDigest"], pins["serverImageDigest"])
+
     def test_follow_refuses_an_unpublished_manifest_artifact(self):
         pins, sources = self._consistent()
         for state in ("staged", "placeholder", "source-built", None):
