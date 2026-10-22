@@ -7,5 +7,6 @@
   "sdkSourceSha": "5f09e4fca08a4cc6b9877c81e549fc5bc8648dba",
   "serverSourceSha": "0e03bdd06b3ca3fb1b82388110bb5dfa19b9f8fa",
   "serverImageDigest": "sha256:dcf3296f17a456a876c23133fae50b5b32628d4ec710e8bdab58f57d2394d750",
-  "fixtureRevision": "sha256:3bba01b45aa9c90589f03b7c72cd49918a14b0700cb125fd26d987a1bc743f3e"
+  "fixtureRevision": "sha256:3bba01b45aa9c90589f03b7c72cd49918a14b0700cb125fd26d987a1bc743f3e",
+  "candidateCut": "2026-10-12T09:45:00Z"
 }

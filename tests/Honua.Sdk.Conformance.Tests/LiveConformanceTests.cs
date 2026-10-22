@@ -119,16 +119,34 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
             timeout.Token).ConfigureAwait(false);
 
         var feature = Assert.Single(query.Features ?? []);
-        // The canonical contract: JSONB attributes project into their native
-        // JSON types, not a nested envelope or stringified JSON.
+        // The GeoServices contract (honua-server#5131, #5147): JSONB columns are
+        // advertised as esriFieldTypeString, and their object or array values are
+        // written as JSON text so Esri clients can materialise them. The text must
+        // still carry the native JSON value, not an envelope or a lossy rendering.
+        // OGC API Features keeps the native JSON projection (see below).
         Assert.NotNull(feature.Attributes);
-        Assert.True(feature.Attributes!.TryGetValue("tags", out var tags));
-        Assert.Equal(JsonValueKind.Array, tags.ValueKind);
-        Assert.All(tags.EnumerateArray(), value => Assert.Equal(JsonValueKind.String, value.ValueKind));
+        AssertJsonTextArray(query, feature.Attributes!, "tags", JsonValueKind.String);
+        AssertJsonTextArray(query, feature.Attributes!, "numbers", JsonValueKind.Number);
+    }
 
-        Assert.True(feature.Attributes.TryGetValue("numbers", out var numbers));
-        Assert.Equal(JsonValueKind.Array, numbers.ValueKind);
-        Assert.All(numbers.EnumerateArray(), value => Assert.Equal(JsonValueKind.Number, value.ValueKind));
+    private static void AssertJsonTextArray(
+        FeatureServerQueryResponse query,
+        IReadOnlyDictionary<string, JsonElement> attributes,
+        string name,
+        JsonValueKind elementKind)
+    {
+        var field = query.Fields?.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (field is not null)
+        {
+            Assert.Equal("esriFieldTypeString", field.Type);
+        }
+
+        Assert.True(attributes.TryGetValue(name, out var value), $"attribute '{name}' is missing");
+        Assert.Equal(JsonValueKind.String, value.ValueKind);
+        using var document = JsonDocument.Parse(value.GetString()!);
+        Assert.Equal(JsonValueKind.Array, document.RootElement.ValueKind);
+        Assert.NotEqual(0, document.RootElement.GetArrayLength());
+        Assert.All(document.RootElement.EnumerateArray(), element => Assert.Equal(elementKind, element.ValueKind));
     }
 
     [LiveConformanceFact]

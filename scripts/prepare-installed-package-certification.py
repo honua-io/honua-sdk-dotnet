@@ -6,8 +6,8 @@ server candidate are written down. The workflow reads it through --emit-env, the
 restore reads it directly, and --check verifies it against nuget.org and the
 honua-release platform manifest. --follow-manifest copies a published manifest
 package coordinate into the pin file after the nuget.org bytes match it, and
-advances a server pin that is behind the manifest snapshot. A newer server pin
-is left alone.
+advances a server pin that is behind the manifest snapshot, together with that
+snapshot's candidate cut. A newer server pin is left alone.
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ DEFAULT_PINS = ROOT / "certification" / "candidate-pins.json"
 SHA256_RE = re.compile(r"sha256:[0-9a-f]{64}")
 SHA_RE = re.compile(r"[0-9a-f]{40}")
 VERSION_RE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
+CUT_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z")
 DIGEST_IMAGE_RE = re.compile(r"ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}")
 SERVER_REPOSITORY = "ghcr.io/honua-io/honua-server"
 NUGET_ORG = "https://api.nuget.org/v3/index.json"
@@ -51,6 +52,7 @@ PIN_FIELDS = (
     "serverSourceSha",
     "serverImageDigest",
     "fixtureRevision",
+    "candidateCut",
 )
 
 
@@ -79,6 +81,8 @@ def validate_pins(pins: dict[str, Any]) -> None:
     for field in ("sdkSourceSha", "serverSourceSha"):
         if not SHA_RE.fullmatch(pins[field]):
             raise ValueError(f"{field} must be a full lowercase commit")
+    if not CUT_RE.fullmatch(pins["candidateCut"]):
+        raise ValueError("candidateCut must be a UTC ISO-8601 timestamp ending in Z")
 
 
 def load_pins(path: Path) -> dict[str, Any]:
@@ -102,6 +106,7 @@ def emit_env(pins: dict[str, Any]) -> str:
         "PINNED_SDK_PACKAGE_VERSION": pins["sdkPackageVersion"],
         "PINNED_SDK_PACKAGE_DIGEST": pins["sdkPackageDigest"],
         "PINNED_SDK_PACKAGE_SOURCE_SHA": pins["sdkSourceSha"],
+        "PINNED_CANDIDATE_CUT": pins["candidateCut"],
     }
     return "".join(f"{name}={value}\n" for name, value in values.items())
 
@@ -447,6 +452,12 @@ def _check_release_manifest(pins: dict[str, Any], sources: Sources) -> list[str]
                 f"serverImageDigest: pin file has {pins['serverImageDigest']}, honua-release manifest "
                 f"server pin {base} has {server.get('digest')}"
             )
+        cut = _manifest_candidate_cut_or_none(manifest)
+        if cut != pins["candidateCut"]:
+            problems.append(
+                f"candidateCut: pin file has {pins['candidateCut']}, honua-release manifest "
+                f"protocolCertification.candidateCutAt for server pin {base} is {cut}"
+            )
     elif status != "ahead":
         problems.append(
             f"server pin {pins['serverSourceSha']} is {status} relative to the honua-release manifest "
@@ -575,6 +586,20 @@ def _manifest_server_snapshot(manifest: dict[str, Any]) -> tuple[str, str]:
     return sha, digest
 
 
+def _manifest_candidate_cut_or_none(manifest: dict[str, Any]) -> str | None:
+    cut = (manifest.get("protocolCertification") or {}).get("candidateCutAt")
+    return cut if isinstance(cut, str) and CUT_RE.fullmatch(cut) else None
+
+
+def _manifest_candidate_cut(manifest: dict[str, Any]) -> str:
+    cut = _manifest_candidate_cut_or_none(manifest)
+    if cut is None:
+        raise ValueError(
+            "honua-release manifest protocolCertification.candidateCutAt must be a UTC ISO-8601 timestamp"
+        )
+    return cut
+
+
 def _align_server_pin(pins: dict[str, Any], sources: Sources, manifest: dict[str, Any]) -> None:
     """Advance a server pin that is behind the manifest snapshot.
 
@@ -585,7 +610,11 @@ def _align_server_pin(pins: dict[str, Any], sources: Sources, manifest: dict[str
     """
     sha, digest = _manifest_server_snapshot(manifest)
     status = sources.server_compare(sha, pins["serverSourceSha"])
-    if status in ("ahead", "identical"):
+    if status == "ahead":
+        return
+    if status == "identical":
+        # The candidate cut belongs to the manifest snapshot, so it moves with it.
+        pins["candidateCut"] = _manifest_candidate_cut(manifest)
         return
     if status != "behind":
         raise ValueError(
@@ -602,6 +631,7 @@ def _align_server_pin(pins: dict[str, Any], sources: Sources, manifest: dict[str
     pins["serverSourceSha"] = sha
     pins["serverImageDigest"] = digest
     pins["fixtureRevision"] = "sha256:" + hashlib.sha256(sources.server_fixture(sha)).hexdigest()
+    pins["candidateCut"] = _manifest_candidate_cut(manifest)
 
 
 def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dict[str, Any], bool]:
@@ -646,6 +676,7 @@ def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dic
         "serverSourceSha",
         "serverImageDigest",
         "fixtureRevision",
+        "candidateCut",
     )
     changed = any(updated[field] != pins[field] for field in tracked)
     return updated, changed
