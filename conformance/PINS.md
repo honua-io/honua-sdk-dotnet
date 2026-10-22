@@ -127,8 +127,11 @@ seed fetch, server start, server seed apply) before the two contract surfaces
 (schema, live). PostGIS gets the postgis extensions only until `/healthz/ready`
 returns 200. `tests/seed/base-schema.sql` is applied after that for every image
 except the historical pin `sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d`
-(`e3ab87ce`). That seed still inserts `honua.services.max_record_count`, which
-those migrations do not create, so it is loaded before startup. Loading any
+(`e3ab87ce`). A dispatch tag for that same image is resolved to the repository
+digest before the exception is chosen. That seed still inserts
+`honua.services.max_record_count`, which those migrations do not create, so it
+is loaded before startup. A failure of that legacy seed step is its own harness
+surface. Loading any
 later seed first leaves migration-owned tables without a `schema_versions`
 journal, and those images stay unready.
 If a harness surface fails, schema and live never run and the canary has no

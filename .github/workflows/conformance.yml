@@ -86,6 +86,7 @@ jobs:
       setup-outcome: ${{ steps.setup.outcome }}
       build-outcome: ${{ steps.build.outcome }}
       seed-fetch-outcome: ${{ steps.fetch-seed.outcome }}
+      legacy-seed-outcome: ${{ steps.legacy-seed.outcome }}
       seed-apply-outcome: ${{ steps.apply-seed.outcome }}
       server-start-outcome: ${{ steps.start-server.outcome }}
       # The canary verdict, computed by the "Enforce conformance outcomes"
@@ -196,6 +197,9 @@ jobs:
             fi
           fi
 
+          # A dispatch may name the legacy image by tag. Compare digests.
+          server_image="$(python3 scripts/conformance_seed_order.py --canonicalize "${server_image}")"
+
           {
             echo "mode=${mode}"
             echo "fixture-version=${fixture_version}"
@@ -302,7 +306,8 @@ jobs:
         env:
           PGPASSWORD: honua
         run: |
-          if [[ "${HONUA_SERVER_IMAGE}" != "${LEGACY_SEED_BEFORE_START_IMAGE}" ]]; then
+          order="$(python3 scripts/conformance_seed_order.py --image "${HONUA_SERVER_IMAGE}" --legacy "${LEGACY_SEED_BEFORE_START_IMAGE}")"
+          if [[ "${order}" != "before" ]]; then
             echo "modern image; seed waits until the server is ready"
             exit 0
           fi
@@ -347,7 +352,8 @@ jobs:
         env:
           PGPASSWORD: honua
         run: |
-          if [[ "${HONUA_SERVER_IMAGE}" == "${LEGACY_SEED_BEFORE_START_IMAGE}" ]]; then
+          order="$(python3 scripts/conformance_seed_order.py --image "${HONUA_SERVER_IMAGE}" --legacy "${LEGACY_SEED_BEFORE_START_IMAGE}")"
+          if [[ "${order}" == "before" ]]; then
             echo "legacy pinned image was seeded before startup"
             exit 0
           fi
@@ -397,6 +403,7 @@ jobs:
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           SCHEMA_OUTCOME: ${{ steps.schema.outcome }}
           FETCH_SEED_OUTCOME: ${{ steps.fetch-seed.outcome }}
+          LEGACY_SEED_OUTCOME: ${{ steps.legacy-seed.outcome }}
           APPLY_SEED_OUTCOME: ${{ steps.apply-seed.outcome }}
           START_SERVER_OUTCOME: ${{ steps.start-server.outcome }}
           LIVE_OUTCOME: ${{ steps.live.outcome }}
@@ -412,6 +419,7 @@ jobs:
             "build:${BUILD_OUTCOME}" \
             "schema:${SCHEMA_OUTCOME}" \
             "seed-fetch:${FETCH_SEED_OUTCOME}" \
+            "legacy-seed:${LEGACY_SEED_OUTCOME}" \
             "server-start:${START_SERVER_OUTCOME}" \
             "seed-apply:${APPLY_SEED_OUTCOME}" \
             "live:${LIVE_OUTCOME}"; do
@@ -498,6 +506,7 @@ jobs:
       SETUP_OUTCOME: ${{ needs.conformance.outputs.setup-outcome }}
       BUILD_OUTCOME: ${{ needs.conformance.outputs.build-outcome }}
       SEED_FETCH_OUTCOME: ${{ needs.conformance.outputs.seed-fetch-outcome }}
+      LEGACY_SEED_OUTCOME: ${{ needs.conformance.outputs.legacy-seed-outcome }}
       SEED_APPLY_OUTCOME: ${{ needs.conformance.outputs.seed-apply-outcome }}
       SERVER_START_OUTCOME: ${{ needs.conformance.outputs.server-start-outcome }}
       RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -541,6 +550,7 @@ jobs:
                   "setup": os.environ.get("SETUP_OUTCOME") or "not-run",
                   "build": os.environ.get("BUILD_OUTCOME") or "not-run",
                   "seedFetch": os.environ.get("SEED_FETCH_OUTCOME") or "not-run",
+                  "legacySeed": os.environ.get("LEGACY_SEED_OUTCOME") or "not-run",
                   "seedApply": os.environ.get("SEED_APPLY_OUTCOME") or "not-run",
                   "serverStart": os.environ.get("SERVER_START_OUTCOME") or "not-run",
               },
@@ -592,6 +602,7 @@ jobs:
               (".NET/NuGet setup", outcome("SETUP_OUTCOME")),
               ("conformance build", outcome("BUILD_OUTCOME")),
               ("server seed fetch", outcome("SEED_FETCH_OUTCOME")),
+              ("legacy seed", outcome("LEGACY_SEED_OUTCOME")),
               ("server start", outcome("SERVER_START_OUTCOME")),
               ("server seed apply", outcome("SEED_APPLY_OUTCOME")),
           ]
