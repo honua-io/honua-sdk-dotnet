@@ -280,8 +280,9 @@ jobs:
             --filter "FullyQualifiedName~SchemaConformanceTests" \
             --logger "console;verbosity=normal"
 
-      # 4. Extensions, then boot. The e3ab87ce pin is seeded first because its
-      #    fixture inserts max_record_count. Every other image migrates before
+      # 4. Extensions, then boot. The historical d7a45c87 pin is seeded first
+      #    because its fixture inserts max_record_count. Every other image,
+      #    including the pinned 0e03bdd candidate, migrates before
       #    tests/seed/base-schema.sql. Pre-seeding those leaves migration-owned
       #    tables without a schema_versions journal, so /healthz/ready stays 503.
       - name: Fetch pinned server seed schema
