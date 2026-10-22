@@ -38,6 +38,12 @@ env:
   PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
   # honua-server commit that produced the pinned nightly image (for the seed SQL).
   PINNED_HONUA_SERVER_SEED_REF: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
+  # This image's seed inserts honua.services.max_record_count, which its
+  # migrations do not create, so the seed has to land before startup.
+  # Every later image migrates first. Pre-seeding those trips the schema
+  # floor and /healthz/ready stays 503 (#339). Bumping the pin above does
+  # not by itself keep this exception.
+  LEGACY_SEED_BEFORE_START_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
@@ -271,26 +277,35 @@ jobs:
             --filter "FullyQualifiedName~SchemaConformanceTests" \
             --logger "console;verbosity=normal"
 
-      # 4. Seed PostGIS from the pinned honua-server release's base schema, then
-      #    boot the pinned honua-server:nightly image against it.
+      # 4. Extensions, then boot. The e3ab87ce pin is seeded first because its
+      #    fixture inserts max_record_count. Every other image migrates before
+      #    tests/seed/base-schema.sql. Pre-seeding those leaves migration-owned
+      #    tables without a schema_versions journal, so /healthz/ready stays 503.
       - name: Fetch pinned server seed schema
         id: fetch-seed
         continue-on-error: ${{ github.event_name == 'schedule' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PGPASSWORD: honua
         run: |
           mkdir -p .conformance
           gh api \
             "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${HONUA_SERVER_SEED_REF}" \
             -H "Accept: application/vnd.github.raw" > .conformance/base-schema.sql
           test -s .conformance/base-schema.sql
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_raster;"
 
-      - name: Apply seed to PostGIS
-        id: apply-seed
+      - name: Apply legacy pinned seed before startup
+        id: legacy-seed
         continue-on-error: ${{ github.event_name == 'schedule' }}
         env:
           PGPASSWORD: honua
         run: |
+          if [[ "${HONUA_SERVER_IMAGE}" != "${LEGACY_SEED_BEFORE_START_IMAGE}" ]]; then
+            echo "modern image; seed waits until the server is ready"
+            exit 0
+          fi
           psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .conformance/base-schema.sql
 
       - name: Start honua-server
@@ -325,6 +340,18 @@ jobs:
             docker logs honua-server || true
             exit 1
           fi
+
+      - name: Apply seed to PostGIS
+        id: apply-seed
+        continue-on-error: ${{ github.event_name == 'schedule' }}
+        env:
+          PGPASSWORD: honua
+        run: |
+          if [[ "${HONUA_SERVER_IMAGE}" == "${LEGACY_SEED_BEFORE_START_IMAGE}" ]]; then
+            echo "legacy pinned image was seeded before startup"
+            exit 0
+          fi
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .conformance/base-schema.sql
 
       # 5. Live conformance: drive the canonical fixture workflows through the
       #    real SDK protocol clients against the pinned server. Known nightly
@@ -385,8 +412,8 @@ jobs:
             "build:${BUILD_OUTCOME}" \
             "schema:${SCHEMA_OUTCOME}" \
             "seed-fetch:${FETCH_SEED_OUTCOME}" \
-            "seed-apply:${APPLY_SEED_OUTCOME}" \
             "server-start:${START_SERVER_OUTCOME}" \
+            "seed-apply:${APPLY_SEED_OUTCOME}" \
             "live:${LIVE_OUTCOME}"; do
             surface="${result%%:*}"
             outcome="${result#*:}"
@@ -565,8 +592,8 @@ jobs:
               (".NET/NuGet setup", outcome("SETUP_OUTCOME")),
               ("conformance build", outcome("BUILD_OUTCOME")),
               ("server seed fetch", outcome("SEED_FETCH_OUTCOME")),
-              ("server seed apply", outcome("SEED_APPLY_OUTCOME")),
               ("server start", outcome("SERVER_START_OUTCOME")),
+              ("server seed apply", outcome("SEED_APPLY_OUTCOME")),
           ]
           harness_failed = [
               f"{name} ({state})"
