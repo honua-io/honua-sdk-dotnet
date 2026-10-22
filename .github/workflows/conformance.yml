@@ -32,17 +32,16 @@ env:
   DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
-  # rc-cert-e3ab87c-e3ab87c, dated 20260821. The tag is a moving pointer; the
-  # digest is what is actually pinned.
-  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
+  # Pinned honua-server image by digest (see conformance/PINS.md): the honua-release
+  # manifest 2026.1 candidate nightly-0e03bdd (multi-architecture index). The tag is a
+  # moving pointer; the digest is what is actually pinned.
+  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:dcf3296f17a456a876c23133fae50b5b32628d4ec710e8bdab58f57d2394d750"
   # honua-server commit that produced the pinned nightly image (for the seed SQL).
-  PINNED_HONUA_SERVER_SEED_REF: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
-  # This image's seed inserts honua.services.max_record_count, which its
-  # migrations do not create, so the seed has to land before startup.
-  # Every later image migrates first. Pre-seeding those trips the schema
-  # floor and /healthz/ready stays 503 (#339). Bumping the pin above does
-  # not by itself keep this exception.
+  PINNED_HONUA_SERVER_SEED_REF: "0e03bdd06b3ca3fb1b82388110bb5dfa19b9f8fa"
+  # The historical image sha256:d7a45c87 inserts honua.services.max_record_count,
+  # which its migrations do not create, so that seed has to land before startup.
+  # Every later image, including the pinned 0e03bdd candidate, migrates first.
+  # Pre-seeding those trips the schema floor and /healthz/ready stays 503 (#339).
   LEGACY_SEED_BEFORE_START_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
