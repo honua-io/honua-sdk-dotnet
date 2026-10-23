@@ -514,6 +514,7 @@ class InstalledPackageCertificationTests(unittest.TestCase):
     def test_check_accepts_the_manifest_digest_when_its_tag_was_rebuilt(self):
         pins, sources = self._consistent()
         sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = pins["candidateCut"]
         sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
         sources.image_digests[f"nightly-{pins['serverSourceSha'][:7]}"] = "sha256:" + "e" * 64
         sources.image_digests[pins["serverImageDigest"]] = pins["serverImageDigest"]
@@ -522,6 +523,7 @@ class InstalledPackageCertificationTests(unittest.TestCase):
     def test_check_refuses_a_rebuilt_tag_when_the_pinned_digest_is_gone(self):
         pins, sources = self._consistent()
         sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = pins["candidateCut"]
         sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
         sources.image_digests[f"nightly-{pins['serverSourceSha'][:7]}"] = "sha256:" + "e" * 64
         problems = MODULE.check_pins(pins, sources)
