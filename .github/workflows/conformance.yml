@@ -33,14 +33,13 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # Pinned honua-server image by digest (see conformance/PINS.md): the honua-release
-  # manifest 2026.1 candidate nightly-0e03bdd (multi-architecture index). The tag is a
-  # moving pointer; the digest is what is actually pinned.
-  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:dcf3296f17a456a876c23133fae50b5b32628d4ec710e8bdab58f57d2394d750"
-  # honua-server commit that produced the pinned nightly image (for the seed SQL).
-  PINNED_HONUA_SERVER_SEED_REF: "0e03bdd06b3ca3fb1b82388110bb5dfa19b9f8fa"
+  # manifest server pin nightly-199bce7. The tag is not what is pulled; the digest is.
+  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:f2e54ed3db51dc057fbf01fa261a7d3c81520f1e04441b029f280a35e1853454"
+  # honua-server commit that produced the pinned image (for the seed SQL).
+  PINNED_HONUA_SERVER_SEED_REF: "199bce77fe990eb14855831790b07cfbc103d4ba"
   # The historical image sha256:d7a45c87 inserts honua.services.max_record_count,
   # which its migrations do not create, so that seed has to land before startup.
-  # Every later image, including the pinned 0e03bdd candidate, migrates first.
+  # Every later image, including the pinned 199bce77 candidate, migrates first.
   # Pre-seeding those trips the schema floor and /healthz/ready stays 503 (#339).
   LEGACY_SEED_BEFORE_START_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
@@ -282,7 +281,7 @@ jobs:
 
       # 4. Extensions, then boot. The historical d7a45c87 pin is seeded first
       #    because its fixture inserts max_record_count. Every other image,
-      #    including the pinned 0e03bdd candidate, migrates before
+      #    including the pinned 199bce77 candidate, migrates before
       #    tests/seed/base-schema.sql. Pre-seeding those leaves migration-owned
       #    tables without a schema_versions journal, so /healthz/ready stays 503.
       - name: Fetch pinned server seed schema
