@@ -33,10 +33,10 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # Pinned honua-server image by digest (see conformance/PINS.md): the honua-release
-  # manifest server pin nightly-199bce7. The tag is not what is pulled; the digest is.
-  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:f2e54ed3db51dc057fbf01fa261a7d3c81520f1e04441b029f280a35e1853454"
+  # manifest server pin nightly-8cb074f. The tag is not what is pulled; the digest is.
+  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:2d7877c4d1cb3b30647fb225893d41b13728f0448997997cdf4bf40fe99be07d"
   # honua-server commit that produced the pinned image (for the seed SQL).
-  PINNED_HONUA_SERVER_SEED_REF: "199bce77fe990eb14855831790b07cfbc103d4ba"
+  PINNED_HONUA_SERVER_SEED_REF: "8cb074f77d01c0a00617ebe426460aa24c7d890b"
   # The historical image sha256:d7a45c87 inserts honua.services.max_record_count,
   # which its migrations do not create, so that seed has to land before startup.
   # Every later image, including the pinned 199bce77 candidate, migrates first.
@@ -281,7 +281,7 @@ jobs:
 
       # 4. Extensions, then boot. The historical d7a45c87 pin is seeded first
       #    because its fixture inserts max_record_count. Every other image,
-      #    including the pinned 199bce77 candidate, migrates before
+      #    including the pinned 8cb074f candidate, migrates before
       #    tests/seed/base-schema.sql. Pre-seeding those leaves migration-owned
       #    tables without a schema_versions journal, so /healthz/ready stays 503.
       - name: Fetch pinned server seed schema

@@ -39,14 +39,14 @@ The live tier boots this exact `honua-server` image via Testcontainers:
 
 | Pin | Value |
 |-----|-------|
-| Tag | `ghcr.io/honua-io/honua-server:nightly-199bce7` |
-| Digest | `sha256:f2e54ed3db51dc057fbf01fa261a7d3c81520f1e04441b029f280a35e1853454` |
+| Tag | `ghcr.io/honua-io/honua-server:nightly-8cb074f` |
+| Digest | `sha256:2d7877c4d1cb3b30647fb225893d41b13728f0448997997cdf4bf40fe99be07d` |
 | Build | The honua-release manifest `components.honua-server` pin (2026-10-22 re-pin) |
-| Source | `199bce77fe990eb14855831790b07cfbc103d4ba` |
+| Source | `8cb074f77d01c0a00617ebe426460aa24c7d890b` |
 | Attestation | [`38221839914`](https://github.com/honua-io/honua-server/actions/runs/38221839914) |
 
 The digest is what is actually pinned and recorded. CI pulls
-`ghcr.io/honua-io/honua-server@sha256:f2e54ed3db51dc057fbf01fa261a7d3c81520f1e04441b029f280a35e1853454`.
+`ghcr.io/honua-io/honua-server@sha256:2d7877c4d1cb3b30647fb225893d41b13728f0448997997cdf4bf40fe99be07d`.
 It is the same candidate as `certification/candidate-pins.json`. The previous
 pin, rc-cert `e3ab87ce` / `sha256:d7a45c87` (2026-08-21), predates
 honua-server#5147, which writes GeoServices JSONB values as JSON text.
