@@ -432,7 +432,7 @@
       "honua.sdk.admin": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.1, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -442,7 +442,7 @@
         "type": "Project",
         "dependencies": {
           "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[1.13.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.1, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -454,16 +454,16 @@
           "Geospatial.Grpc": "[1.0.2, )",
           "Google.Protobuf": "[3.36.2, )",
           "Grpc.Net.Client": "[2.76.0, )",
-          "Honua.Sdk.Abstractions": "[1.13.0, )",
-          "Honua.Sdk.Geometry": "[1.13.0, )",
-          "Honua.Sdk.Processes": "[1.13.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.1, )",
+          "Honua.Sdk.Geometry": "[1.13.1, )",
+          "Honua.Sdk.Processes": "[1.13.1, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
         }
       },
       "honua.sdk.processes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.1, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
