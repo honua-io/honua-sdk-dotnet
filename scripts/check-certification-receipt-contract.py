@@ -41,7 +41,7 @@ def check(governance):
                    "client_lane": "sdk-dotnet-certification", "maturity": "supported", "required_tier": "nightly",
                    "licensed": False, "entitlement_policy_revision": None, "addressable_by_client": True,
                    "scenario_facets": ["positive"], "fixture_revision": "sha256:" + "d" * 64,
-                   "contract_revision": "sdk-dotnet-certification@" + "a" * 40,
+                   "contract_revision": "sdk-dotnet-certification@" + "e" * 40,
                    "auth_policy_revision": "api-key-protected-v1"}
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -54,7 +54,8 @@ def check(governance):
         evidence = root / "fragment.json"
         args = Namespace(tier="pr", trx=[trx], evidence=evidence, started_at=None,
                          requirements=catalog, requirements_revision="fixture-context",
-                         sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                         sdk_commit="a" * 40, sdk_package_source_sha="e" * 40,
+                         sdk_version="1.2.3", server_source_sha="b" * 40,
                          image_source_revision="b" * 40, server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
                          release_cut=None, candidate_cut="2026-01-01T00:00:00Z", fixture_revision="sha256:" + "d" * 64,
                          seed_revision="b" * 40, evidence_uri="https://example.test/fixture",
@@ -63,6 +64,14 @@ def check(governance):
         if producer.write_evidence(args, {"operations": [operation]}) != 0:
             raise ValueError("fixture producer unexpectedly refused complete unlicensed execution")
         cell = {**requirement, **json.loads(evidence.read_text())["observations"][0]}
+        # The fixture intentionally uses different published-package and harness
+        # commits so the real producer/consumer exercise catches conflation.
+        identity = cell["evidence_receipt"]["identity"]
+        if (cell["producer_source_sha"] != args.sdk_commit
+                or identity["producer_source_sha"] != args.sdk_commit
+                or cell["contract_revision"] != requirement["contract_revision"]
+                or identity["contract_revision"] != requirement["contract_revision"]):
+            raise ValueError("producer and installed-package identity were conflated")
         if not gate._valid_receipt(cell, requirements_revision="fixture-context"):
             raise ValueError("real strict consumer rejected the emitted v2 fixture receipt")
         for field, wrong in (("maturity", "preview"), ("required_tier", "pr"),

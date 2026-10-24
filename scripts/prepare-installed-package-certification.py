@@ -5,7 +5,9 @@ certification/candidate-pins.json is the only place the certified SDK package an
 server candidate are written down. The workflow reads it through --emit-env, the
 restore reads it directly, and --check verifies it against nuget.org and the
 honua-release platform manifest. --follow-manifest copies a published manifest
-package coordinate into the pin file after the nuget.org bytes match it.
+package coordinate into the pin file after the nuget.org bytes match it, and
+advances a server pin that is behind the manifest snapshot, together with that
+snapshot's candidate cut. A newer server pin is left alone.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -34,6 +37,7 @@ DEFAULT_PINS = ROOT / "certification" / "candidate-pins.json"
 SHA256_RE = re.compile(r"sha256:[0-9a-f]{64}")
 SHA_RE = re.compile(r"[0-9a-f]{40}")
 VERSION_RE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
+CUT_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z")
 DIGEST_IMAGE_RE = re.compile(r"ghcr\.io/honua-io/honua-server@sha256:[0-9a-f]{64}")
 SERVER_REPOSITORY = "ghcr.io/honua-io/honua-server"
 NUGET_ORG = "https://api.nuget.org/v3/index.json"
@@ -49,7 +53,18 @@ PIN_FIELDS = (
     "serverSourceSha",
     "serverImageDigest",
     "fixtureRevision",
+    "candidateCut",
 )
+
+
+def valid_candidate_cut(value: Any) -> bool:
+    if not isinstance(value, str) or not CUT_RE.fullmatch(value):
+        return False
+    try:
+        datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+    except ValueError:
+        return False
+    return True
 
 
 def validate_pins(pins: dict[str, Any]) -> None:
@@ -77,6 +92,8 @@ def validate_pins(pins: dict[str, Any]) -> None:
     for field in ("sdkSourceSha", "serverSourceSha"):
         if not SHA_RE.fullmatch(pins[field]):
             raise ValueError(f"{field} must be a full lowercase commit")
+    if not valid_candidate_cut(pins["candidateCut"]):
+        raise ValueError("candidateCut must be a UTC ISO-8601 timestamp ending in Z")
 
 
 def load_pins(path: Path) -> dict[str, Any]:
@@ -100,6 +117,7 @@ def emit_env(pins: dict[str, Any]) -> str:
         "PINNED_SDK_PACKAGE_VERSION": pins["sdkPackageVersion"],
         "PINNED_SDK_PACKAGE_DIGEST": pins["sdkPackageDigest"],
         "PINNED_SDK_PACKAGE_SOURCE_SHA": pins["sdkSourceSha"],
+        "PINNED_CANDIDATE_CUT": pins["candidateCut"],
     }
     return "".join(f"{name}={value}\n" for name, value in values.items())
 
@@ -445,6 +463,12 @@ def _check_release_manifest(pins: dict[str, Any], sources: Sources) -> list[str]
                 f"serverImageDigest: pin file has {pins['serverImageDigest']}, honua-release manifest "
                 f"server pin {base} has {server.get('digest')}"
             )
+        cut = _manifest_candidate_cut_or_none(manifest)
+        if cut != pins["candidateCut"]:
+            problems.append(
+                f"candidateCut: pin file has {pins['candidateCut']}, honua-release manifest "
+                f"protocolCertification.candidateCutAt for server pin {base} is {cut}"
+            )
     elif status != "ahead":
         problems.append(
             f"server pin {pins['serverSourceSha']} is {status} relative to the honua-release manifest "
@@ -453,13 +477,25 @@ def _check_release_manifest(pins: dict[str, Any], sources: Sources) -> list[str]
     return problems
 
 
+def _manifest_digest_still_served(pins: dict[str, Any], sources: Sources) -> bool:
+    """True when the pin is the manifest snapshot and GHCR still serves that digest.
+
+    nightly-<sha7> is a mutable tag. A rebuild of the same commit can move it
+    while the manifest digest remains. Certification pulls the digest.
+    """
+    server = ((sources.release_manifest().get("components") or {}).get("honua-server") or {})
+    if server.get("sha") != pins["serverSourceSha"] or server.get("digest") != pins["serverImageDigest"]:
+        return False
+    return sources.server_image_digest(pins["serverImageDigest"]) == pins["serverImageDigest"]
+
+
 def _check_server(pins: dict[str, Any], sources: Sources) -> list[str]:
     problems = []
     tag = f"nightly-{pins['serverSourceSha'][:7]}"
     digest = sources.server_image_digest(tag)
     if digest is None:
         problems.append(f"{SERVER_REPOSITORY}:{tag} does not exist; serverSourceSha has no published image")
-    elif digest != pins["serverImageDigest"]:
+    elif digest != pins["serverImageDigest"] and not _manifest_digest_still_served(pins, sources):
         problems.append(
             f"server image drifted: {SERVER_REPOSITORY}:{tag} resolves to {digest}, "
             f"pin file has serverImageDigest {pins['serverImageDigest']}"
@@ -548,14 +584,78 @@ def _nuget_package_identity(package_id: str, version: str, sources: Sources) -> 
     }
 
 
-def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dict[str, Any], bool]:
-    """Return pin fields aligned to the published manifest package, and whether they moved.
+def _manifest_server_snapshot(manifest: dict[str, Any]) -> tuple[str, str]:
+    server = (manifest.get("components") or {}).get("honua-server") or {}
+    sha = server.get("sha")
+    digest = server.get("digest")
+    if not isinstance(sha, str) or not SHA_RE.fullmatch(sha):
+        raise ValueError("honua-release manifest has no components.honua-server.sha")
+    if not isinstance(digest, str) or not SHA256_RE.fullmatch(digest):
+        raise ValueError(
+            "honua-release manifest components.honua-server.digest must be a lowercase sha256:<hex> digest"
+        )
+    return sha, digest
 
-    Server pins are copied through. An unpublished manifest coordinate or a
-    nuget.org package whose bytes disagree with the manifest raises ValueError
-    and must not be written.
+
+def _manifest_candidate_cut_or_none(manifest: dict[str, Any]) -> str | None:
+    cut = (manifest.get("protocolCertification") or {}).get("candidateCutAt")
+    return cut if valid_candidate_cut(cut) else None
+
+
+def _manifest_candidate_cut(manifest: dict[str, Any]) -> str:
+    cut = _manifest_candidate_cut_or_none(manifest)
+    if cut is None:
+        raise ValueError(
+            "honua-release manifest protocolCertification.candidateCutAt must be a UTC ISO-8601 timestamp"
+        )
+    return cut
+
+
+def _align_server_pin(pins: dict[str, Any], sources: Sources, manifest: dict[str, Any]) -> None:
+    """Advance a server pin that is behind the manifest snapshot.
+
+    The nightly resolver may select a commit ahead of the hand snapshot, so an
+    ahead pin stays. A behind pin cannot pass --check; leaving it unchanged
+    makes follow unable to open a pull request. Diverged history is refused
+    rather than rewritten onto the snapshot.
     """
-    artifact = _published_manifest_artifact(sources.release_manifest())
+    sha, digest = _manifest_server_snapshot(manifest)
+    status = sources.server_compare(sha, pins["serverSourceSha"])
+    if status == "ahead":
+        return
+    if status == "identical":
+        # The candidate cut belongs to the manifest snapshot, so it moves with it.
+        pins["candidateCut"] = _manifest_candidate_cut(manifest)
+        return
+    if status != "behind":
+        raise ValueError(
+            f"refusing to move server pin {pins['serverSourceSha']}: it is {status} "
+            f"relative to the honua-release manifest server pin {sha}"
+        )
+    tag = f"nightly-{sha[:7]}"
+    observed = sources.server_image_digest(tag)
+    if observed != digest and sources.server_image_digest(digest) != digest:
+        raise ValueError(
+            f"refusing to pin server {sha}: {SERVER_REPOSITORY}:{tag} resolves to "
+            f"{observed or 'missing'}, and manifest digest {digest} is not served"
+        )
+    pins["serverSourceSha"] = sha
+    pins["serverImageDigest"] = digest
+    pins["fixtureRevision"] = "sha256:" + hashlib.sha256(sources.server_fixture(sha)).hexdigest()
+    pins["candidateCut"] = _manifest_candidate_cut(manifest)
+
+
+def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dict[str, Any], bool]:
+    """Return pin fields aligned to the published manifest, and whether they moved.
+
+    Package fields follow the published manifest coordinate once nuget.org bytes
+    match it. A server pin behind that manifest's server snapshot moves up to
+    the snapshot; a newer server pin is copied through. An unpublished manifest
+    coordinate, disagreeing package bytes, a diverged server pin, or an image
+    digest GHCR does not serve raises ValueError and must not be written.
+    """
+    manifest = sources.release_manifest()
+    artifact = _published_manifest_artifact(manifest)
     identity = _nuget_package_identity(artifact["package"], artifact["version"], sources)
     coordinate = f"{artifact['package']} {artifact['version']}"
     if identity["digest"] != artifact["digest"]:
@@ -575,16 +675,21 @@ def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dic
     updated["sdkPackageSha512"] = identity["sha512"]
     updated["sdkPackageDigest"] = identity["digest"]
     updated["sdkSourceSha"] = identity["commit"]
+    _align_server_pin(updated, sources, manifest)
     validate_pins(updated)
-    package_fields = (
+    tracked = (
         "sdkPackageId",
         "sdkPackageVersion",
         "sdkPackageRegistry",
         "sdkPackageSha512",
         "sdkPackageDigest",
         "sdkSourceSha",
+        "serverSourceSha",
+        "serverImageDigest",
+        "fixtureRevision",
+        "candidateCut",
     )
-    changed = any(updated[field] != pins[field] for field in package_fields)
+    changed = any(updated[field] != pins[field] for field in tracked)
     return updated, changed
 
 
@@ -602,7 +707,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     mode.add_argument(
         "--follow-manifest",
         action="store_true",
-        help="write the published honua-release package coordinate when nuget.org bytes match it",
+        help="write the published honua-release package coordinate, and a behind server pin, when bytes match",
     )
     parser.add_argument("--tier", choices=("pr", "nightly", "release"))
     parser.add_argument("--server-image")

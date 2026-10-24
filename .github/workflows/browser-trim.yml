@@ -6,9 +6,10 @@ on:
     branches: [trunk]
   pull_request:
     branches: [trunk]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  DOTNET_VERSION: "10.0.x"
+  DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
@@ -47,6 +48,15 @@ jobs:
           key: ${{ github.repository }}-${{ runner.os }}-playwright-${{ hashFiles('tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj') }}
           restore-keys: |
             ${{ github.repository }}-${{ runner.os }}-playwright-
+
+      - name: Require committed NuGet lock files
+        shell: bash
+        run: |
+          mapfile -t locks < <(git ls-files '**/packages.lock.json')
+          if [[ ${#locks[@]} -eq 0 ]]; then
+            echo "::error::No packages.lock.json is committed, so 'dotnet restore --locked-mode' does not pin the graph."
+            exit 1
+          fi
 
       - name: Restore browser trim projects
         run: dotnet restore tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --locked-mode

@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <HonuaSdkVersion>1.11.1</HonuaSdkVersion> <!-- x-release-please-version -->
+    <HonuaSdkVersion>1.12.0</HonuaSdkVersion> <!-- x-release-please-version -->
     <Version>$(HonuaSdkVersion)</Version>
     <PackageVersion>$(HonuaSdkVersion)</PackageVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
@@ -18,6 +18,8 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- CI restore passes locked mode. NuGet enforces it only when this is set or a packages.lock.json already exists. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <!--

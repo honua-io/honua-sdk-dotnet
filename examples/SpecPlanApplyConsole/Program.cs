@@ -6,7 +6,7 @@ using Honua.Sdk.Spec.Models;
 
 var mode = Environment.GetEnvironmentVariable("HONUA_SPEC_MODE") ?? "simulated";
 var useServer = string.Equals(mode, "server", StringComparison.OrdinalIgnoreCase);
-var baseAddress = new Uri(Environment.GetEnvironmentVariable("HONUA_SPEC_SERVER_URL") ?? "https://localhost:5001");
+var baseAddress = new Uri(Environment.GetEnvironmentVariable("HONUA_SPEC_SERVER_URL") ?? "http://localhost:8080");
 var apiKey = Environment.GetEnvironmentVariable("HONUA_SPEC_API_KEY");
 var bearerToken = Environment.GetEnvironmentVariable("HONUA_SPEC_BEARER_TOKEN");
 

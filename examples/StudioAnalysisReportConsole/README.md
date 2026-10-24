@@ -17,7 +17,7 @@ Honua Server.
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `HONUA_STUDIO_MODE` | `simulated` (in-process) or `server` (live) | `simulated` |
-| `HONUA_STUDIO_SERVER_URL` | Honua server base address | `https://localhost:5001` |
+| `HONUA_STUDIO_SERVER_URL` | Honua server base address | `http://localhost:8080` |
 | `HONUA_STUDIO_JOB_ID` | Completed job whose report to fetch | `job-demo` |
 | `HONUA_STUDIO_API_KEY` | API key auth (optional) | unset |
 | `HONUA_STUDIO_BEARER_TOKEN` | OAuth/OIDC or service-account bearer token (optional) | unset |

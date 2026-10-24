@@ -42,6 +42,18 @@ public sealed record ProtocolIntegrationOptions
 
     public string? ClosestFacilityLayerName { get; init; }
 
+    public ProtocolIntegrationLocation? RouteOrigin { get; init; }
+
+    public ProtocolIntegrationLocation? RouteDestination { get; init; }
+
+    public ProtocolIntegrationLocation? ServiceAreaCenter { get; init; }
+
+    public ProtocolIntegrationLocation? RouteIncident { get; init; }
+
+    public ProtocolIntegrationLocation? RouteFacilityA { get; init; }
+
+    public ProtocolIntegrationLocation? RouteFacilityB { get; init; }
+
     public string? GeocodeText { get; init; }
 
     public double? ReverseGeocodeLatitude { get; init; }
@@ -65,7 +77,15 @@ public sealed record ProtocolIntegrationOptions
 
     public bool HasRoutingFixture =>
         !string.IsNullOrWhiteSpace(RouteServiceId) &&
-        !string.IsNullOrWhiteSpace(RouteLayerName);
+        !string.IsNullOrWhiteSpace(RouteLayerName) &&
+        !string.IsNullOrWhiteSpace(ServiceAreaLayerName) &&
+        !string.IsNullOrWhiteSpace(ClosestFacilityLayerName) &&
+        RouteOrigin?.IsValid == true &&
+        RouteDestination?.IsValid == true &&
+        ServiceAreaCenter?.IsValid == true &&
+        RouteIncident?.IsValid == true &&
+        RouteFacilityA?.IsValid == true &&
+        RouteFacilityB?.IsValid == true;
 
     public bool HasGeocodingFixture =>
         !string.IsNullOrWhiteSpace(GeocodeText) &&
@@ -101,6 +121,12 @@ public sealed record ProtocolIntegrationOptions
             RouteLayerName = ReadString("HONUA_PROTOCOL_ROUTE_LAYER"),
             ServiceAreaLayerName = ReadString("HONUA_PROTOCOL_SERVICE_AREA_LAYER"),
             ClosestFacilityLayerName = ReadString("HONUA_PROTOCOL_CLOSEST_FACILITY_LAYER"),
+            RouteOrigin = ReadLocation("HONUA_PROTOCOL_ROUTE_ORIGIN"),
+            RouteDestination = ReadLocation("HONUA_PROTOCOL_ROUTE_DESTINATION"),
+            ServiceAreaCenter = ReadLocation("HONUA_PROTOCOL_SERVICE_AREA_CENTER"),
+            RouteIncident = ReadLocation("HONUA_PROTOCOL_ROUTE_INCIDENT"),
+            RouteFacilityA = ReadLocation("HONUA_PROTOCOL_ROUTE_FACILITY_A"),
+            RouteFacilityB = ReadLocation("HONUA_PROTOCOL_ROUTE_FACILITY_B"),
             GeocodeText = ReadString("HONUA_PROTOCOL_GEOCODE_TEXT"),
             ReverseGeocodeLatitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE"),
             ReverseGeocodeLongitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE"),
@@ -194,6 +220,15 @@ public sealed record ProtocolIntegrationOptions
             : int.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture);
     }
 
+    private static ProtocolIntegrationLocation? ReadLocation(string prefix)
+    {
+        var longitude = ReadDouble(prefix + "_LONGITUDE");
+        var latitude = ReadDouble(prefix + "_LATITUDE");
+        return longitude.HasValue && latitude.HasValue
+            ? new ProtocolIntegrationLocation(longitude.Value, latitude.Value)
+            : null;
+    }
+
     private static double? ReadDouble(string name)
     {
         var value = ReadString(name);
@@ -217,4 +252,11 @@ public sealed record ProtocolIntegrationOptions
             values[name] = value;
         }
     }
+}
+
+public sealed record ProtocolIntegrationLocation(double Longitude, double Latitude)
+{
+    public bool IsValid =>
+        double.IsFinite(Longitude) && Longitude is >= -180 and <= 180 &&
+        double.IsFinite(Latitude) && Latitude is >= -90 and <= 90;
 }

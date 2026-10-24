@@ -2,6 +2,21 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.12.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.11.1...dotnet-sdk-v1.12.0) (2026-10-19)
+
+
+### Features
+
+* **geoservices:** expose explicit true-curve query requests ([#434](https://github.com/honua-io/honua-sdk-dotnet/issues/434)) ([fee0ff7](https://github.com/honua-io/honua-sdk-dotnet/commit/fee0ff7c7b21b79bfa7157b13301dd0fe81d165f))
+
+
+### Bug Fixes
+
+* **certification:** bind .NET receipt v2 to immutable governed context ([#435](https://github.com/honua-io/honua-sdk-dotnet/issues/435)) ([76a8064](https://github.com/honua-io/honua-sdk-dotnet/commit/76a80648176465a193b6442ca1ddf5ec839fa9f0))
+* **ci:** pin and verify the SDK workload manifest tuple ([#444](https://github.com/honua-io/honua-sdk-dotnet/issues/444)) ([76adb74](https://github.com/honua-io/honua-sdk-dotnet/commit/76adb747eb783401bcd708c5579a0927a130196e))
+* **ci:** verify managed release PRs through eligible readiness events ([#442](https://github.com/honua-io/honua-sdk-dotnet/issues/442)) ([2c7ea5f](https://github.com/honua-io/honua-sdk-dotnet/commit/2c7ea5f9dd46749b2aaaf726067411fa8493deec))
+* **sdk:** harden query errors and release lock refresh ([3495df6](https://github.com/honua-io/honua-sdk-dotnet/commit/3495df6a933c0fbba6aa1d7ee18a29339c7d5d29))
+
 ## [1.11.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.11.0...dotnet-sdk-v1.11.1) (2026-10-13)
 
 

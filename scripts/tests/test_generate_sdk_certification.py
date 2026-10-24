@@ -23,10 +23,15 @@ class SdkCertificationTests(unittest.TestCase):
             "service_id": "places",
             "layer_id": "0",
             "collection_id": "places",
+            "route_service_id": "Routing", "route_layer": "Route",
+            "service_area_layer": "ServiceArea", "closest_facility_layer": "ClosestFacility",
+            "scene_id": "fixture-scene",
         }
 
     def _write_evidence(self, args, document):
         # Synthetic governed input for harness tests only, never a live receipt.
+        if not hasattr(args, "sdk_package_source_sha"):
+            args.sdk_package_source_sha = "e" * 40
         args.requirements = args.evidence.with_suffix(".requirements.json")
         args.requirements_revision = "fixture-governed-revision"
         rows = []
@@ -39,7 +44,7 @@ class SdkCertificationTests(unittest.TestCase):
                 "client_lane": "sdk-dotnet-certification", "maturity": "supported", "required_tier": "nightly",
                 "addressable_by_client": True, "licensed": licensed,
                 "entitlement_policy_revision": MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None,
-                "contract_revision": "sdk-dotnet-certification@" + args.sdk_commit,
+                "contract_revision": "sdk-dotnet-certification@" + args.sdk_package_source_sha,
                 "auth_policy_revision": "api-key-protected-v1", "fixture_revision": args.fixture_revision,
                 "scenario_facets": list(dict.fromkeys("positive" if x == "read-only" else x for x in operation["scenarioFacets"])),
             })
@@ -118,22 +123,30 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual({"mutation": "fail"}, observed["evidence_receipt"]["facets"])
 
     def test_exact_operation_context_rejects_version_or_contract_drift(self):
-        identity = {"sdkVersion": "1.2.3", "sdkCommit": "a" * 40, "fixtureRevision": "sha256:" + "d" * 64}
+        identity = {"sdkVersion": "1.2.3", "sdkCommit": "a" * 40, "sdkPackageSourceSha": "c" * 40,
+                    "fixtureRevision": "sha256:" + "d" * 64}
         operation = {"surface": "geoservices", "id": "Fixture.Query", "client": "Fixture.IClient"}
         key = ("sdk-dotnet.geoservices", "geoservices", "Fixture.Query", "Honua SDK .NET", "1.2.3", "local-docker")
         row = {"client_lane": "sdk-dotnet-certification", "addressable_by_client": True,
                "licensed": False, "entitlement_policy_revision": None,
-               "contract_revision": "sdk-dotnet-certification@" + "a" * 40,
+               "contract_revision": "sdk-dotnet-certification@" + "c" * 40,
                "auth_policy_revision": "api-key-protected-v1", "fixture_revision": identity["fixtureRevision"],
                "scenario_facets": ["positive"], "maturity": "supported", "required_tier": "nightly"}
         self.assertEqual(row, MODULE._governed_context({key: row}, operation, identity, ["positive"]))
         with self.assertRaises(ValueError):
             MODULE._governed_context({key: row}, operation, {**identity, "sdkVersion": "1.2.4"}, ["positive"])
-        for field, value in (("contract_revision", "unreviewed"), ("fixture_revision", "wrong"),
+        for field, value in (("contract_revision", "unreviewed"),
+                             ("contract_revision", "sdk-dotnet-certification@" + identity["sdkCommit"]),
+                             ("fixture_revision", "wrong"),
                              ("scenario_facets", ["negative"]), ("addressable_by_client", False),
                              ("licensed", True), ("auth_policy_revision", "anonymous-public-v1")):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 MODULE._governed_context({key: {**row, field: value}}, operation, identity, ["positive"])
+
+    def test_contract_identity_cannot_fall_back_to_producer_checkout(self):
+        for source in (None, "", "unreleased", "A" * 40, "a" * 39):
+            with self.subTest(source=source), self.assertRaisesRegex(ValueError, "installed package source"):
+                MODULE._contract_revision({"sdkCommit": "a" * 40, "sdkPackageSourceSha": source})
 
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
@@ -144,6 +157,55 @@ class SdkCertificationTests(unittest.TestCase):
             if cell["status"] != "exercised":
                 self.assertIn("ownerIssue", cell)
                 self.assertIn("disposition", cell)
+
+    def test_fixture_dependent_operations_remain_individual_release_obligations(self):
+        document = MODULE.build_document()
+        names = {
+            "GeocodingForward", "GeocodingReverse", "GeocodingSuggest", "GeocodingBatch",
+            "SpecValidate", "SpecPlan", "SpecApply", "SceneList", "SceneGet", "SceneResolve",
+            "RoutingMetadata", "RoutingDirections", "RoutingServiceArea", "RoutingClosestFacility",
+        }
+        operations = [cell for cell in document["operations"] if any(
+            test.rsplit(".", 1)[-1] == name + "_IsReachable"
+            for test in cell["tests"] for name in names
+        )]
+        self.assertEqual(14, len(operations))
+        self.assertEqual(14, len({test for cell in operations for test in cell["tests"]}))
+        for cell in operations:
+            self.assertEqual("included", cell["releaseDenominator"], cell["id"])
+            self.assertIn("release", cell["requiredTiers"], cell["id"])
+            self.assertEqual(1, len(cell["tests"]), cell["id"])
+
+    def test_fixture_skips_and_missing_results_cannot_qualify_release(self):
+        # Harness-only TRX; these are refusal controls, never candidate evidence.
+        document = {"operations": [{
+            "id": "Fixture.Geocode", "surface": "admin",
+            "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+            "operation": "ForwardGeocodeAsync", "status": "exercised",
+            "requiredTiers": ["release"], "scenarioFacets": ["read-only"],
+            "tests": ["Fixture.Geocode"],
+        }]}
+        for result in ("", '<UnitTestResult testName="Fixture.Geocode" outcome="NotExecuted" />'):
+            with self.subTest(result=result), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                trx = root / "fixture.trx"
+                trx.write_text("<TestRun><Results>" + result + "</Results></TestRun>")
+                args = Namespace(
+                    tier="release", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                    sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                    image_source_revision="b" * 40,
+                    server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
+                    sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "e" * 64,
+                    sdk_package_source_sha="a" * 40,
+                    release_cut="2026-01-01T00:00:00Z", candidate_cut="2026-01-01T00:00:00Z",
+                    fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                    evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                    **self._request_context(),
+                )
+                self.assertEqual(1, self._write_evidence(args, document))
+                observation = json.loads(args.evidence.read_text())["observations"][0]
+                self.assertEqual("skip", observation["result"])
+                self.assertIsNone(observation["evidence_receipt"])
 
     def test_rc_unavailable_surfaces_are_owned_by_release_gate(self):
         document = MODULE.build_document()
@@ -184,7 +246,7 @@ class SdkCertificationTests(unittest.TestCase):
                 if cell["releaseDenominator"] == "excluded"
             },
         )
-        self.assertTrue(exclusions)
+        self.assertEqual({}, exclusions)
         self.assertTrue(all("release" not in cell["requiredTiers"] for cell in operations if cell["id"] in exclusions))
         self.assertTrue(all(item["ownerIssue"] == MODULE.RC_FIXTURE_GAP_ISSUE for item in exclusions.values()))
         self.assertTrue(all(item["reason"] for item in exclusions.values()))
@@ -281,7 +343,7 @@ class SdkCertificationTests(unittest.TestCase):
             )
             self.assertEqual([], fragment["observations"][0]["exercised_capabilities"])
             self.assertEqual(
-                "sdk-dotnet-certification@" + "a" * 40,
+                "sdk-dotnet-certification@" + "e" * 40,
                 fragment["observations"][0]["contract_revision"],
             )
             self.assertEqual(
@@ -390,6 +452,9 @@ class SdkCertificationTests(unittest.TestCase):
             "serviceId": "places",
             "layerId": "7",
             "collectionId": "places",
+            "operationTargets": {"routeServiceId": "Routing", "routeLayer": "Route",
+                                 "serviceAreaLayer": "ServiceArea", "closestFacilityLayer": "ClosestFacility",
+                                 "sceneId": "fixture-scene"},
         }
         cases = {
             ("Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient", "QueryAsync"):
@@ -397,7 +462,7 @@ class SdkCertificationTests(unittest.TestCase):
             ("Honua.Sdk.Abstractions.Features.IHonuaFeatureEditClient", "ApplyEditsAsync"):
                 "https://candidate.test/rest/services/places/FeatureServer/7/applyEdits",
             ("Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient", "GetDirectionsAsync"):
-                "https://candidate.test/rest/services/places/NAServer/Route",
+                "https://candidate.test/rest/services/Routing/NAServer/Route/solve",
             ("Honua.Sdk.Abstractions.Scenes.IHonuaSceneClient", "ListScenesAsync"):
                 "https://candidate.test/api/scenes",
         }
@@ -408,6 +473,44 @@ class SdkCertificationTests(unittest.TestCase):
                     "surface": "abstractions", "client": client, "operation": method,
                 }, identity))
 
+    def test_spec_request_urls_match_each_exercised_operation(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "places", "layerId": "7", "collectionId": "places"}
+        for surface, client in [("spec", "Honua.Sdk.Spec.HonuaSpecClient"),
+                                ("abstractions", "Honua.Sdk.Abstractions.Spec.IHonuaSpecClient")]:
+            for method, action in [("ValidateAsync", "validate"), ("PlanAsync", "plan"), ("ApplyAsync", "apply")]:
+                with self.subTest(surface=surface, method=method):
+                    self.assertEqual(f"https://candidate.test/v1/spec/{action}",
+                                     MODULE._certification_request_url(
+                                         {"surface": surface, "client": client, "operation": method}, identity))
+            self.assertIsNone(MODULE._certification_request_url(
+                {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
+
+    def test_restored_fixture_urls_require_exact_operation_targets(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "WRONG-feature-service", "layerId": "0", "collectionId": "places",
+                    "operationTargets": {"routeServiceId": "routing fixture", "routeLayer": "Route",
+                                         "serviceAreaLayer": "ServiceArea", "closestFacilityLayer": "ClosestFacility",
+                                         "sceneId": "scene/id"}}
+        cases = [("Routing.IHonuaRoutingClient", "GetServiceMetadataAsync", "/rest/services/routing%20fixture/NAServer/Route"),
+                 ("Routing.IHonuaRoutingClient", "GetDirectionsAsync", "/rest/services/routing%20fixture/NAServer/Route/solve"),
+                 ("Routing.IHonuaRoutingClient", "GetServiceAreaAsync", "/rest/services/routing%20fixture/NAServer/ServiceArea/solveServiceArea"),
+                 ("Routing.IHonuaRoutingClient", "FindClosestFacilityAsync", "/rest/services/routing%20fixture/NAServer/ClosestFacility/solveClosestFacility"),
+                 ("Scenes.IHonuaSceneClient", "ListScenesAsync", "/api/scenes"),
+                 ("Scenes.IHonuaSceneClient", "GetSceneAsync", "/api/scenes/scene%2Fid"),
+                 ("Scenes.IHonuaSceneClient", "ResolveSceneAsync", "/api/scenes/scene%2Fid/resolve")]
+        for client, method, path in cases:
+            operation = {"surface": "abstractions", "client": "Honua.Sdk.Abstractions." + client, "operation": method}
+            self.assertEqual("https://candidate.test" + path, MODULE._certification_request_url(operation, identity))
+            if method != "ListScenesAsync":
+                with self.assertRaises(ValueError):
+                    MODULE._certification_request_url(operation, {**identity, "operationTargets": {}})
+        for method, action in [("ForwardGeocodeAsync", "findAddressCandidates"), ("ReverseGeocodeAsync", "reverseGeocode"),
+                               ("SuggestAsync", "suggest"), ("BatchGeocodeAsync", "geocodeAddresses")]:
+            self.assertEqual("https://candidate.test/rest/services/World/GeocodeServer/" + action,
+                             MODULE._certification_request_url({"surface": "admin", "client": "Honua.Sdk.Admin.Geocoding.IHonuaGeocodingClient",
+                                                                "operation": method}, identity))
+
     def test_unproved_abstractions_families_have_no_request_url(self):
         identity = {
             "baseUrl": "https://candidate.test/root/",
@@ -415,6 +518,9 @@ class SdkCertificationTests(unittest.TestCase):
             "serviceId": "places",
             "layerId": "7",
             "collectionId": "places",
+            "operationTargets": {"routeServiceId": "Routing", "routeLayer": "Route",
+                                 "serviceAreaLayer": "ServiceArea", "closestFacilityLayer": "ClosestFacility",
+                                 "sceneId": "fixture-scene"},
         }
         clients_and_methods = [
             ("Honua.Sdk.Abstractions.Features.IHonuaFeatureAttachmentClient", "ListAttachmentsAsync"),

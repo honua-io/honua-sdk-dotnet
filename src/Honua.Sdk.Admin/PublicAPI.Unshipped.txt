@@ -1,6 +1,7 @@
 #nullable enable
 *REMOVED*const Honua.Sdk.Admin.HonuaAdminCompatibility.MinimumSupportedServerVersion = "0.1.0" -> string!
 const Honua.Sdk.Admin.HonuaAdminCompatibility.MinimumSupportedServerVersion = "2026.1.0-0" -> string!
+Honua.Sdk.Admin.Exceptions.HonuaAdminApiException.ConstructAccounting.get -> Honua.Sdk.Admin.Models.MigrationConstructAccountingReport?
 Honua.Sdk.Admin.HonuaAdminClient.CancelGeoservicesImportJobAsync(string! jobId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesImportCancelResponse!>!
 Honua.Sdk.Admin.HonuaAdminClient.CancelMigrationRunAsync(string! runId, string? reason = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationRunDto!>!
 Honua.Sdk.Admin.HonuaAdminClient.DiscoverGeoservicesServiceAsync(Honua.Sdk.Admin.Models.GeoservicesDiscoverRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesDiscoverResponse!>!
@@ -11,6 +12,7 @@ Honua.Sdk.Admin.HonuaAdminClient.GetMigrationRunEvidencePackAsync(string! runId,
 Honua.Sdk.Admin.HonuaAdminClient.GetMigrationRunReconciliationScorecardAsync(string! runId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationReconciliationScorecard!>!
 Honua.Sdk.Admin.HonuaAdminClient.ListGeoservicesImportJobsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.GeoservicesImportProgress!>!>!
 Honua.Sdk.Admin.HonuaAdminClient.ListMigrationRunsAsync(Honua.Sdk.Admin.Models.MigrationRunListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationRunListResponse!>!
+Honua.Sdk.Admin.HonuaAdminClient.ScanMigrationSourceAsync(Honua.Sdk.Admin.Models.MigrationInventoryScanRequest! request, string! artifactSet, bool exportJson = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationScanArtifactSet!>!
 Honua.Sdk.Admin.HonuaAdminClient.StartGeoservicesImportAsync(Honua.Sdk.Admin.Models.GeoservicesStartImportRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesImportJobResponse!>!
 Honua.Sdk.Admin.HonuaAdminClient.StartMigrationBatchAsync(Honua.Sdk.Admin.Models.MigrationBatchStartRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationBatchResponse!>!
 Honua.Sdk.Admin.HonuaAdminClient.WaitForGeoservicesImportJobAsync(string! jobId, System.TimeSpan? pollInterval = null, System.TimeSpan? timeout = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesImportProgress!>!
@@ -117,6 +119,10 @@ Honua.Sdk.Admin.Models.GeoservicesImportProgress.FailedFeatures.get -> int
 Honua.Sdk.Admin.Models.GeoservicesImportProgress.FailedFeatures.init -> void
 Honua.Sdk.Admin.Models.GeoservicesImportProgress.FeaturesProcessed.get -> int
 Honua.Sdk.Admin.Models.GeoservicesImportProgress.FeaturesProcessed.init -> void
+Honua.Sdk.Admin.Models.GeoservicesImportProgress.FidelityDifferences.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.MigrationFidelityDifference!>!
+Honua.Sdk.Admin.Models.GeoservicesImportProgress.FidelityDifferences.init -> void
+Honua.Sdk.Admin.Models.GeoservicesImportProgress.FidelityVerdict.get -> string?
+Honua.Sdk.Admin.Models.GeoservicesImportProgress.FidelityVerdict.init -> void
 Honua.Sdk.Admin.Models.GeoservicesImportProgress.GeoservicesImportProgress() -> void
 Honua.Sdk.Admin.Models.GeoservicesImportProgress.JobId.get -> string!
 Honua.Sdk.Admin.Models.GeoservicesImportProgress.JobId.init -> void
@@ -228,6 +234,8 @@ Honua.Sdk.Admin.Models.MigrationBatchChildResponse.<Clone>$() -> Honua.Sdk.Admin
 Honua.Sdk.Admin.Models.MigrationBatchChildResponse.DependsOn.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Honua.Sdk.Admin.Models.MigrationBatchChildResponse.DependsOn.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchChildResponse.Equals(Honua.Sdk.Admin.Models.MigrationBatchChildResponse? other) -> bool
+Honua.Sdk.Admin.Models.MigrationBatchChildResponse.FidelityVerdict.get -> string?
+Honua.Sdk.Admin.Models.MigrationBatchChildResponse.FidelityVerdict.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchChildResponse.JobId.get -> string?
 Honua.Sdk.Admin.Models.MigrationBatchChildResponse.JobId.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchChildResponse.MigrationBatchChildResponse() -> void
@@ -279,9 +287,15 @@ Honua.Sdk.Admin.Models.MigrationBatchResponse.Children.get -> System.Collections
 Honua.Sdk.Admin.Models.MigrationBatchResponse.Children.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchResponse.CompletedAt.get -> System.DateTimeOffset?
 Honua.Sdk.Admin.Models.MigrationBatchResponse.CompletedAt.init -> void
+Honua.Sdk.Admin.Models.MigrationBatchResponse.ConstructAccounting.get -> Honua.Sdk.Admin.Models.MigrationConstructAccountingReport?
+Honua.Sdk.Admin.Models.MigrationBatchResponse.ConstructAccounting.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchResponse.Equals(Honua.Sdk.Admin.Models.MigrationBatchResponse? other) -> bool
 Honua.Sdk.Admin.Models.MigrationBatchResponse.FailedChildren.get -> int
 Honua.Sdk.Admin.Models.MigrationBatchResponse.FailedChildren.init -> void
+Honua.Sdk.Admin.Models.MigrationBatchResponse.FidelityDifferences.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.MigrationFidelityDifference!>!
+Honua.Sdk.Admin.Models.MigrationBatchResponse.FidelityDifferences.init -> void
+Honua.Sdk.Admin.Models.MigrationBatchResponse.FidelityVerdict.get -> string?
+Honua.Sdk.Admin.Models.MigrationBatchResponse.FidelityVerdict.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchResponse.MigrationBatchResponse() -> void
 Honua.Sdk.Admin.Models.MigrationBatchResponse.RelationshipsApplied.get -> bool
 Honua.Sdk.Admin.Models.MigrationBatchResponse.RelationshipsApplied.init -> void
@@ -311,12 +325,55 @@ Honua.Sdk.Admin.Models.MigrationBatchStartRequest.Layers.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.ManifestBody.get -> string?
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.ManifestBody.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.MigrationBatchStartRequest() -> void
+Honua.Sdk.Admin.Models.MigrationBatchStartRequest.RequireFullFidelity.get -> bool?
+Honua.Sdk.Admin.Models.MigrationBatchStartRequest.RequireFullFidelity.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.SourceDisplayName.get -> string?
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.SourceDisplayName.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.SourceKind.get -> string!
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.SourceKind.init -> void
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.SourceUrl.get -> string?
 Honua.Sdk.Admin.Models.MigrationBatchStartRequest.SourceUrl.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.AutomationStatus.get -> string!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.AutomationStatus.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Codes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Codes.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Construct.get -> string!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Construct.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Disposition.get -> string!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Disposition.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Equals(Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry? other) -> bool
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.MigrationConstructAccountingEntry() -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.ResourceIds.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.ResourceIds.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.SourceId.get -> string!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.SourceId.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.TargetResourceId.get -> string?
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.TargetResourceId.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.TargetTable.get -> string?
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.TargetTable.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Verification.get -> string!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Verification.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationConstructAccountingReport!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Differences.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.MigrationFidelityDifference!>!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Differences.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.DiscoveredResourceCount.get -> int
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.DiscoveredResourceCount.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Entries.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry!>!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Entries.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Equals(Honua.Sdk.Admin.Models.MigrationConstructAccountingReport? other) -> bool
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Executed.get -> bool
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Executed.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.IsBlocking.get -> bool
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.MatrixVersion.get -> string!
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.MatrixVersion.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.MigrationConstructAccountingReport() -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.NotExecutedReason.get -> string?
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.NotExecutedReason.init -> void
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.SelectedResourceCount.get -> int
+Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.SelectedResourceCount.init -> void
 Honua.Sdk.Admin.Models.MigrationExtentBox
 Honua.Sdk.Admin.Models.MigrationExtentBox.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationExtentBox!
 Honua.Sdk.Admin.Models.MigrationExtentBox.Equals(Honua.Sdk.Admin.Models.MigrationExtentBox? other) -> bool
@@ -331,6 +388,26 @@ Honua.Sdk.Admin.Models.MigrationExtentBox.MinY.get -> double
 Honua.Sdk.Admin.Models.MigrationExtentBox.MinY.init -> void
 Honua.Sdk.Admin.Models.MigrationExtentBox.Srid.get -> int
 Honua.Sdk.Admin.Models.MigrationExtentBox.Srid.init -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationFidelityDifference!
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Actual.get -> string?
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Actual.init -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Code.get -> string!
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Code.init -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Equals(Honua.Sdk.Admin.Models.MigrationFidelityDifference? other) -> bool
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Expected.get -> string?
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Expected.init -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.MigrationFidelityDifference() -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Severity.get -> string!
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Severity.init -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Subject.get -> string?
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Subject.init -> void
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Summary.get -> string!
+Honua.Sdk.Admin.Models.MigrationFidelityDifference.Summary.init -> void
+Honua.Sdk.Admin.Models.MigrationInventoryScanRequest.ArtifactSet.get -> string?
+Honua.Sdk.Admin.Models.MigrationInventoryScanRequest.ArtifactSet.init -> void
+Honua.Sdk.Admin.Models.MigrationInventoryScanRequest.TargetServiceName.get -> string?
+Honua.Sdk.Admin.Models.MigrationInventoryScanRequest.TargetServiceName.init -> void
 Honua.Sdk.Admin.Models.MigrationReconciliationArtifact
 Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationReconciliationArtifact!
 Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.ArtifactKind.get -> string!
@@ -543,6 +620,16 @@ Honua.Sdk.Admin.Models.MigrationRunListResponse.Offset.get -> int
 Honua.Sdk.Admin.Models.MigrationRunListResponse.Offset.init -> void
 Honua.Sdk.Admin.Models.MigrationRunListResponse.TotalCount.get -> long
 Honua.Sdk.Admin.Models.MigrationRunListResponse.TotalCount.init -> void
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationScanArtifactSet!
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.Equals(Honua.Sdk.Admin.Models.MigrationScanArtifactSet? other) -> bool
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.Inventory.get -> Honua.Sdk.Admin.Models.MigrationSourceInventoryArtifact!
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.Inventory.init -> void
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.Manifest.get -> Honua.Sdk.Admin.Models.MigrationManifestArtifact!
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.Manifest.init -> void
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.MigrationScanArtifactSet() -> void
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.ParityEvidence.get -> Honua.Sdk.Admin.Models.MigrationParityEvidenceArtifact!
+Honua.Sdk.Admin.Models.MigrationScanArtifactSet.ParityEvidence.init -> void
 Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity
 Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.<Clone>$() -> Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity!
 Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.AssistedCount.get -> int
@@ -636,9 +723,18 @@ override Honua.Sdk.Admin.Models.MigrationBatchResponse.ToString() -> string!
 override Honua.Sdk.Admin.Models.MigrationBatchStartRequest.Equals(object? obj) -> bool
 override Honua.Sdk.Admin.Models.MigrationBatchStartRequest.GetHashCode() -> int
 override Honua.Sdk.Admin.Models.MigrationBatchStartRequest.ToString() -> string!
+override Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.Equals(object? obj) -> bool
+override Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.GetHashCode() -> int
+override Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.ToString() -> string!
+override Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.Equals(object? obj) -> bool
+override Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.GetHashCode() -> int
+override Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.ToString() -> string!
 override Honua.Sdk.Admin.Models.MigrationExtentBox.Equals(object? obj) -> bool
 override Honua.Sdk.Admin.Models.MigrationExtentBox.GetHashCode() -> int
 override Honua.Sdk.Admin.Models.MigrationExtentBox.ToString() -> string!
+override Honua.Sdk.Admin.Models.MigrationFidelityDifference.Equals(object? obj) -> bool
+override Honua.Sdk.Admin.Models.MigrationFidelityDifference.GetHashCode() -> int
+override Honua.Sdk.Admin.Models.MigrationFidelityDifference.ToString() -> string!
 override Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.Equals(object? obj) -> bool
 override Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.GetHashCode() -> int
 override Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.ToString() -> string!
@@ -678,6 +774,9 @@ override Honua.Sdk.Admin.Models.MigrationRunListQuery.ToString() -> string!
 override Honua.Sdk.Admin.Models.MigrationRunListResponse.Equals(object? obj) -> bool
 override Honua.Sdk.Admin.Models.MigrationRunListResponse.GetHashCode() -> int
 override Honua.Sdk.Admin.Models.MigrationRunListResponse.ToString() -> string!
+override Honua.Sdk.Admin.Models.MigrationScanArtifactSet.Equals(object? obj) -> bool
+override Honua.Sdk.Admin.Models.MigrationScanArtifactSet.GetHashCode() -> int
+override Honua.Sdk.Admin.Models.MigrationScanArtifactSet.ToString() -> string!
 override Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.Equals(object? obj) -> bool
 override Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.GetHashCode() -> int
 override Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.ToString() -> string!
@@ -697,6 +796,7 @@ static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.GetMigrationRunEviden
 static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.GetMigrationRunReconciliationScorecardAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, string! runId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationReconciliationScorecard!>!
 static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.ListGeoservicesImportJobsAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.GeoservicesImportProgress!>!>!
 static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.ListMigrationRunsAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, Honua.Sdk.Admin.Models.MigrationRunListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationRunListResponse!>!
+static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.ScanMigrationSourceAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, Honua.Sdk.Admin.Models.MigrationInventoryScanRequest! request, string! artifactSet, bool exportJson = false, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationScanArtifactSet!>!
 static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.StartGeoservicesImportAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, Honua.Sdk.Admin.Models.GeoservicesStartImportRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesImportJobResponse!>!
 static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.StartMigrationBatchAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, Honua.Sdk.Admin.Models.MigrationBatchStartRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.MigrationBatchResponse!>!
 static Honua.Sdk.Admin.HonuaAdminMigrationClientExtensions.WaitForGeoservicesImportJobAsync(this Honua.Sdk.Admin.IHonuaAdminClient! client, string! jobId, System.TimeSpan? pollInterval = null, System.TimeSpan? timeout = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.GeoservicesImportProgress!>!
@@ -728,8 +828,14 @@ static Honua.Sdk.Admin.Models.MigrationBatchResponse.operator !=(Honua.Sdk.Admin
 static Honua.Sdk.Admin.Models.MigrationBatchResponse.operator ==(Honua.Sdk.Admin.Models.MigrationBatchResponse? left, Honua.Sdk.Admin.Models.MigrationBatchResponse? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationBatchStartRequest.operator !=(Honua.Sdk.Admin.Models.MigrationBatchStartRequest? left, Honua.Sdk.Admin.Models.MigrationBatchStartRequest? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationBatchStartRequest.operator ==(Honua.Sdk.Admin.Models.MigrationBatchStartRequest? left, Honua.Sdk.Admin.Models.MigrationBatchStartRequest? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.operator !=(Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry? left, Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry.operator ==(Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry? left, Honua.Sdk.Admin.Models.MigrationConstructAccountingEntry? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.operator !=(Honua.Sdk.Admin.Models.MigrationConstructAccountingReport? left, Honua.Sdk.Admin.Models.MigrationConstructAccountingReport? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationConstructAccountingReport.operator ==(Honua.Sdk.Admin.Models.MigrationConstructAccountingReport? left, Honua.Sdk.Admin.Models.MigrationConstructAccountingReport? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationExtentBox.operator !=(Honua.Sdk.Admin.Models.MigrationExtentBox? left, Honua.Sdk.Admin.Models.MigrationExtentBox? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationExtentBox.operator ==(Honua.Sdk.Admin.Models.MigrationExtentBox? left, Honua.Sdk.Admin.Models.MigrationExtentBox? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationFidelityDifference.operator !=(Honua.Sdk.Admin.Models.MigrationFidelityDifference? left, Honua.Sdk.Admin.Models.MigrationFidelityDifference? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationFidelityDifference.operator ==(Honua.Sdk.Admin.Models.MigrationFidelityDifference? left, Honua.Sdk.Admin.Models.MigrationFidelityDifference? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.operator !=(Honua.Sdk.Admin.Models.MigrationReconciliationArtifact? left, Honua.Sdk.Admin.Models.MigrationReconciliationArtifact? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationReconciliationArtifact.operator ==(Honua.Sdk.Admin.Models.MigrationReconciliationArtifact? left, Honua.Sdk.Admin.Models.MigrationReconciliationArtifact? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationReconciliationContentProbe.operator !=(Honua.Sdk.Admin.Models.MigrationReconciliationContentProbe? left, Honua.Sdk.Admin.Models.MigrationReconciliationContentProbe? right) -> bool
@@ -756,6 +862,8 @@ static Honua.Sdk.Admin.Models.MigrationRunListQuery.operator !=(Honua.Sdk.Admin.
 static Honua.Sdk.Admin.Models.MigrationRunListQuery.operator ==(Honua.Sdk.Admin.Models.MigrationRunListQuery? left, Honua.Sdk.Admin.Models.MigrationRunListQuery? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationRunListResponse.operator !=(Honua.Sdk.Admin.Models.MigrationRunListResponse? left, Honua.Sdk.Admin.Models.MigrationRunListResponse? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationRunListResponse.operator ==(Honua.Sdk.Admin.Models.MigrationRunListResponse? left, Honua.Sdk.Admin.Models.MigrationRunListResponse? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationScanArtifactSet.operator !=(Honua.Sdk.Admin.Models.MigrationScanArtifactSet? left, Honua.Sdk.Admin.Models.MigrationScanArtifactSet? right) -> bool
+static Honua.Sdk.Admin.Models.MigrationScanArtifactSet.operator ==(Honua.Sdk.Admin.Models.MigrationScanArtifactSet? left, Honua.Sdk.Admin.Models.MigrationScanArtifactSet? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.operator !=(Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity? left, Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity.operator ==(Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity? left, Honua.Sdk.Admin.Models.MigrationScorecardCapabilityParity? right) -> bool
 static Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation.operator !=(Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation? left, Honua.Sdk.Admin.Models.MigrationScorecardDataReconciliation? right) -> bool

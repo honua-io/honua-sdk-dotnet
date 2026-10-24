@@ -8,17 +8,10 @@ Console hosts.
 Install directly when a browser or server-side host only needs process/job
 REST.
 
-Honua SDK packages are currently published to the authenticated GitHub Packages
-feed only — nuget.org publishing is planned but not yet available. One-time
-setup: configure the feed with a GitHub **classic** PAT that has the
-`read:packages` scope, then install with `--source honua`. Full setup (CI,
-package source mapping): [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
+Stable releases are on [nuget.org](https://www.nuget.org/packages/Honua.Sdk.Processes/) and install anonymously. An unversioned add resolves to the newest stable release (the current SDK version is in the [repo README](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/README.md#status)). Prereleases stay on the authenticated GitHub Packages feed; see [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
 
 ```bash
-dotnet nuget add source https://nuget.pkg.github.com/honua-io/index.json \
-  --name honua --username YOUR_GITHUB_USERNAME --password YOUR_CLASSIC_PAT \
-  --store-password-in-clear-text
-dotnet add package Honua.Sdk.Processes --source honua
+dotnet add package Honua.Sdk.Processes
 ```
 
 ```csharp
@@ -46,6 +39,8 @@ The client targets the OGC API Processes surface under `/ogc/processes`.
 | `GetConformanceAsync` | `GET /ogc/processes/conformance?f=json` |
 | `ListProcessesAsync` | `GET /ogc/processes/processes` |
 | `GetProcessAsync` | `GET /ogc/processes/processes/{processId}` |
+| `ExecuteSyncAsync` | Describe, execute once, and wait for results within one elapsed timeout; omit `Prefer` for advertised sync, otherwise `respond-async` |
+| `WaitForTerminalAsync` | Poll `GET /ogc/processes/jobs/{jobId}` within one elapsed timeout; return only on success |
 | `SubmitJobAsync` | `POST /ogc/processes/processes/{processId}/execution` with `Prefer: respond-async` |
 | `ListJobsAsync` | `GET /ogc/processes/jobs` with optional `limit` |
 | `GetJobAsync` | `GET /ogc/processes/jobs/{jobId}` |
@@ -120,6 +115,27 @@ var bufferJob = await processes.SubmitJobAsync(
 Non-success responses throw `HonuaProcessesException`. When the server returns
 problem-details JSON, the exception preserves `StatusCode`, `ProblemType`,
 `ProblemTitle`, `ProblemDetail`, and the raw `ResponseBody`.
+
+`ExecuteSyncAsync` accepts a required `timeout` and an optional `pollingInterval`
+(default one second). It preserves 200 document/raw results and waits for 201/202
+job responses without resubmitting. `HonuaProcessExecutionResponse.Document` holds
+document outputs; `RawContent` and `MediaType` preserve arbitrary raw bytes and
+multipart framing. `Job` holds the successful terminal job when one was returned.
+Failed/dismissed jobs and elapsed timeouts throw `HonuaProcessesException`, with
+`JobId` when observed; caller cancellation remains `OperationCanceledException`.
+Timeout/cancellation stops local waiting without dismissing the remote job.
+Configured request/body timeouts from the registered resilience pipeline also use
+`HonuaProcessesException` and retain the observed `JobId` and original inner exception.
+The helper submits only when `sync-execute` or `async-execute` is advertised;
+missing, malformed, or unsupported mode metadata fails before submission.
+
+The shipped `HonuaProcessesClient` implements both helpers. To preserve existing
+custom `IHonuaProcessesClient` implementations, the new interface methods have
+default bodies that throw `NotSupportedException` unless the client implements
+them. Existing lifecycle methods retain their contracts.
+
+See the [buffer → layer clip example](https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/examples/GeoprocessingBufferClipConsole)
+and [bounded execution snippet](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/process-authoring.md#bounded-rest-execution).
 
 ## Authoring processes and plans
 

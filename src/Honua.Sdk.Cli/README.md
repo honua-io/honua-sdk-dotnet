@@ -13,22 +13,10 @@ release policy.
 
 ## Install
 
-Honua SDK packages are currently published to the authenticated GitHub Packages
-feed only — nuget.org publishing is planned but not yet available. `dotnet tool
-install` does not read a repository `NuGet.config`, so the feed must be passed
-with `--add-source`, and the feed credentials (a GitHub **classic** PAT with the
-`read:packages` scope) must already be configured for that source URL — for
-example via `dotnet nuget add source` in your user-level NuGet config. Full
-setup: [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
+`Honua.Sdk.Cli` is on [nuget.org](https://www.nuget.org/packages/Honua.Sdk.Cli/) and installs anonymously. An unversioned install resolves to the newest stable release (the current SDK version is in the [repo README](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/README.md#status)). Prereleases stay on the authenticated GitHub Packages feed; see [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
 
 ```bash
-# One-time feed credential setup (user-level NuGet config):
-dotnet nuget add source https://nuget.pkg.github.com/honua-io/index.json \
-  --name honua --username YOUR_GITHUB_USERNAME --password YOUR_CLASSIC_PAT \
-  --store-password-in-clear-text
-
-# Install the tool (the feed must also be passed explicitly here):
-dotnet tool install --global Honua.Sdk.Cli --add-source https://nuget.pkg.github.com/honua-io/index.json
+dotnet tool install --global Honua.Sdk.Cli
 honua doctor --help
 ```
 

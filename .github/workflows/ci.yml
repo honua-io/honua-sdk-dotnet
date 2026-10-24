@@ -6,9 +6,10 @@ on:
     branches: [trunk]
   pull_request:
     branches: [trunk]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  DOTNET_VERSION: "10.0.x"
+  DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
@@ -98,8 +99,21 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Pin and verify SDK workload tuple
+        shell: bash
+        run: python3 scripts/ci/prepare-dotnet-toolchain.py
+
       - name: Configure GitHub Packages
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+
+      - name: Require committed NuGet lock files
+        shell: bash
+        run: |
+          mapfile -t locks < <(git ls-files '**/packages.lock.json')
+          if [[ ${#locks[@]} -eq 0 ]]; then
+            echo "::error::No packages.lock.json is committed, so 'dotnet restore --locked-mode' does not pin the graph."
+            exit 1
+          fi
 
       - name: Restore
         run: dotnet restore Honua.Sdk.sln --locked-mode
@@ -151,6 +165,10 @@ jobs:
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Pin and verify SDK workload tuple
+        shell: bash
+        run: python3 scripts/ci/prepare-dotnet-toolchain.py
 
       - name: Configure GitHub Packages
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
@@ -226,6 +244,10 @@ jobs:
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Pin and verify SDK workload tuple
+        shell: bash
+        run: python3 scripts/ci/prepare-dotnet-toolchain.py
 
       - name: Configure GitHub Packages
         run: dotnet nuget update source github-honua --username "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
@@ -424,6 +446,9 @@ jobs:
 
       - name: Build routing geofence sample
         run: dotnet build examples/RoutingGeofenceConsole/RoutingGeofenceConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
+      - name: Build geoprocessing buffer clip sample
+        run: dotnet build examples/GeoprocessingBufferClipConsole/GeoprocessingBufferClipConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Build field data reference sample
         run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true

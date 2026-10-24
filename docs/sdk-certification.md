@@ -35,19 +35,29 @@ release certification profile. It is not silently skipped or counted as a
 pass: the ledger enumerates its operation ID, owner issue, and reason, and its
 cell remains an owned `gap` or `non-addressable` entry.
 
-The 2026.1 exclusions are the Spec, Scene, Routing, and Geocoding operations
-whose deterministic fixture is absent from the pinned candidate. Realtime
-stream operations stay `non-addressable` and are owned by
-[honua-sdk-dotnet#308](https://github.com/honua-io/honua-sdk-dotnet/issues/308)
-because that candidate has no certification transport and no concrete stream
-client. FeatureServer edits stay in the denominator. The certification server
-sets `Licensing__Mode=Disabled`, the non-secret 2026.1 entitlement, and the
-edit round-trip must pass. A 402 response is a failure, not evidence of a
-successful mutation. Catalog lookup stays on `GET /api/v1/admin/services/`.
-Nightly certification retains excluded operations as required gaps so broader
-support cannot be inferred from the narrower release profile. Adding or
-removing an exclusion changes the generated ledger and its tested denominator
-partition.
+Spec, Scene, Routing, and Geocoding operations remain required release
+obligations when deterministic fixtures are missing. Each operation has its own
+live test result. A missing or skipped result fails qualification, including
+when diagnostic nonpassing evidence is allowed. Missing fixtures do not establish
+unsupported behavior and cannot remove an operation from the release denominator.
+
+Routing certification requires the service ID and all route, service-area, and
+closest-facility layer names, plus explicit coordinate pairs for the origin,
+destination, service-area center, incident, and two facilities. Configure each
+pair with `HONUA_PROTOCOL_<POINT>_LONGITUDE` and `_LATITUDE`, where `<POINT>` is
+`ROUTE_ORIGIN`, `ROUTE_DESTINATION`, `SERVICE_AREA_CENTER`, `ROUTE_INCIDENT`,
+`ROUTE_FACILITY_A`, or `ROUTE_FACILITY_B`. Coordinates must be finite and within
+longitude/latitude ranges. Each operation executes unconditionally in its own
+test. Scene and Spec certification require their IDs; Geocoding requires search
+text and reverse-geocode coordinates. These settings must identify deterministic
+fixtures provisioned by the exact candidate's governed seed/configuration.
+
+Realtime stream operations stay `non-addressable`, owned by
+[honua-sdk-dotnet#308](https://github.com/honua-io/honua-sdk-dotnet/issues/308),
+because there is no concrete stream client. FeatureServer edits stay in the
+denominator. The certification server sets `Licensing__Mode=Disabled`, the
+non-secret 2026.1 entitlement, and the edit round-trip must pass. A 402 response
+is a failure. Catalog lookup stays on `GET /api/v1/admin/services/`.
 
 ## FeatureServer edits
 
@@ -59,8 +69,10 @@ on that target. Cleanup is fail-closed. A 402 is a failed edit, not a skip.
 The pinned server image and published `Honua.Sdk` package are recorded in
 [`certification/candidate-pins.json`](../certification/candidate-pins.json); see
 [`certification/README.md`](../certification/README.md) to advance them.
-A scheduled workflow follows the published honua-release package coordinate
-so that pin does not wait on a hand bump. The operation ledger is regenerated
+A scheduled workflow follows the published honua-release package coordinate,
+and advances a server pin that has fallen behind the manifest snapshot, so
+that pin does not wait on a hand bump. A newer server pin is left in place.
+The operation ledger is regenerated
 only when the public client surface changes, not when the pin moves.
 Certification refuses floating `:nightly` and `:nightly-aot` tags.
 The earlier rc-cert image `e3ab87ce` / `sha256:d7a45c87` remains the historical
@@ -168,3 +180,34 @@ live entitlement and license-fingerprint assertion. Until an actual bound probe
 record is retained, licensed edit rows remain non-pass with their existing
 [qualification dependency](https://github.com/honua-io/honua-sdk-dotnet/issues/308).
 No license value or secret is inferred, and no requirement is removed.
+
+## SDK and workload identity
+
+`global.json` pins both the SDK and its matching workload set. The SDK version
+alone does not fix the browser dependency graph: a newer installed Mono workload
+manifest can override the implicit WebAssembly SDK package version.
+
+Before restore, CI, release lock generation, and publishing run
+`python3 scripts/ci/prepare-dotnet-toolchain.py`. This provisions the exact set
+using a synthetic project outside the checkout, records ambient and selected
+identities and manifest import hashes, and rejects implicit WebAssembly or ILLink
+versions that differ from the committed browser lock. It does not evaluate
+repository MSBuild source while provisioning the toolchain. A successful setup
+is toolchain evidence; it does not qualify a server/client candidate.
+
+### Managed release PR readiness
+
+ReleasePlease creates draft release PRs. Lock generation refuses a ready PR, so
+return an existing release PR to draft before refreshing it. Keep it draft until
+the final source changes have landed and the read-only generation and data-only
+apply jobs have completed against a stable head. Their workflow dispatches provide
+diagnostics; workflow-dispatched job checks do not satisfy branch rulesets, as
+explained in [GitHub’s required status check guidance](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#checks-from-some-workflow-jobs-are-not-evaluated).
+
+After verifying the final apply run and current head, an authenticated maintainer
+uses `gh pr ready <release-pr-number> --repo honua-io/honua-sdk-dotnet`.
+The resulting `pull_request: ready_for_review` event starts eligible CI, browser,
+CodeQL, docs, and conformance verification. Wait for every protected exact-head
+context and resolve review findings before the normal merge. Any subsequent
+managed refresh requires returning the PR to draft and repeating this sequence.
+No check result, candidate pin, package version, or publication is synthesized.

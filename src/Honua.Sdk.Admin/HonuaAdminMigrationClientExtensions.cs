@@ -34,6 +34,32 @@ public static class HonuaAdminMigrationClientExtensions
         throw new NotSupportedException("This IHonuaAdminClient implementation does not support migration source scanning.");
     }
 
+    /// <summary>
+    /// Scans a supported source with <c>artifactSet=all</c> and returns the inventory, manifest, and parity evidence.
+    /// </summary>
+    /// <param name="client">The admin client.</param>
+    /// <param name="request">The migration inventory scan request.</param>
+    /// <param name="artifactSet">Must be <c>all</c>.</param>
+    /// <param name="exportJson">When true, requests the server's JSON attachment form with <c>export=json</c>.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The scan artifact envelope returned by the server.</returns>
+    public static Task<MigrationScanArtifactSet> ScanMigrationSourceAsync(
+        this IHonuaAdminClient client,
+        MigrationInventoryScanRequest request,
+        string artifactSet,
+        bool exportJson = false,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        if (client is HonuaAdminClient honuaClient)
+        {
+            return honuaClient.ScanMigrationSourceAsync(request, artifactSet, exportJson, cancellationToken);
+        }
+
+        throw new NotSupportedException("This IHonuaAdminClient implementation does not support migration source scanning.");
+    }
+
     /// <summary>Discovers the layers and metadata exposed by an ArcGIS service.</summary>
     public static Task<GeoservicesDiscoverResponse> DiscoverGeoservicesServiceAsync(
         this IHonuaAdminClient client,

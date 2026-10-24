@@ -319,15 +319,11 @@ foreach (var item in catalog.Items)
 }
 ```
 
-<!-- doc-run: blocked https://github.com/honua-io/honua-sdk-dotnet/issues/408 -->
 ```bash
 dotnet run
 ```
 
-> The published SDK pin used by this guide still reads an unavailable metadata route
-> ([#408](https://github.com/honua-io/honua-sdk-dotnet/issues/408)). The source fix uses
-> canonical service and FeatureServer routes for this search. This executable-docs
-> block remains until the corrected package is published, pinned and verified.
+It prints the layer count and one line per layer (`serviceName/layerId: name`).
 
 Use `IHonuaOgcRecordsClient` when the server exposes the public OGC API Records catalog and the
 caller should discover standards-facing metadata records instead of operator/control-plane
@@ -595,7 +591,7 @@ dotnet run
   aliases, capabilities, and native protocol escape hatches
 - **[INSTALL.md](../INSTALL.md)** -- package sources, GitHub Packages setup,
   and version policy
-- **[Field Data Collection example](../examples/FieldDataCollection/)** --
-  archived .NET MAUI reference assets for offline sync, forms, and map views
-- **[gRPC vs Forms comparison](../examples/FieldDataCollection/GRPC_FORMS_COMPARISON.md)**
-  -- when to use gRPC queries versus OpenRosa/XForms for data collection
+- **[Field Form Console](../examples/FieldFormConsole/)** -- form validation
+  and calculated fields using the current SDK
+- **[Offline Conflict Console](../examples/OfflineConflictConsole/)** --
+  producing, detecting, and resolving offline sync conflicts
