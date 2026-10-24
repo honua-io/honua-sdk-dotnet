@@ -419,7 +419,6 @@
           "Honua.Sdk.Abstractions": "[1.12.0, )",
           "Honua.Sdk.Geometry": "[1.12.0, )",
           "Honua.Sdk.Processes": "[1.12.0, )",
-          "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
         }
       },
