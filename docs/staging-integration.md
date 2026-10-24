@@ -36,6 +36,14 @@ lane stays low-overhead and does not mutate shared staging state.
 - `.github/workflows/publish-dotnet-sdk.yml` reuses the same staging workflow on
   the release path before package publish.
 
+When the deployed staging configuration is absent, the workflow uses the immutable
+server image, source commit and seed digest in `certification/candidate-pins.json`.
+It verifies the image's source attestation and seed bytes, lets the server migrate
+the database, then loads the fixture after readiness. The SDK compatibility check
+still refuses servers below its supported minimum. This fallback exercises a
+published server image in CI; it is not installed release or authenticated
+workspace acceptance. A failed fallback prevents package publication.
+
 ## Required Configuration
 
 Configure the GitHub `staging` environment with these values.
