@@ -17,6 +17,9 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urljoin, urlsplit
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import certification_entitlement  # noqa: E402
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = ROOT / "src"
@@ -973,6 +976,16 @@ def _governed_context(index: dict[tuple[str, ...], dict[str, Any]], operation: d
     return row
 
 
+def _entitlement_observation(args: argparse.Namespace) -> Any:
+    path = getattr(args, "entitlement_observation", None)
+    if path is None:
+        raise ValueError("no retained entitlement observation was supplied")
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except OSError as error:
+        raise ValueError(f"entitlement observation is unreadable: {error}") from error
+
+
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     catalog, requirements = _requirements(args)
@@ -1062,11 +1075,23 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         entitlement_policy_revision = (
             FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None
         )
+        entitlement_assertion = None
         if licensed and result == "pass":
             # A green TRX or deployment setting cannot synthesize the live
             # entitlement/fingerprint assertion required by the strict consumer.
+            # Only a retained, re-validated signed release observation can.
+            try:
+                if args.tier != "release":
+                    raise ValueError("rehearsal entitlement is not release proof")
+                entitlement_assertion = certification_entitlement.verified_entitlement(
+                    _entitlement_observation(args), capability_key=f"sdk-dotnet.{operation['surface']}",
+                    started_at=started_at, completed_at=now)
+            except (ValueError, AssertionError) as refusal:
+                entitlement_refusal = str(refusal)
+        if licensed and result == "pass" and entitlement_assertion is None:
             result, verdict = "skip", "missing-entitlement-evidence"
-            skip_reason = "missing retained live entitlement/fingerprint proof; " + RC_FIXTURE_GAP_ISSUE
+            skip_reason = (f"missing retained live entitlement/fingerprint proof ({entitlement_refusal}); "
+                           + RC_FIXTURE_GAP_ISSUE)
             exercised_capabilities = []
             receipt_facets = {facet: "skip" for facet in scenario_facets}
             has_nonpass = has_incomplete_execution = True
@@ -1094,6 +1119,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "result": result,
             "facets": receipt_facets,
             "payload_base64": payload_base64,
+            **({"entitlement": entitlement_assertion} if entitlement_assertion is not None else {}),
         }
         evidence_digest = None if evidence_receipt is None else "sha256:" + hashlib.sha256(
             json.dumps(
@@ -1205,6 +1231,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--service-id")
     parser.add_argument("--layer-id")
     parser.add_argument("--collection-id")
+    parser.add_argument(
+        "--entitlement-observation", type=Path,
+        help="Retained signed release entitlement observation; without it licensed passes stay skipped.",
+    )
     parser.add_argument(
         "--allow-nonpass",
         action="store_true",

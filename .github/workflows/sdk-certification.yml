@@ -8,6 +8,8 @@ on:
       - "tests/Honua.Sdk.ProtocolIntegration.Tests/**"
       - "tests/Honua.Sdk.Conformance.Tests/**"
       - "scripts/generate-sdk-certification.py"
+      - "scripts/certification_entitlement.py"
+      - "scripts/observe-certification-entitlement.py"
       - "scripts/prepare-installed-package-certification.py"
       - "certification/candidate-pins.json"
       - "certification/requirements-pins.json"
@@ -267,12 +269,23 @@ jobs:
       - name: Start exact honua-server image
         env:
           SERVER_IMAGE: ${{ steps.identity.outputs.image }}
+          CERT_TIER: ${{ steps.identity.outputs.tier }}
+          EVENT_NAME: ${{ github.event_name }}
+          # Governed signed license: exposed to this step only for an explicit release dispatch.
+          # Unconfigured until an operator provisions it; pr/nightly never receive it.
+          HONUA_CERTIFICATION_LICENSE_CONTENT: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && secrets.HONUA_CERTIFICATION_LICENSE_CONTENT || '' }}
         run: |
+          entitlement_profile="$(python3 scripts/observe-certification-entitlement.py profile --tier "${CERT_TIER}" --event "${EVENT_NAME}")"
+          entitlement_mode="$(jq -er '.mode' <<< "${entitlement_profile}")"
+          dev_grant="$(jq -er '.devGrantEdition | strings' <<< "${entitlement_profile}")"
+          echo "HONUA_ENTITLEMENT_MODE=${entitlement_mode}" >> "${GITHUB_ENV}"
           key="$(head -c 32 /dev/urandom | base64)"
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-server --network host \
             -e ASPNETCORE_ENVIRONMENT=Development \
-            -e Licensing__Mode=Disabled \
+            -e Licensing__Mode=Enabled \
+            -e Licensing__DevGrantEdition="${dev_grant}" \
+            -e Licensing__LicenseContent \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
@@ -294,6 +307,18 @@ jobs:
           PGPASSWORD: honua
         run: psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
 
+      - name: Retain candidate entitlement observation
+        env:
+          CERT_TIER: ${{ steps.identity.outputs.tier }}
+          EVENT_NAME: ${{ github.event_name }}
+          HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
+          # Only the profile check needs the signed envelope; it is never written to artifacts.
+          HONUA_CERTIFICATION_LICENSE_CONTENT: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && secrets.HONUA_CERTIFICATION_LICENSE_CONTENT || '' }}
+        run: |
+          python3 scripts/observe-certification-entitlement.py observe \
+            --tier "${CERT_TIER}" --event "${EVENT_NAME}" --mode "${HONUA_ENTITLEMENT_MODE}" \
+            --base-url http://localhost:8080 --output artifacts/evidence/entitlement-observation.json
+
       - name: Run public SDK operations
         id: tests
         env:
@@ -304,8 +329,9 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
-          # 2026.1 runs Licensing__Mode=Disabled, the non-secret entitlement for FeatureServer edits.
-          # The flag only allows the test to execute; a 402 or any other failure is not a pass.
+          # pr/nightly rehearse edits with a Development grant (never release proof); release needs the
+          # governed signed license. The flag only allows the test to execute; a 402 or any other
+          # failure is not a pass, and licensed passes need the retained signed observation.
           HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "true"
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
@@ -352,6 +378,7 @@ jobs:
           SDK_PACKAGE_SOURCE_SHA: ${{ env.PINNED_SDK_PACKAGE_SOURCE_SHA }}
           RELEASE_CUT: ${{ steps.identity.outputs.release-cut }}
           STARTED_AT: ${{ steps.identity.outputs.started-at }}
+          ENTITLEMENT_OBSERVATION: artifacts/evidence/entitlement-observation.json
           SDK_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
           # request-context values must match the ones the SDK operations step ran against
           HONUA_PROTOCOL_EXTERNAL_BASE_URL: "http://localhost:8080"
@@ -399,6 +426,7 @@ jobs:
             --layer-id "${HONUA_PROTOCOL_LAYER_ID}" \
             --collection-id "${HONUA_PROTOCOL_OGC_COLLECTION_ID}" \
             --allow-nonpass \
+            ${ENTITLEMENT_OBSERVATION:+--entitlement-observation "${ENTITLEMENT_OBSERVATION}"} \
             ${RELEASE_CUT:+--release-cut "${RELEASE_CUT}"}
 
       - name: Upload certification evidence
