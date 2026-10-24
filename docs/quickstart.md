@@ -591,7 +591,7 @@ dotnet run
   aliases, capabilities, and native protocol escape hatches
 - **[INSTALL.md](../INSTALL.md)** -- package sources, GitHub Packages setup,
   and version policy
-- **[Field Data Collection example](../examples/FieldDataCollection/)** --
-  archived .NET MAUI reference assets for offline sync, forms, and map views
-- **[gRPC vs Forms comparison](../examples/FieldDataCollection/GRPC_FORMS_COMPARISON.md)**
-  -- when to use gRPC queries versus OpenRosa/XForms for data collection
+- **[Field Form Console](../examples/FieldFormConsole/)** -- form validation
+  and calculated fields using the current SDK
+- **[Offline Conflict Console](../examples/OfflineConflictConsole/)** --
+  producing, detecting, and resolving offline sync conflicts
