@@ -55,11 +55,11 @@ env:
   DOTNET_NOLOGO: true
   # The server candidate and the published Honua.Sdk package are pinned in
   # certification/candidate-pins.json; the "Load candidate pins" step exports them as
-  # PINNED_SERVER_* and PINNED_SDK_*. Digest only; never :nightly or :nightly-aot.
+  # PINNED_SERVER_*, PINNED_SDK_* and PINNED_CANDIDATE_CUT. Digest only; never :nightly
+  # or :nightly-aot. PINNED_CANDIDATE_CUT is the honua-release manifest
+  # protocolCertification.candidateCutAt for the pinned server snapshot.
   # The historical rc-cert image e3ab87ce / sha256:d7a45c87 predates Licensing__Mode
   # and returns 402 for FeatureServer edits; that receipt stays the unentitled result.
-  # Independently frozen 2026.1 release cut.
-  PINNED_CANDIDATE_CUT: "2026-09-16T02:20:00Z"
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
   HONUA_PROTOCOL_LAYER_ID: "0"
   HONUA_PROTOCOL_OGC_COLLECTION_ID: "0"
@@ -189,8 +189,7 @@ jobs:
           resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
           requested_digest="${image##*@}"
           [[ "${requested_digest}" == "${resolved_digest}" ]] || { echo '::error::Requested image digest did not resolve exactly.'; exit 1; }
-          image_created="$(jq -er '.image["linux/amd64"].created // .image.created // .image["linux/amd64"].config.created // .image.config.created' <<< "${image_metadata}")"
-          candidate_cut="${release_cut:-${image_created}}"
+          candidate_cut="${PINNED_CANDIDATE_CUT:?Pinned candidate cut is required}"
           [[ "${image}" =~ @sha256:[0-9a-f]{64}$ ]] || { echo '::error::Server image must be digest-addressed.'; exit 1; }
           [[ "${source_sha}" =~ ^[0-9a-f]{40}$ ]] || { echo '::error::Server source SHA must be a full lowercase commit.'; exit 1; }
           echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin >/dev/null

@@ -16,6 +16,7 @@ an attested honua-server image. Both are pinned in one file,
 | `serverSourceSha` | honua-server commit of the release candidate | the honua-release nightly resolver's selection |
 | `serverImageDigest` | Digest of `ghcr.io/honua-io/honua-server:nightly-<sha7>` | GHCR |
 | `fixtureRevision` | `sha256:` of honua-server `tests/seed/base-schema.sql` at `serverSourceSha` | honua-server |
+| `candidateCut` | UTC cut time of the pinned candidate, emitted as the evidence `candidate_cut_at` | `protocolCertification.candidateCutAt` in the honua-release manifest |
 
 `scripts/prepare-installed-package-certification.py` is the only reader. The
 workflow loads the file through `--emit-env`. The restore step installs exactly
@@ -45,6 +46,9 @@ package and verifies the following:
   `serverSourceSha` hashes to `fixtureRevision`. When the pin is exactly the
   manifest server snapshot, a rebuilt tag is accepted if GHCR still serves the
   manifest digest. Certification pulls that digest, not the tag.
+- When `serverSourceSha` is exactly the manifest server snapshot,
+  `candidateCut` equals the manifest `protocolCertification.candidateCutAt`.
+  The honua-release protocol gate compares the evidence cut with that value.
 
 Each drift is reported on its own `::error::` line naming the field, the pinned
 value and the published value. Scheduled and dispatched runs execute `--check`
@@ -62,6 +66,8 @@ so external drift does not fail unrelated PRs.
      (`RESOLVED honua-server <sha> <image@digest>`).
    - Image: `docker buildx imagetools inspect ghcr.io/honua-io/honua-server:nightly-<sha7>`.
    - Fixture: `gh api "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=<sha>" -H "Accept: application/vnd.github.raw" | sha256sum`.
+   - Cut: `protocolCertification.candidateCutAt` in the honua-release manifest, when the
+     server pin is the manifest snapshot. `--follow-manifest` copies it with that snapshot.
 2. Edit `certification/candidate-pins.json`. Change only the fields that moved.
 3. Run `--check` until it exits 0, and run
    `python3 -m unittest discover -s scripts/tests -p 'test_*.py'`.

@@ -39,14 +39,17 @@ The live tier boots this exact `honua-server` image via Testcontainers:
 
 | Pin | Value |
 |-----|-------|
-| Tag | `ghcr.io/honua-io/honua-server:rc-cert-e3ab87c-e3ab87c` |
-| Digest | `sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d` |
-| Build | `rc-cert-e3ab87c-e3ab87c` (dated `20260821`, attested RC AOT candidate) |
-| Source | `e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e` |
-| Attestation | [`32496444220`](https://github.com/honua-io/honua-server/actions/runs/32496444220) |
+| Tag | `ghcr.io/honua-io/honua-server:nightly-8cb074f` |
+| Digest | `sha256:2d7877c4d1cb3b30647fb225893d41b13728f0448997997cdf4bf40fe99be07d` |
+| Build | The honua-release manifest `components.honua-server` pin (2026-10-22 re-pin) |
+| Source | `8cb074f77d01c0a00617ebe426460aa24c7d890b` |
+| Attestation | [`38221839914`](https://github.com/honua-io/honua-server/actions/runs/38221839914) |
 
 The digest is what is actually pinned and recorded. CI pulls
-`ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d`.
+`ghcr.io/honua-io/honua-server@sha256:2d7877c4d1cb3b30647fb225893d41b13728f0448997997cdf4bf40fe99be07d`.
+It is the same candidate as `certification/candidate-pins.json`. The previous
+pin, rc-cert `e3ab87ce` / `sha256:d7a45c87` (2026-08-21), predates
+honua-server#5147, which writes GeoServices JSONB values as JSON text.
 Bump the digest here only when intentionally moving the conformance target, and
 record the immutable source SHA, attestation run, build, and date alongside it.
 

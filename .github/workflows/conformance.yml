@@ -32,17 +32,15 @@ env:
   DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  # Pinned honua-server:nightly image by digest (see conformance/PINS.md).
-  # rc-cert-e3ab87c-e3ab87c, dated 20260821. The tag is a moving pointer; the
-  # digest is what is actually pinned.
-  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
-  # honua-server commit that produced the pinned nightly image (for the seed SQL).
-  PINNED_HONUA_SERVER_SEED_REF: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
-  # This image's seed inserts honua.services.max_record_count, which its
-  # migrations do not create, so the seed has to land before startup.
-  # Every later image migrates first. Pre-seeding those trips the schema
-  # floor and /healthz/ready stays 503 (#339). Bumping the pin above does
-  # not by itself keep this exception.
+  # Pinned honua-server image by digest (see conformance/PINS.md): the honua-release
+  # manifest server pin nightly-8cb074f. The tag is not what is pulled; the digest is.
+  PINNED_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:2d7877c4d1cb3b30647fb225893d41b13728f0448997997cdf4bf40fe99be07d"
+  # honua-server commit that produced the pinned image (for the seed SQL).
+  PINNED_HONUA_SERVER_SEED_REF: "8cb074f77d01c0a00617ebe426460aa24c7d890b"
+  # The historical image sha256:d7a45c87 inserts honua.services.max_record_count,
+  # which its migrations do not create, so that seed has to land before startup.
+  # Every later image, including the pinned 199bce77 candidate, migrates first.
+  # Pre-seeding those trips the schema floor and /healthz/ready stays 503 (#339).
   LEGACY_SEED_BEFORE_START_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
   # Seed identifiers (match tests/seed/base-schema.sql in honua-server).
   HONUA_PROTOCOL_SERVICE_NAME: "test_service"
@@ -281,8 +279,9 @@ jobs:
             --filter "FullyQualifiedName~SchemaConformanceTests" \
             --logger "console;verbosity=normal"
 
-      # 4. Extensions, then boot. The e3ab87ce pin is seeded first because its
-      #    fixture inserts max_record_count. Every other image migrates before
+      # 4. Extensions, then boot. The historical d7a45c87 pin is seeded first
+      #    because its fixture inserts max_record_count. Every other image,
+      #    including the pinned 8cb074f candidate, migrates before
       #    tests/seed/base-schema.sql. Pre-seeding those leaves migration-owned
       #    tables without a schema_versions journal, so /healthz/ready stays 503.
       - name: Fetch pinned server seed schema

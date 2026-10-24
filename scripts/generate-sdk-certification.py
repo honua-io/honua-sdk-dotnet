@@ -945,6 +945,15 @@ def _requirements(args: argparse.Namespace) -> tuple[dict[str, Any], dict[tuple[
     return catalog, index
 
 
+def _contract_revision(identity: dict[str, Any]) -> str:
+    # Release #767: the installed package defines the client contract. The
+    # independent harness checkout remains producer_source_sha in every receipt.
+    source = identity.get("sdkPackageSourceSha")
+    if not isinstance(source, str) or not re.fullmatch(r"[0-9a-f]{40}", source):
+        raise ValueError("certification contract requires the exact installed package source commit")
+    return f"sdk-dotnet-certification@{source}"
+
+
 def _governed_context(index: dict[tuple[str, ...], dict[str, Any]], operation: dict[str, Any],
                       identity: dict[str, Any], facets: list[str]) -> dict[str, Any]:
     key = (f"sdk-dotnet.{operation['surface']}", operation["surface"], operation["id"],
@@ -956,7 +965,7 @@ def _governed_context(index: dict[tuple[str, ...], dict[str, Any]], operation: d
     if (row.get("client_lane") != CERTIFICATION_RUNNER_LANE or row.get("addressable_by_client") is not True
             or row.get("licensed") is not licensed
             or row.get("entitlement_policy_revision") != (FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None)
-            or row.get("contract_revision") != f"sdk-dotnet-certification@{identity['sdkCommit']}"
+            or row.get("contract_revision") != _contract_revision(identity)
             or row.get("auth_policy_revision") != "api-key-protected-v1"
             or row.get("fixture_revision") != identity["fixtureRevision"]
             or not isinstance(row.get("scenario_facets"), list) or set(row["scenario_facets"]) != set(facets)):
@@ -1044,7 +1053,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         ))
         governed = _governed_context(requirements, operation, identity, scenario_facets)
         started_at = args.started_at or now
-        contract_revision = f"sdk-dotnet-certification@{identity['sdkCommit']}"
+        contract_revision = _contract_revision(identity)
         protocol_version, protocol_profile = _certification_protocol_context(operation)
         request_url = _certification_request_url(operation, identity)
         exercised_capabilities = scenario_facets if result == "pass" else []

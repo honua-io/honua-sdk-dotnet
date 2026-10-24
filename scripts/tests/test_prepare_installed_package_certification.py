@@ -4,8 +4,11 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import re
+import subprocess
 import tempfile
+import textwrap
 import unittest
 import zipfile
 from argparse import Namespace
@@ -67,6 +70,7 @@ class FakeSources:
                 "honua-server": {"sha": "b" * 40, "digest": "sha256:" + "0" * 64},
                 "honua-sdk-dotnet": {"version": pins["sdkPackageVersion"], "sha": pins["sdkSourceSha"]},
             },
+            "protocolCertification": {"candidateCutAt": "2026-10-12T09:45:00Z"},
             "clientArtifacts": {
                 "honua-sdk-dotnet": {
                     "ecosystem": "nuget",
@@ -302,11 +306,50 @@ class InstalledPackageCertificationTests(unittest.TestCase):
     def test_check_requires_the_manifest_digest_when_the_server_pin_is_identical(self):
         pins, sources = self._consistent()
         sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = pins["candidateCut"]
         problems = MODULE.check_pins(pins, sources)
         self.assertEqual(len(problems), 1)
         self.assertIn("serverImageDigest", problems[0])
         sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
         self.assertEqual(MODULE.check_pins(pins, sources), [])
+
+    def test_check_requires_the_manifest_cut_when_the_server_pin_is_identical(self):
+        pins, sources = self._consistent()
+        server = sources.manifest["components"]["honua-server"]
+        server["sha"] = pins["serverSourceSha"]
+        server["digest"] = pins["serverImageDigest"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = "2026-09-16T02:20:00Z"
+        pins["candidateCut"] = "2026-10-12T09:45:00Z"
+        problems = MODULE.check_pins(pins, sources)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("candidateCut", problems[0])
+        self.assertIn("2026-09-16T02:20:00Z", problems[0])
+        del sources.manifest["protocolCertification"]
+        problems = MODULE.check_pins(pins, sources)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("is None", problems[0])
+        sources.manifest["protocolCertification"] = {"candidateCutAt": pins["candidateCut"]}
+        self.assertEqual(MODULE.check_pins(pins, sources), [])
+
+    def test_check_leaves_the_cut_of_a_server_pin_ahead_of_the_manifest(self):
+        pins, sources = self._consistent()
+        sources.manifest["protocolCertification"]["candidateCutAt"] = "2026-09-16T02:20:00Z"
+        self.assertEqual(MODULE.check_pins(pins, sources), [])
+
+    def test_pin_file_refuses_a_malformed_candidate_cut(self):
+        for cut in ("", "2026-10-12", "2026-10-12T09:45:00+00:00", "2026-10-12 09:45:00Z", "latest",
+                    "2026-02-31T25:61:61Z", "2026-02-29T09:45:00Z", "2026-10-12T24:00:00Z", "0000-01-01T00:00:00Z"):
+            with self.subTest(cut=cut), self.assertRaises(ValueError):
+                MODULE.validate_pins(self._pins(candidateCut=cut))
+
+    def test_candidate_cut_checks_calendar_dates_in_pins_and_manifest(self):
+        for cut in ("2024-02-29T23:59:59Z", "2026-10-12T09:45:00.123456Z"):
+            with self.subTest(cut=cut):
+                MODULE.validate_pins(self._pins(candidateCut=cut))
+                self.assertEqual(cut, MODULE._manifest_candidate_cut({"protocolCertification": {"candidateCutAt": cut}}))
+        for cut in ("2026-02-31T09:45:00Z", "2026-10-12T25:61:61Z"):
+            with self.subTest(cut=cut), self.assertRaisesRegex(ValueError, "candidateCutAt"):
+                MODULE._manifest_candidate_cut({"protocolCertification": {"candidateCutAt": cut}})
 
     def test_missing_package_bytes_fail_closed(self):
         message = MODULE.restore_failure_message("", package_present=False, server_sha=PINS["serverSourceSha"])
@@ -333,6 +376,7 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertEqual(lines["PINNED_SDK_PACKAGE_VERSION"], PINS["sdkPackageVersion"])
         self.assertEqual(lines["PINNED_SDK_PACKAGE_DIGEST"], PINS["sdkPackageDigest"])
         self.assertEqual(lines["PINNED_SDK_PACKAGE_SOURCE_SHA"], PINS["sdkSourceSha"])
+        self.assertEqual(lines["PINNED_CANDIDATE_CUT"], PINS["candidateCut"])
 
     def test_workflow_and_script_read_the_one_pin_file(self):
         workflow = (MODULE.ROOT / ".github/workflows/sdk-certification.yml").read_text(encoding="utf-8")
@@ -347,7 +391,8 @@ class InstalledPackageCertificationTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertNotIn(value, workflow)
                 self.assertNotIn(value, script)
-        self.assertNotRegex(workflow, r"PINNED_(SERVER|SDK)_[A-Z_]+: ")
+        self.assertNotRegex(workflow, r"PINNED_(SERVER|SDK|CANDIDATE)_[A-Z_]+: ")
+        self.assertNotIn(PINS["candidateCut"], workflow)
         self.assertIsNone(re.search(r"ghcr\.io/honua-io/honua-server:(nightly|latest)", workflow))
         self.assertNotIn("dotnet pack", script)
         self.assertNotIn("NuGetSignatureValidationMode", script)
@@ -375,6 +420,35 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         ):
             with self.subTest(follow=value):
                 self.assertNotIn(value, follow)
+
+    def test_actual_identity_step_keeps_release_and_candidate_cuts_independent(self):
+        workflow = (MODULE.ROOT / ".github/workflows/sdk-certification.yml").read_text()
+        step = workflow.split("      - name: Resolve tier and immutable identity\n", 1)[1].split("\n      - ", 1)[0]
+        script = textwrap.dedent(step.split("        run: |\n", 1)[1])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata = json.dumps({"manifest": {"digest": PINS["serverImageDigest"]},
+                                   "image": {"created": "2026-01-01T00:00:00Z"}})
+            docker = root / "docker"
+            docker.write_text("#!/bin/bash\nset -eu\ncase \"$1\" in\n"
+                              "buildx) printf '%s' '" + metadata + "';;\n"
+                              "login) cat >/dev/null;;\n*) exit 91;;\nesac\n")
+            gh = root / "gh"
+            gh.write_text("#!/bin/bash\nset -eu\n[[ \"$1 $2\" == 'attestation verify' ]]\nprintf '[]'\n")
+            docker.chmod(0o700); gh.chmod(0o700)
+            output = root / "output"
+            release_cut = "2026-10-29T12:00:00Z"
+            env = {**os.environ, "PATH": str(root) + os.pathsep + os.environ["PATH"],
+                   **dict(line.split("=", 1) for line in MODULE.emit_env(PINS).splitlines()),
+                   "CERT_TIER": "release", "INPUT_IMAGE": SERVER_IMAGE,
+                   "INPUT_SOURCE_SHA": PINS["serverSourceSha"], "INPUT_SEED_REF": "",
+                   "INPUT_FIXTURE_REVISION": "", "INPUT_RELEASE_CUT": release_cut,
+                   "GH_TOKEN": "synthetic-test-token", "GITHUB_ACTOR": "test", "GITHUB_OUTPUT": str(output)}
+            subprocess.run(["bash", "-c", script], cwd=root, env=env, check=True, capture_output=True, text=True)
+            values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+            self.assertEqual(values["candidate-cut"], PINS["candidateCut"])
+            self.assertEqual(values["release-cut"], release_cut)
+            self.assertNotEqual(values["candidate-cut"], values["release-cut"])
 
     def test_follow_is_a_no_op_when_the_manifest_matches_nuget_org(self):
         pins, sources = self._consistent()
@@ -426,7 +500,32 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertEqual(updated["serverSourceSha"], manifest_sha)
         self.assertEqual(updated["serverImageDigest"], manifest_digest)
         self.assertEqual(updated["fixtureRevision"], _sha256(sources.fixture))
+        self.assertEqual(updated["candidateCut"], "2026-10-12T09:45:00Z")
         self.assertEqual(pins["serverSourceSha"], PINS["serverSourceSha"])
+
+    def test_follow_refuses_to_advance_without_a_manifest_cut(self):
+        pins, sources = self._consistent()
+        sources.compare_status = "behind"
+        manifest_sha = sources.manifest["components"]["honua-server"]["sha"]
+        sources.image_digests[f"nightly-{manifest_sha[:7]}"] = sources.manifest["components"]["honua-server"]["digest"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = "2026-10-12"
+        with self.assertRaisesRegex(ValueError, "candidateCutAt"):
+            MODULE.follow_release_manifest(pins, sources)
+
+    def test_follow_corrects_a_stale_cut_on_the_manifest_snapshot(self):
+        pins, sources = self._consistent(candidateCut="2026-09-16T02:20:00Z")
+        sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertTrue(changed)
+        self.assertEqual(updated["candidateCut"], "2026-10-12T09:45:00Z")
+        self.assertEqual(MODULE.check_pins(updated, sources), [])
+
+    def test_follow_keeps_the_cut_of_a_server_pin_ahead_of_the_manifest(self):
+        pins, sources = self._consistent(candidateCut="2026-10-20T00:00:00Z")
+        updated, changed = MODULE.follow_release_manifest(pins, sources)
+        self.assertFalse(changed)
+        self.assertEqual(updated["candidateCut"], "2026-10-20T00:00:00Z")
 
     def test_follow_refuses_a_diverged_server_pin(self):
         pins, sources = self._consistent()
@@ -457,6 +556,7 @@ class InstalledPackageCertificationTests(unittest.TestCase):
     def test_check_accepts_the_manifest_digest_when_its_tag_was_rebuilt(self):
         pins, sources = self._consistent()
         sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = pins["candidateCut"]
         sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
         sources.image_digests[f"nightly-{pins['serverSourceSha'][:7]}"] = "sha256:" + "e" * 64
         sources.image_digests[pins["serverImageDigest"]] = pins["serverImageDigest"]
@@ -465,6 +565,7 @@ class InstalledPackageCertificationTests(unittest.TestCase):
     def test_check_refuses_a_rebuilt_tag_when_the_pinned_digest_is_gone(self):
         pins, sources = self._consistent()
         sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = pins["candidateCut"]
         sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
         sources.image_digests[f"nightly-{pins['serverSourceSha'][:7]}"] = "sha256:" + "e" * 64
         problems = MODULE.check_pins(pins, sources)
@@ -474,6 +575,7 @@ class InstalledPackageCertificationTests(unittest.TestCase):
     def test_follow_leaves_an_identical_server_pin_when_the_digest_already_matches(self):
         pins, sources = self._consistent()
         sources.manifest["components"]["honua-server"]["sha"] = pins["serverSourceSha"]
+        sources.manifest["protocolCertification"]["candidateCutAt"] = pins["candidateCut"]
         sources.manifest["components"]["honua-server"]["digest"] = pins["serverImageDigest"]
         updated, changed = MODULE.follow_release_manifest(pins, sources)
         self.assertFalse(changed)
