@@ -220,7 +220,7 @@ public sealed class HonuaProcessesExecutionTests
             }
 
             headersReturned = true;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StallingContent(bodyStarted) });
+            return Task.FromResult(StallingResponse(bodyStarted));
         });
         var execution = new HonuaProcessesClient(http).ExecuteSyncAsync("test", Request(), TimeSpan.FromMilliseconds(500));
         await bodyStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -239,7 +239,7 @@ public sealed class HonuaProcessesExecutionTests
         {
             if (request.RequestUri!.AbsolutePath.EndsWith("/results", StringComparison.Ordinal))
             {
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StallingContent(bodyStarted) });
+                return Task.FromResult(StallingResponse(bodyStarted));
             }
 
             return Reply(request.Method == HttpMethod.Post ? Job("successful") : Description(false),
@@ -441,7 +441,7 @@ public sealed class HonuaProcessesExecutionTests
 
             if ((stage == "post-body" && isPost) || (stage == "results-body" && path.EndsWith("/results", StringComparison.Ordinal)))
             {
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StallingContent(bodyStarted) };
+                return StallingResponse(bodyStarted);
             }
 
             return await Reply(isPost ? Job(stage == "results-body" ? "successful" : "accepted") : Description(stage.StartsWith("post", StringComparison.Ordinal)),
@@ -611,7 +611,14 @@ public sealed class HonuaProcessesExecutionTests
     }
 
     private static Task<HttpResponseMessage> Reply(string body, HttpStatusCode status = HttpStatusCode.OK)
-        => Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+        => Task.FromResult(JsonResponse(body, status));
+
+    // Ownership transfers to HttpClient; return the resource directly from its factory.
+    private static HttpResponseMessage JsonResponse(string body, HttpStatusCode status)
+        => new(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+
+    private static HttpResponseMessage StallingResponse(TaskCompletionSource started)
+        => new(HttpStatusCode.OK) { Content = new StallingContent(started) };
 
     private static string Description(bool sync) => sync ? "{\"jobControlOptions\":[\"sync-execute\",\"async-execute\"]}"
         : "{\"jobControlOptions\":[\"async-execute\"]}";
