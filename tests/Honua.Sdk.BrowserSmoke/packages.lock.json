@@ -424,7 +424,7 @@
       "honua.sdk.admin": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -433,7 +433,7 @@
       "honua.sdk.catalogs": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -442,14 +442,14 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )"
+          "Honua.Sdk.Abstractions": "[1.13.0, )"
         }
       },
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
           "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -458,8 +458,8 @@
       "honua.sdk.geoservices": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
-          "Honua.Sdk.Geometry": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
+          "Honua.Sdk.Geometry": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -468,15 +468,15 @@
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )"
         }
       },
       "honua.sdk.ogcfeatures": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
-          "Honua.Sdk.Geometry": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
+          "Honua.Sdk.Geometry": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -485,7 +485,7 @@
       "honua.sdk.processes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -494,7 +494,7 @@
       "honua.sdk.scenes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -503,7 +503,7 @@
       "honua.sdk.spec": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -512,7 +512,7 @@
       "honua.sdk.studio": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.12.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
