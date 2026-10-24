@@ -447,6 +447,9 @@ jobs:
       - name: Build routing geofence sample
         run: dotnet build examples/RoutingGeofenceConsole/RoutingGeofenceConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
+      - name: Build geoprocessing buffer clip sample
+        run: dotnet build examples/GeoprocessingBufferClipConsole/GeoprocessingBufferClipConsole.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
+
       - name: Build field data reference sample
         run: dotnet build examples/FieldDataCollection/FieldDataCollection.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 

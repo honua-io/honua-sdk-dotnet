@@ -244,7 +244,7 @@ public sealed record HonuaProcessExecuteRequest
     public required HonuaProcessExecuteInputs Inputs { get; init; }
 
     /// <summary>
-    /// Response mode. Honua Server currently supports document mode.
+    /// Response mode: document (the default) or raw. Raw results retain their original media type.
     /// </summary>
     [JsonPropertyName("response")]
     public string Response { get; init; } = "document";

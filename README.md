@@ -273,6 +273,10 @@ For an overview diagram of the package layering, see
 
 Runnable console/worker samples live in [examples/](examples/README.md):
 
+- **[GeoprocessingBufferClipConsole](examples/GeoprocessingBufferClipConsole/)** --
+  real OGC buffer → layer clip with bounded execution, raw GeoJSON outputs, and
+  local artifact URIs; requires a live Honua Server.
+
 - **[AdminBootstrapConsole](examples/AdminBootstrapConsole/)** -- the canonical
   sample: bootstrap a PostGIS table with `Honua.Sdk.Admin`, enable `Grpc`
   while preserving existing protocols, verify with a bounded `Honua.Sdk.Grpc`

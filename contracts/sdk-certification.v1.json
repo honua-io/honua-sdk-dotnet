@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
   "complete": false,
   "summary": {
-    "total": 325,
+    "total": 328,
     "exercised": 39,
-    "gap": 268,
+    "gap": 271,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 307,
+    "denominator": 310,
     "excluded": []
   },
   "operations": [
@@ -8072,6 +8072,62 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.ExecuteSyncAsync(string,HonuaProcessExecuteRequest,TimeSpan,TimeSpan?,CancellationToken)",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "ExecuteSyncAsync",
+      "signature": "ExecuteSyncAsync(string,HonuaProcessExecuteRequest,TimeSpan,TimeSpan?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Processes.HonuaProcessesClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Processes.HonuaProcessesClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Processes.HonuaProcessesClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.ExecuteSyncAsync(string,IReadOnlyDictionary<string,JsonElement>,TimeSpan,TimeSpan?,CancellationToken)",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "ExecuteSyncAsync",
+      "signature": "ExecuteSyncAsync(string,IReadOnlyDictionary<string,JsonElement>,TimeSpan,TimeSpan?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Processes.HonuaProcessesClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Processes.HonuaProcessesClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Processes.HonuaProcessesClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetConformanceAsync(CancellationToken)",
       "surface": "processes",
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
@@ -8308,6 +8364,34 @@
       ],
       "scenarioFacets": [
         "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Processes.HonuaProcessesClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Processes.HonuaProcessesClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Processes.HonuaProcessesClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/31",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Processes.IHonuaProcessesClient.WaitForTerminalAsync(string,TimeSpan,TimeSpan?,CancellationToken)",
+      "surface": "processes",
+      "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
+      "operation": "WaitForTerminalAsync",
+      "signature": "WaitForTerminalAsync(string,TimeSpan,TimeSpan?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
       ],
       "tests": [],
       "implementations": [

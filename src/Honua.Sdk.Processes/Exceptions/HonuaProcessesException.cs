@@ -75,6 +75,11 @@ public sealed class HonuaProcessesException : Honua.Sdk.Abstractions.HonuaExcept
     public string? ResponseBody { get; }
 
     /// <summary>
+    /// Job identifier, when a bounded execution or wait has observed a job before failing.
+    /// </summary>
+    public string? JobId { get; internal set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HonuaProcessesException"/> class.
     /// </summary>
     public HonuaProcessesException(
