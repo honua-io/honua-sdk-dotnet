@@ -14,7 +14,7 @@ namespace Honua.Sdk.Processes;
 /// <summary>
 /// HTTP client implementation for OGC API Processes.
 /// </summary>
-public sealed class HonuaProcessesClient : IHonuaProcessesClient
+public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
 {
     private const string BasePath = "/ogc/processes";
     private readonly HttpClient _http;

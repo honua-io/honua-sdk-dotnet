@@ -223,7 +223,60 @@ is what makes the tool-by-tool swap transparent to clients.
 > tools is **not** feasible and is out of scope. Federation plus manual
 > reimplementation is the supported path.
 
+## Bounded REST execution
+
+The shipped `HonuaProcessesClient` implements these convenience methods. Their
+default `IHonuaProcessesClient` implementations throw `NotSupportedException`,
+allowing existing custom clients to keep implementing the lifecycle methods
+without adopting the optional helpers. Custom implementations can opt in by
+implementing the new methods.
+
+The REST helper submits once, omits `Prefer` when the process advertises
+`sync-execute`, and otherwise sends `Prefer: respond-async`. One elapsed timeout
+covers discovery, submission, polling delays, and result retrieval. Asynchronous
+fallback requires advertised `async-execute`; missing or unsupported execution
+modes fail before submission. This snippet
+uses the server's actual `wkb` input name with a GeoJSON value:
+
+```csharp
+using System.Text.Json;
+
+using var point = JsonDocument.Parse("""
+    {"type":"Point","coordinates":[-157.86,21.31]}
+    """);
+var completed = await processes.ExecuteSyncAsync(
+    "geometry.buffer",
+    new Dictionary<string, JsonElement>
+    {
+        ["wkb"] = point.RootElement,
+        ["srid"] = JsonSerializer.SerializeToElement(4326),
+        ["distance"] = JsonSerializer.SerializeToElement(0.01) // degrees in EPSG:4326
+    },
+    timeout: TimeSpan.FromMinutes(2),
+    cancellationToken: cancellationToken);
+foreach (var output in completed.Document!.Outputs)
+    Console.WriteLine($"{output.Key}: {output.Value}");
+```
+
+Document outputs retain the server's qualified inline `value`/`mediaType`
+objects. For raw output, pass `HonuaProcessExecuteRequest` with `Response = "raw"`;
+the result exposes original `RawContent` bytes and the full `MediaType`, including
+multipart parameters. `Job` identifies an asynchronous execution when observed.
+
+For a previously submitted job, call
+`WaitForTerminalAsync(jobId, timeout, cancellationToken: cancellationToken)`.
+Only `successful` returns normally; `failed` and `dismissed` throw
+`HonuaProcessesException`. A local timeout also throws that exception with
+`StatusCode == RequestTimeout` and the observed `JobId`, while caller cancellation
+remains `OperationCanceledException`. Neither operation dismisses the remote job
+on a local timeout or cancellation. Sync HTTP errors preserve server problem details;
+a synchronous response may not expose a job ID.
+
 ## See also
+
+- [Buffer → clip console example](../examples/GeoprocessingBufferClipConsole/) —
+  execute a real GeoJSON buffer, then clip an inline feature layer using the
+  returned polygon with `ExecuteSyncAsync` and one bounded wait per stage.
 
 - [`Honua.Sdk.Processes` README](../src/Honua.Sdk.Processes/README.md) — REST
   client surface for submitting and polling jobs.
