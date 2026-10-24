@@ -2,6 +2,27 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.13.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.12.0...dotnet-sdk-v1.13.0) (2026-10-24)
+
+
+### Features
+
+* **admin:** surface migration fidelity verdicts ([#447](https://github.com/honua-io/honua-sdk-dotnet/issues/447)) ([e417b19](https://github.com/honua-io/honua-sdk-dotnet/commit/e417b19f334715a2940a38d3fef36e5862e00129))
+* **processes:** add bounded execution helpers and buffer clip example ([#452](https://github.com/honua-io/honua-sdk-dotnet/issues/452)) ([43a2ca7](https://github.com/honua-io/honua-sdk-dotnet/commit/43a2ca765828a8ccc6c1d766456ed41c54700348))
+
+
+### Bug Fixes
+
+* **admin:** enforce the declared first-release server floor ([#457](https://github.com/honua-io/honua-sdk-dotnet/issues/457)) ([d37bc5e](https://github.com/honua-io/honua-sdk-dotnet/commit/d37bc5eede247d48b18158fe74072d3c0389382e))
+* bind certification to candidate cuts and published package identity ([#450](https://github.com/honua-io/honua-sdk-dotnet/issues/450)) ([fa2a66f](https://github.com/honua-io/honua-sdk-dotnet/commit/fa2a66ff0d5162fc44f3edcf52ec0356fa048252))
+* **certification:** align the certify pin with the release manifest ([#449](https://github.com/honua-io/honua-sdk-dotnet/issues/449)) ([c49039f](https://github.com/honua-io/honua-sdk-dotnet/commit/c49039f1e2cb0722324281e8cfd06d7dc6b8f639)), closes [#308](https://github.com/honua-io/honua-sdk-dotnet/issues/308)
+* **conformance:** migrate honua-server before applying the canary seed ([#451](https://github.com/honua-io/honua-sdk-dotnet/issues/451)) ([fd350a4](https://github.com/honua-io/honua-sdk-dotnet/commit/fd350a4998c1b657fcfba3e61265ab0f7678b7c1))
+
+
+### Documentation
+
+* **examples:** remove stale mobile delivery claims ([#453](https://github.com/honua-io/honua-sdk-dotnet/issues/453)) ([1647862](https://github.com/honua-io/honua-sdk-dotnet/commit/16478622a4855a79f3c8de61bf2828f94fc25978))
+
 ## [1.12.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.11.1...dotnet-sdk-v1.12.0) (2026-10-19)
 
 
