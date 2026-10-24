@@ -16,16 +16,15 @@ env:
   DOTNET_VERSION: "10.0.401"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  # Ephemeral-mode pins. Kept in step with conformance.yml, which certifies the
-  # same image; see conformance/PINS.md.
-  EPHEMERAL_HONUA_SERVER_IMAGE: "ghcr.io/honua-io/honua-server@sha256:d7a45c871bf318b4882ec8e1c32004803e6d0210246be30120751f05dee1a14d"
-  EPHEMERAL_HONUA_SERVER_SEED_REF: "e3ab87cebb7bf2d32c4e8cdb145f8d626b864d8e"
+  # Ephemeral image/source/seed digest come from certification/candidate-pins.json.
+  # Keep this compatibility diagnostic distinct from installed RC qualification.
   # Identifiers seeded by honua-server tests/seed/base-schema.sql.
   EPHEMERAL_SERVICE_NAME: "test_service"
   EPHEMERAL_LAYER_ID: "0"
   EPHEMERAL_OGC_COLLECTION_ID: "0"
 
 permissions:
+  attestations: read
   contents: read
   packages: read
 
@@ -151,6 +150,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
+      - name: Load immutable ephemeral server pins
+        if: ${{ needs.staging-preflight.outputs.mode == 'ephemeral' }}
+        run: python3 scripts/prepare-installed-package-certification.py --pins certification/candidate-pins.json --emit-env >> "${GITHUB_ENV}"
+
       - name: Cache NuGet packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -190,13 +193,27 @@ jobs:
         run: |
           set -euo pipefail
 
-          mkdir -p .staging
+          mkdir -p .staging artifacts/evidence/staging-inputs
+          cp certification/candidate-pins.json artifacts/evidence/staging-inputs/candidate-pins.json
+          gh attestation verify "oci://${PINNED_SERVER_IMAGE}" \
+            --repo honua-io/honua-server \
+            --source-digest "${PINNED_SERVER_SOURCE_SHA}" \
+            --deny-self-hosted-runners \
+            --format json > artifacts/evidence/staging-inputs/server-attestation.json
           gh api \
-            "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${EPHEMERAL_HONUA_SERVER_SEED_REF}" \
+            "repos/honua-io/honua-server/contents/tests/seed/base-schema.sql?ref=${PINNED_SERVER_SOURCE_SHA}" \
             -H "Accept: application/vnd.github.raw" > .staging/base-schema.sql
           test -s .staging/base-schema.sql
-
-          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .staging/base-schema.sql
+          cp .staging/base-schema.sql artifacts/evidence/staging-inputs/base-schema.sql
+          fixture_revision="sha256:$(sha256sum .staging/base-schema.sql | cut -d' ' -f1)"
+          if [[ "${fixture_revision}" != "${PINNED_SERVER_FIXTURE_REVISION}" ]]; then
+            echo "::error::Staging seed digest does not match the immutable candidate pin."
+            exit 1
+          fi
+          # Modern server images own schema migrations. Apply only extensions
+          # before readiness; loading fixture tables first prevents migration.
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_raster;"
 
           # Two plaintext endpoints, and the gRPC one has to be its own.
           # Kestrel's Http1AndHttp2 negotiates via ALPN, which requires TLS, so
@@ -218,7 +235,7 @@ jobs:
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
             -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
-            "${EPHEMERAL_HONUA_SERVER_IMAGE}"
+            "${PINNED_SERVER_IMAGE}"
 
           code=""
           for i in $(seq 1 60); do
@@ -231,6 +248,8 @@ jobs:
             docker logs honua-staging || true
             exit 1
           fi
+
+          psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .staging/base-schema.sql
 
           # Read the WFS type name off the running server rather than pinning a
           # literal, so a seed change cannot leave the gate asserting a name that
@@ -263,8 +282,9 @@ jobs:
             echo "HONUA_STAGING_LAYER_ID=${EPHEMERAL_LAYER_ID}"
             echo "HONUA_STAGING_OGC_COLLECTION_ID=${EPHEMERAL_OGC_COLLECTION_ID}"
             echo "HONUA_STAGING_WFS_TYPENAME=${typename}"
-            echo "HONUA_STAGING_SERVER_IMAGE=${EPHEMERAL_HONUA_SERVER_IMAGE}"
-            echo "HONUA_STAGING_SEED_PROFILE=base-schema@${EPHEMERAL_HONUA_SERVER_SEED_REF}"
+            echo "HONUA_STAGING_SERVER_COMMIT=${PINNED_SERVER_SOURCE_SHA}"
+            echo "HONUA_STAGING_SERVER_IMAGE=${PINNED_SERVER_IMAGE}"
+            echo "HONUA_STAGING_SEED_PROFILE=base-schema@${PINNED_SERVER_SOURCE_SHA};${PINNED_SERVER_FIXTURE_REVISION}"
           } >> "${GITHUB_ENV}"
 
       - name: Configure GitHub Packages

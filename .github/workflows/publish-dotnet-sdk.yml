@@ -684,6 +684,10 @@ jobs:
   release-staging-integration:
     name: Release Staging Integration
     needs: release-smoke
+    permissions:
+      attestations: read
+      contents: read
+      packages: read
     if: ${{ github.event_name == 'push' || github.event.inputs.run_staging == 'true' || github.event.inputs.dry_run != 'true' }}
     uses: ./.github/workflows/staging-integration.yml
     with:
