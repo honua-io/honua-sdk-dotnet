@@ -10,11 +10,11 @@ namespace Honua.Sdk.Admin.Tests;
 public sealed class CompatibilityTests
 {
     [Theory]
-    [InlineData("0.1.0", "preview")]
-    [InlineData("0.1.0", "beta")]
-    [InlineData("0.1.1", "rc")]
-    [InlineData("v0.2.0+build.5", "stable")]
-    [InlineData("1.0.0-alpha.1", "lts")]
+    [InlineData("2026.1.0", "preview")]
+    [InlineData("2026.1.0-rc.3", "beta")]
+    [InlineData("2026.1.1", "rc")]
+    [InlineData("v2026.2.0+build.5", "stable")]
+    [InlineData("2026.1.0-alpha.1", "lts")]
     public void Evaluate_ReturnsSupported_ForServerMatrixBaselineOrNewer(
         string serverVersion,
         string releaseChannel)
@@ -31,8 +31,10 @@ public sealed class CompatibilityTests
 
     [Theory]
     [InlineData("0.0.9", "preview", "minimum supported server version")]
-    [InlineData("0.1.0", "alpha", "minimum supported release channel")]
-    [InlineData("0.1.0", "nightly", "minimum supported release channel")]
+    [InlineData("1.0.0+0e03bdd06b3ca3fb", "preview", "minimum supported server version")]
+    [InlineData("2025.12.0", "stable", "minimum supported server version")]
+    [InlineData("2026.1.0", "alpha", "minimum supported release channel")]
+    [InlineData("2026.1.0", "nightly", "minimum supported release channel")]
     public void Evaluate_ReturnsUnsupported_ForServerMatrixBelowBaseline(
         string serverVersion,
         string releaseChannel,
@@ -98,7 +100,7 @@ public sealed class CompatibilityTests
             {
                 compatibility = new
                 {
-                    serverVersion = "0.1.0",
+                    serverVersion = "2026.1.0",
                     releaseChannel = "beta",
                     controlPlaneApi = new
                     {
@@ -131,7 +133,7 @@ public sealed class CompatibilityTests
         Assert.True(result.IsSupported);
         Assert.Null(result.UnsupportedReason);
         Assert.Equal(HonuaAdminCompatibility.MinimumSupportedServerVersion, result.MinimumSupportedServerVersion);
-        Assert.Equal("0.1.0", result.ServerVersion);
+        Assert.Equal("2026.1.0", result.ServerVersion);
         Assert.Equal("beta", result.ReleaseChannel);
         Assert.True(result.Features.MetadataResources);
         Assert.True(result.Features.ManifestApply);
@@ -206,7 +208,7 @@ public sealed class CompatibilityTests
             {
                 compatibility = new
                 {
-                    serverVersion = "0.1.0",
+                    serverVersion = "2026.1.0",
                     releaseChannel = "alpha",
                     controlPlaneApi = new
                     {
