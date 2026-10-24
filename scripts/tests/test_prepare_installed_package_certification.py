@@ -4,8 +4,11 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import re
+import subprocess
 import tempfile
+import textwrap
 import unittest
 import zipfile
 from argparse import Namespace
@@ -334,9 +337,19 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertEqual(MODULE.check_pins(pins, sources), [])
 
     def test_pin_file_refuses_a_malformed_candidate_cut(self):
-        for cut in ("", "2026-10-12", "2026-10-12T09:45:00+00:00", "2026-10-12 09:45:00Z", "latest"):
+        for cut in ("", "2026-10-12", "2026-10-12T09:45:00+00:00", "2026-10-12 09:45:00Z", "latest",
+                    "2026-02-31T25:61:61Z", "2026-02-29T09:45:00Z", "2026-10-12T24:00:00Z", "0000-01-01T00:00:00Z"):
             with self.subTest(cut=cut), self.assertRaises(ValueError):
                 MODULE.validate_pins(self._pins(candidateCut=cut))
+
+    def test_candidate_cut_checks_calendar_dates_in_pins_and_manifest(self):
+        for cut in ("2024-02-29T23:59:59Z", "2026-10-12T09:45:00.123456Z"):
+            with self.subTest(cut=cut):
+                MODULE.validate_pins(self._pins(candidateCut=cut))
+                self.assertEqual(cut, MODULE._manifest_candidate_cut({"protocolCertification": {"candidateCutAt": cut}}))
+        for cut in ("2026-02-31T09:45:00Z", "2026-10-12T25:61:61Z"):
+            with self.subTest(cut=cut), self.assertRaisesRegex(ValueError, "candidateCutAt"):
+                MODULE._manifest_candidate_cut({"protocolCertification": {"candidateCutAt": cut}})
 
     def test_missing_package_bytes_fail_closed(self):
         message = MODULE.restore_failure_message("", package_present=False, server_sha=PINS["serverSourceSha"])
@@ -407,6 +420,35 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         ):
             with self.subTest(follow=value):
                 self.assertNotIn(value, follow)
+
+    def test_actual_identity_step_keeps_release_and_candidate_cuts_independent(self):
+        workflow = (MODULE.ROOT / ".github/workflows/sdk-certification.yml").read_text()
+        step = workflow.split("      - name: Resolve tier and immutable identity\n", 1)[1].split("\n      - ", 1)[0]
+        script = textwrap.dedent(step.split("        run: |\n", 1)[1])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata = json.dumps({"manifest": {"digest": PINS["serverImageDigest"]},
+                                   "image": {"created": "2026-01-01T00:00:00Z"}})
+            docker = root / "docker"
+            docker.write_text("#!/bin/bash\nset -eu\ncase \"$1\" in\n"
+                              "buildx) printf '%s' '" + metadata + "';;\n"
+                              "login) cat >/dev/null;;\n*) exit 91;;\nesac\n")
+            gh = root / "gh"
+            gh.write_text("#!/bin/bash\nset -eu\n[[ \"$1 $2\" == 'attestation verify' ]]\nprintf '[]'\n")
+            docker.chmod(0o700); gh.chmod(0o700)
+            output = root / "output"
+            release_cut = "2026-10-29T12:00:00Z"
+            env = {**os.environ, "PATH": str(root) + os.pathsep + os.environ["PATH"],
+                   **dict(line.split("=", 1) for line in MODULE.emit_env(PINS).splitlines()),
+                   "CERT_TIER": "release", "INPUT_IMAGE": SERVER_IMAGE,
+                   "INPUT_SOURCE_SHA": PINS["serverSourceSha"], "INPUT_SEED_REF": "",
+                   "INPUT_FIXTURE_REVISION": "", "INPUT_RELEASE_CUT": release_cut,
+                   "GH_TOKEN": "synthetic-test-token", "GITHUB_ACTOR": "test", "GITHUB_OUTPUT": str(output)}
+            subprocess.run(["bash", "-c", script], cwd=root, env=env, check=True, capture_output=True, text=True)
+            values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+            self.assertEqual(values["candidate-cut"], PINS["candidateCut"])
+            self.assertEqual(values["release-cut"], release_cut)
+            self.assertNotEqual(values["candidate-cut"], values["release-cut"])
 
     def test_follow_is_a_no_op_when_the_manifest_matches_nuget_org(self):
         pins, sources = self._consistent()

@@ -189,8 +189,7 @@ jobs:
           resolved_digest="$(jq -er '.manifest.digest' <<< "${image_metadata}")"
           requested_digest="${image##*@}"
           [[ "${requested_digest}" == "${resolved_digest}" ]] || { echo '::error::Requested image digest did not resolve exactly.'; exit 1; }
-          image_created="$(jq -er '.image["linux/amd64"].created // .image.created // .image["linux/amd64"].config.created // .image.config.created' <<< "${image_metadata}")"
-          candidate_cut="${release_cut:-${image_created}}"
+          candidate_cut="${PINNED_CANDIDATE_CUT:?Pinned candidate cut is required}"
           [[ "${image}" =~ @sha256:[0-9a-f]{64}$ ]] || { echo '::error::Server image must be digest-addressed.'; exit 1; }
           [[ "${source_sha}" =~ ^[0-9a-f]{40}$ ]] || { echo '::error::Server source SHA must be a full lowercase commit.'; exit 1; }
           echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin >/dev/null

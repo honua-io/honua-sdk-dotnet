@@ -30,6 +30,8 @@ class SdkCertificationTests(unittest.TestCase):
 
     def _write_evidence(self, args, document):
         # Synthetic governed input for harness tests only, never a live receipt.
+        if not hasattr(args, "sdk_package_source_sha"):
+            args.sdk_package_source_sha = "e" * 40
         args.requirements = args.evidence.with_suffix(".requirements.json")
         args.requirements_revision = "fixture-governed-revision"
         rows = []
@@ -42,7 +44,7 @@ class SdkCertificationTests(unittest.TestCase):
                 "client_lane": "sdk-dotnet-certification", "maturity": "supported", "required_tier": "nightly",
                 "addressable_by_client": True, "licensed": licensed,
                 "entitlement_policy_revision": MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None,
-                "contract_revision": "sdk-dotnet-certification@" + args.sdk_commit,
+                "contract_revision": "sdk-dotnet-certification@" + args.sdk_package_source_sha,
                 "auth_policy_revision": "api-key-protected-v1", "fixture_revision": args.fixture_revision,
                 "scenario_facets": list(dict.fromkeys("positive" if x == "read-only" else x for x in operation["scenarioFacets"])),
             })
@@ -121,22 +123,30 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual({"mutation": "fail"}, observed["evidence_receipt"]["facets"])
 
     def test_exact_operation_context_rejects_version_or_contract_drift(self):
-        identity = {"sdkVersion": "1.2.3", "sdkCommit": "a" * 40, "fixtureRevision": "sha256:" + "d" * 64}
+        identity = {"sdkVersion": "1.2.3", "sdkCommit": "a" * 40, "sdkPackageSourceSha": "c" * 40,
+                    "fixtureRevision": "sha256:" + "d" * 64}
         operation = {"surface": "geoservices", "id": "Fixture.Query", "client": "Fixture.IClient"}
         key = ("sdk-dotnet.geoservices", "geoservices", "Fixture.Query", "Honua SDK .NET", "1.2.3", "local-docker")
         row = {"client_lane": "sdk-dotnet-certification", "addressable_by_client": True,
                "licensed": False, "entitlement_policy_revision": None,
-               "contract_revision": "sdk-dotnet-certification@" + "a" * 40,
+               "contract_revision": "sdk-dotnet-certification@" + "c" * 40,
                "auth_policy_revision": "api-key-protected-v1", "fixture_revision": identity["fixtureRevision"],
                "scenario_facets": ["positive"], "maturity": "supported", "required_tier": "nightly"}
         self.assertEqual(row, MODULE._governed_context({key: row}, operation, identity, ["positive"]))
         with self.assertRaises(ValueError):
             MODULE._governed_context({key: row}, operation, {**identity, "sdkVersion": "1.2.4"}, ["positive"])
-        for field, value in (("contract_revision", "unreviewed"), ("fixture_revision", "wrong"),
+        for field, value in (("contract_revision", "unreviewed"),
+                             ("contract_revision", "sdk-dotnet-certification@" + identity["sdkCommit"]),
+                             ("fixture_revision", "wrong"),
                              ("scenario_facets", ["negative"]), ("addressable_by_client", False),
                              ("licensed", True), ("auth_policy_revision", "anonymous-public-v1")):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 MODULE._governed_context({key: {**row, field: value}}, operation, identity, ["positive"])
+
+    def test_contract_identity_cannot_fall_back_to_producer_checkout(self):
+        for source in (None, "", "unreleased", "A" * 40, "a" * 39):
+            with self.subTest(source=source), self.assertRaisesRegex(ValueError, "installed package source"):
+                MODULE._contract_revision({"sdkCommit": "a" * 40, "sdkPackageSourceSha": source})
 
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
@@ -333,7 +343,7 @@ class SdkCertificationTests(unittest.TestCase):
             )
             self.assertEqual([], fragment["observations"][0]["exercised_capabilities"])
             self.assertEqual(
-                "sdk-dotnet-certification@" + "a" * 40,
+                "sdk-dotnet-certification@" + "e" * 40,
                 fragment["observations"][0]["contract_revision"],
             )
             self.assertEqual(

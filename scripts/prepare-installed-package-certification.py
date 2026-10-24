@@ -27,6 +27,7 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -56,6 +57,16 @@ PIN_FIELDS = (
 )
 
 
+def valid_candidate_cut(value: Any) -> bool:
+    if not isinstance(value, str) or not CUT_RE.fullmatch(value):
+        return False
+    try:
+        datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+    except ValueError:
+        return False
+    return True
+
+
 def validate_pins(pins: dict[str, Any]) -> None:
     missing = [field for field in PIN_FIELDS if not isinstance(pins.get(field), str) or not pins[field]]
     if missing:
@@ -81,7 +92,7 @@ def validate_pins(pins: dict[str, Any]) -> None:
     for field in ("sdkSourceSha", "serverSourceSha"):
         if not SHA_RE.fullmatch(pins[field]):
             raise ValueError(f"{field} must be a full lowercase commit")
-    if not CUT_RE.fullmatch(pins["candidateCut"]):
+    if not valid_candidate_cut(pins["candidateCut"]):
         raise ValueError("candidateCut must be a UTC ISO-8601 timestamp ending in Z")
 
 
@@ -588,7 +599,7 @@ def _manifest_server_snapshot(manifest: dict[str, Any]) -> tuple[str, str]:
 
 def _manifest_candidate_cut_or_none(manifest: dict[str, Any]) -> str | None:
     cut = (manifest.get("protocolCertification") or {}).get("candidateCutAt")
-    return cut if isinstance(cut, str) and CUT_RE.fullmatch(cut) else None
+    return cut if valid_candidate_cut(cut) else None
 
 
 def _manifest_candidate_cut(manifest: dict[str, Any]) -> str:
