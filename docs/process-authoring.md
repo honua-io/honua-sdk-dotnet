@@ -271,6 +271,9 @@ Only `successful` returns normally; `failed` and `dismissed` throw
 remains `OperationCanceledException`. Neither operation dismisses the remote job
 on a local timeout or cancellation. Sync HTTP errors preserve server problem details;
 a synchronous response may not expose a job ID.
+Configured request and response-body timeouts, including the registered resilience
+pipeline's timeouts, also preserve the observed job ID in `HonuaProcessesException`.
+The original transport exception remains available as the inner exception.
 
 ## See also
 

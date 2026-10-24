@@ -4,8 +4,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Processes.Exceptions;
 using Honua.Sdk.Processes.Models;
+using Polly.Timeout;
 
 namespace Honua.Sdk.Processes;
 
@@ -93,9 +95,14 @@ public sealed partial class HonuaProcessesClient
         {
             throw CreateWaitTimeout(jobId, ex);
         }
-        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested && ex.InnerException is TimeoutException)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             throw CreateRequestTimeout(jobId, ex);
+        }
+        catch (HonuaTransportException ex) when (IsRequestTimeout(ex))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw deadline.IsCancellationRequested ? CreateWaitTimeout(jobId, ex) : CreateRequestTimeout(jobId, ex);
         }
         catch (HonuaProcessesException ex)
         {
@@ -120,9 +127,14 @@ public sealed partial class HonuaProcessesClient
         {
             throw CreateWaitTimeout(jobId, ex);
         }
-        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested && ex.InnerException is TimeoutException)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             throw CreateRequestTimeout(jobId, ex);
+        }
+        catch (HonuaTransportException ex) when (IsRequestTimeout(ex))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            throw deadline.IsCancellationRequested ? CreateWaitTimeout(jobId, ex) : CreateRequestTimeout(jobId, ex);
         }
         catch (HonuaProcessesException ex) when (ex.JobId is null)
         {
@@ -208,11 +220,14 @@ public sealed partial class HonuaProcessesClient
         return interval;
     }
 
-    private static HonuaProcessesException CreateWaitTimeout(string? jobId, OperationCanceledException innerException)
+    private static HonuaProcessesException CreateWaitTimeout(string? jobId, Exception innerException)
         => new(HttpStatusCode.RequestTimeout,
             "Process execution exceeded the elapsed timeout. The server job may still be running.", null, innerException) { JobId = jobId };
 
-    private static HonuaProcessesException CreateRequestTimeout(string? jobId, OperationCanceledException innerException)
+    private static bool IsRequestTimeout(HonuaTransportException exception)
+        => exception.InnerException is TimeoutRejectedException or TimeoutException or OperationCanceledException;
+
+    private static HonuaProcessesException CreateRequestTimeout(string? jobId, Exception innerException)
         => new(HttpStatusCode.RequestTimeout,
             "A process HTTP request timed out. The server job may still be running.", null, innerException) { JobId = jobId };
 }

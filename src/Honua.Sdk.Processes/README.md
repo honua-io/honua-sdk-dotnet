@@ -124,6 +124,8 @@ multipart framing. `Job` holds the successful terminal job when one was returned
 Failed/dismissed jobs and elapsed timeouts throw `HonuaProcessesException`, with
 `JobId` when observed; caller cancellation remains `OperationCanceledException`.
 Timeout/cancellation stops local waiting without dismissing the remote job.
+Configured request/body timeouts from the registered resilience pipeline also use
+`HonuaProcessesException` and retain the observed `JobId` and original inner exception.
 The helper submits only when `sync-execute` or `async-execute` is advertised;
 missing, malformed, or unsupported mode metadata fails before submission.
 

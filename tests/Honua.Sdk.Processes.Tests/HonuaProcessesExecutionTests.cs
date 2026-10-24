@@ -4,10 +4,12 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Processes.Exceptions;
 using Honua.Sdk.Processes.Extensions;
 using Honua.Sdk.Processes.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Polly.Timeout;
 
 namespace Honua.Sdk.Processes.Tests;
 
@@ -407,6 +409,168 @@ public sealed class HonuaProcessesExecutionTests
     }
 
     [Fact]
+    public async Task RegisteredClient_UnrelatedTransportFailureRemainsUnchanged()
+    {
+        await using var provider = RegisteredProvider((request, _) => request.Method == HttpMethod.Post
+            ? throw new HttpRequestException("Connection refused") : Reply(Description(true)));
+        var client = provider.GetRequiredService<IHonuaProcessesClient>();
+        var exception = await Assert.ThrowsAsync<HonuaTransportException>(() => client.ExecuteSyncAsync("test", Request(), TimeSpan.FromSeconds(10)));
+        Assert.IsType<HttpRequestException>(exception.InnerException);
+        Assert.Contains("Connection refused", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("post", null)]
+    [InlineData("execute-poll", "job-1")]
+    [InlineData("wait", "job-1")]
+    [InlineData("post-body", null)]
+    [InlineData("results-body", "job-1")]
+    public async Task RegisteredClient_NormalizesRequestAndBodyTimeouts(string stage, string? expectedJobId)
+    {
+        var posts = 0;
+        var bodyStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var provider = RegisteredProvider(async (request, token) =>
+        {
+            var isPost = request.Method == HttpMethod.Post;
+            if (isPost) posts++;
+            var path = request.RequestUri!.AbsolutePath;
+            if ((stage == "post" && isPost) || ((stage is "execute-poll" or "wait") && path.Contains("/jobs/", StringComparison.Ordinal)))
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            }
+
+            if ((stage == "post-body" && isPost) || (stage == "results-body" && path.EndsWith("/results", StringComparison.Ordinal)))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StallingContent(bodyStarted) };
+            }
+
+            return await Reply(isPost ? Job(stage == "results-body" ? "successful" : "accepted") : Description(stage.StartsWith("post", StringComparison.Ordinal)),
+                isPost ? HttpStatusCode.Created : HttpStatusCode.OK);
+        });
+        var client = provider.GetRequiredService<IHonuaProcessesClient>();
+        var exception = await Assert.ThrowsAsync<HonuaProcessesException>(() => stage == "wait"
+            ? (Task)client.WaitForTerminalAsync("job-1", TimeSpan.FromSeconds(10))
+            : client.ExecuteSyncAsync("test", Request(), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(1)));
+
+        Assert.Equal(HttpStatusCode.RequestTimeout, exception.StatusCode);
+        Assert.Equal(expectedJobId, exception.JobId);
+        Assert.Equal(stage == "wait" ? 0 : 1, posts);
+        if (stage.EndsWith("body", StringComparison.Ordinal))
+        {
+            Assert.True(bodyStarted.Task.IsCompletedSuccessfully);
+            Assert.IsAssignableFrom<OperationCanceledException>(exception.InnerException);
+        }
+        else
+        {
+            var transport = Assert.IsType<HonuaTransportException>(exception.InnerException);
+            Assert.IsType<TimeoutRejectedException>(transport.InnerException);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RegisteredClient_CallerCancellationRemainsCancellation(bool execute)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var posts = 0;
+        await using var provider = RegisteredProvider(async (request, token) =>
+        {
+            Assert.NotEqual(HttpMethod.Delete, request.Method);
+            if (request.Method == HttpMethod.Post)
+            {
+                posts++;
+                return await Reply(Job("accepted"), HttpStatusCode.Created);
+            }
+
+            if (!request.RequestUri!.AbsolutePath.Contains("/jobs/", StringComparison.Ordinal))
+            {
+                return await Reply(Description(false));
+            }
+
+            started.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return await Reply(Job("running"));
+        });
+        var client = provider.GetRequiredService<IHonuaProcessesClient>();
+        var operation = execute
+            ? (Task)client.ExecuteSyncAsync("test", Request(), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(1), cancellation.Token)
+            : client.WaitForTerminalAsync("job-1", TimeSpan.FromSeconds(10), cancellationToken: cancellation.Token);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation);
+        Assert.Equal(execute ? 1 : 0, posts);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WrappedCancellation_StillReportsElapsedDeadline(bool execute)
+    {
+        using var http = CreateHttp(async (request, token) =>
+        {
+            if (request.Method == HttpMethod.Post)
+            {
+                return await Reply(Job("accepted"), HttpStatusCode.Created);
+            }
+
+            if (!request.RequestUri!.AbsolutePath.Contains("/jobs/", StringComparison.Ordinal))
+            {
+                return await Reply(Description(false));
+            }
+
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new HonuaTransportException("Transport wrapped the linked cancellation.", ex);
+            }
+
+            return await Reply(Job("running"));
+        });
+        var client = new HonuaProcessesClient(http);
+        var exception = await Assert.ThrowsAsync<HonuaProcessesException>(() => execute
+            ? (Task)client.ExecuteSyncAsync("test", Request(), TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(1))
+            : client.WaitForTerminalAsync("job-1", TimeSpan.FromMilliseconds(250)));
+        Assert.Equal("job-1", exception.JobId);
+        Assert.Contains("elapsed timeout", exception.Message, StringComparison.Ordinal);
+        Assert.IsType<HonuaTransportException>(exception.InnerException);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RegisteredClient_ElapsedDeadlineStillBoundsRequests(bool execute)
+    {
+        await using var provider = RegisteredProvider(async (request, token) =>
+        {
+            if (request.Method == HttpMethod.Post)
+            {
+                return await Reply(Job("accepted"), HttpStatusCode.Created);
+            }
+
+            if (!request.RequestUri!.AbsolutePath.Contains("/jobs/", StringComparison.Ordinal))
+            {
+                return await Reply(Description(false));
+            }
+
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return await Reply(Job("running"));
+        });
+        var client = provider.GetRequiredService<IHonuaProcessesClient>();
+        var exception = await Assert.ThrowsAsync<HonuaProcessesException>(() => execute
+            ? (Task)client.ExecuteSyncAsync("test", Request(), TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(1))
+            : client.WaitForTerminalAsync("job-1", TimeSpan.FromMilliseconds(500)));
+        Assert.Equal(HttpStatusCode.RequestTimeout, exception.StatusCode);
+        Assert.Equal("job-1", exception.JobId);
+        Assert.Contains("elapsed timeout", exception.Message, StringComparison.Ordinal);
+        Assert.IsAssignableFrom<OperationCanceledException>(exception.InnerException);
+    }
+
+    [Fact]
     public async Task RegisteredClient_DoesNotRetryTransientExecutionPost()
     {
         var posts = 0;
@@ -433,6 +597,18 @@ public sealed class HonuaProcessesExecutionTests
 
     private static HttpClient CreateHttp(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
         => new(new Handler(handler)) { BaseAddress = new Uri("https://server.example") };
+
+    private static ServiceProvider RegisteredProvider(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaProcesses(options =>
+        {
+            options.BaseAddress = new Uri("https://server.example");
+            options.Timeout = TimeSpan.FromSeconds(3);
+            options.PrimaryHttpMessageHandlerFactory = () => new Handler(handler);
+        });
+        return services.BuildServiceProvider();
+    }
 
     private static Task<HttpResponseMessage> Reply(string body, HttpStatusCode status = HttpStatusCode.OK)
         => Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
