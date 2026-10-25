@@ -205,11 +205,19 @@ class WorkflowWiringTests(unittest.TestCase):
     def test_license_secret_is_release_dispatch_only_and_never_disabled_mode(self):
         self.assertNotIn("Licensing__Mode=Disabled", self.TEXT)
         self.assertIn("-e Licensing__Mode=Enabled", self.TEXT)
-        self.assertIn("-e Licensing__LicenseContent \\", self.TEXT)
+        self.assertIn('-e Licensing__LicenseContent="${HONUA_CERTIFICATION_LICENSE_CONTENT}" \\', self.TEXT)
+        self.assertNotIn("-e Licensing__LicenseContent \\", self.TEXT)
+        start = self.TEXT.index("name: Start exact honua-server image")
+        step = self.TEXT[start:self.TEXT.index("name: Apply exact seed", start)]
+        self.assertIn("HONUA_CERTIFICATION_LICENSE_CONTENT: ${{", step)
+        self.assertNotIn("echo \"${HONUA_CERTIFICATION_LICENSE_CONTENT", step)
+
+    def test_release_runs_in_protected_environment(self):
+        self.assertIn("environment: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && 'release-certification' || '' }}", self.TEXT)
+        self.assertLess(self.TEXT.index("environment:"), self.TEXT.index("services:"))
         guard = "github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && secrets.HONUA_CERTIFICATION_LICENSE_CONTENT || ''"
         self.assertEqual(2, self.TEXT.count(guard))
         self.assertEqual(self.TEXT.count("secrets.HONUA_CERTIFICATION_LICENSE_CONTENT"), self.TEXT.count(guard))
-        self.assertNotIn("Licensing__LicenseContent=", self.TEXT)
 
     def test_observation_is_retained_before_tests_and_passed_to_generator(self):
         observe = self.TEXT.index("name: Retain candidate entitlement observation")

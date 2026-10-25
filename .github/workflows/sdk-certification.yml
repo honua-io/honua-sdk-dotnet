@@ -74,6 +74,9 @@ permissions:
 jobs:
   certify:
     runs-on: ubuntu-latest
+    # Release dispatches run inside a protected environment (required reviewers) that alone
+    # holds HONUA_CERTIFICATION_LICENSE_CONTENT; pr/nightly attach to no environment.
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && 'release-certification' || '' }}
     timeout-minutes: 45
     services:
       postgres:
@@ -285,7 +288,7 @@ jobs:
             -e ASPNETCORE_ENVIRONMENT=Development \
             -e Licensing__Mode=Enabled \
             -e Licensing__DevGrantEdition="${dev_grant}" \
-            -e Licensing__LicenseContent \
+            -e Licensing__LicenseContent="${HONUA_CERTIFICATION_LICENSE_CONTENT}" \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
