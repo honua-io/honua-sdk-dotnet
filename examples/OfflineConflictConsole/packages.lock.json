@@ -42,7 +42,7 @@
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.0, )",
+          "Honua.Sdk.Abstractions": "[1.13.1, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )"
         }
       },
