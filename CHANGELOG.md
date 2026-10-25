@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.13.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.13.0...dotnet-sdk-v1.13.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* **certification:** require retained signed entitlement proof for licensed passes ([#460](https://github.com/honua-io/honua-sdk-dotnet/issues/460)) ([686d90b](https://github.com/honua-io/honua-sdk-dotnet/commit/686d90b01f0c351d498f1a6273bf82ed66d0cec8))
+* **staging:** load ephemeral server from immutable candidate pins ([#458](https://github.com/honua-io/honua-sdk-dotnet/issues/458)) ([7582582](https://github.com/honua-io/honua-sdk-dotnet/commit/7582582155cbdcb8d053cac04bcbb1caf78de3fc))
+
 ## [1.13.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.12.0...dotnet-sdk-v1.13.0) (2026-10-24)
 
 
