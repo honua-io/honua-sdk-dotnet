@@ -155,3 +155,16 @@ do
   dotnet pack "$project" --configuration Release -o ./nupkgs
 done
 ```
+
+## Release declarations
+
+Read this before bumping a contract or schema version, or before adding or removing a
+dependency on a honua-server capability.
+
+### Release version declaration
+
+`release/component-versions.json` declares the contract and schema versions this repository serves. The honua-release nightly resolver reads that file at the published source commit and refuses the component when it is missing or invalid, so any contract or schema version bump must change the declaration in the same pull request. The declaration takes effect only after a release-please publication contains it.
+
+### SDK capability baseline
+
+`release/sdk-capability-baseline.json` (`honua.sdk-capability-baseline/v1`, defined by honua-release `schemas/sdk-capability-baseline.v1.schema.json` and `docs/SDK-SERVER-BASELINE-RULE.md`) declares the honua-server capabilities this repository requires and the `minimumServerVersion` derived from them. The honua-release nightly resolver reads it at the source revision of every published NuGet package, and refuses the component when it is missing, invalid, or when those revisions declare different `minimumServerVersion` values. It takes effect only after a release-please publication contains it. Every required capability must be a key in honua-server `docs/gis/data/capability-keys.v1.json`, and `capabilities` must hold exactly one introduction entry per required capability. Add or remove a required capability in the same PR that starts or stops depending on it.

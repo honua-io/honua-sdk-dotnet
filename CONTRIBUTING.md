@@ -3,7 +3,8 @@
 Thanks for considering a contribution. This repo owns reusable .NET SDK
 contracts, service clients, protocol adapters, serialization formats, and tests.
 The repo boundary, what belongs here, and what doesn't, is documented in
-[AGENTS.md](AGENTS.md) — please read it before opening a pull request.
+[docs/internal/repo-boundary.md](docs/internal/repo-boundary.md) (short form in
+[AGENTS.md](AGENTS.md)) — please read it before opening a pull request.
 
 ## Quick start for contributors
 
@@ -42,7 +43,7 @@ The repo boundary, what belongs here, and what doesn't, is documented in
 - Use NetTopologySuite + ProjNet for geometry / CRS work rather than rolling
   your own — see [docs/geometry-analysis.md](docs/geometry-analysis.md).
 - Don't ship UI, native, MAUI/WPF/Blazor controls, or display-layer code in
-  this repo. The boundary is enforced in [AGENTS.md](AGENTS.md).
+  this repo. The boundary is in [docs/internal/repo-boundary.md](docs/internal/repo-boundary.md).
 
 ## Public API approval
 
@@ -80,7 +81,7 @@ Before opening a PR, verify:
 - Options: `BaseAddress` (`Uri?`, required, no localhost default), `Timeout` (`TimeSpan`, validated 10ms <= T < 24h), `EnableRetry` (default true), `MaxRetryAttempts` (default 3, throws outside `[2, 5]`).
 - Exceptions: every SDK exception derives from `Honua.Sdk.Abstractions.HonuaException`; configuration-time failures use `HonuaConfigurationException`; runtime protocol failures use the protocol-specific sealed type.
 - Geometry / CRS: use NetTopologySuite + ProjNet via `Honua.Sdk.Geometry`, not custom math.
-- Don't ship UI, native, MAUI/WPF/Blazor controls, or display-layer code; see [AGENTS.md](AGENTS.md) for the repo boundary.
+- Don't ship UI, native, MAUI/WPF/Blazor controls, or display-layer code; see [docs/internal/repo-boundary.md](docs/internal/repo-boundary.md) for the repo boundary.
 
 ## Reporting an issue
 
