@@ -357,8 +357,8 @@ def _namespace(text: str) -> str:
     return match.group(1) if match else ""
 
 
-def _surface(path: Path) -> str:
-    package = path.relative_to(SRC_ROOT).parts[0]
+def _surface(path: Path, src_root: Path = SRC_ROOT) -> str:
+    package = path.relative_to(src_root).parts[0]
     return package.removeprefix("Honua.Sdk.").replace(".", "-").lower()
 
 
@@ -387,8 +387,8 @@ def _interface_ancestors(stripped_files: dict[Path, str]) -> dict[str, set[str]]
     return resolved
 
 
-def _declared_operations() -> list[dict[str, Any]]:
-    source_files = sorted(SRC_ROOT.rglob("*.cs"))
+def _declared_operations(src_root: Path = SRC_ROOT) -> list[dict[str, Any]]:
+    source_files = sorted(src_root.rglob("*.cs"))
     direct_implementations: dict[str, set[str]] = defaultdict(set)
     implementation_providers: dict[str, str] = {}
     stripped_files: dict[Path, str] = {}
@@ -425,7 +425,7 @@ def _declared_operations() -> list[dict[str, Any]]:
                 operation_id = f"{namespace}.{interface}.{method['signature']}"
                 operations[operation_id] = {
                     "id": operation_id,
-                    "surface": _surface(path),
+                    "surface": _surface(path, src_root),
                     "client": f"{namespace}.{interface}",
                     "operation": method["name"],
                     "signature": method["signature"],
@@ -457,7 +457,7 @@ def _declared_operations() -> list[dict[str, Any]]:
                 operation_id = f"{namespace}.{concrete}.{method['signature']}"
                 operations[operation_id] = {
                     "id": operation_id,
-                    "surface": _surface(path),
+                    "surface": _surface(path, src_root),
                     "client": f"{namespace}.{concrete}",
                     "operation": method["name"],
                     "signature": method["signature"],
@@ -645,13 +645,19 @@ def _test_mappings(
     )
 
 
-def build_document() -> dict[str, Any]:
+def build_document(src_root: Path = SRC_ROOT) -> dict[str, Any]:
+    """Build the operation matrix from the client source under ``src_root``.
+
+    The default is this checkout's ``src``. Evidence for an installed package passes that
+    package's own source tree, so the operations certified are the ones the package ships
+    (Release #767), not newer trunk-only operations the governed catalog cannot know.
+    """
     stripped_files = {
         path: _strip_comments_and_strings(path.read_text(encoding="utf-8", errors="replace"))
-        for path in sorted(SRC_ROOT.rglob("*.cs"))
+        for path in sorted(src_root.rglob("*.cs"))
     }
     ancestors = _interface_ancestors(stripped_files)
-    operations = _declared_operations()
+    operations = _declared_operations(src_root)
     mappings, implementation_mappings = _test_mappings(operations, ancestors)
     cells: list[dict[str, Any]] = []
     for operation in operations:
@@ -1068,7 +1074,6 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         started_at = args.started_at or now
         contract_revision = _contract_revision(identity)
         protocol_version, protocol_profile = _certification_protocol_context(operation)
-        request_url = _certification_request_url(operation, identity)
         exercised_capabilities = scenario_facets if result == "pass" else []
         receipt_facets = {facet: result for facet in scenario_facets}
         licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
@@ -1095,6 +1100,14 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             exercised_capabilities = []
             receipt_facets = {facet: "skip" for facet in scenario_facets}
             has_nonpass = has_incomplete_execution = True
+        try:
+            request_url = _certification_request_url(operation, identity)
+        except ValueError:
+            # A skipped row never sent a request, so an unconfigured fixture target
+            # (routing, scenes) makes no request claim. Executed rows still require it.
+            if result != "skip":
+                raise
+            request_url = None
         evidence_receipt = None if result == "skip" else {
             "schema": "honua.certification-evidence-receipt/v2",
             "identity": {
@@ -1218,6 +1231,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sdk-package-id")
     parser.add_argument("--sdk-package-digest")
     parser.add_argument("--sdk-package-source-sha")
+    parser.add_argument(
+        "--operations-source-root", type=Path,
+        help="Evidence only: the installed package's own src tree (at --sdk-package-source-sha). "
+             "Operations are declared from it so the certified set is the one the package ships.",
+    )
     parser.add_argument("--server-source-sha")
     parser.add_argument("--image-source-revision")
     parser.add_argument("--server-image", default="")
@@ -1243,7 +1261,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        document = build_document()
+        operations_root = args.operations_source_root
+        if operations_root is not None:
+            if args.check or not args.evidence:
+                parser.error("--operations-source-root applies only to --evidence")
+            if not operations_root.is_dir() or not any(operations_root.rglob("*.cs")):
+                raise ValueError(f"operations source root has no C# sources: {operations_root}")
+        document = build_document(operations_root or SRC_ROOT)
         rendered = _render(document)
         if args.check:
             if not OUTPUT_PATH.exists() or OUTPUT_PATH.read_text(encoding="utf-8") != rendered:

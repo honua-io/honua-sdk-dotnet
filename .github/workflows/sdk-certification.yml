@@ -401,8 +401,20 @@ jobs:
             echo "::error::Certification tier must be pr, nightly, or release."
             exit 1
           }
+          # Declare operations from the installed package's own source, not this checkout:
+          # the governed catalog lists the operations the pinned package ships.
+          [[ "${SDK_PACKAGE_SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::Installed package source SHA must be a full lowercase commit."
+            exit 1
+          }
+          operations_root="${RUNNER_TEMP}/installed-package-source"
+          rm -rf "${operations_root}"
+          mkdir -p "${operations_root}"
+          git fetch --no-tags --depth=1 origin "${SDK_PACKAGE_SOURCE_SHA}"
+          git archive "${SDK_PACKAGE_SOURCE_SHA}" src | tar -x -C "${operations_root}"
           python3 scripts/generate-sdk-certification.py \
             --tier "${tier}" \
+            --operations-source-root "${operations_root}/src" \
             --requirements artifacts/governance/protocol-certification-requirements.v1.json \
             --requirements-revision "$(python3 -c 'import json; print(json.load(open("artifacts/governance/source-binding.json"))["requirementsRevision"])')" \
             --trx artifacts/test-results/protocol-integration.trx \
