@@ -230,6 +230,40 @@ public sealed class AuthenticationTests
         Assert.Equal("[redacted]", HonuaAuthenticationSupport.RedactSecret("raw-secret"));
     }
 
+    [Fact]
+    public async Task AuthHandler_RejectsCredentialsOverRemoteHttp_WithSharedTypeAndMessage()
+    {
+        var sent = false;
+        string? rejectedEvent = null;
+        var options = new TestClientOptions
+        {
+            BaseAddress = new Uri("http://honua.example/"),
+            ApiKey = "api-secret",
+            AuthenticationDiagnostics = (authDiagnostic, _) =>
+            {
+                rejectedEvent = authDiagnostic.EventName;
+                return ValueTask.CompletedTask;
+            },
+        };
+        using var handler = new TestAuthHandler(options)
+        {
+            InnerHandler = new RecordingHandler((_, _) =>
+            {
+                sent = true;
+                return Task.FromResult(JsonResponse("{}"));
+            }),
+        };
+        using var http = new HttpClient(handler);
+
+        // ArcGisSourceCredentialHandler raises the same type and message for the same condition.
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => http.GetAsync(new Uri("http://honua.example/services")));
+
+        Assert.Equal(HonuaAuthenticationSupport.InsecureTransportRejectedMessage, exception.Message);
+        Assert.Equal(HonuaAuthenticationSupport.InsecureTransportRejectedEvent, rejectedEvent);
+        Assert.False(sent);
+    }
+
     private static HttpResponseMessage JsonResponse(string json)
         => new(HttpStatusCode.OK)
         {
@@ -272,6 +306,43 @@ public sealed class AuthenticationTests
             HonuaAuthenticationRequest request,
             CancellationToken cancellationToken = default)
             => ValueTask.FromResult(_provider(request));
+    }
+
+    private sealed class TestAuthHandler : HonuaAuthHandler<TestClientOptions>
+    {
+        public TestAuthHandler(TestClientOptions options)
+            : base(options, "test", _ => { })
+        {
+        }
+    }
+
+    private sealed class TestClientOptions : IHonuaClientOptions, IHonuaAuthenticationOptions
+    {
+        public Uri? BaseAddress { get; set; }
+
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
+
+        public bool EnableRetry { get; set; }
+
+        public int MaxRetryAttempts { get; set; } = 3;
+
+        public Func<HttpMessageHandler>? PrimaryHttpMessageHandlerFactory { get; set; }
+
+        public string? ApiKey { get; init; }
+
+        public Func<CancellationToken, Task<string?>>? ApiKeyProvider { get; init; }
+
+        public string? BearerToken { get; init; }
+
+        public Func<CancellationToken, Task<string?>>? BearerTokenProvider { get; init; }
+
+        public IHonuaAccessTokenProvider? AccessTokenProvider { get; init; }
+
+        public IReadOnlyList<string> AuthenticationScopes { get; init; } = Array.Empty<string>();
+
+        public string? AuthenticationAudience { get; init; }
+
+        public HonuaAuthenticationDiagnosticHandler? AuthenticationDiagnostics { get; init; }
     }
 
     private sealed class TestAuthenticationOptions : IHonuaAuthenticationOptions
