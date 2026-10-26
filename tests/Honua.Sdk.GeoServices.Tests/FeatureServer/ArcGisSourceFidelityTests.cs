@@ -384,13 +384,13 @@ public sealed class ArcGisSourceFidelityTests
     public async Task ArcGisSourceCredentialHandler_DefaultInnerHandler_IsDisposedWithHandler()
     {
         var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
-        HttpClientHandler inner;
+        HttpMessageHandler inner;
         using (var handler = new ArcGisSourceCredentialHandler(credential))
         {
-            inner = Assert.IsType<HttpClientHandler>(handler.InnerHandler);
+            inner = handler.InnerHandler!;
         }
 
-        // A disposed HttpClientHandler rejects sends; a live one would attempt the request.
+        // A disposed transport handler rejects sends; a live one would attempt the request.
         using var invoker = new HttpMessageInvoker(inner, disposeHandler: false);
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://source.example.com/");
         await Assert.ThrowsAsync<ObjectDisposedException>(() => invoker.SendAsync(request, CancellationToken.None));

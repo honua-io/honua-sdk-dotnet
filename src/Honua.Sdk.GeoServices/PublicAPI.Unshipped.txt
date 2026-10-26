@@ -23,6 +23,8 @@ Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Token.init -> void
 Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.TokenProvider.get -> System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<string?>!>?
 Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.TokenProvider.init -> void
 Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Username.get -> string?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.SourceBaseAddress.get -> System.Uri?
+Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.SourceBaseAddress.init -> void
 Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential.Username.init -> void
 Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredentialHandler
 Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredentialHandler.ArcGisSourceCredentialHandler(Honua.Sdk.GeoServices.FeatureServer.ArcGisSourceCredential! credential, System.Net.Http.HttpMessageHandler? innerHandler = null) -> void

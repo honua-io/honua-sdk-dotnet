@@ -10,6 +10,15 @@ namespace Honua.Sdk.Abstractions.Authentication;
 /// change (for example to the insecure-transport policy or the rejection message) reaches all
 /// clients at once instead of drifting across per-package copies.
 /// </summary>
+/// <remarks>
+/// When a credential source is configured and a request targets plain HTTP on a non-loopback host,
+/// <see cref="SendAsync"/> emits the
+/// <see cref="HonuaAuthenticationSupport.InsecureTransportRejectedEvent"/> diagnostic and throws
+/// <see cref="InvalidOperationException"/> with
+/// <see cref="HonuaAuthenticationSupport.InsecureTransportRejectedMessage"/>; no credential is resolved
+/// and the request is not sent. The GeoServices <c>ArcGisSourceCredentialHandler</c> raises the same
+/// type and message for the same send-time condition.
+/// </remarks>
 /// <typeparam name="TOptions">
 /// The concrete client options type, which must expose both the transport surface
 /// (<see cref="IHonuaClientOptions"/>) and the authentication surface
