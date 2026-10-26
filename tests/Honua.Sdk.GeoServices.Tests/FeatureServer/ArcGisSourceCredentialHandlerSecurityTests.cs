@@ -112,6 +112,27 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
         }
     }
 
+    [Theory]
+    [MemberData(nameof(Credentials))]
+    public async Task WithoutSourceBaseAddress_RejectedPlainHttpRequest_DoesNotBindOrigin(ArcGisSourceCredential credential)
+    {
+        var inner = new CapturingHandler();
+        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var http = new HttpClient(handler);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => http.GetAsync(new Uri("http://source.example.com/arcgis/rest/services?f=json")));
+        Assert.Null(inner.Captured);
+
+        // The HTTPS retry the refusal asks for must still carry the credential.
+        await http.GetAsync(new Uri("https://source.example.com/arcgis/rest/services?f=json"));
+        var captured = inner.Captured!;
+        Assert.True(
+            captured.Headers.Authorization is not null ||
+            captured.RequestUri!.Query.Contains("token=abc123", StringComparison.Ordinal),
+            "the HTTPS retry must carry the credential");
+    }
+
     [Fact]
     public async Task WithoutSourceBaseAddress_CredentialIsBoundToFirstRequestOrigin()
     {
@@ -224,9 +245,9 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
         var stream = client.GetStream();
         using var reader = new StreamReader(stream, Encoding.ASCII, leaveOpen: true);
         var requestLine = await reader.ReadLineAsync(cancellationToken) ?? string.Empty;
-        string? line;
-        while (!string.IsNullOrEmpty(line = await reader.ReadLineAsync(cancellationToken)))
+        while (!string.IsNullOrEmpty(await reader.ReadLineAsync(cancellationToken)))
         {
+            // Discard the remaining request headers; only the request line is asserted.
         }
 
         var response = Encoding.ASCII.GetBytes(
@@ -238,12 +259,29 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
 
     private sealed class CapturingHandler : HttpMessageHandler
     {
+        private readonly List<HttpResponseMessage> _responses = [];
+
         public HttpRequestMessage? Captured { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Captured = request;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
+            _responses.Add(response);
+            return Task.FromResult(response);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var response in _responses)
+                {
+                    response.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

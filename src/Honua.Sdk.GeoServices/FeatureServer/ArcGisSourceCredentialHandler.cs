@@ -215,7 +215,10 @@ public sealed class ArcGisSourceCredentialHandler : DelegatingHandler
         var origin = Volatile.Read(ref _boundOrigin);
         if (origin is null)
         {
-            // No configured source: bind to the first request this handler authenticates.
+            // No configured source: bind to the first request this handler authenticates. Refuse an
+            // insecure transport before binding, so a rejected plain-HTTP request cannot pin the
+            // credential to an origin that a corrected HTTPS retry would then fail to match.
+            EnsureSecureTransport(requestUri);
             var candidate = new Uri(requestUri.GetLeftPart(UriPartial.Authority));
             origin = Interlocked.CompareExchange(ref _boundOrigin, candidate, null) ?? candidate;
         }
