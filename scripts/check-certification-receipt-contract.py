@@ -55,6 +55,7 @@ def check(governance):
         args = Namespace(tier="pr", trx=[trx], evidence=evidence, started_at=None,
                          requirements=catalog, requirements_revision="fixture-context",
                          sdk_commit="a" * 40, sdk_package_source_sha="e" * 40,
+                         sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "f" * 64,
                          sdk_version="1.2.3", server_source_sha="b" * 40,
                          image_source_revision="b" * 40, server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
                          release_cut=None, candidate_cut="2026-01-01T00:00:00Z", fixture_revision="sha256:" + "d" * 64,
@@ -84,7 +85,14 @@ def check(governance):
         broken["evidence_receipt"]["schema"] = "honua.certification-evidence-receipt/v1"
         if gate._valid_receipt(broken, requirements_revision="fixture-context"):
             raise ValueError("real consumer accepted legacy v1 fixture receipt")
-    print("producer/real-consumer v2 contract passed; 1 positive + 4 refusal controls; not candidate qualification")
+        # The installed package identity rides on the observation and the consumer verifies it.
+        if cell.get("client_package") != "Honua.Sdk" or cell.get("client_package_digest") != args.sdk_package_digest:
+            raise ValueError("producer dropped the installed package identity")
+        broken = deepcopy(cell)
+        broken["client_package"] = "Honua.Sdk.Repacked"
+        if gate._valid_receipt(broken, requirements_revision="fixture-context"):
+            raise ValueError("real consumer accepted a different package name")
+    print("producer/real-consumer v2 contract passed; 1 positive + 5 refusal controls; not candidate qualification")
 
 
 if __name__ == "__main__":

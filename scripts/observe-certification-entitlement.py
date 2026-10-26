@@ -34,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
         command = sub.add_parser(name)
         command.add_argument("--tier", required=True, choices=("pr", "nightly", "release"))
         command.add_argument("--event", required=True)
-    sub.choices["observe"].add_argument("--mode", required=True, choices=("signed", "development-grant"))
+    sub.choices["observe"].add_argument("--mode", required=True, choices=("signed", "disabled", "development-grant"))
     sub.choices["observe"].add_argument("--base-url", required=True)
     sub.choices["observe"].add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)

@@ -175,9 +175,15 @@ they are not live candidate certification. Current historical requirements and
 published SDK pins may differ. That mismatch remains blocked until canonical
 source/pin convergence; a source change or closed issue cannot qualify new bytes.
 
-A passing edit TRX or a licensing configuration flag cannot supply the consumer's
-live entitlement and license-fingerprint assertion. Until an actual bound probe
-record is retained, licensed edit rows remain non-pass with their existing
+Whether a row is licensed comes only from the pinned honua-release catalog
+(`licensed` and `entitlement_policy_revision` on each row). The generator never
+infers it from the client type, and it refuses a row whose two fields disagree or
+that names an entitlement policy it cannot prove. The 2026.1 catalog marks every
+FeatureServer edit row unlicensed, so an executed edit row needs no entitlement
+assertion. For a row the catalog marks licensed, a passing TRX or a licensing
+configuration flag cannot supply the consumer's live entitlement and
+license-fingerprint assertion. Until an actual bound probe record is retained,
+such rows remain non-pass with their existing
 [qualification dependency](https://github.com/honua-io/honua-sdk-dotnet/issues/308).
 No license value or secret is inferred, and no requirement is removed.
 

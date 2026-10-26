@@ -1,9 +1,10 @@
 """Release entitlement proof for licensed FeatureServer edit certification (issue #308).
 
-Mirrors the Python SDK's governed model: pull request and nightly runs use an
-explicit Development grant rehearsal that is never release proof; release runs
-require a signed license supplied through a governed workflow_dispatch and the
-candidate's own license status must validate it. The published .NET SDK does not
+Pull request and nightly runs boot the candidate the 2026.1 way, with
+Licensing__Mode=Disabled (every catalog entitlement active, honua-sdk-dotnet#472).
+That is never release proof. Release runs require a signed license supplied
+through a governed workflow_dispatch, and the candidate's own license status
+must validate it. The published .NET SDK does not
 expose license mode or identifier, so the server status is observed over HTTP and
 the raw JSON is retained next to its SHA-256 as the evidence.
 """
@@ -36,12 +37,15 @@ def profile(tier: str, event: str, environment: str, license_content: str) -> di
         if not isinstance(envelope, dict) or not envelope:
             raise ValueError("signed release license envelope is absent")
         # Parsing is input validation only; the candidate must validate the signature.
-        return {"mode": "signed", "devGrantEdition": ""}
+        return {"mode": "signed", "licensingMode": "Enabled", "devGrantEdition": ""}
     if tier not in {"pr", "nightly"} or event not in _REHEARSAL_EVENTS:
         raise ValueError("unknown certification rehearsal profile")
     if environment != "Development":
         raise ValueError("rehearsal entitlement grants require Development")
-    return {"mode": "development-grant", "devGrantEdition": "Enterprise"}
+    # 2026.1 runs with licensing disabled, and the governed catalog marks these rows unlicensed.
+    # A Development grant only overrides entitlement checks; the license-status endpoint the edit
+    # test reads still reported Community (#472).
+    return {"mode": "disabled", "licensingMode": "Disabled", "devGrantEdition": ""}
 
 
 def _timestamp(value: object) -> datetime:
@@ -101,7 +105,7 @@ def build_observation(mode: str, license_status: object, checked_at: datetime) -
     if mode == "signed":
         observation["license_fingerprint"] = signed_status(license_status, now=checked_at)
         observation["release_eligible"] = True
-    elif mode != "development-grant":
+    elif mode not in {"disabled", "development-grant"}:
         raise ValueError("unknown entitlement mode")
     return observation
 
