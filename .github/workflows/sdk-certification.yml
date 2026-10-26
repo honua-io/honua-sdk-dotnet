@@ -281,12 +281,14 @@ jobs:
           entitlement_profile="$(python3 scripts/observe-certification-entitlement.py profile --tier "${CERT_TIER}" --event "${EVENT_NAME}")"
           entitlement_mode="$(jq -er '.mode' <<< "${entitlement_profile}")"
           dev_grant="$(jq -er '.devGrantEdition | strings' <<< "${entitlement_profile}")"
+          # pr/nightly: Disabled, the 2026.1 mode (#472). release: Enabled with the signed license.
+          licensing_mode="$(jq -er '.licensingMode | select(. == "Disabled" or . == "Enabled")' <<< "${entitlement_profile}")"
           echo "HONUA_ENTITLEMENT_MODE=${entitlement_mode}" >> "${GITHUB_ENV}"
           key="$(head -c 32 /dev/urandom | base64)"
           salt="$(head -c 16 /dev/urandom | base64)"
           docker run -d --name honua-server --network host \
             -e ASPNETCORE_ENVIRONMENT=Development \
-            -e Licensing__Mode=Enabled \
+            -e Licensing__Mode="${licensing_mode}" \
             -e Licensing__DevGrantEdition="${dev_grant}" \
             -e Licensing__LicenseContent="${HONUA_CERTIFICATION_LICENSE_CONTENT}" \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
@@ -332,7 +334,7 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
-          # pr/nightly rehearse edits with a Development grant (never release proof); release needs the
+          # pr/nightly run edits with licensing disabled, as 2026.1 does (never release proof); release needs the
           # governed signed license. The flag only allows the test to execute; a 402 or any other
           # failure is not a pass, and licensed passes need the retained signed observation.
           HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "true"

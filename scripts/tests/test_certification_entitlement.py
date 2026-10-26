@@ -42,9 +42,15 @@ class EntitlementValidationTests(unittest.TestCase):
         for content in ("", "not-json", "{}", "[]"):
             with self.assertRaises(ValueError):
                 ENT.profile("release", "workflow_dispatch", "Development", content)
-        self.assertEqual({"mode": "signed", "devGrantEdition": ""},
+        self.assertEqual({"mode": "signed", "licensingMode": "Enabled", "devGrantEdition": ""},
                          ENT.profile("release", "workflow_dispatch", "Development", '{"sig":"x"}'))
-        self.assertEqual("development-grant", ENT.profile("pr", "pull_request", "Development", "")["mode"])
+        for tier, event in (("pr", "pull_request"), ("nightly", "schedule")):
+            self.assertEqual({"mode": "disabled", "licensingMode": "Disabled", "devGrantEdition": ""},
+                             ENT.profile(tier, event, "Development", ""))
+        self.assertEqual("Enabled", ENT.profile("release", "workflow_dispatch", "Development", '{"sig":"x"}')["licensingMode"])
+        rehearsal = ENT.build_observation("disabled", {"data": {"mode": "disabled"}}, CHECKED)
+        self.assertIs(False, rehearsal["release_eligible"])
+        self.assertIsNone(rehearsal["license_fingerprint"])
         with self.assertRaises(ValueError):
             ENT.profile("nightly", "schedule", "Production", "")
 
@@ -202,9 +208,11 @@ class GeneratorEntitlementTests(unittest.TestCase):
 class WorkflowWiringTests(unittest.TestCase):
     TEXT = WORKFLOW.read_text(encoding="utf-8")
 
-    def test_license_secret_is_release_dispatch_only_and_never_disabled_mode(self):
-        self.assertNotIn("Licensing__Mode=Disabled", self.TEXT)
-        self.assertIn("-e Licensing__Mode=Enabled", self.TEXT)
+    def test_license_secret_is_release_dispatch_only_and_mode_comes_from_the_profile(self):
+        # The tier profile picks the mode: Disabled for pr/nightly (2026.1, #472), Enabled for release.
+        self.assertIn('-e Licensing__Mode="${licensing_mode}" \\', self.TEXT)
+        self.assertIn(".licensingMode | select(. == \"Disabled\" or . == \"Enabled\")", self.TEXT)
+        self.assertNotIn("Licensing__Mode=Enabled", self.TEXT)
         self.assertIn('-e Licensing__LicenseContent="${HONUA_CERTIFICATION_LICENSE_CONTENT}" \\', self.TEXT)
         self.assertNotIn("-e Licensing__LicenseContent \\", self.TEXT)
         start = self.TEXT.index("name: Start exact honua-server image")
