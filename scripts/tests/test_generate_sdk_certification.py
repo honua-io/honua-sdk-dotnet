@@ -207,6 +207,84 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual("skip", observation["result"])
                 self.assertIsNone(observation["evidence_receipt"])
 
+    def test_skipped_routing_rows_without_fixture_targets_make_no_request_claim(self):
+        # Harness-only TRX: an unprovisioned routing fixture skips its tests, so the row never
+        # sent a request. It must be retained as a skip with no request URL, not crash the run.
+        document = {"operations": [{
+            "id": "Fixture.Route", "surface": "abstractions",
+            "client": "Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient",
+            "operation": "GetDirectionsAsync", "status": "exercised",
+            "requiredTiers": ["nightly"], "scenarioFacets": ["read-only"],
+            "tests": ["Fixture.Route"],
+        }]}
+        context = {key: value for key, value in self._request_context().items()
+                   if not key.startswith("route_") and not key.endswith("_layer")}
+        for outcome, expected in (("NotExecuted", "skip"), ("Passed", None)):
+            with self.subTest(outcome=outcome), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                trx = root / "fixture.trx"
+                trx.write_text('<TestRun><Results><UnitTestResult testName="Fixture.Route" outcome="'
+                               + outcome + '" /></Results></TestRun>')
+                args = Namespace(
+                    tier="nightly", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                    sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                    image_source_revision="b" * 40,
+                    server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
+                    release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                    fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                    evidence_uri="https://example.test/run/1", allow_nonpass=True, **context,
+                )
+                if expected is None:
+                    # An executed row still has to name the live fixture it ran against.
+                    with self.assertRaisesRegex(ValueError, "routing request evidence requires"):
+                        self._write_evidence(args, document)
+                    continue
+                # Incomplete execution still fails the producer; only the crash is gone.
+                self.assertEqual(1, self._write_evidence(args, document))
+                observation = json.loads(args.evidence.read_text())["observations"][0]
+                self.assertEqual("skip", observation["result"])
+                self.assertIsNone(observation["request_url"])
+                self.assertIsNone(observation["evidence_receipt"])
+                self.assertIsNone(observation["evidence_uri"])
+                self.assertEqual([], observation["exercised_capabilities"])
+
+    def test_operations_are_declared_from_the_supplied_package_source(self):
+        # The installed package's source, not this checkout, defines the certified operations.
+        with tempfile.TemporaryDirectory() as directory:
+            src = Path(directory) / "src"
+            package = src / "Honua.Sdk.Abstractions"
+            package.mkdir(parents=True)
+            (package / "FixturePackageOnly.cs").write_text(
+                "namespace Honua.Sdk.Abstractions.Fixture;\n"
+                "public interface IFixturePackageOnlyClient\n{\n"
+                "    Task<int> PackageOnlyAsync(string id, CancellationToken cancellationToken = default);\n}\n"
+                "public sealed class FixturePackageOnlyClient : IFixturePackageOnlyClient\n{\n"
+                "    public Task<int> PackageOnlyAsync(string id, CancellationToken cancellationToken = default)"
+                " => Task.FromResult(0);\n}\n",
+                encoding="utf-8",
+            )
+            operations = MODULE.build_document(src)["operations"]
+            self.assertEqual(
+                ["Honua.Sdk.Abstractions.Fixture.IFixturePackageOnlyClient.PackageOnlyAsync(string,CancellationToken)"],
+                [operation["id"] for operation in operations],
+            )
+            self.assertEqual("abstractions", operations[0]["surface"])
+            trunk_ids = {operation["id"] for operation in MODULE.build_document()["operations"]}
+            self.assertNotIn(operations[0]["id"], trunk_ids)
+
+    def test_operations_source_root_is_evidence_only_and_must_hold_sources(self):
+        with tempfile.TemporaryDirectory() as directory:
+            empty = Path(directory)
+            with self.assertRaises(SystemExit):
+                MODULE.main(["--check", "--operations-source-root", str(empty)])
+            trx = empty / "fixture.trx"
+            trx.write_text("<TestRun><Results /></TestRun>")
+            self.assertEqual(1, MODULE.main([
+                "--tier", "nightly", "--trx", str(trx), "--evidence", str(empty / "out.json"),
+                "--operations-source-root", str(empty),
+            ]))
+            self.assertFalse((empty / "out.json").exists())
+
     def test_rc_unavailable_surfaces_are_owned_by_release_gate(self):
         document = MODULE.build_document()
         unavailable = [
