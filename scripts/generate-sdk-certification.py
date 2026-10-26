@@ -34,6 +34,9 @@ RC_FIXTURE_GAP_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/308"
 RELEASE_PROFILE_ID = "honua-sdk-dotnet-2026.1"
 CERTIFICATION_CLIENT_ID = "Honua SDK .NET"
 CERTIFICATION_RUNNER_LANE = "sdk-dotnet-certification"
+PRODUCER_REPOSITORY = "honua-io/honua-sdk-dotnet"
+PRODUCER_WORKFLOW = "sdk-certification.yml"
+NIGHTLY_DISPATCH_ID = re.compile(r"nightly-certification-[1-9][0-9]*-[1-9][0-9]*")
 FEATURESERVER_EDIT_ENTITLEMENT_POLICY = "honua-pro-featureserver-edits-v1"
 
 IMPLEMENTATION_TEST_PROVIDERS = {
@@ -1007,8 +1010,34 @@ def _entitlement_observation(args: argparse.Namespace) -> Any:
         raise ValueError(f"entitlement observation is unreadable: {error}") from error
 
 
+def _producer_run() -> dict[str, Any] | None:
+    """The Actions run that observed the cells, only when honua-release's nightly dispatched it.
+
+    certification/RECEIPT-V2.md "Nightly producer run identity": the nightly binds every
+    executed receipt to the run it recorded, so a dispatch id outside the canonical
+    workflow_dispatch of this workflow in this repository is refused rather than recorded.
+    """
+    dispatch = os.environ.get("HONUA_NIGHTLY_DISPATCH_ID", "")
+    if not dispatch:
+        return None
+    workflow_ref = f"{PRODUCER_REPOSITORY}/.github/workflows/{PRODUCER_WORKFLOW}@"
+    if (NIGHTLY_DISPATCH_ID.fullmatch(dispatch) is None
+            or os.environ.get("GITHUB_ACTIONS") != "true"
+            or os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch"
+            or os.environ.get("GITHUB_REPOSITORY") != PRODUCER_REPOSITORY
+            or re.fullmatch(re.escape(workflow_ref) + r"refs/(?:heads|tags)/[A-Za-z0-9._/-]+",
+                            os.environ.get("GITHUB_WORKFLOW_REF", "")) is None):
+        raise ValueError("nightly dispatch identity requires the canonical Actions sdk-certification dispatch")
+    run_id, attempt = os.environ.get("GITHUB_RUN_ID", ""), os.environ.get("GITHUB_RUN_ATTEMPT", "")
+    if not re.fullmatch(r"[1-9][0-9]*", run_id) or not re.fullmatch(r"[1-9][0-9]*", attempt):
+        raise ValueError("nightly dispatch identity requires a positive Actions run id and attempt")
+    return {"repository": PRODUCER_REPOSITORY, "workflow": PRODUCER_WORKFLOW,
+            "run_id": int(run_id), "run_attempt": int(attempt), "dispatch_id": dispatch}
+
+
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
+    producer_run = _producer_run()
     catalog, requirements = _requirements(args)
     for field in ("baseUrl", "grpcBaseUrl"):
         parsed = urlsplit(identity[field] or "")
@@ -1140,6 +1169,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "requirements_revision": catalog["revision"],
                 "started_at": started_at,
                 "completed_at": now,
+                **({"producer_run": producer_run} if producer_run is not None else {}),
             },
             "result": result,
             "facets": receipt_facets,
