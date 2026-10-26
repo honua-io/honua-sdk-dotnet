@@ -27,9 +27,9 @@ jobs:
   # Pin shared security workflows to an immutable commit so this repo is not
   # exposed to parser or behavior drift on honua-io/.github@main.
   trivy:
-    uses: honua-io/.github/.github/workflows/reusable-trivy.yml@aebfacd3f3c6b551fa9bf703501c0a12a050faf3
+    uses: honua-io/.github/.github/workflows/reusable-trivy.yml@aebfacd3f3c6b551fa9bf703501c0a12a050faf3 # v0.36.0 Trivy workflow snapshot
     with:
       scan-type: fs
 
   scorecard:
-    uses: honua-io/.github/.github/workflows/reusable-scorecard.yml@e26b67e904f2c23796fe677d267d73188a764545
+    uses: honua-io/.github/.github/workflows/reusable-scorecard.yml@e26b67e904f2c23796fe677d267d73188a764545 # v2.4.4 Scorecard workflow snapshot
