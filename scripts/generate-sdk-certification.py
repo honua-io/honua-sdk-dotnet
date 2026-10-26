@@ -970,16 +970,31 @@ def _governed_context(index: dict[tuple[str, ...], dict[str, Any]], operation: d
     row = index.get(key)
     if row is None:
         raise ValueError(f"requirements have no exact published-client operation identity: {operation['id']}")
-    licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
+    _catalog_licensing(row)
     if (row.get("client_lane") != CERTIFICATION_RUNNER_LANE or row.get("addressable_by_client") is not True
-            or row.get("licensed") is not licensed
-            or row.get("entitlement_policy_revision") != (FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None)
             or row.get("contract_revision") != _contract_revision(identity)
             or row.get("auth_policy_revision") != "api-key-protected-v1"
             or row.get("fixture_revision") != identity["fixtureRevision"]
             or not isinstance(row.get("scenario_facets"), list) or set(row["scenario_facets"]) != set(facets)):
         raise ValueError(f"requirements disagree with the actual operation contract: {operation['id']}")
     return row
+
+
+def _catalog_licensing(row: dict[str, Any]) -> tuple[bool, str | None]:
+    """The pinned honua-release catalog is the only source of a row's licensed state.
+
+    The producer never derives licensing from the client type: 2026.1 runs with licensing
+    disabled, so the governed FeatureServer edit rows are unlicensed there. A licensed row
+    must name the one entitlement policy this producer can prove (certification_entitlement).
+    """
+    licensed, policy = row.get("licensed"), row.get("entitlement_policy_revision")
+    if not isinstance(licensed, bool) or (policy is not None and not isinstance(policy, str)):
+        raise ValueError(f"requirements carry malformed licensing: {row.get('operation')}")
+    if licensed != (policy is not None):
+        raise ValueError(f"requirements licensed state and entitlement policy disagree: {row.get('operation')}")
+    if licensed and policy != FEATURESERVER_EDIT_ENTITLEMENT_POLICY:
+        raise ValueError(f"requirements name an entitlement policy this producer cannot prove: {policy}")
+    return licensed, policy
 
 
 def _entitlement_observation(args: argparse.Namespace) -> Any:
@@ -1076,10 +1091,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
         protocol_version, protocol_profile = _certification_protocol_context(operation)
         exercised_capabilities = scenario_facets if result == "pass" else []
         receipt_facets = {facet: result for facet in scenario_facets}
-        licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
-        entitlement_policy_revision = (
-            FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None
-        )
+        licensed, entitlement_policy_revision = _catalog_licensing(governed)
         entitlement_assertion = None
         if licensed and result == "pass":
             # A green TRX or deployment setting cannot synthesize the live

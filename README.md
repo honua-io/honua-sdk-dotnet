@@ -32,6 +32,8 @@ sharing one options/auth/resilience pattern.
 | License | [Apache 2.0](LICENSE) |
 
 Current SDK capabilities are summarized in [docs/features/README.md](docs/features/README.md).
+OGC API Tiles is not supported in the .NET SDK for 2026.1; see
+[2026.1 protocol support limits](docs/compatibility.md#20261-protocol-support-limits).
 
 ## Packages
 

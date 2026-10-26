@@ -59,6 +59,15 @@ counted as passes. The full 44-cell certification must be rerun on the release
 candidate, retaining all 41 passing and 3 released cells, with the rest of the
 SDK evidence.
 
+## 2026.1 Protocol Support Limits
+
+**OGC API Tiles is not supported in the .NET SDK for 2026.1.** `Honua.Sdk`
+1.12.0, the package pinned for the 2026.1 release, has no OGC API Tiles client
+([#405](https://github.com/honua-io/honua-sdk-dotnet/issues/405)). Use the
+JavaScript or Python SDK, or request tiles over HTTP directly. The honua-release
+installed-client matrix keeps `nuget-sdk-ogc-tiles` as a declared blocked cell
+with target `2026.1.x` (founder decision D6, 2026-10-26).
+
 ## Package API Compatibility Gate
 
 CI validates public package API compatibility by packing the baseline ref and

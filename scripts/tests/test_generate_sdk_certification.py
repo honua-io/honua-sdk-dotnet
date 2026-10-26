@@ -28,8 +28,9 @@ class SdkCertificationTests(unittest.TestCase):
             "scene_id": "fixture-scene",
         }
 
-    def _write_evidence(self, args, document):
-        # Synthetic governed input for harness tests only, never a live receipt.
+    def _write_evidence(self, args, document, licensing=None):
+        # Synthetic governed input for harness tests only, never a live receipt. `licensing`
+        # maps an operation id to the catalog's (licensed, entitlement_policy_revision).
         if not hasattr(args, "sdk_package_source_sha"):
             args.sdk_package_source_sha = "e" * 40
         args.requirements = args.evidence.with_suffix(".requirements.json")
@@ -37,13 +38,15 @@ class SdkCertificationTests(unittest.TestCase):
         rows = []
         for operation in document["operations"]:
             licensed = "FeatureServer.IHonuaFeatureServerEditClient" in operation["client"]
+            licensed, policy = (licensing or {}).get(operation["id"], (
+                licensed, MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None))
             rows.append({
                 "capability_key": "sdk-dotnet." + operation["surface"], "surface": operation["surface"],
                 "operation": operation["id"], "canonical_client": "Honua SDK .NET",
                 "client_version": args.sdk_version, "deployment_target": "local-docker",
                 "client_lane": "sdk-dotnet-certification", "maturity": "supported", "required_tier": "nightly",
                 "addressable_by_client": True, "licensed": licensed,
-                "entitlement_policy_revision": MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY if licensed else None,
+                "entitlement_policy_revision": policy,
                 "contract_revision": "sdk-dotnet-certification@" + args.sdk_package_source_sha,
                 "auth_policy_revision": "api-key-protected-v1", "fixture_revision": args.fixture_revision,
                 "scenario_facets": list(dict.fromkeys("positive" if x == "read-only" else x for x in operation["scenarioFacets"])),
@@ -97,6 +100,60 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertEqual("skip", observed["result"])
             self.assertIn("missing retained live entitlement", observed["skip_reason"])
             self.assertIsNone(observed["evidence_receipt"])
+
+    def _edit_args(self, root, trx_outcome="Passed"):
+        trx = root / "edit.trx"
+        trx.write_text('<TestRun><Results><UnitTestResult testName="Fixture.Edit" outcome="'
+                       + trx_outcome + '" /></Results></TestRun>')
+        return Namespace(tier="pr", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                         sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                         image_source_revision="b" * 40, server_image="ghcr.io/honua/server@sha256:" + "c" * 64,
+                         release_cut=None, candidate_cut="2026-01-01T00:00:00Z", fixture_revision="sha256:" + "d" * 64,
+                         seed_revision="b" * 40, evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                         **self._request_context())
+
+    EDIT_DOCUMENT = {"operations": [{
+        "id": "Fixture.AddFeaturesAsync", "surface": "geoservices", "operation": "AddFeaturesAsync",
+        "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient",
+        "status": "exercised", "requiredTiers": ["pr"], "scenarioFacets": ["mutation"],
+        "tests": ["Fixture.Edit"],
+    }]}
+
+    def test_catalog_unlicensed_edit_row_certifies_without_entitlement(self):
+        # honua-release is the single source of licensing truth: 2026.1 runs with licensing
+        # disabled, so its FeatureServer edit rows are unlicensed and need no entitlement proof.
+        with tempfile.TemporaryDirectory() as directory:
+            args = self._edit_args(Path(directory))
+            code = self._write_evidence(args, self.EDIT_DOCUMENT,
+                                        licensing={"Fixture.AddFeaturesAsync": (False, None)})
+            observed = json.loads(args.evidence.read_text())["observations"][0]
+            self.assertEqual(0, code)
+            self.assertEqual("pass", observed["result"])
+            self.assertIs(False, observed["licensed"])
+            self.assertIsNone(observed["entitlement_policy_revision"])
+            self.assertNotIn("entitlement", observed["evidence_receipt"])
+
+    def test_catalog_licensed_row_needs_entitlement_whatever_the_client_type(self):
+        document = {"operations": [{**self.EDIT_DOCUMENT["operations"][0],
+                                    "id": "Fixture.QueryAsync", "operation": "QueryAsync",
+                                    "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient"}]}
+        with tempfile.TemporaryDirectory() as directory:
+            args = self._edit_args(Path(directory))
+            self.assertEqual(1, self._write_evidence(args, document, licensing={
+                "Fixture.QueryAsync": (True, MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY)}))
+            observed = json.loads(args.evidence.read_text())["observations"][0]
+            self.assertIs(True, observed["licensed"])
+            self.assertEqual("skip", observed["result"])
+            self.assertIn("missing retained live entitlement", observed["skip_reason"])
+
+    def test_malformed_catalog_licensing_is_refused(self):
+        for licensing in ((True, None), (False, MODULE.FEATURESERVER_EDIT_ENTITLEMENT_POLICY),
+                          ("yes", None), (True, "honua-unproven-policy-v1"), (None, None)):
+            with self.subTest(licensing=licensing), tempfile.TemporaryDirectory() as directory:
+                args = self._edit_args(Path(directory))
+                with self.assertRaisesRegex(ValueError, "licens|entitlement policy"):
+                    self._write_evidence(args, self.EDIT_DOCUMENT,
+                                         licensing={"Fixture.AddFeaturesAsync": licensing})
 
     def test_failed_edit_trx_retains_failure_and_receipt_without_entitlement(self):
         document = {"operations": [{
