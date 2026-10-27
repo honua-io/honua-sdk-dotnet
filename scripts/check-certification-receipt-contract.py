@@ -11,8 +11,10 @@ from copy import deepcopy
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
+from unittest import mock
 
 
 def load(name, path):
@@ -62,9 +64,13 @@ def check(governance):
                          seed_revision="b" * 40, evidence_uri="https://example.test/fixture",
                          base_url="https://candidate.test", grpc_base_url="https://candidate.test:8443",
                          service_id="fixture", layer_id="0", collection_id="fixture")
-        if producer.write_evidence(args, {"operations": [operation]}) != 0:
-            raise ValueError("fixture producer unexpectedly refused complete unlicensed execution")
+        undispatched = {key: value for key, value in os.environ.items() if key != "HONUA_NIGHTLY_DISPATCH_ID"}
+        with mock.patch.dict(os.environ, undispatched, clear=True):
+            if producer.write_evidence(args, {"operations": [operation]}) != 0:
+                raise ValueError("fixture producer unexpectedly refused complete unlicensed execution")
         cell = {**requirement, **json.loads(evidence.read_text())["observations"][0]}
+        if "producer_run" in cell["evidence_receipt"]["identity"]:
+            raise ValueError("producer recorded a nightly run identity without a nightly dispatch")
         # The fixture intentionally uses different published-package and harness
         # commits so the real producer/consumer exercise catches conflation.
         identity = cell["evidence_receipt"]["identity"]
@@ -92,7 +98,33 @@ def check(governance):
         broken["client_package"] = "Honua.Sdk.Repacked"
         if gate._valid_receipt(broken, requirements_revision="fixture-context"):
             raise ValueError("real consumer accepted a different package name")
-    print("producer/real-consumer v2 contract passed; 1 positive + 5 refusal controls; not candidate qualification")
+        # honua-release nightly dispatch: producer_run rides inside the hashed receipt identity.
+        dispatch = "nightly-certification-1-1"
+        nightly = {**undispatched, "GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "workflow_dispatch",
+                   "GITHUB_REPOSITORY": "honua-io/honua-sdk-dotnet", "GITHUB_RUN_ID": "7", "GITHUB_RUN_ATTEMPT": "2",
+                   "GITHUB_WORKFLOW_REF": "honua-io/honua-sdk-dotnet/.github/workflows/sdk-certification.yml"
+                                          "@refs/heads/trunk",
+                   "HONUA_NIGHTLY_DISPATCH_ID": dispatch}
+        with mock.patch.dict(os.environ, nightly, clear=True):
+            if producer.write_evidence(args, {"operations": [operation]}) != 0:
+                raise ValueError("fixture producer unexpectedly refused the nightly dispatched execution")
+        cell = {**requirement, **json.loads(evidence.read_text())["observations"][0]}
+        run = {"repository": "honua-io/honua-sdk-dotnet", "workflow": "sdk-certification.yml",
+               "run_id": 7, "run_attempt": 2, "dispatch_id": dispatch}
+        receipt = cell["evidence_receipt"]
+        digest = "sha256:" + hashlib.sha256(json.dumps(
+            receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+        if receipt["identity"].get("producer_run") != run or cell["evidence_digest"] != digest:
+            raise ValueError("producer_run is not the exact dispatched run inside the hashed receipt identity")
+        if {"client_package", "client_package_digest"} & set(receipt["identity"]):
+            raise ValueError(".NET receipt identity must not carry the installed package identity")
+        if not gate._valid_receipt(cell, requirements_revision="fixture-context"):
+            raise ValueError("real strict consumer rejected the nightly dispatched v2 fixture receipt")
+        broken = deepcopy(cell)
+        broken["evidence_receipt"]["identity"]["producer_run"] = {**run, "sha": "a" * 40}
+        if gate._valid_receipt(broken, requirements_revision="fixture-context"):
+            raise ValueError("real consumer accepted a producer_run outside the closed field set")
+    print("producer/real-consumer v2 contract passed; 2 positive + 6 refusal controls; not candidate qualification")
 
 
 if __name__ == "__main__":
