@@ -947,3 +947,114 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
           overwrite: true
+
+  # Publisher attestations (honua-release post-gate collector). The collector
+  # downloads each pinned package from nuget.org, looks up
+  # repos/<repo>/attestations/sha256:<those bytes>, and verifies the bundle with
+  # --source-digest <release commit> --signer-workflow this file. nuget.org
+  # repository-signs uploads, so the subjects are taken from the passing
+  # verify-mode registry proofs above (semantic identity with this run's build),
+  # never from bytes this run did not verify.
+  attest-dotnet-provenance:
+    name: Attest Package Provenance
+    needs:
+      - release-smoke
+      - publish-dotnet-packages
+    if: ${{ needs.publish-dotnet-packages.result == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      PACKAGE_VERSION: ${{ needs.release-smoke.outputs.package-version }}
+    outputs:
+      sbom-matrix: ${{ steps.subjects.outputs.matrix }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download immutable package inputs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-input-unsigned
+          path: ./nupkgs
+
+      - name: Download registry publication evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-registry-proof
+          path: ./coordinate-evidence
+
+      - name: Derive subjects from verified registry proofs
+        id: subjects
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd ./nupkgs && sha256sum --check SHA256SUMS)
+          nuget_proof=()
+          if [[ "${PACKAGE_VERSION}" != *-* ]]; then
+            nuget_proof=(--nuget-proof coordinate-evidence/nuget-org-public-proof.json)
+          fi
+          python3 scripts/attestation-subjects.py \
+            --package-dir ./nupkgs \
+            "${nuget_proof[@]}" \
+            --github-proof coordinate-evidence/github-packages-proof.json \
+            --source-revision "${GITHUB_SHA}" \
+            --version "${PACKAGE_VERSION}" \
+            --checksums-out "${RUNNER_TEMP}/attestation-subjects.txt" \
+            --matrix-out "${RUNNER_TEMP}/sbom-matrix.json"
+          echo "matrix=$(cat "${RUNNER_TEMP}/sbom-matrix.json")" >> "${GITHUB_OUTPUT}"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: ${{ runner.temp }}/attestation-subjects.txt
+
+  attest-dotnet-sbom:
+    name: Attest SBOM (${{ matrix.package }})
+    needs: attest-dotnet-provenance
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.attest-dotnet-provenance.outputs.sbom-matrix) }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download SBOM artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-sboms
+          path: ./sboms
+
+      # release-smoke generated these CycloneDX documents for this run's build.
+      # actions/attest types SPDX as .../Document/v2.3, which the collector does
+      # not accept, so CycloneDX (https://cyclonedx.org/bom) is the SBOM here.
+      - name: Select and check this package's SBOM
+        shell: bash
+        env:
+          PACKAGE_ID: ${{ matrix.package }}
+        run: |
+          set -euo pipefail
+          mapfile -t found < <(find ./sboms -type f -name "${PACKAGE_ID}.cdx.json")
+          if [[ "${#found[@]}" -ne 1 ]]; then
+            echo "::error::expected exactly one SBOM for ${PACKAGE_ID}, found ${#found[@]}"
+            exit 1
+          fi
+          python3 - "${found[0]}" <<'PY'
+          import json, sys
+          bom = json.load(open(sys.argv[1], encoding="utf-8"))
+          if bom.get("bomFormat") != "CycloneDX" or not bom.get("components"):
+              raise SystemExit(f"{sys.argv[1]} is not a non-empty CycloneDX SBOM")
+          PY
+          echo "SBOM_PATH=${found[0]}" >> "${GITHUB_ENV}"
+
+      - name: Attest the SBOM
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-digest: ${{ matrix.digest }}
+          subject-name: ${{ matrix.name }}
+          sbom-path: ${{ env.SBOM_PATH }}
