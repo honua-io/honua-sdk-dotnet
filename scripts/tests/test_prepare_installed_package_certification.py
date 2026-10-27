@@ -609,6 +609,113 @@ class InstalledPackageCertificationTests(unittest.TestCase):
             MODULE.follow_release_manifest(pins, sources)
 
 
+class DispatchedPinTests(unittest.TestCase):
+    """Ruling sdk-harness-trunk-pinned-package-2026-10-27: the nightly-dispatched package and
+    server are the governed identity, not certification/candidate-pins.json."""
+
+    SOURCE = "5" * 40
+    SERVER = "2" * 40
+    SEED = "8" * 40
+
+    def _dispatch(self, **overrides):
+        package = _nupkg(self.SOURCE, "9.9.9")
+        sources = FakeSources({**PINS, "sdkPackageVersion": "9.9.9", "sdkSourceSha": self.SOURCE})
+        sources.fixture = b"-- dispatched seed\n"
+        fetched = []
+        original = sources.server_fixture
+        sources.server_fixture = lambda sha: (fetched.append(sha), original(sha))[1]
+        values = {
+            "sdk_package": "Honua.Sdk", "sdk_package_version": "9.9.9",
+            "sdk_package_digest": _sha256(package), "sdk_source_sha": self.SOURCE,
+            "server_image": "ghcr.io/honua-io/honua-server@sha256:" + "1" * 64,
+            "server_source_sha": self.SERVER, "server_seed_ref": self.SEED,
+            "release_cut": "2026-10-27T06:00:00Z",
+        }
+        values.update(overrides)
+        return Namespace(**values), sources, package, fetched
+
+    def test_dispatched_pins_are_the_dispatched_inputs_and_the_published_bytes(self):
+        args, sources, package, fetched = self._dispatch()
+        pins = MODULE.dispatched_pins(args, sources)
+        MODULE.validate_pins(pins)
+        self.assertEqual({
+            "sdkPackageId": "Honua.Sdk", "sdkPackageVersion": "9.9.9", "sdkPackageRegistry": "nuget.org",
+            "sdkPackageSha512": _sha512(package), "sdkPackageDigest": _sha256(package),
+            "sdkSourceSha": self.SOURCE, "serverSourceSha": self.SERVER,
+            "serverImageDigest": "sha256:" + "1" * 64,
+            # Measured exactly as the workflow measures the applied seed: sha256 of the seed file.
+            "fixtureRevision": _sha256(b"-- dispatched seed\n"),
+            "candidateCut": "2026-10-27T06:00:00Z",
+        }, pins)
+        self.assertEqual([self.SEED], fetched)
+        for field in ("sdkPackageVersion", "sdkSourceSha", "serverSourceSha", "serverImageDigest"):
+            self.assertNotEqual(PINS[field], pins[field])
+        # The restore then accepts the dispatched release candidate against these pins only.
+        MODULE.validate_identity(Namespace(tier="release", release_cut=args.release_cut,
+                                           server_image=args.server_image, server_source_sha=self.SERVER,
+                                           fixture_revision=pins["fixtureRevision"]), pins)
+        with tempfile.TemporaryDirectory() as directory:
+            nupkg = Path(directory) / "honua.sdk.9.9.9.nupkg"
+            nupkg.write_bytes(package)
+            identity = MODULE._verify_package(nupkg, pins, Path(directory))
+        self.assertEqual(_sha256(package), identity["packageDigest"])
+
+    def test_seed_ref_defaults_to_the_server_source(self):
+        args, sources, _, fetched = self._dispatch(server_seed_ref=None)
+        self.assertEqual(self.SERVER, MODULE.dispatched_pins(args, sources)["serverSourceSha"])
+        self.assertEqual([self.SERVER], fetched)
+
+    def test_dispatched_pins_refuse_a_digest_the_nuget_org_bytes_do_not_have(self):
+        args, sources, _, _ = self._dispatch(sdk_package_digest="sha256:" + "a" * 64)
+        with self.assertRaisesRegex(ValueError, "sdk_package_digest"):
+            MODULE.dispatched_pins(args, sources)
+
+    def test_dispatched_pins_refuse_a_package_built_from_another_source(self):
+        args, sources, _, _ = self._dispatch(sdk_source_sha="6" * 40)
+        with self.assertRaisesRegex(ValueError, "sdk_source_sha"):
+            MODULE.dispatched_pins(args, sources)
+
+    def test_dispatched_pins_refuse_a_version_nuget_org_does_not_serve(self):
+        args, sources, _, _ = self._dispatch(sdk_package_version="9.9.10")
+        with self.assertRaisesRegex(ValueError, "not on nuget.org"):
+            MODULE.dispatched_pins(args, sources)
+
+    def test_dispatched_pins_refuse_missing_or_malformed_inputs(self):
+        refusals = {
+            "sdk_package": ("Honua.Sdk.Repacked", None, ""),
+            "sdk_package_version": ("latest", "1.12", None),
+            "sdk_package_digest": ("sha256:" + "A" * 64, "sha512:" + "a" * 64, None),
+            "sdk_source_sha": ("a" * 7, "A" * 40, None),
+            "server_image": ("ghcr.io/honua-io/honua-server:nightly", None),
+            "server_source_sha": ("b" * 39, None),
+            "server_seed_ref": ("main",),
+            "release_cut": ("2026-10-27", None),
+        }
+        for field, values in refusals.items():
+            for value in values:
+                with self.subTest(field=field, value=value):
+                    args, sources, _, _ = self._dispatch(**{field: value})
+                    with self.assertRaisesRegex(ValueError, field):
+                        MODULE.dispatched_pins(args, sources)
+
+    def test_dispatched_pins_cli_writes_a_canonical_pin_file(self):
+        args, sources, package, _ = self._dispatch()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "package" / "dispatched-pins.json"
+            argv = ["--dispatched-pins-output", str(output)]
+            for name, value in vars(args).items():
+                argv += [f"--{name.replace('_', '-')}", value]
+            original = MODULE.LiveSources
+            MODULE.LiveSources = lambda: sources
+            try:
+                self.assertEqual(0, MODULE.main(argv))
+            finally:
+                MODULE.LiveSources = original
+            text = output.read_text(encoding="utf-8")
+            self.assertEqual(text, json.dumps(json.loads(text), indent=2) + "\n")
+            self.assertEqual(_sha256(package), MODULE.load_pins(output)["sdkPackageDigest"])
+
+
 class CommittedPinFileTests(unittest.TestCase):
     def test_pin_file_is_canonical_json(self):
         text = MODULE.DEFAULT_PINS.read_text(encoding="utf-8")

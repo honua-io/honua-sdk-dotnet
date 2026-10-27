@@ -55,6 +55,25 @@ on:
         description: Nightly orchestrator correlation ID (nightly-certification-<run>-<attempt>), recorded in each executed evidence receipt
         required: false
         type: string
+      # Ruling sdk-harness-trunk-pinned-package-2026-10-27: the nightly runs this trunk harness
+      # against the pinned published package. With nightly_dispatch_id these are required and
+      # replace certification/candidate-pins.json as the governed package identity.
+      sdk_package:
+        description: "Published package ID (Honua.Sdk); required with nightly_dispatch_id"
+        required: false
+        type: string
+      sdk_package_version:
+        description: "Exact published Honua.Sdk version on nuget.org; required with nightly_dispatch_id"
+        required: false
+        type: string
+      sdk_package_digest:
+        description: "sha256:<hex> of the published .nupkg; required with nightly_dispatch_id"
+        required: false
+        type: string
+      sdk_source_sha:
+        description: "Full source commit the published package was built from; required with nightly_dispatch_id"
+        required: false
+        type: string
 
 env:
   DOTNET_VERSION: "10.0.401"
@@ -119,6 +138,38 @@ jobs:
           esac
           echo "tier=${tier}" >> "${GITHUB_OUTPUT}"
 
+      - name: Require the nightly dispatch contract
+        id: dispatch
+        env:
+          NIGHTLY_DISPATCH_ID: ${{ inputs.nightly_dispatch_id }}
+          REQUIREMENTS_REF: ${{ inputs.requirements_ref }}
+          REQUIREMENTS_REVISION: ${{ inputs.requirements_revision }}
+          SDK_PACKAGE: ${{ inputs.sdk_package }}
+          SDK_PACKAGE_VERSION: ${{ inputs.sdk_package_version }}
+          SDK_PACKAGE_DIGEST: ${{ inputs.sdk_package_digest }}
+          SDK_SOURCE_SHA: ${{ inputs.sdk_source_sha }}
+          SERVER_IMAGE: ${{ inputs.server_image }}
+          SERVER_SOURCE_SHA: ${{ inputs.server_source_sha }}
+          RELEASE_CUT: ${{ inputs.release_cut }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Without a nightly dispatch nothing new is required and the committed pins apply.
+          if [[ -z "${NIGHTLY_DISPATCH_ID}" ]]; then
+            echo "dispatched=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          missing=()
+          for name in REQUIREMENTS_REF REQUIREMENTS_REVISION SDK_PACKAGE SDK_PACKAGE_VERSION \
+                      SDK_PACKAGE_DIGEST SDK_SOURCE_SHA SERVER_IMAGE SERVER_SOURCE_SHA RELEASE_CUT; do
+            [[ -n "${!name}" ]] || missing+=("${name,,}")
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error::Nightly dispatch ${NIGHTLY_DISPATCH_ID} is missing required inputs: ${missing[*]}"
+            exit 1
+          fi
+          echo "dispatched=true" >> "${GITHUB_OUTPUT}"
+
       - name: Retain immutable governed requirements and strict consumer
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -138,10 +189,50 @@ jobs:
           python3 scripts/fetch-certification-requirements.py --destination artifacts/governance "${args[@]}"
           python3 scripts/check-certification-receipt-contract.py --governance-dir artifacts/governance
 
-      - name: Load candidate pins
-        run: python3 scripts/prepare-installed-package-certification.py --pins certification/candidate-pins.json --emit-env >> "${GITHUB_ENV}"
+      - name: Pin the dispatched package and server
+        if: ${{ inputs.nightly_dispatch_id != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SDK_PACKAGE: ${{ inputs.sdk_package }}
+          SDK_PACKAGE_VERSION: ${{ inputs.sdk_package_version }}
+          SDK_PACKAGE_DIGEST: ${{ inputs.sdk_package_digest }}
+          SDK_SOURCE_SHA: ${{ inputs.sdk_source_sha }}
+          SERVER_IMAGE: ${{ inputs.server_image }}
+          SERVER_SOURCE_SHA: ${{ inputs.server_source_sha }}
+          SERVER_SEED_REF: ${{ inputs.server_seed_ref }}
+          RELEASE_CUT: ${{ inputs.release_cut }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The dispatched inputs are the governed identity: the nuget.org bytes must hash to
+          # sdk_package_digest and record sdk_source_sha, and the fixture is measured at the seed.
+          python3 scripts/prepare-installed-package-certification.py \
+            --dispatched-pins-output artifacts/package/dispatched-pins.json \
+            --sdk-package "${SDK_PACKAGE}" \
+            --sdk-package-version "${SDK_PACKAGE_VERSION}" \
+            --sdk-package-digest "${SDK_PACKAGE_DIGEST}" \
+            --sdk-source-sha "${SDK_SOURCE_SHA}" \
+            --server-image "${SERVER_IMAGE}" \
+            --server-source-sha "${SERVER_SOURCE_SHA}" \
+            --server-seed-ref "${SERVER_SEED_REF:-${SERVER_SOURCE_SHA}}" \
+            --release-cut "${RELEASE_CUT}"
 
+      - name: Load candidate pins
+        env:
+          NIGHTLY_DISPATCH_ID: ${{ inputs.nightly_dispatch_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pins=certification/candidate-pins.json
+          if [[ -n "${NIGHTLY_DISPATCH_ID}" ]]; then
+            pins=artifacts/package/dispatched-pins.json
+          fi
+          echo "CERT_PINS=${pins}" >> "${GITHUB_ENV}"
+          python3 scripts/prepare-installed-package-certification.py --pins "${pins}" --emit-env >> "${GITHUB_ENV}"
+
+      # A nightly dispatch is bound to its own inputs, not to the committed pin file.
       - name: Verify candidate pins against nuget.org and honua-release
+        if: ${{ inputs.nightly_dispatch_id == '' }}
         env:
           EVENT_NAME: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
@@ -171,10 +262,21 @@ jobs:
           INPUT_SEED_REF: ${{ inputs.server_seed_ref }}
           INPUT_RELEASE_CUT: ${{ inputs.release_cut }}
           INPUT_FIXTURE_REVISION: ${{ inputs.fixture_revision }}
+          NIGHTLY_DISPATCH_ID: ${{ inputs.nightly_dispatch_id }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
+          # A nightly dispatch loaded PINNED_* from its own inputs (artifacts/package/dispatched-pins.json),
+          # so the release equalities below bind the dispatched server, and the fixture revision is the
+          # one measured from the seed rather than an input.
+          dispatched=false
+          [[ -n "${NIGHTLY_DISPATCH_ID:-}" ]] && dispatched=true
+          if [[ "${dispatched}" == true && -n "${INPUT_FIXTURE_REVISION}" \
+                && "${INPUT_FIXTURE_REVISION}" != "${PINNED_SERVER_FIXTURE_REVISION}" ]]; then
+            echo '::error::Dispatched fixture_revision disagrees with the fixture measured at the seed revision.'
+            exit 1
+          fi
           tier="${CERT_TIER}"
           [[ -n "${tier}" ]] || { echo '::error::Certification tier is empty.'; exit 1; }
           if [[ "${tier}" == release ]]; then
@@ -203,6 +305,14 @@ jobs:
           [[ "${image}" =~ @sha256:[0-9a-f]{64}$ ]] || { echo '::error::Server image must be digest-addressed.'; exit 1; }
           [[ "${source_sha}" =~ ^[0-9a-f]{40}$ ]] || { echo '::error::Server source SHA must be a full lowercase commit.'; exit 1; }
           echo "${GH_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin >/dev/null
+          if [[ "${dispatched}" == true ]]; then
+            docker pull --quiet "${image}" >/dev/null
+            revision="$(docker image inspect "${image}" --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+            [[ "${revision}" == "${source_sha}" ]] || {
+              echo "::error::Dispatched image revision label ${revision:-missing} is not server_source_sha ${source_sha}."
+              exit 1
+            }
+          fi
           gh attestation verify "oci://${image}" \
             --repo honua-io/honua-server \
             --source-digest "${source_sha}" \
@@ -238,7 +348,7 @@ jobs:
         run: |
           mkdir -p artifacts/package
           python3 scripts/prepare-installed-package-certification.py \
-            --pins certification/candidate-pins.json \
+            --pins "${CERT_PINS}" \
             --tier "${{ steps.identity.outputs.tier }}" \
             --server-image "${{ steps.identity.outputs.image }}" \
             --server-source-sha "${{ steps.identity.outputs.source-sha }}" \

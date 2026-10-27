@@ -24,6 +24,15 @@ def load(name, path):
     return module
 
 
+# Receipt identity fields a nightly-dispatched .NET run adds (ruling sdk-harness-trunk-pinned-package-2026-10-27).
+HARNESS_IDENTITY_FIELDS = ("harness_commit", "client_package", "client_package_digest")
+
+
+def digest_of(receipt):
+    return "sha256:" + hashlib.sha256(json.dumps(
+        receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
 def check(governance):
     consumer = governance / "check_protocol_certification.py"
     binding = json.loads((governance / "source-binding.json").read_text())
@@ -98,13 +107,15 @@ def check(governance):
         broken["client_package"] = "Honua.Sdk.Repacked"
         if gate._valid_receipt(broken, requirements_revision="fixture-context"):
             raise ValueError("real consumer accepted a different package name")
-        # honua-release nightly dispatch: producer_run rides inside the hashed receipt identity.
+        # honua-release nightly dispatch: producer_run rides inside the hashed receipt identity, and
+        # (ruling sdk-harness-trunk-pinned-package-2026-10-27) so do the trunk harness commit and the
+        # pinned published package, with producer_source_sha bound to the package source.
         dispatch = "nightly-certification-1-1"
         nightly = {**undispatched, "GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "workflow_dispatch",
                    "GITHUB_REPOSITORY": "honua-io/honua-sdk-dotnet", "GITHUB_RUN_ID": "7", "GITHUB_RUN_ATTEMPT": "2",
                    "GITHUB_WORKFLOW_REF": "honua-io/honua-sdk-dotnet/.github/workflows/sdk-certification.yml"
                                           "@refs/heads/trunk",
-                   "HONUA_NIGHTLY_DISPATCH_ID": dispatch}
+                   "GITHUB_SHA": args.sdk_commit, "HONUA_NIGHTLY_DISPATCH_ID": dispatch}
         with mock.patch.dict(os.environ, nightly, clear=True):
             if producer.write_evidence(args, {"operations": [operation]}) != 0:
                 raise ValueError("fixture producer unexpectedly refused the nightly dispatched execution")
@@ -112,19 +123,51 @@ def check(governance):
         run = {"repository": "honua-io/honua-sdk-dotnet", "workflow": "sdk-certification.yml",
                "run_id": 7, "run_attempt": 2, "dispatch_id": dispatch}
         receipt = cell["evidence_receipt"]
-        digest = "sha256:" + hashlib.sha256(json.dumps(
-            receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
-        if receipt["identity"].get("producer_run") != run or cell["evidence_digest"] != digest:
+        if receipt["identity"].get("producer_run") != run or cell["evidence_digest"] != digest_of(receipt):
             raise ValueError("producer_run is not the exact dispatched run inside the hashed receipt identity")
-        if {"client_package", "client_package_digest"} & set(receipt["identity"]):
-            raise ValueError(".NET receipt identity must not carry the installed package identity")
-        if not gate._valid_receipt(cell, requirements_revision="fixture-context"):
-            raise ValueError("real strict consumer rejected the nightly dispatched v2 fixture receipt")
-        broken = deepcopy(cell)
+        identity = receipt["identity"]
+        if (identity.get("harness_commit") != args.sdk_commit
+                or identity.get("producer_source_sha") != args.sdk_package_source_sha
+                or cell["producer_source_sha"] != args.sdk_package_source_sha
+                or identity.get("client_package") != "Honua.Sdk"
+                or cell.get("client_package") != "Honua.Sdk"
+                or identity.get("client_package_digest") != args.sdk_package_digest
+                or cell.get("client_package_digest") != args.sdk_package_digest
+                or identity["contract_revision"] != requirement["contract_revision"]):
+            raise ValueError("nightly receipt identity does not separate the harness from the published package")
+        controls = 2
+        if gate._valid_receipt(cell, requirements_revision="fixture-context"):
+            # The retained consumer admits the harness identity: it must still bind the package.
+            for field, wrong in (("client_package_digest", "sha256:" + "0" * 64),
+                                 ("client_package", "Honua.Sdk.Repacked")):
+                broken = deepcopy(cell)
+                broken["evidence_receipt"]["identity"][field] = wrong
+                if gate._valid_receipt(broken, requirements_revision="fixture-context"):
+                    raise ValueError("real consumer accepted a receipt identity naming another package: " + field)
+                controls += 1
+            admitted = cell
+        else:
+            # EXPECTED FAILURE, not a pass: the retained consumer predates the harness identity
+            # (honua-release must admit harness_commit and the .NET client_package(_digest) receipt
+            # fields). It is tolerated only when those fields are the sole reason: the same receipt
+            # without them must be admitted. Any other refusal fails this check.
+            legacy = deepcopy(cell)
+            for field in HARNESS_IDENTITY_FIELDS:
+                legacy["evidence_receipt"]["identity"].pop(field)
+            if not gate._valid_receipt(legacy, requirements_revision="fixture-context"):
+                raise ValueError("real strict consumer rejected the nightly dispatched v2 fixture receipt "
+                                 "for a reason other than the harness identity fields")
+            print("::warning::EXPECTED FAILURE: the retained honua-release consumer "
+                  f"({binding.get('sourceSha')}) does not yet admit {', '.join(HARNESS_IDENTITY_FIELDS)} "
+                  "in a .NET receipt identity (ruling sdk-harness-trunk-pinned-package-2026-10-27); "
+                  "the receipt is otherwise admitted. Advance certification/requirements-pins.json once it does.")
+            admitted = legacy
+        broken = deepcopy(admitted)
         broken["evidence_receipt"]["identity"]["producer_run"] = {**run, "sha": "a" * 40}
         if gate._valid_receipt(broken, requirements_revision="fixture-context"):
             raise ValueError("real consumer accepted a producer_run outside the closed field set")
-    print("producer/real-consumer v2 contract passed; 2 positive + 6 refusal controls; not candidate qualification")
+    print(f"producer/real-consumer v2 contract passed; 2 positive + {4 + controls} refusal controls; "
+          "not candidate qualification")
 
 
 if __name__ == "__main__":

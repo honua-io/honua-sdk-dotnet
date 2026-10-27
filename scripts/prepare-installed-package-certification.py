@@ -8,6 +8,12 @@ honua-release platform manifest. --follow-manifest copies a published manifest
 package coordinate into the pin file after the nuget.org bytes match it, and
 advances a server pin that is behind the manifest snapshot, together with that
 snapshot's candidate cut. A newer server pin is left alone.
+
+A run the honua-release nightly dispatched (ruling
+sdk-harness-trunk-pinned-package-2026-10-27) is the exception: the dispatched
+package and server are the governed identity. --dispatched-pins-output writes a
+pin document from those inputs once the nuget.org bytes match the dispatched
+digest and source commit, and the restore then reads that document instead.
 """
 
 from __future__ import annotations
@@ -693,6 +699,73 @@ def follow_release_manifest(pins: dict[str, Any], sources: Sources) -> tuple[dic
     return updated, changed
 
 
+def dispatched_pins(args: argparse.Namespace, sources: Sources) -> dict[str, Any]:
+    """Pin document for a nightly-dispatched run, built from the dispatched inputs.
+
+    The package is the exact nuget.org coordinate the nightly named; its downloaded bytes
+    must hash to sdk_package_digest and its nuspec must record sdk_source_sha. The server
+    is the dispatched image and source, and the fixture revision is measured exactly as the
+    workflow measures the seed it applies: sha256 of the seed file at the seed revision.
+    The candidate cut is the dispatched release_cut, the resolved candidate's cut.
+    """
+    def required(field: str) -> str:
+        value = getattr(args, field, None)
+        if not isinstance(value, str) or not value:
+            raise ValueError(f"nightly dispatch requires {field}")
+        return value
+
+    package = required("sdk_package")
+    version = required("sdk_package_version")
+    digest = required("sdk_package_digest")
+    source = required("sdk_source_sha")
+    image = required("server_image")
+    server = required("server_source_sha")
+    cut = required("release_cut")
+    seed = getattr(args, "server_seed_ref", None) or server
+    if package != "Honua.Sdk":
+        raise ValueError(f"sdk_package must be Honua.Sdk, not {package}")
+    if not VERSION_RE.fullmatch(version):
+        raise ValueError("sdk_package_version must be an exact semantic version")
+    if not SHA256_RE.fullmatch(digest):
+        raise ValueError("sdk_package_digest must be a lowercase sha256:<hex> digest")
+    if not SHA_RE.fullmatch(source):
+        raise ValueError("sdk_source_sha must be a full lowercase commit")
+    if not DIGEST_IMAGE_RE.fullmatch(image):
+        raise ValueError("server_image must be ghcr.io/honua-io/honua-server@sha256:<digest>")
+    if not SHA_RE.fullmatch(server):
+        raise ValueError("server_source_sha must be a full lowercase commit")
+    if not SHA_RE.fullmatch(seed):
+        raise ValueError("server_seed_ref must be a full lowercase commit")
+    if not valid_candidate_cut(cut):
+        raise ValueError("release_cut must be a UTC ISO-8601 timestamp ending in Z")
+    identity = _nuget_package_identity(package, version, sources)
+    coordinate = f"{package} {version}"
+    if identity["digest"] != digest:
+        raise ValueError(
+            f"installed package integrity mismatch: nuget.org download of {coordinate} is "
+            f"{identity['digest']}, sdk_package_digest is {digest}"
+        )
+    if identity["commit"] != source:
+        raise ValueError(
+            f"installed package source mismatch: nuget.org records {identity['commit']} for "
+            f"{coordinate}, sdk_source_sha is {source}"
+        )
+    pins = {
+        "sdkPackageId": package,
+        "sdkPackageVersion": version,
+        "sdkPackageRegistry": "nuget.org",
+        "sdkPackageSha512": identity["sha512"],
+        "sdkPackageDigest": identity["digest"],
+        "sdkSourceSha": identity["commit"],
+        "serverSourceSha": server,
+        "serverImageDigest": image.rsplit("@", 1)[1],
+        "fixtureRevision": "sha256:" + hashlib.sha256(sources.server_fixture(seed)).hexdigest(),
+        "candidateCut": cut,
+    }
+    validate_pins(pins)
+    return pins
+
+
 def write_pins(path: Path, pins: dict[str, Any]) -> None:
     ordered = {field: pins[field] for field in PIN_FIELDS}
     path.write_text(json.dumps(ordered, indent=2) + "\n", encoding="utf-8")
@@ -709,6 +782,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="write the published honua-release package coordinate, and a behind server pin, when bytes match",
     )
+    mode.add_argument(
+        "--dispatched-pins-output",
+        type=Path,
+        help="write a pin document from the nightly-dispatched package and server inputs once nuget.org bytes match",
+    )
+    parser.add_argument("--sdk-package")
+    parser.add_argument("--sdk-package-version")
+    parser.add_argument("--sdk-package-digest")
+    parser.add_argument("--sdk-source-sha")
+    parser.add_argument("--server-seed-ref")
     parser.add_argument("--tier", choices=("pr", "nightly", "release"))
     parser.add_argument("--server-image")
     parser.add_argument("--server-source-sha")
@@ -717,7 +800,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--identity-output", type=Path)
     args = parser.parse_args(argv)
-    if not (args.check or args.emit_env or args.follow_manifest):
+    if not (args.check or args.emit_env or args.follow_manifest or args.dispatched_pins_output):
         missing = [flag for flag, value in (
             ("--tier", args.tier), ("--output", args.output), ("--identity-output", args.identity_output),
         ) if value is None]
@@ -729,6 +812,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
+        if args.dispatched_pins_output:
+            pins = dispatched_pins(args, LiveSources())
+            args.dispatched_pins_output.parent.mkdir(parents=True, exist_ok=True)
+            write_pins(args.dispatched_pins_output, pins)
+            print(
+                f"pinned nightly dispatch {pins['sdkPackageId']} {pins['sdkPackageVersion']} "
+                f"{pins['sdkPackageDigest']} {pins['sdkSourceSha']}; server {pins['serverSourceSha']} "
+                f"{pins['serverImageDigest']} fixture {pins['fixtureRevision']}"
+            )
+            return 0
         pins = load_pins(args.pins)
         if args.emit_env:
             sys.stdout.write(emit_env(pins))
