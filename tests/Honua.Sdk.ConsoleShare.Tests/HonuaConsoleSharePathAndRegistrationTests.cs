@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using Honua.Sdk.ConsoleShare.Exceptions;
 using Honua.Sdk.ConsoleShare.Extensions;
 using Honua.Sdk.ConsoleShare.Tests.Fixtures;
 using Honua.Sdk.ConsoleShare;
@@ -39,18 +40,11 @@ public sealed class HonuaConsoleSharePathAndRegistrationTests
         using var http = CreateHttpClient(request =>
         {
             path = request.RequestUri!.AbsolutePath;
-            return Json("{}");
+            return Json(ReadFixture("share-detail.v1.json"));
         });
         var client = new HonuaConsoleShareClient(http);
 
-        try
-        {
-            await client.GetShareAsync("layer/1");
-        }
-        catch (Exception)
-        {
-            // The body is only there so the request is observable. Parsing may still fail.
-        }
+        await client.GetShareAsync("layer/1");
 
         Assert.Equal("/api/v1/console/shares/layer%2F1", path);
     }
@@ -105,9 +99,9 @@ public sealed class HonuaConsoleSharePathAndRegistrationTests
         var exportClient = provider.GetRequiredService<IHonuaConsoleShareExportClient>();
         var openDataClient = provider.GetRequiredService<IHonuaConsoleShareOpenDataClient>();
 
-        await Assert.ThrowsAnyAsync<Exception>(() => shareClient.GetShareAsync("share-1"));
-        await Assert.ThrowsAnyAsync<Exception>(() => exportClient.GetExportDefinitionAsync("export-1"));
-        await Assert.ThrowsAnyAsync<Exception>(() => openDataClient.GetPublicDatasetAsync("item-1"));
+        await Assert.ThrowsAsync<HonuaConsoleShareApiException>(() => shareClient.GetShareAsync("share-1"));
+        await Assert.ThrowsAsync<HonuaConsoleShareApiException>(() => exportClient.GetExportDefinitionAsync("export-1"));
+        await Assert.ThrowsAsync<HonuaConsoleShareApiException>(() => openDataClient.GetPublicDatasetAsync("item-1"));
 
         Assert.Equal("share.example", share.Uri!.Host);
         Assert.Equal("share-key", share.ApiKey);
@@ -138,10 +132,35 @@ public sealed class HonuaConsoleSharePathAndRegistrationTests
         };
 
     private static Task<HttpResponseMessage> Json(string json)
-        => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        => Task.FromResult(Response(json, HttpStatusCode.OK));
+
+    private static HttpResponseMessage Response(string json, HttpStatusCode statusCode)
+    {
+        var response = new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
-        });
+        };
+        return response;
+    }
+
+    private static string ReadFixture(string name)
+        => File.ReadAllText(Path.Join(FindRepoRoot(), "contracts", "fixtures", "console", name));
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Join(directory.FullName, "Honua.Sdk.sln")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not find the honua-sdk-dotnet repository root.");
+    }
 
     private sealed class CaptureHandler : HttpMessageHandler
     {
@@ -155,10 +174,7 @@ public sealed class HonuaConsoleSharePathAndRegistrationTests
         {
             Uri = request.RequestUri;
             ApiKey = request.Headers.TryGetValues("X-API-Key", out var values) ? values.Single() : null;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)
-            {
-                Content = new StringContent("{}", Encoding.UTF8, "application/json")
-            });
+            return Task.FromResult(Response("{}", HttpStatusCode.NotFound));
         }
     }
 }
