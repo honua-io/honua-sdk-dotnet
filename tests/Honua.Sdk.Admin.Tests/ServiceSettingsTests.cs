@@ -31,6 +31,24 @@ public sealed class ServiceSettingsTests
         Assert.Equal(3, result[0].LayerCount);
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task GetServiceSettingsAsync_DotSegment_ThrowsBeforeSending(string serviceName)
+    {
+        var sent = 0;
+        var client = TestHelpers.CreateClient(_ =>
+        {
+            sent++;
+            return Task.FromResult(TestHelpers.CreateJsonResponse(new { serviceName = "default" }));
+        });
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => client.GetServiceSettingsAsync(serviceName));
+
+        Assert.Equal(nameof(serviceName), ex.ParamName);
+        Assert.Equal(0, sent);
+    }
+
     [Fact]
     public async Task GetServiceSettingsAsync_ReturnsSettings()
     {

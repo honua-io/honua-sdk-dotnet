@@ -49,7 +49,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<ServiceSettingsResponse> GetServiceSettingsAsync(string serviceName, CancellationToken cancellationToken = default)
     {
         var data = await GetAsync<ServiceSettingsResponse>(
-            $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/settings",
+            $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/settings",
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null service settings.", "GetServiceSettings");
@@ -60,7 +60,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var body = new UpdateProtocolsRequest { EnabledProtocols = [.. protocols] };
         var data = await PutAsync<ServiceSettingsResponse>(
-            $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/protocols",
+            $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/protocols",
             body,
             HonuaAdminJsonContext.Default.UpdateProtocolsRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
@@ -72,7 +72,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<ServiceSettingsResponse> UpdateMapServerSettingsAsync(string serviceName, UpdateMapServerSettingsRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<ServiceSettingsResponse>(
-            $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/mapserver",
+            $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/mapserver",
             request,
             HonuaAdminJsonContext.Default.UpdateMapServerSettingsRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
@@ -84,7 +84,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<ServiceSettingsResponse> UpdateAccessPolicyAsync(string serviceName, UpdateAccessPolicyRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<ServiceSettingsResponse>(
-            $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/access-policy",
+            $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/access-policy",
             request,
             HonuaAdminJsonContext.Default.UpdateAccessPolicyRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
@@ -96,7 +96,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<ServiceSettingsResponse> UpdateTimeInfoAsync(string serviceName, UpdateTimeInfoRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<ServiceSettingsResponse>(
-            $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/timeinfo",
+            $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/timeinfo",
             request,
             HonuaAdminJsonContext.Default.UpdateTimeInfoRequest,
             HonuaAdminJsonContext.Default.ApiResponseServiceSettingsResponse,
@@ -108,7 +108,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<LayerMetadataResponse> UpdateLayerMetadataAsync(string serviceName, int layerId, UpdateLayerMetadataRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PutAsync<LayerMetadataResponse>(
-            $"{ApiPrefix}/services/{Uri.EscapeDataString(serviceName)}/layers/{layerId}/metadata",
+            $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/layers/{layerId}/metadata",
             request,
             HonuaAdminJsonContext.Default.UpdateLayerMetadataRequest,
             HonuaAdminJsonContext.Default.ApiResponseLayerMetadataResponse,
@@ -132,7 +132,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task<(MetadataResource Resource, string? ETag)> GetMetadataResourceAsync(string kind, string ns, string name, CancellationToken cancellationToken = default)
     {
-        var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
+        var url = $"{ApiPrefix}/metadata/resources/{HonuaPathSegment.Escape(kind, nameof(kind))}/{HonuaPathSegment.Escape(ns, nameof(ns))}/{HonuaPathSegment.Escape(name, nameof(name))}";
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
@@ -165,7 +165,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public Task<MetadataResourceResponse> UpdateMetadataResourceWithResponseAsync(string kind, string ns, string name, MetadataResource resource, string? ifMatch = null, CancellationToken cancellationToken = default)
         => SendMetadataResourceAsync(
-            $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}",
+            $"{ApiPrefix}/metadata/resources/{HonuaPathSegment.Escape(kind, nameof(kind))}/{HonuaPathSegment.Escape(ns, nameof(ns))}/{HonuaPathSegment.Escape(name, nameof(name))}",
             HttpMethod.Put,
             resource,
             ifMatch,
@@ -175,7 +175,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     /// <inheritdoc />
     public async Task DeleteMetadataResourceAsync(string kind, string ns, string name, string? ifMatch = null, CancellationToken cancellationToken = default)
     {
-        var url = $"{ApiPrefix}/metadata/resources/{Uri.EscapeDataString(kind)}/{Uri.EscapeDataString(ns)}/{Uri.EscapeDataString(name)}";
+        var url = $"{ApiPrefix}/metadata/resources/{HonuaPathSegment.Escape(kind, nameof(kind))}/{HonuaPathSegment.Escape(ns, nameof(ns))}/{HonuaPathSegment.Escape(name, nameof(name))}";
         using var request = new HttpRequestMessage(HttpMethod.Delete, url);
 
         if (!string.IsNullOrEmpty(ifMatch))
@@ -288,7 +288,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await GetAsync<SecureConnectionDetail>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(connectionId, nameof(connectionId))}",
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionDetail,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null connection.", "GetConnection");
@@ -323,7 +323,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PutAsync<SecureConnectionSummary>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(connectionId, nameof(connectionId))}",
             request,
             HonuaAdminJsonContext.Default.UpdateSecureConnectionRequest,
             HonuaAdminJsonContext.Default.ApiResponseSecureConnectionSummary,
@@ -336,7 +336,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         var data = await PostAsync<ConnectionTestResult>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}/test",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(connectionId, nameof(connectionId))}/test",
             HonuaAdminJsonContext.Default.ApiResponseConnectionTestResult,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null test result.", "TestConnection");
@@ -347,7 +347,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var connectionId = NormalizeSecureConnectionId(id, nameof(id));
         using var response = await _http.DeleteAsync(
-            CreateRequestUri($"{ApiPrefix}/connections/{Uri.EscapeDataString(connectionId)}"), cancellationToken).ConfigureAwait(false);
+            CreateRequestUri($"{ApiPrefix}/connections/{HonuaPathSegment.Escape(connectionId, nameof(connectionId))}"), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
         AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
@@ -381,7 +381,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var query = BuildQuery(("serviceName", serviceName));
         var data = await GetAsync<PublishedLayerSummary[]>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/{query}",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/{query}",
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
             cancellationToken).ConfigureAwait(false);
         return data ?? [];
@@ -392,7 +392,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
         var data = await PostAsync<PublishedLayerSummary>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/",
             request,
             HonuaAdminJsonContext.Default.PublishLayerRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummary,
@@ -407,7 +407,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var query = BuildQuery(("serviceName", serviceName));
         var body = new LayerEnabledRequest { Enabled = enabled };
         var data = await PutAsync<PublishedLayerSummary>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/{layerId}/enabled{query}",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/{layerId}/enabled{query}",
             body,
             HonuaAdminJsonContext.Default.LayerEnabledRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummary,
@@ -422,7 +422,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         var query = BuildQuery(("serviceName", serviceName));
         var body = new LayerEnabledRequest { Enabled = enabled };
         var data = await PutAsync<PublishedLayerSummary[]>(
-            $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/layers/enabled{query}",
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/enabled{query}",
             body,
             HonuaAdminJsonContext.Default.LayerEnabledRequest,
             HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
@@ -436,7 +436,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<TableDiscoveryResponse> DiscoverTablesAsync(string connectionId, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
-        var url = $"{ApiPrefix}/connections/{Uri.EscapeDataString(normalizedConnectionId)}/tables";
+        var url = $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/tables";
         using var response = await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
@@ -595,7 +595,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
 
         var data = await GetRawAsync(
-            $"{ApiPrefix}/import/geoservices/jobs/{Uri.EscapeDataString(jobId)}",
+            $"{ApiPrefix}/import/geoservices/jobs/{HonuaPathSegment.Escape(jobId, nameof(jobId))}",
             HonuaAdminJsonContext.Default.GeoservicesImportProgress,
             cancellationToken).ConfigureAwait(false);
 
@@ -612,7 +612,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(jobId);
 
         var data = await PostRawAsync(
-            $"{ApiPrefix}/import/geoservices/jobs/{Uri.EscapeDataString(jobId)}/cancel",
+            $"{ApiPrefix}/import/geoservices/jobs/{HonuaPathSegment.Escape(jobId, nameof(jobId))}/cancel",
             HonuaAdminJsonContext.Default.GeoservicesImportCancelResponse,
             cancellationToken).ConfigureAwait(false);
 
@@ -746,7 +746,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(batchId);
 
         var data = await GetRawAsync(
-            $"{ApiPrefix}/import/migrations/{Uri.EscapeDataString(batchId)}",
+            $"{ApiPrefix}/import/migrations/{HonuaPathSegment.Escape(batchId, nameof(batchId))}",
             HonuaAdminJsonContext.Default.MigrationBatchResponse,
             cancellationToken).ConfigureAwait(false);
 
@@ -786,7 +786,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
         var data = await GetRawAsync(
-            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}",
+            $"{ApiPrefix}/migration/runs/{HonuaPathSegment.Escape(runId, nameof(runId))}",
             HonuaAdminJsonContext.Default.MigrationRunDto,
             cancellationToken).ConfigureAwait(false);
 
@@ -804,7 +804,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
         var data = await PostRawAsync(
-            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}/cancel",
+            $"{ApiPrefix}/migration/runs/{HonuaPathSegment.Escape(runId, nameof(runId))}/cancel",
             new MigrationRunCancelApiRequest { Reason = reason },
             HonuaAdminJsonContext.Default.MigrationRunCancelApiRequest,
             HonuaAdminJsonContext.Default.MigrationRunDto,
@@ -826,7 +826,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
         return await GetRawTextAsync(
-            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}/evidence-pack",
+            $"{ApiPrefix}/migration/runs/{HonuaPathSegment.Escape(runId, nameof(runId))}/evidence-pack",
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -840,7 +840,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
         var data = await GetRawAsync(
-            $"{ApiPrefix}/migration/runs/{Uri.EscapeDataString(runId)}/scorecard",
+            $"{ApiPrefix}/migration/runs/{HonuaPathSegment.Escape(runId, nameof(runId))}/scorecard",
             HonuaAdminJsonContext.Default.MigrationReconciliationScorecard,
             cancellationToken).ConfigureAwait(false);
 
@@ -976,7 +976,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         }
 
         var data = await GetAsync<IdentityProviderTestResult>(
-            $"{ApiPrefix}/identity/providers/{Uri.EscapeDataString(providerType)}/test",
+            $"{ApiPrefix}/identity/providers/{HonuaPathSegment.Escape(providerType, nameof(providerType))}/test",
             HonuaAdminJsonContext.Default.ApiResponseIdentityProviderTestResult,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null provider test result.", "TestIdentityProvider");
@@ -1089,7 +1089,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         }
 
         using var response = await _http.GetAsync(
-            CreateRequestUri($"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}"), cancellationToken).ConfigureAwait(false);
+            CreateRequestUri($"{ApiPrefix}/users/{HonuaPathSegment.Escape(userId, nameof(userId))}"), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -1112,7 +1112,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         }
 
         var data = await PutAsync<UserResponse>(
-            $"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}/roles",
+            $"{ApiPrefix}/users/{HonuaPathSegment.Escape(userId, nameof(userId))}/roles",
             request,
             HonuaAdminJsonContext.Default.UpdateUserRolesRequest,
             HonuaAdminJsonContext.Default.ApiResponseUserResponse,
@@ -1128,7 +1128,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             throw new ArgumentException("User ID must be supplied.", nameof(userId));
         }
 
-        return DeleteEnvelopeAsync($"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}", cancellationToken);
+        return DeleteEnvelopeAsync($"{ApiPrefix}/users/{HonuaPathSegment.Escape(userId, nameof(userId))}", cancellationToken);
     }
 
     /// <inheritdoc />
@@ -1140,7 +1140,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         }
 
         var data = await GetAsync<EffectivePermissionsResponse>(
-            $"{ApiPrefix}/users/{Uri.EscapeDataString(userId)}/effective-permissions",
+            $"{ApiPrefix}/users/{HonuaPathSegment.Escape(userId, nameof(userId))}/effective-permissions",
             HonuaAdminJsonContext.Default.ApiResponseEffectivePermissionsResponse,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null effective permissions.", "GetEffectivePermissions");
@@ -1464,7 +1464,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<DeployOperation> GetDeployOperationAsync(string operationId, CancellationToken cancellationToken = default)
     {
         var data = await GetRawAsync<DeployOperation>(
-            $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}",
+            $"{ApiPrefix}/deploy/operations/{HonuaPathSegment.Escape(operationId, nameof(operationId))}",
             HonuaAdminJsonContext.Default.DeployOperation,
             cancellationToken).ConfigureAwait(false);
         return data ?? throw new HonuaAdminOperationException("Server returned null deploy operation.", "GetDeployOperation");
@@ -1478,7 +1478,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<DeployOperation> SubmitDeployOperationAsync(string operationId, SubmitDeployOperationRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostRawAsync<DeployOperation>(
-            $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/submit",
+            $"{ApiPrefix}/deploy/operations/{HonuaPathSegment.Escape(operationId, nameof(operationId))}/submit",
             request,
             HonuaAdminJsonContext.Default.SubmitDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,
@@ -1494,7 +1494,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task<DeployOperation> RollbackDeployOperationAsync(string operationId, RollbackDeployOperationRequest request, CancellationToken cancellationToken = default)
     {
         var data = await PostRawAsync<DeployOperation>(
-            $"{ApiPrefix}/deploy/operations/{Uri.EscapeDataString(operationId)}/rollback",
+            $"{ApiPrefix}/deploy/operations/{HonuaPathSegment.Escape(operationId, nameof(operationId))}/rollback",
             request,
             HonuaAdminJsonContext.Default.RollbackDeployOperationRequest,
             HonuaAdminJsonContext.Default.DeployOperation,

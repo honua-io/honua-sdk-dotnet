@@ -127,3 +127,5 @@ Honua.Sdk.Offline.Abstractions.ExtractChangesResult.ExceededTransferLimit.get ->
 Honua.Sdk.Offline.Abstractions.ExtractChangesResult.ExceededTransferLimit.init -> void
 Honua.Sdk.Offline.Abstractions.ExtractChangesResult.LayerServerGens.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.ReplicaLayerServerGeneration!>!
 Honua.Sdk.Offline.Abstractions.ExtractChangesResult.LayerServerGens.init -> void
+Honua.Sdk.Abstractions.HonuaPathSegment
+static Honua.Sdk.Abstractions.HonuaPathSegment.Escape(string? value, string! paramName) -> string!

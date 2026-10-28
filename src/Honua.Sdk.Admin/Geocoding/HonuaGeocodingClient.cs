@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 
 namespace Honua.Sdk.Admin.Geocoding;
 
@@ -40,7 +41,7 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
         _locatorName = locatorName;
     }
 
-    private string ServicePath => $"/rest/services/{Uri.EscapeDataString(_locatorName)}/GeocodeServer";
+    private string ServicePath => $"/rest/services/{HonuaPathSegment.Escape(_locatorName, nameof(_locatorName))}/GeocodeServer";
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<GeocodeResult>> ForwardGeocodeAsync(
