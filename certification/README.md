@@ -24,6 +24,32 @@ workflow loads the file through `--emit-env`. The restore step installs exactly
 validation left on. It then fails closed unless the installed nupkg matches
 `sdkPackageSha512`, `sdkPackageDigest` and `sdkSourceSha`.
 
+## Nightly-dispatched runs
+
+The honua-release nightly runs this workflow from this repository's trunk (the
+harness) against the exact pinned published package (ruling
+`sdk-harness-trunk-pinned-package-2026-10-27`). A run with `nightly_dispatch_id`
+does not read `candidate-pins.json` and skips `--check`. Its dispatched inputs are
+the governed identity, and all of these are required:
+
+- `requirements_ref` and `requirements_revision`
+- `sdk_package` (`Honua.Sdk`), `sdk_package_version`, `sdk_package_digest`
+  (`sha256:` of the nupkg) and `sdk_source_sha`
+- `server_image`, `server_source_sha` and `release_cut` (the candidate cut)
+
+`--dispatched-pins-output` downloads the package from nuget.org and refuses
+unless its bytes hash to `sdk_package_digest` and its nuspec records
+`sdk_source_sha`. It then writes `artifacts/package/dispatched-pins.json` and
+the rest of the run reads that file. `fixtureRevision` there is measured from
+the seed at `server_seed_ref` (default `server_source_sha`), not taken from an
+input. The pulled image's `org.opencontainers.image.revision` label must equal
+`server_source_sha`.
+
+Each executed receipt identity then also carries `harness_commit` (`GITHUB_SHA`),
+`client_package` and `client_package_digest`. Its `producer_source_sha` is
+`sdk_source_sha`, the published source rather than the harness. Runs without a
+dispatch id emit the identity they emitted before.
+
 ## Checking the pins
 
 ```bash

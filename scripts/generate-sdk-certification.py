@@ -959,7 +959,8 @@ def _requirements(args: argparse.Namespace) -> tuple[dict[str, Any], dict[tuple[
 
 def _contract_revision(identity: dict[str, Any]) -> str:
     # Release #767: the installed package defines the client contract. The
-    # independent harness checkout remains producer_source_sha in every receipt.
+    # independent harness checkout is producer_source_sha outside the nightly; a nightly
+    # dispatch names it harness_commit and binds producer_source_sha to the package source.
     source = identity.get("sdkPackageSourceSha")
     if not isinstance(source, str) or not re.fullmatch(r"[0-9a-f]{40}", source):
         raise ValueError("certification contract requires the exact installed package source commit")
@@ -1035,9 +1036,35 @@ def _producer_run() -> dict[str, Any] | None:
             "run_id": int(run_id), "run_attempt": int(attempt), "dispatch_id": dispatch}
 
 
+def _dispatched_identity(identity: dict[str, Any]) -> dict[str, Any]:
+    """Receipt identity a nightly-dispatched run adds (ruling sdk-harness-trunk-pinned-package-2026-10-27).
+
+    The nightly runs the harness from this repository's trunk against the pinned published
+    package, so the two are named separately: harness_commit is the checkout that ran
+    (GITHUB_SHA), producer_source_sha is the published package's source, and the package
+    name and nupkg digest ride inside the hashed identity so a consumer can bind them to
+    the manifest pin.
+    """
+    harness = os.environ.get("GITHUB_SHA", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", harness) or identity["sdkCommit"] != harness:
+        raise ValueError("nightly dispatch identity requires the harness checkout GITHUB_SHA as a full commit")
+    if identity["sdkPackageId"] != "Honua.Sdk":
+        raise ValueError("nightly dispatch identity requires the installed Honua.Sdk package")
+    digest = identity["sdkPackageDigest"]
+    if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+        raise ValueError("nightly dispatch identity requires the installed package sha256:<hex> digest")
+    source = identity["sdkPackageSourceSha"]
+    if not isinstance(source, str) or not re.fullmatch(r"[0-9a-f]{40}", source):
+        raise ValueError("nightly dispatch identity requires the installed package source commit")
+    return {"harness_commit": harness, "producer_source_sha": source,
+            "client_package": identity["sdkPackageId"], "client_package_digest": digest}
+
+
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     producer_run = _producer_run()
+    dispatched = None if producer_run is None else _dispatched_identity(identity)
+    producer_source_sha = identity["sdkCommit"] if dispatched is None else dispatched["producer_source_sha"]
     catalog, requirements = _requirements(args)
     for field in ("baseUrl", "grpcBaseUrl"):
         parsed = urlsplit(identity[field] or "")
@@ -1159,7 +1186,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "client_version": identity["sdkVersion"],
                 "deployment_target": "local-docker",
                 "source_sha": identity["serverSourceSha"],
-                "producer_source_sha": identity["sdkCommit"],
+                "producer_source_sha": producer_source_sha,
                 "image_digest": identity["serverImageDigest"],
                 "fixture_revision": identity["fixtureRevision"],
                 "contract_revision": contract_revision,
@@ -1170,6 +1197,10 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
                 "started_at": started_at,
                 "completed_at": now,
                 **({"producer_run": producer_run} if producer_run is not None else {}),
+                **({"harness_commit": dispatched["harness_commit"],
+                    "client_package": dispatched["client_package"],
+                    "client_package_digest": dispatched["client_package_digest"]}
+                   if dispatched is not None else {}),
             },
             "result": result,
             "facets": receipt_facets,
@@ -1201,7 +1232,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "result": result,
             "skip_reason": skip_reason,
             "source_sha": identity["serverSourceSha"],
-            "producer_source_sha": identity["sdkCommit"],
+            "producer_source_sha": producer_source_sha,
             "image_digest": identity["serverImageDigest"],
             "fixture_revision": identity["fixtureRevision"],
             "contract_revision": contract_revision,
