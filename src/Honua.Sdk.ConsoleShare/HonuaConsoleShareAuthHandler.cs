@@ -16,7 +16,16 @@ internal sealed class HonuaConsoleShareAuthHandler : HonuaAuthHandler<HonuaConso
     /// </summary>
     /// <param name="options">The Console Share client options containing authentication credentials.</param>
     public HonuaConsoleShareAuthHandler(IOptions<HonuaConsoleShareClientOptions> options)
-        : base(options.Value, "console-share", HonuaConsoleShareClientOptions.ValidateBaseAddress)
+        : this(options.Value)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HonuaConsoleShareAuthHandler"/> class.
+    /// </summary>
+    /// <param name="options">The Console Share client options captured for this registration.</param>
+    public HonuaConsoleShareAuthHandler(HonuaConsoleShareClientOptions options)
+        : base(options, "console-share", HonuaConsoleShareClientOptions.ValidateBaseAddress)
     {
     }
 }
