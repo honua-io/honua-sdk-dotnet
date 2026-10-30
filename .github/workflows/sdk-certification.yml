@@ -104,7 +104,9 @@ jobs:
     timeout-minutes: 45
     services:
       postgres:
-        image: postgis/postgis:16-3.4@sha256:44126d872ac91993766c341e369c539e8196614321765d36a6f1bab0419a5fa5
+        # The sdk-protocol overlay routes on pgRouting. This is the same image
+        # geospatial-mcp protocol certification pins for that overlay.
+        image: pgrouting/pgrouting:17-3.5-3.7.3@sha256:5e6767abbd1fd9ead84c9988aa31bac71ca292ef8a1fc2e4a5ee2b613ac6a7bb
         env:
           POSTGRES_USER: honua
           POSTGRES_PASSWORD: honua
@@ -384,12 +386,57 @@ jobs:
           psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 \
             -c "CREATE EXTENSION IF NOT EXISTS postgis; CREATE EXTENSION IF NOT EXISTS postgis_raster;"
 
+      - name: Fetch the candidate sdk-protocol fixture
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEED_REF: ${{ steps.identity.outputs.seed-ref }}
+        run: |
+          set -euo pipefail
+          root=".certification/location-source"
+          printf '%s\n' 'Geocoding__Providers__Nominatim__Enabled=false' > "${RUNNER_TEMP}/location.env"
+          echo "HONUA_SDK_LOCATION_ENV_FILE=${RUNNER_TEMP}/location.env" >> "${GITHUB_ENV}"
+          for path in \
+            scripts/certification/seed-sdk-protocol-fixture.py \
+            scripts/certification/verify-sdk-protocol-fixture.py \
+            tests/seed/sdk-protocol-v1/manifest.json \
+            tests/seed/sdk-protocol-v1/geocoder.csv \
+            docker/routing/init-routing.sql \
+            docs/gis/data/client-certification-fixture.v1.json \
+            src/Honua.Server/appsettings.json \
+            eng/Honua.ProtocolProfiles.props \
+            src/Honua.Server/fixtures/scenes/downtown-honolulu/tileset.json \
+            src/Honua.Server/fixtures/scenes/downtown-honolulu/tiles/0.b3dm \
+            src/Honua.Server/fixtures/scenes/downtown-honolulu/metadata/scene.json; do
+            mkdir -p "${root}/$(dirname "${path}")"
+            gh api "repos/honua-io/honua-server/contents/${path}?ref=${SEED_REF}" -H "Accept: application/vnd.github.raw" > "${root}/${path}"
+          done
+          python3 "${root}/scripts/certification/verify-sdk-protocol-fixture.py" --server-env > .certification/location-server-config.json
+          jq -er 'to_entries[] | "\(.key)=\(.value)"' .certification/location-server-config.json >> "${RUNNER_TEMP}/location.env"
+          grep -qx 'Geocoding__DefaultProvider=local' "${RUNNER_TEMP}/location.env"
+          grep -qx 'Geocoding__Providers__Local__Enabled=true' "${RUNNER_TEMP}/location.env"
+          grep -qx 'Routing__Provider=pgrouting' "${RUNNER_TEMP}/location.env"
+
+      - name: Block public geocoder egress before candidate boot
+        run: |
+          set -euo pipefail
+          for host in nominatim.openstreetmap.org; do
+            v4="$(getent ahostsv4 "${host}" | awk '{print $1}' | sort -u)"
+            v6="$(getent ahostsv6 "${host}" | awk '$1 ~ /:/ {print $1}' | sort -u)"
+            [[ -n "${v4}${v6}" ]] || { echo "::error::cannot resolve ${host} to block it"; exit 1; }
+            for ip in ${v4}; do sudo iptables -I OUTPUT -d "${ip}" -j REJECT; done
+            for ip in ${v6}; do sudo ip6tables -I OUTPUT -d "${ip}" -j REJECT; done
+            if curl -sS --max-time 10 -o /dev/null "https://${host}/status.php" 2>/dev/null; then
+              echo "::error::${host} is still reachable after the egress block"; exit 1
+            fi
+          done
+
       - name: Start exact honua-server image
         env:
           SERVER_IMAGE: ${{ steps.identity.outputs.image }}
           CERT_TIER: ${{ steps.identity.outputs.tier }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
+          set -euo pipefail
           entitlement_profile="$(python3 scripts/observe-certification-entitlement.py profile --tier "${CERT_TIER}" --event "${EVENT_NAME}")"
           entitlement_mode="$(jq -er '.mode' <<< "${entitlement_profile}")"
           dev_grant="$(jq -er '.devGrantEdition | strings' <<< "${entitlement_profile}")"
@@ -410,9 +457,14 @@ jobs:
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
             -e Kestrel__Endpoints__Grpc__Protocols="Http2" \
+            --env-file "${HONUA_SDK_LOCATION_ENV_FILE}" \
             "${SERVER_IMAGE}"
           for i in $(seq 1 60); do
             [[ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/healthz/ready || true)" == 200 ]] && exit 0
+            if [[ "$(docker inspect -f '{{.State.Running}}' honua-server 2>/dev/null || true)" != true ]]; then
+              echo '::error::Honua server container exited before becoming ready.'
+              break
+            fi
             sleep 3
           done
           docker logs honua-server || true
@@ -422,6 +474,22 @@ jobs:
         env:
           PGPASSWORD: honua
         run: psql -h localhost -U honua -d honua_test -v ON_ERROR_STOP=1 -f .certification/base-schema.sql
+
+      - name: Seed the sdk-protocol overlay and publish client fixture ids
+        env:
+          HONUA_PROTOCOL_FIXTURE_TARGET: ephemeral
+          PGHOST: 127.0.0.1
+          PGUSER: honua
+          PGDATABASE: honua_test
+          PGPASSWORD: honua
+          HONUA_ADMIN_PASSWORD: ci-protocol-api-key
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/evidence
+          python3 .certification/location-source/scripts/certification/seed-sdk-protocol-fixture.py --apply \
+            --base-url http://localhost:8080 --receipt artifacts/evidence/location-setup-receipt.json
+          python3 .certification/location-source/scripts/certification/verify-sdk-protocol-fixture.py --client-env \
+            | jq -er 'to_entries[] | "\(.key)=\(.value)"' >> "${GITHUB_ENV}"
 
       - name: Retain candidate entitlement observation
         env:

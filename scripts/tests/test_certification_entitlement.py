@@ -229,6 +229,18 @@ class WorkflowWiringTests(unittest.TestCase):
         self.assertIn('"scripts/tests/**"', self.TEXT)
         self.assertIn('"scripts/generate-sdk-certification.py"', self.TEXT)
 
+    def test_release_lane_applies_the_sdk_protocol_overlay_before_operations(self):
+        self.assertIn("pgrouting/pgrouting:17-3.5-3.7.3@", self.TEXT)
+        self.assertLess(self.TEXT.index("name: Fetch the candidate sdk-protocol fixture"), self.TEXT.index("name: Start exact honua-server image"))
+        self.assertLess(self.TEXT.index("name: Apply exact seed"), self.TEXT.index("name: Seed the sdk-protocol overlay and publish client fixture ids"))
+        self.assertLess(
+            self.TEXT.index("name: Seed the sdk-protocol overlay and publish client fixture ids"),
+            self.TEXT.index("name: Run public SDK operations"),
+        )
+        self.assertIn("seed-sdk-protocol-fixture.py --apply", self.TEXT)
+        self.assertIn("verify-sdk-protocol-fixture.py --client-env", self.TEXT)
+        self.assertIn("--env-file \"${HONUA_SDK_LOCATION_ENV_FILE}\"", self.TEXT)
+
 
 if __name__ == "__main__":
     unittest.main()
