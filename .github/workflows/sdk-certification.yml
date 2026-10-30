@@ -420,8 +420,9 @@ jobs:
         run: |
           set -euo pipefail
           for host in nominatim.openstreetmap.org; do
-            v4="$(getent ahostsv4 "${host}" | awk '{print $1}' | sort -u)"
-            v6="$(getent ahostsv6 "${host}" | awk '$1 ~ /:/ {print $1}' | sort -u)"
+            # An IPv4-only runner makes getent ahostsv6 exit nonzero. Either family may be absent.
+            v4="$(getent ahostsv4 "${host}" | awk '{print $1}' | sort -u || true)"
+            v6="$(getent ahostsv6 "${host}" | awk '$1 ~ /:/ {print $1}' | sort -u || true)"
             [[ -n "${v4}${v6}" ]] || { echo "::error::cannot resolve ${host} to block it"; exit 1; }
             for ip in ${v4}; do sudo iptables -I OUTPUT -d "${ip}" -j REJECT; done
             for ip in ${v6}; do sudo ip6tables -I OUTPUT -d "${ip}" -j REJECT; done
