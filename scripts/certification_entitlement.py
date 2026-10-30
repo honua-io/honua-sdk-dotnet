@@ -1,12 +1,12 @@
-"""Release entitlement proof for licensed FeatureServer edit certification (issue #308).
+"""Entitlement profile for FeatureServer edit certification (issue #308).
 
-Pull request and nightly runs boot the candidate the 2026.1 way, with
-Licensing__Mode=Disabled (every catalog entitlement active, honua-sdk-dotnet#472).
-That is never release proof. Release runs require a signed license supplied
-through a governed workflow_dispatch, and the candidate's own license status
-must validate it. The published .NET SDK does not
-expose license mode or identifier, so the server status is observed over HTTP and
-the raw JSON is retained next to its SHA-256 as the evidence.
+2026.1 certification, including an explicit release workflow_dispatch, boots the
+candidate with Licensing__Mode=Disabled (every catalog entitlement active,
+honua-sdk-dotnet#472). The signed license envelope is unread. A catalog row that
+is licensed still requires a retained signed observation before it can pass;
+2026.1 SDK rows are unlicensed. The published .NET SDK does not expose license
+mode, so the server status is observed over HTTP and the raw JSON is retained
+next to its SHA-256 as the evidence.
 """
 from __future__ import annotations
 
@@ -27,17 +27,11 @@ _REHEARSAL_EVENTS = {"pull_request", "push", "schedule", "workflow_dispatch", "l
 
 
 def profile(tier: str, event: str, environment: str, license_content: str) -> dict[str, str]:
+    del license_content  # 2026.1 does not read a signed license envelope.
     if tier == "release":
         if event != "workflow_dispatch":
             raise ValueError("release certification requires an explicit governed dispatch")
-        try:
-            envelope = json.loads(license_content)
-        except (ValueError, TypeError) as exc:
-            raise ValueError("HONUA_CERTIFICATION_LICENSE_CONTENT must supply the signed release license") from exc
-        if not isinstance(envelope, dict) or not envelope:
-            raise ValueError("signed release license envelope is absent")
-        # Parsing is input validation only; the candidate must validate the signature.
-        return {"mode": "signed", "licensingMode": "Enabled", "devGrantEdition": ""}
+        return {"mode": "disabled", "licensingMode": "Disabled", "devGrantEdition": ""}
     if tier not in {"pr", "nightly"} or event not in _REHEARSAL_EVENTS:
         raise ValueError("unknown certification rehearsal profile")
     if environment != "Development":

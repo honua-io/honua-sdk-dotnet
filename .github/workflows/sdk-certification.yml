@@ -98,8 +98,8 @@ permissions:
 jobs:
   certify:
     runs-on: ubuntu-latest
-    # Release dispatches run inside a protected environment (required reviewers) that alone
-    # holds HONUA_CERTIFICATION_LICENSE_CONTENT; pr/nightly attach to no environment.
+    # Release dispatches stay on the release-certification environment.
+    # 2026.1 certification boots Licensing__Mode=Disabled and reads no license secret.
     environment: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && 'release-certification' || '' }}
     timeout-minutes: 45
     services:
@@ -389,14 +389,11 @@ jobs:
           SERVER_IMAGE: ${{ steps.identity.outputs.image }}
           CERT_TIER: ${{ steps.identity.outputs.tier }}
           EVENT_NAME: ${{ github.event_name }}
-          # Governed signed license: exposed to this step only for an explicit release dispatch.
-          # Unconfigured until an operator provisions it; pr/nightly never receive it.
-          HONUA_CERTIFICATION_LICENSE_CONTENT: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && secrets.HONUA_CERTIFICATION_LICENSE_CONTENT || '' }}
         run: |
           entitlement_profile="$(python3 scripts/observe-certification-entitlement.py profile --tier "${CERT_TIER}" --event "${EVENT_NAME}")"
           entitlement_mode="$(jq -er '.mode' <<< "${entitlement_profile}")"
           dev_grant="$(jq -er '.devGrantEdition | strings' <<< "${entitlement_profile}")"
-          # pr/nightly: Disabled, the 2026.1 mode (#472). release: Enabled with the signed license.
+          # Every 2026.1 tier, including release, takes licensingMode from the profile (#472).
           licensing_mode="$(jq -er '.licensingMode | select(. == "Disabled" or . == "Enabled")' <<< "${entitlement_profile}")"
           echo "HONUA_ENTITLEMENT_MODE=${entitlement_mode}" >> "${GITHUB_ENV}"
           key="$(head -c 32 /dev/urandom | base64)"
@@ -405,7 +402,6 @@ jobs:
             -e ASPNETCORE_ENVIRONMENT=Development \
             -e Licensing__Mode="${licensing_mode}" \
             -e Licensing__DevGrantEdition="${dev_grant}" \
-            -e Licensing__LicenseContent="${HONUA_CERTIFICATION_LICENSE_CONTENT}" \
             -e ConnectionStrings__DefaultConnection="Host=localhost;Database=honua_test;Username=honua;Password=honua" \
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
@@ -432,8 +428,6 @@ jobs:
           CERT_TIER: ${{ steps.identity.outputs.tier }}
           EVENT_NAME: ${{ github.event_name }}
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
-          # Only the profile check needs the signed envelope; it is never written to artifacts.
-          HONUA_CERTIFICATION_LICENSE_CONTENT: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && secrets.HONUA_CERTIFICATION_LICENSE_CONTENT || '' }}
         run: |
           python3 scripts/observe-certification-entitlement.py observe \
             --tier "${CERT_TIER}" --event "${EVENT_NAME}" --mode "${HONUA_ENTITLEMENT_MODE}" \
@@ -449,9 +443,9 @@ jobs:
           HONUA_PROTOCOL_WFS_TYPENAME: "honua:test_layer"
           HONUA_PROTOCOL_API_KEY: "ci-protocol-api-key"
           HONUA_PROTOCOL_DESTRUCTIVE: ${{ steps.identity.outputs.tier != 'pr' && 'true' || 'false' }}
-          # pr/nightly run edits with licensing disabled, as 2026.1 does (never release proof); release needs the
-          # governed signed license. The flag only allows the test to execute; a 402 or any other
-          # failure is not a pass, and licensed passes need the retained signed observation.
+          # Edits run with licensing disabled, as 2026.1 does. The flag only allows the test
+          # to execute; a 402 or any other failure is not a pass. A licensed catalog row still
+          # needs the retained signed observation.
           HONUA_PROTOCOL_FEATURESERVER_EDITS_SUPPORTED: "true"
           HONUA_PROTOCOL_FEATURESERVER_EDIT_ADD_ATTRIBUTES_JSON: '{"name":"sdk-certification-add"}'
           HONUA_PROTOCOL_FEATURESERVER_EDIT_UPDATE_ATTRIBUTES_JSON: '{"name":"sdk-certification-update"}'
