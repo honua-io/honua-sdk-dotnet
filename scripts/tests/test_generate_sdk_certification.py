@@ -916,26 +916,30 @@ class SdkCertificationTests(unittest.TestCase):
             for cell in edit_operations
         ))
 
-    def test_ogc_tiles_operations_are_exercised_outside_the_pr_tier(self):
+    def test_ogc_tiles_operations_stay_gaps_until_the_published_package_can_run_them(self):
+        # The live fact sits below the protocol-test root. The installed certification
+        # consumer compiles only that root against the pinned package, which does not
+        # ship this client yet, so the fact is not a canonical certification test.
         document = MODULE.build_document()
         cells = [
             cell for cell in document["operations"]
             if cell["client"].endswith("IHonuaOgcTilesClient")
         ]
-        test = (
-            "Honua.Sdk.ProtocolIntegration.Tests.OgcTilesProtocolIntegrationTests."
-            "CollectionTiles_ListsTilesetsAndFetchesVectorPngAndEmpty"
-        )
         self.assertEqual(
             {"ListCollectionTilesetsAsync", "GetTileAsync"},
             {cell["operation"] for cell in cells},
         )
         for cell in cells:
-            self.assertEqual("exercised", cell["status"], cell["id"])
+            self.assertEqual("gap", cell["status"], cell["id"])
             self.assertEqual(["nightly", "release"], cell["requiredTiers"], cell["id"])
-            self.assertEqual([test], cell["tests"], cell["id"])
+            self.assertEqual([], cell["tests"], cell["id"])
             self.assertEqual("included", cell["releaseDenominator"], cell["id"])
-            self.assertNotIn("ownerIssue", cell)
+            self.assertEqual(MODULE.TRACKING_ISSUE, cell["ownerIssue"], cell["id"])
+            self.assertEqual(
+                "Concrete public SDK operation has no canonical live certification test.",
+                cell["disposition"],
+                cell["id"],
+            )
             self.assertEqual(
                 ["Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"],
                 cell["implementations"],

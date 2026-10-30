@@ -6,8 +6,8 @@
   "complete": false,
   "summary": {
     "total": 330,
-    "exercised": 41,
-    "gap": 271,
+    "exercised": 39,
+    "gap": 273,
     "non-addressable": 18
   },
   "releaseProfile": {
@@ -7852,7 +7852,7 @@
       "client": "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient",
       "operation": "GetTileAsync",
       "signature": "GetTileAsync(string,string,int,int,int,OgcTileFormat,CancellationToken)",
-      "status": "exercised",
+      "status": "gap",
       "requiredTiers": [
         "nightly",
         "release"
@@ -7860,18 +7860,19 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.OgcTilesProtocolIntegrationTests.CollectionTiles_ListsTilesetsAndFetchesVectorPngAndEmpty"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.OgcTilesProtocolIntegrationTests.CollectionTiles_ListsTilesetsAndFetchesVectorPngAndEmpty"
-        ]
+        "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient": []
       },
-      "releaseDenominator": "included"
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient.ListCollectionTilesetsAsync(string,CancellationToken)",
@@ -7879,7 +7880,7 @@
       "client": "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient",
       "operation": "ListCollectionTilesetsAsync",
       "signature": "ListCollectionTilesetsAsync(string,CancellationToken)",
-      "status": "exercised",
+      "status": "gap",
       "requiredTiers": [
         "nightly",
         "release"
@@ -7887,18 +7888,19 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.OgcTilesProtocolIntegrationTests.CollectionTiles_ListsTilesetsAndFetchesVectorPngAndEmpty"
-      ],
+      "tests": [],
       "implementations": [
         "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.OgcTilesProtocolIntegrationTests.CollectionTiles_ListsTilesetsAndFetchesVectorPngAndEmpty"
-        ]
+        "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient": []
       },
-      "releaseDenominator": "included"
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient.GetFeaturesVectorAsync(GetFeaturesRequest,VectorPayloadFormat,CancellationToken)",

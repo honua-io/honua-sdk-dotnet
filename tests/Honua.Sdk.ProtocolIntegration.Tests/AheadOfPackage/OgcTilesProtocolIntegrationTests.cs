@@ -1,10 +1,16 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.OgcFeatures.Tiles;
 using Honua.Sdk.OgcFeatures.Tiles.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.ProtocolIntegration.Tests;
 
+// This fact is not a sibling of the other protocol facts. The installed certification
+// consumer compiles only the top-level files in this project against the pinned
+// published package, and that package does not contain the tiles client yet.
 [Collection(ProtocolIntegrationCollection.Name)]
 [Trait("Category", "ProtocolIntegration")]
 public sealed class OgcTilesProtocolIntegrationTests(ProtocolIntegrationFixture fixture)
@@ -16,8 +22,17 @@ public sealed class OgcTilesProtocolIntegrationTests(ProtocolIntegrationFixture 
     {
         using var timeout = _fixture.CreateTimeoutScope();
         var collectionId = _fixture.Options.OgcCollectionId;
+        await using var services = new ServiceCollection()
+            .AddHonuaOgcTiles(options =>
+            {
+                options.BaseAddress = _fixture.BaseUri;
+                options.ApiKey = _fixture.Options.ApiKey;
+                options.BearerToken = _fixture.Options.BearerToken;
+            })
+            .BuildServiceProvider();
+        var tiles = services.GetRequiredService<IHonuaOgcTilesClient>();
 
-        var tilesets = await _fixture.OgcTilesClient.ListCollectionTilesetsAsync(collectionId, timeout.Token)
+        var tilesets = await tiles.ListCollectionTilesetsAsync(collectionId, timeout.Token)
             .ConfigureAwait(false);
         Assert.NotEmpty(tilesets.Tilesets);
         var tileMatrixSetId = tilesets.Tilesets
@@ -26,9 +41,9 @@ public sealed class OgcTilesProtocolIntegrationTests(ProtocolIntegrationFixture 
             ?? tilesets.Tilesets[0].TileMatrixSetId;
         Assert.False(string.IsNullOrWhiteSpace(tileMatrixSetId));
 
-        var vector = await _fixture.OgcTilesClient.GetTileAsync(
+        var vector = await tiles.GetTileAsync(
             collectionId, tileMatrixSetId, 0, 0, 0, OgcTileFormat.Vector, timeout.Token).ConfigureAwait(false);
-        var png = await _fixture.OgcTilesClient.GetTileAsync(
+        var png = await tiles.GetTileAsync(
             collectionId, tileMatrixSetId, 0, 0, 0, OgcTileFormat.Png, timeout.Token).ConfigureAwait(false);
         Assert.Equal(vector.IsEmpty, png.IsEmpty);
         if (!vector.IsEmpty)
@@ -45,7 +60,7 @@ public sealed class OgcTilesProtocolIntegrationTests(ProtocolIntegrationFixture 
         var sawEmpty = false;
         foreach (var (row, col) in corners)
         {
-            var tile = await _fixture.OgcTilesClient.GetTileAsync(
+            var tile = await tiles.GetTileAsync(
                 collectionId, tileMatrixSetId, 3, row, col, OgcTileFormat.Vector, timeout.Token)
                 .ConfigureAwait(false);
             if (tile.IsEmpty)

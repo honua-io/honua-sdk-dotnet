@@ -12,7 +12,6 @@ using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Extensions;
-using Honua.Sdk.OgcFeatures.Tiles;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Spec.Extensions;
@@ -57,8 +56,6 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
     public IHonuaFeatureServerEditClient FeatureServerEditClient => Services.GetRequiredService<IHonuaFeatureServerEditClient>();
 
     public IHonuaOgcFeaturesClient OgcFeaturesClient => Services.GetRequiredService<IHonuaOgcFeaturesClient>();
-
-    public IHonuaOgcTilesClient OgcTilesClient => Services.GetRequiredService<IHonuaOgcTilesClient>();
 
     public IHonuaSceneClient SceneClient => Services.GetRequiredService<IHonuaSceneClient>();
 
@@ -174,12 +171,6 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
             options.RoutingClosestFacilityLayerName = Options.ClosestFacilityLayerName ?? "ClosestFacility";
         });
         services.AddHonuaOgcFeatures(options =>
-        {
-            options.BaseAddress = baseUri;
-            options.ApiKey = Options.ApiKey;
-            options.BearerToken = Options.BearerToken;
-        });
-        services.AddHonuaOgcTiles(options =>
         {
             options.BaseAddress = baseUri;
             options.ApiKey = Options.ApiKey;

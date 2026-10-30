@@ -153,6 +153,8 @@ def _write_consumer(directory: Path, pins: dict[str, Any]) -> Path:
         ROOT / "tests" / "Honua.Sdk.ProtocolIntegration.Tests",
         ROOT / "tests" / "Honua.Sdk.Conformance.Tests",
     ]
+    # Non-recursive on purpose. A fact for an API the pinned package does not ship yet
+    # lives in a subdirectory, so this consumer still compiles against that package.
     compile_items = "\n".join(
         f'    <Compile Include="{source}/*.cs" Link="{source.name}/%(Filename)%(Extension)" />'
         for source in sources

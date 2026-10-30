@@ -198,6 +198,8 @@ class InstalledPackageCertificationTests(unittest.TestCase):
             f'PackageReference Include="Honua.Sdk" Version="[{PINS["sdkPackageVersion"]}]"', project
         )
         self.assertNotIn("ProjectReference", project)
+        self.assertIn("Honua.Sdk.ProtocolIntegration.Tests/*.cs", project)
+        self.assertNotIn("**/*", project)
         self.assertIn("<clear />", config)
         self.assertIn('value="https://api.nuget.org/v3/index.json"', config)
         self.assertEqual(config.count("<add key="), 1)
