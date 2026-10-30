@@ -3,8 +3,10 @@
 
 using System.Reflection;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Extensions;
 using Honua.Sdk.OgcFeatures.Styles;
+using Honua.Sdk.OgcFeatures.Tiles;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.OgcFeatures.Tests;
@@ -80,6 +82,23 @@ public sealed class ClientOptionsTests
         var stylesClient = Assert.Single(provider.GetServices<IHonuaOgcStylesClient>());
 
         Assert.IsType<HonuaOgcStylesClient>(stylesClient);
+    }
+
+    [Fact]
+    public void AddHonuaOgcTiles_RegistersTilesClientWithoutFeatures()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaOgcTiles(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var tilesClient = Assert.Single(provider.GetServices<IHonuaOgcTilesClient>());
+
+        Assert.IsType<HonuaOgcTilesClient>(tilesClient);
+        Assert.Null(provider.GetService<IHonuaOgcFeaturesClient>());
     }
 
     [Fact]

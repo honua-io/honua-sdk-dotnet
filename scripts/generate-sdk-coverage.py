@@ -267,6 +267,13 @@ COVERAGE_ENTRIES: list[dict[str, Any]] = [
         ],
     },
     {
+        "key": "serve.ogc-api-tiles",
+        "status": "covered",
+        "entrypoints": [
+            "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient",
+        ],
+    },
+    {
         "key": "serve.ogc-api-records",
         "status": "covered",
         "entrypoints": ["Honua.Sdk.Catalogs.Records.HonuaOgcRecordsClient"],

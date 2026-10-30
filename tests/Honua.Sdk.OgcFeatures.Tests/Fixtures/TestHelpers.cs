@@ -4,6 +4,7 @@
 using System.Net;
 using System.Text.Json;
 using Honua.Sdk.OgcFeatures.Styles;
+using Honua.Sdk.OgcFeatures.Tiles;
 
 namespace Honua.Sdk.OgcFeatures.Tests.Fixtures;
 
@@ -32,6 +33,17 @@ internal static class TestHelpers
             BaseAddress = new Uri("http://localhost:5000")
         };
         return new HonuaOgcStylesClient(httpClient);
+    }
+
+    public static HonuaOgcTilesClient CreateOgcTilesClient(
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+    {
+        var mockHandler = new MockHttpHandler(handler);
+        var httpClient = new HttpClient(mockHandler)
+        {
+            BaseAddress = new Uri("http://localhost:5000")
+        };
+        return new HonuaOgcTilesClient(httpClient);
     }
 
     public static HttpResponseMessage CreateRawResponse(
