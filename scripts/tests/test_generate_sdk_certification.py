@@ -678,6 +678,29 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(MODULE._certification_request_url(
                 {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
 
+    def test_ogc_tiles_request_urls_name_the_tiles_surface(self):
+        identity = {
+            "baseUrl": "https://candidate.test/",
+            "grpcBaseUrl": "https://candidate.test:8443/",
+            "serviceId": "places",
+            "layerId": "0",
+            "collectionId": "0",
+        }
+        client = "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient"
+        operation = {"surface": "ogcfeatures", "client": client, "operation": "GetTileAsync"}
+        self.assertEqual(("1.0", "OGC API - Tiles core"), MODULE._certification_protocol_context(operation))
+        self.assertEqual(
+            "https://candidate.test/ogc/tiles/collections/0/tiles",
+            MODULE._certification_request_url(
+                {**operation, "operation": "ListCollectionTilesetsAsync"}, identity),
+        )
+        self.assertEqual(
+            "https://candidate.test/ogc/tiles/collections/0/tiles/WebMercatorQuad/0/0/0",
+            MODULE._certification_request_url(operation, identity),
+        )
+        self.assertIsNone(MODULE._certification_request_url(
+            {**operation, "operation": "UnknownAsync"}, identity))
+
     def test_restored_fixture_urls_require_exact_operation_targets(self):
         identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
                     "serviceId": "WRONG-feature-service", "layerId": "0", "collectionId": "places",
@@ -892,6 +915,32 @@ class SdkCertificationTests(unittest.TestCase):
             "FeatureServerApplyEdits_AddUpdateDelete_RoundTrips" in cell["tests"]
             for cell in edit_operations
         ))
+
+    def test_ogc_tiles_operations_are_exercised_outside_the_pr_tier(self):
+        document = MODULE.build_document()
+        cells = [
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaOgcTilesClient")
+        ]
+        test = (
+            "Honua.Sdk.ProtocolIntegration.Tests.OgcTilesProtocolIntegrationTests."
+            "CollectionTiles_ListsTilesetsAndFetchesVectorPngAndEmpty"
+        )
+        self.assertEqual(
+            {"ListCollectionTilesetsAsync", "GetTileAsync"},
+            {cell["operation"] for cell in cells},
+        )
+        for cell in cells:
+            self.assertEqual("exercised", cell["status"], cell["id"])
+            self.assertEqual(["nightly", "release"], cell["requiredTiers"], cell["id"])
+            self.assertEqual([test], cell["tests"], cell["id"])
+            self.assertEqual("included", cell["releaseDenominator"], cell["id"])
+            self.assertNotIn("ownerIssue", cell)
+            self.assertEqual(
+                ["Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"],
+                cell["implementations"],
+                cell["id"],
+            )
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()
