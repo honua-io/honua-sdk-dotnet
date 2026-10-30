@@ -370,7 +370,7 @@
       "fieldformconsole": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Field": "[1.13.1, )"
+          "Honua.Sdk.Field": "[2.0.0, )"
         }
       },
       "honua.sdk.abstractions": {
@@ -379,14 +379,14 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.1, )"
+          "Honua.Sdk.Abstractions": "[2.0.0, )"
         }
       },
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
           "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[1.13.1, )",
+          "Honua.Sdk.Abstractions": "[2.0.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -395,8 +395,8 @@
       "honua.sdk.geoservices": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.1, )",
-          "Honua.Sdk.Geometry": "[1.13.1, )",
+          "Honua.Sdk.Abstractions": "[2.0.0, )",
+          "Honua.Sdk.Geometry": "[2.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -405,29 +405,29 @@
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.1, )",
+          "Honua.Sdk.Abstractions": "[2.0.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )"
         }
       },
       "offlineconflictconsole": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.1, )",
-          "Honua.Sdk.Offline": "[1.13.1, )"
+          "Honua.Sdk.Abstractions": "[2.0.0, )",
+          "Honua.Sdk.Offline": "[2.0.0, )"
         }
       },
       "realtimeworker": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.1, )"
+          "Honua.Sdk.Abstractions": "[2.0.0, )"
         }
       },
       "routinggeofenceconsole": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[1.13.1, )",
-          "Honua.Sdk.GeoServices": "[1.13.1, )",
-          "Honua.Sdk.Geometry": "[1.13.1, )"
+          "Honua.Sdk.Abstractions": "[2.0.0, )",
+          "Honua.Sdk.GeoServices": "[2.0.0, )",
+          "Honua.Sdk.Geometry": "[2.0.0, )"
         }
       },
       "Geospatial.Grpc": {

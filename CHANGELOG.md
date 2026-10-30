@@ -2,6 +2,37 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [2.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.13.1...dotnet-sdk-v2.0.0) (2026-10-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **geoservices:** ArcGIS source credentials (Token, Bearer or provider modes) are no longer sent over plain http:// to non-loopback hosts; such requests throw InvalidOperationException, and a plain-HTTP non-loopback SourceBaseAddress throws HonuaConfigurationException at construction. Credentials are also no longer attached to requests outside the source origin, and the default inner handler no longer follows redirects. Use an https:// source (or a loopback host for local development) and set SourceBaseAddress.
+
+### Features
+
+* **ogc:** add an OGC API Tiles client ([#484](https://github.com/honua-io/honua-sdk-dotnet/issues/484)) ([59b8be4](https://github.com/honua-io/honua-sdk-dotnet/commit/59b8be4ddb703e1e94cd6aa8d6f78b0444fc4a9d))
+
+
+### Bug Fixes
+
+* **certification:** accept the nightly dispatch id and bind producer_run into executed receipts ([#475](https://github.com/honua-io/honua-sdk-dotnet/issues/475)) ([817ca26](https://github.com/honua-io/honua-sdk-dotnet/commit/817ca2620d6d7e276fa2c878d4b724b125e01376))
+* **certification:** apply the sdk-protocol overlay before release operations ([#483](https://github.com/honua-io/honua-sdk-dotnet/issues/483)) ([1da6ed4](https://github.com/honua-io/honua-sdk-dotnet/commit/1da6ed49b2e17ed48f6759353999e3c669560c78))
+* **certification:** boot release certification with licensing disabled ([e7319e7](https://github.com/honua-io/honua-sdk-dotnet/commit/e7319e7ddc38aa7d5ad12549338fe4746a508f76))
+* **certification:** boot release certification with licensing disabled ([b7ba420](https://github.com/honua-io/honua-sdk-dotnet/commit/b7ba420d711e99ffb27848c413b09fbb92cf554c))
+* **certification:** certify the installed package's operations and keep unrun fixture rows as skips ([#471](https://github.com/honua-io/honua-sdk-dotnet/issues/471)) ([c49fb4c](https://github.com/honua-io/honua-sdk-dotnet/commit/c49fb4cda2fbb035c8c2cf0b0cd8b720ac5f4c99)), closes [#456](https://github.com/honua-io/honua-sdk-dotnet/issues/456)
+* **certification:** read row licensing from the pinned catalog and pin honua-release trunk ([#474](https://github.com/honua-io/honua-sdk-dotnet/issues/474)) ([fb2bb4f](https://github.com/honua-io/honua-sdk-dotnet/commit/fb2bb4fde31328b650f6a2865b65a8dfe88ac14b))
+* **certification:** refuse a pass for governed rows with no executing test ([#482](https://github.com/honua-io/honua-sdk-dotnet/issues/482)) ([44d5ebd](https://github.com/honua-io/honua-sdk-dotnet/commit/44d5ebd903caf95144b340235608ff9c0f13ed3f))
+* **certification:** run the trunk harness against the dispatched pinned package ([#478](https://github.com/honua-io/honua-sdk-dotnet/issues/478)) ([6226958](https://github.com/honua-io/honua-sdk-dotnet/commit/622695892bdcd9b1663025d2bf0af60aee7dc4cb))
+* **geoservices:** refuse ArcGIS source credentials over plain HTTP and bind them to the source origin ([#470](https://github.com/honua-io/honua-sdk-dotnet/issues/470)) ([2121ab4](https://github.com/honua-io/honua-sdk-dotnet/commit/2121ab488c749af9541d3ddcfdf7df5bc23f3112))
+* **sdk:** reject dot-segment route ids and keep each Console Share registration ([#480](https://github.com/honua-io/honua-sdk-dotnet/issues/480)) ([bda112f](https://github.com/honua-io/honua-sdk-dotnet/commit/bda112f68c8f2bbee8e803d8ad3e84e92ec59197))
+
+
+### Documentation
+
+* **agents:** cut AGENTS.md to a 75-line digest with fleet block v2 ([#463](https://github.com/honua-io/honua-sdk-dotnet/issues/463)) ([fce4f79](https://github.com/honua-io/honua-sdk-dotnet/commit/fce4f79b90d2f41dbe5870ea2305cd62b0db0172))
+* **agents:** replace shared dev-environment rules with generated fleet block ([#461](https://github.com/honua-io/honua-sdk-dotnet/issues/461)) ([8e718df](https://github.com/honua-io/honua-sdk-dotnet/commit/8e718df139b45d6abaf46ca566eba5088c683c77))
+
 ## [1.13.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.13.0...dotnet-sdk-v1.13.1) (2026-10-25)
 
 
