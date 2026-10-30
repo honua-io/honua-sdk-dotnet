@@ -108,6 +108,8 @@ def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str
         return "2.0.0", "core"
     if ".Styles." in client:
         return "1.0", "OGC API - Styles core"
+    if ".Tiles." in client:
+        return "1.0", "OGC API - Tiles core"
     if surface == "ogcfeatures":
         return "1.0", "OGC API - Features core"
     if ".Records." in client:
@@ -216,6 +218,14 @@ def _certification_request_url(
         path = "/wfs"
     elif ".Styles." in client:
         path = "/ogc/styles"
+    elif ".Tiles." in client:
+        if method == "ListCollectionTilesetsAsync":
+            path = f"/ogc/tiles/collections/{collection}/tiles"
+        elif method == "GetTileAsync":
+            # Zoom 0 is the painted tile the protocol integration test requests first.
+            path = f"/ogc/tiles/collections/{collection}/tiles/WebMercatorQuad/0/0/0"
+        else:
+            return None
     elif operation["surface"] == "ogcfeatures":
         path = {
             "GetLandingPageAsync": "/ogc/features",

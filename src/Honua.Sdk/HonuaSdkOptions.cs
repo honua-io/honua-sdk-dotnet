@@ -24,10 +24,10 @@ namespace Honua.Sdk;
 /// </para>
 /// <para>
 /// Module opt-in flags (<see cref="UseGrpc"/>, <see cref="UseAdmin"/>,
-/// <see cref="UseGeocoding"/>, <see cref="UseOgcFeatures"/>,
+/// <see cref="UseGeocoding"/>, <see cref="UseOgcFeatures"/>, <see cref="UseOgcTiles"/>,
 /// <see cref="UseProcesses"/>, and <see cref="UseWfs"/>) default to
 /// <c>true</c> for the common query, edit, admin, geocoding, OGC API Features,
-/// OGC API Processes, and WFS client set. The more situational sub-packages
+/// OGC API Tiles, OGC API Processes, and WFS client set. The more situational sub-packages
 /// (<see cref="UseGeoServices"/>, <see cref="UseRouting"/>, <see cref="UseImageServer"/>,
 /// <see cref="UseScenes"/>, <see cref="UseSpec"/>, <see cref="UseStac"/>,
 /// <see cref="UseOgcRecords"/>)
@@ -167,6 +167,14 @@ public sealed class HonuaSdkOptions
     public bool UseOgcFeatures { get; set; } = true;
 
     /// <summary>
+    /// When <c>true</c>, registers the OGC API Tiles client
+    /// (<c>IHonuaOgcTilesClient</c>). Independent of <see cref="UseOgcFeatures"/>:
+    /// the tiles client shares the OGC features options and auth handler, and
+    /// <c>AddHonua</c> registers it on its own when this flag is set. Defaults to <c>true</c>.
+    /// </summary>
+    public bool UseOgcTiles { get; set; } = true;
+
+    /// <summary>
     /// When <c>true</c>, registers the OGC API Processes REST client
     /// (<c>IHonuaProcessesClient</c>). Defaults to <c>true</c>.
     /// </summary>
@@ -265,6 +273,7 @@ public sealed class HonuaSdkOptions
         UseAdmin ||
         UseGeocoding ||
         UseOgcFeatures ||
+        UseOgcTiles ||
         UseProcesses ||
         UseWfs ||
         UseGeoServices ||

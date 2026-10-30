@@ -4,6 +4,7 @@
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Internal.Http;
 using Honua.Sdk.OgcFeatures.Styles;
+using Honua.Sdk.OgcFeatures.Tiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -63,6 +64,60 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IHonuaOgcStylesClient>(sp => sp.GetRequiredService<HonuaOgcStylesClient>());
 
         stylesBuilder.ConfigureHonuaRestHttpClient(snapshot);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Honua OGC API Tiles client. The client shares
+    /// <see cref="HonuaOgcFeaturesClientOptions"/> and the OGC features auth handler
+    /// with <see cref="AddHonuaOgcFeatures"/>, and can be registered on its own.
+    /// When the features client is already registered, that options snapshot is kept.
+    /// </summary>
+    /// <param name="services">The service collection to register with.</param>
+    /// <param name="configure">Configuration delegate for client options.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddHonuaOgcTiles(
+        this IServiceCollection services,
+        Action<HonuaOgcFeaturesClientOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var snapshot = new HonuaOgcFeaturesClientOptions();
+        configure(snapshot);
+        HonuaOgcFeaturesClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
+        HonuaOgcFeaturesClientOptions.ValidateTimeout(snapshot.Timeout);
+
+        // Features registration owns the shared options snapshot when both are on.
+        // The HttpClient factory and the resilience pipeline must use that same snapshot:
+        // a tiles delegate that disables retry must not drop the timeout the shared
+        // options already turned into an infinite HttpClient.Timeout.
+        var shared = services
+            .Select(descriptor => descriptor.ImplementationInstance)
+            .OfType<IOptions<HonuaOgcFeaturesClientOptions>>()
+            .FirstOrDefault();
+        if (shared is null)
+        {
+            services.AddSingleton<IOptions<HonuaOgcFeaturesClientOptions>>(Options.Create(snapshot));
+        }
+
+        if (!services.Any(descriptor => descriptor.ServiceType == typeof(HonuaOgcFeaturesAuthHandler)))
+        {
+            services.AddTransient<HonuaOgcFeaturesAuthHandler>();
+        }
+
+        var effective = shared?.Value ?? snapshot;
+        var httpBuilder = services.AddHttpClient<HonuaOgcTilesClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<HonuaOgcFeaturesClientOptions>>().Value;
+            client.BaseAddress = options.BaseAddress;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
+        })
+        .AddHttpMessageHandler<HonuaOgcFeaturesAuthHandler>();
+        services.AddTransient<IHonuaOgcTilesClient>(sp => sp.GetRequiredService<HonuaOgcTilesClient>());
+
+        httpBuilder.ConfigureHonuaRestHttpClient(effective);
 
         return services;
     }

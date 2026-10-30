@@ -678,6 +678,29 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(MODULE._certification_request_url(
                 {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
 
+    def test_ogc_tiles_request_urls_name_the_tiles_surface(self):
+        identity = {
+            "baseUrl": "https://candidate.test/",
+            "grpcBaseUrl": "https://candidate.test:8443/",
+            "serviceId": "places",
+            "layerId": "0",
+            "collectionId": "0",
+        }
+        client = "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient"
+        operation = {"surface": "ogcfeatures", "client": client, "operation": "GetTileAsync"}
+        self.assertEqual(("1.0", "OGC API - Tiles core"), MODULE._certification_protocol_context(operation))
+        self.assertEqual(
+            "https://candidate.test/ogc/tiles/collections/0/tiles",
+            MODULE._certification_request_url(
+                {**operation, "operation": "ListCollectionTilesetsAsync"}, identity),
+        )
+        self.assertEqual(
+            "https://candidate.test/ogc/tiles/collections/0/tiles/WebMercatorQuad/0/0/0",
+            MODULE._certification_request_url(operation, identity),
+        )
+        self.assertIsNone(MODULE._certification_request_url(
+            {**operation, "operation": "UnknownAsync"}, identity))
+
     def test_restored_fixture_urls_require_exact_operation_targets(self):
         identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
                     "serviceId": "WRONG-feature-service", "layerId": "0", "collectionId": "places",
@@ -892,6 +915,36 @@ class SdkCertificationTests(unittest.TestCase):
             "FeatureServerApplyEdits_AddUpdateDelete_RoundTrips" in cell["tests"]
             for cell in edit_operations
         ))
+
+    def test_ogc_tiles_operations_stay_gaps_until_the_published_package_can_run_them(self):
+        # The live fact sits below the protocol-test root. The installed certification
+        # consumer compiles only that root against the pinned package, which does not
+        # ship this client yet, so the fact is not a canonical certification test.
+        document = MODULE.build_document()
+        cells = [
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaOgcTilesClient")
+        ]
+        self.assertEqual(
+            {"ListCollectionTilesetsAsync", "GetTileAsync"},
+            {cell["operation"] for cell in cells},
+        )
+        for cell in cells:
+            self.assertEqual("gap", cell["status"], cell["id"])
+            self.assertEqual(["nightly", "release"], cell["requiredTiers"], cell["id"])
+            self.assertEqual([], cell["tests"], cell["id"])
+            self.assertEqual("included", cell["releaseDenominator"], cell["id"])
+            self.assertEqual(MODULE.TRACKING_ISSUE, cell["ownerIssue"], cell["id"])
+            self.assertEqual(
+                "Concrete public SDK operation has no canonical live certification test.",
+                cell["disposition"],
+                cell["id"],
+            )
+            self.assertEqual(
+                ["Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"],
+                cell["implementations"],
+                cell["id"],
+            )
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()

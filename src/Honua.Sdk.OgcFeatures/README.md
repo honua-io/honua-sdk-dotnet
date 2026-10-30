@@ -19,6 +19,15 @@ style's MapLibre stylesheet. This is the canonical styles surface; the per-layer
 only as a back-compat alias for editing a layer's default style. Registered
 alongside the features client via `AddHonuaOgcFeatures(...)`.
 
+And the **OGC API – Tiles** surface under `Honua.Sdk.OgcFeatures.Tiles.*`:
+`IHonuaOgcTilesClient` / `HonuaOgcTilesClient` over `/ogc/tiles`. It lists a
+collection's tilesets and fetches one tile as a Mapbox vector tile (the default;
+no `f` parameter) or as PNG (`f=png`). HTTP 204 is an empty tile
+(`OgcTile.IsEmpty`), not an error. Register it on its own with
+`AddHonuaOgcTiles(...)`, or through `AddHonua` with `UseOgcTiles` (default
+`true`). It shares the OGC features options and auth handler and does not
+require `UseOgcFeatures`.
+
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
 release policy.
