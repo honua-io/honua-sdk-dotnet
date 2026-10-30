@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
 using System.Reflection;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.OgcFeatures;
@@ -99,6 +100,54 @@ public sealed class ClientOptionsTests
 
         Assert.IsType<HonuaOgcTilesClient>(tilesClient);
         Assert.Null(provider.GetService<IHonuaOgcFeaturesClient>());
+    }
+
+    [Fact]
+    public async Task AddHonuaOgcTiles_UsesTheSharedFeaturesRetryPolicy()
+    {
+        var handler = new CountingHandler(failuresBeforeSuccess: 1);
+        var services = new ServiceCollection();
+        services.AddHonuaOgcFeatures(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = true;
+            options.MaxRetryAttempts = 2;
+            options.PrimaryHttpMessageHandlerFactory = () => handler;
+        });
+        services.AddHonuaOgcTiles(options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:5001");
+            options.EnableRetry = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var tiles = provider.GetRequiredService<IHonuaOgcTilesClient>();
+
+        var tile = await tiles.GetTileAsync("segments", "WebMercatorQuad", 0, 0, 0);
+
+        Assert.False(tile.IsEmpty);
+        Assert.Equal(2, handler.Attempts);
+    }
+
+    private sealed class CountingHandler : HttpMessageHandler
+    {
+        private readonly int _failuresBeforeSuccess;
+        private int _attempts;
+
+        public CountingHandler(int failuresBeforeSuccess) => _failuresBeforeSuccess = failuresBeforeSuccess;
+
+        public int Attempts => _attempts;
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var attempt = Interlocked.Increment(ref _attempts);
+            var status = attempt <= _failuresBeforeSuccess
+                ? HttpStatusCode.ServiceUnavailable
+                : HttpStatusCode.OK;
+            return Task.FromResult(Fixtures.TestHelpers.CreateBytesResponse(
+                [0x1a], "application/vnd.mapbox-vector-tile", status));
+        }
     }
 
     [Fact]

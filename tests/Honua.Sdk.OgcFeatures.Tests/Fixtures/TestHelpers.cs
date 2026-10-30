@@ -46,6 +46,21 @@ internal static class TestHelpers
         return new HonuaOgcTilesClient(httpClient);
     }
 
+    public static HttpResponseMessage CreateBytesResponse(
+        byte[] content, string mediaType, HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        var httpContent = new ByteArrayContent(content);
+        httpContent.Headers.ContentType =
+            System.Net.Http.Headers.MediaTypeHeaderValue.Parse(mediaType);
+        return new HttpResponseMessage(statusCode)
+        {
+            Content = httpContent
+        };
+    }
+
+    public static HttpResponseMessage CreateNoContentResponse()
+        => new(HttpStatusCode.NoContent);
+
     public static HttpResponseMessage CreateRawResponse(
         string content, string mediaType, HttpStatusCode statusCode = HttpStatusCode.OK)
     {

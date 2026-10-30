@@ -90,8 +90,14 @@ public static class ServiceCollectionExtensions
         HonuaOgcFeaturesClientOptions.ValidateTimeout(snapshot.Timeout);
 
         // Features registration owns the shared options snapshot when both are on.
-        // Tiles-only registration still has to publish one so the auth handler resolves.
-        if (!services.Any(descriptor => descriptor.ServiceType == typeof(IOptions<HonuaOgcFeaturesClientOptions>)))
+        // The HttpClient factory and the resilience pipeline must use that same snapshot:
+        // a tiles delegate that disables retry must not drop the timeout the shared
+        // options already turned into an infinite HttpClient.Timeout.
+        var shared = services
+            .Select(descriptor => descriptor.ImplementationInstance)
+            .OfType<IOptions<HonuaOgcFeaturesClientOptions>>()
+            .FirstOrDefault();
+        if (shared is null)
         {
             services.AddSingleton<IOptions<HonuaOgcFeaturesClientOptions>>(Options.Create(snapshot));
         }
@@ -101,6 +107,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<HonuaOgcFeaturesAuthHandler>();
         }
 
+        var effective = shared?.Value ?? snapshot;
         var httpBuilder = services.AddHttpClient<HonuaOgcTilesClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<HonuaOgcFeaturesClientOptions>>().Value;
@@ -110,7 +117,7 @@ public static class ServiceCollectionExtensions
         .AddHttpMessageHandler<HonuaOgcFeaturesAuthHandler>();
         services.AddTransient<IHonuaOgcTilesClient>(sp => sp.GetRequiredService<HonuaOgcTilesClient>());
 
-        httpBuilder.ConfigureHonuaRestHttpClient(snapshot);
+        httpBuilder.ConfigureHonuaRestHttpClient(effective);
 
         return services;
     }

@@ -62,9 +62,7 @@ public class HonuaOgcTilesClientTests
         var client = TestHelpers.CreateOgcTilesClient(req =>
         {
             captured = req;
-            var content = new ByteArrayContent(payload);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.mapbox-vector-tile");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+            return Task.FromResult(TestHelpers.CreateBytesResponse(payload, "application/vnd.mapbox-vector-tile"));
         });
 
         var result = await client.GetTileAsync("segments", "WebMercatorQuad", 2, 1, 1);
@@ -88,9 +86,7 @@ public class HonuaOgcTilesClientTests
         var client = TestHelpers.CreateOgcTilesClient(req =>
         {
             captured = req;
-            var content = new ByteArrayContent(payload);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+            return Task.FromResult(TestHelpers.CreateBytesResponse(payload, "image/png"));
         });
 
         var result = await client.GetTileAsync("segments", "WebMercatorQuad", 2, 1, 1, OgcTileFormat.Png);
@@ -107,7 +103,7 @@ public class HonuaOgcTilesClientTests
     public async Task GetTileAsync_NoContent_IsEmptyAndDoesNotThrow()
     {
         var client = TestHelpers.CreateOgcTilesClient(_ =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent)));
+            Task.FromResult(TestHelpers.CreateNoContentResponse()));
 
         var result = await client.GetTileAsync("segments", "WebMercatorQuad", 2, 1, 3);
 
@@ -119,11 +115,7 @@ public class HonuaOgcTilesClientTests
     public async Task GetTileAsync_OkWithEmptyBody_IsNotTheEmptyContract()
     {
         var client = TestHelpers.CreateOgcTilesClient(_ =>
-        {
-            var content = new ByteArrayContent([]);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.mapbox-vector-tile");
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
-        });
+            Task.FromResult(TestHelpers.CreateBytesResponse([], "application/vnd.mapbox-vector-tile")));
 
         var result = await client.GetTileAsync("segments", "WebMercatorQuad", 0, 0, 0);
 
