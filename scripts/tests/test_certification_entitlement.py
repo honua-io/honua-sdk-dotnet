@@ -36,18 +36,15 @@ def signed_status(**overrides):
 
 
 class EntitlementValidationTests(unittest.TestCase):
-    def test_profile_requires_dispatch_and_signed_envelope_for_release(self):
+    def test_profile_release_is_disabled_and_reads_no_license_envelope(self):
         with self.assertRaises(ValueError):
             ENT.profile("release", "schedule", "Development", '{"a":1}')
-        for content in ("", "not-json", "{}", "[]"):
-            with self.assertRaises(ValueError):
-                ENT.profile("release", "workflow_dispatch", "Development", content)
-        self.assertEqual({"mode": "signed", "licensingMode": "Enabled", "devGrantEdition": ""},
-                         ENT.profile("release", "workflow_dispatch", "Development", '{"sig":"x"}'))
-        for tier, event in (("pr", "pull_request"), ("nightly", "schedule")):
+        for content in ("", "not-json", "{}", "[]", '{"sig":"x"}'):
+            self.assertEqual({"mode": "disabled", "licensingMode": "Disabled", "devGrantEdition": ""},
+                             ENT.profile("release", "workflow_dispatch", "Development", content))
+        for tier, event in (("pr", "pull_request"), ("nightly", "schedule"), ("release", "workflow_dispatch")):
             self.assertEqual({"mode": "disabled", "licensingMode": "Disabled", "devGrantEdition": ""},
                              ENT.profile(tier, event, "Development", ""))
-        self.assertEqual("Enabled", ENT.profile("release", "workflow_dispatch", "Development", '{"sig":"x"}')["licensingMode"])
         rehearsal = ENT.build_observation("disabled", {"data": {"mode": "disabled"}}, CHECKED)
         self.assertIs(False, rehearsal["release_eligible"])
         self.assertIsNone(rehearsal["license_fingerprint"])
@@ -208,24 +205,17 @@ class GeneratorEntitlementTests(unittest.TestCase):
 class WorkflowWiringTests(unittest.TestCase):
     TEXT = WORKFLOW.read_text(encoding="utf-8")
 
-    def test_license_secret_is_release_dispatch_only_and_mode_comes_from_the_profile(self):
-        # The tier profile picks the mode: Disabled for pr/nightly (2026.1, #472), Enabled for release.
+    def test_licensing_mode_comes_from_the_profile_and_no_license_secret_is_read(self):
         self.assertIn('-e Licensing__Mode="${licensing_mode}" \\', self.TEXT)
         self.assertIn(".licensingMode | select(. == \"Disabled\" or . == \"Enabled\")", self.TEXT)
         self.assertNotIn("Licensing__Mode=Enabled", self.TEXT)
-        self.assertIn('-e Licensing__LicenseContent="${HONUA_CERTIFICATION_LICENSE_CONTENT}" \\', self.TEXT)
-        self.assertNotIn("-e Licensing__LicenseContent \\", self.TEXT)
-        start = self.TEXT.index("name: Start exact honua-server image")
-        step = self.TEXT[start:self.TEXT.index("name: Apply exact seed", start)]
-        self.assertIn("HONUA_CERTIFICATION_LICENSE_CONTENT: ${{", step)
-        self.assertNotIn("echo \"${HONUA_CERTIFICATION_LICENSE_CONTENT", step)
+        self.assertNotIn("Licensing__LicenseContent", self.TEXT)
+        self.assertNotIn("HONUA_CERTIFICATION_LICENSE_CONTENT", self.TEXT)
 
     def test_release_runs_in_protected_environment(self):
         self.assertIn("environment: ${{ github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && 'release-certification' || '' }}", self.TEXT)
         self.assertLess(self.TEXT.index("environment:"), self.TEXT.index("services:"))
-        guard = "github.event_name == 'workflow_dispatch' && inputs.tier == 'release' && secrets.HONUA_CERTIFICATION_LICENSE_CONTENT || ''"
-        self.assertEqual(2, self.TEXT.count(guard))
-        self.assertEqual(self.TEXT.count("secrets.HONUA_CERTIFICATION_LICENSE_CONTENT"), self.TEXT.count(guard))
+        self.assertNotIn("secrets.HONUA_CERTIFICATION_LICENSE_CONTENT", self.TEXT)
 
     def test_observation_is_retained_before_tests_and_passed_to_generator(self):
         observe = self.TEXT.index("name: Retain candidate entitlement observation")
