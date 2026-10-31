@@ -112,7 +112,7 @@ The gRPC shared adapter maps:
 
 - `FeatureEditRequest.Source.ServiceId` and `LayerId` to the native
   `ApplyEditsRequest`.
-- `Adds` and `Updates` to native feature payloads with JSON attributes and Esri
+- `Adds` and `Updates` to native feature payloads with JSON attributes and GeoServices REST
   JSON geometry objects.
 - `DeleteObjectIds` and numeric `DeleteIds` to native delete object IDs.
 - Native per-feature edit errors to shared `FeatureEditResult.Error` values.
@@ -127,7 +127,7 @@ The FeatureServer shared adapter maps:
 - `FeatureEditRequest.Source.ServiceId` and `LayerId` to
   `/rest/services/{serviceId}/FeatureServer/{layerId}/applyEdits`.
 - `Adds` and `Updates` to GeoServices feature JSON payloads with `attributes`
-  and optional Esri JSON `geometry`.
+  and optional GeoServices REST JSON `geometry`.
 - `DeleteObjectIds` and numeric `DeleteIds` to GeoServices `deletes`.
 - GeoServices per-feature edit errors to shared `FeatureEditResult.Error`
   values.

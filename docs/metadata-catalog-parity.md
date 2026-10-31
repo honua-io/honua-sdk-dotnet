@@ -19,7 +19,7 @@ inventing a separate catalog model for every protocol.
 | Public standards catalog discovery | `IHonuaOgcRecordsClient` in `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Records`) | Use for landing, conformance, record collections, record search, record detail, paging, bbox/time/free-text filters, and raw JSON access. |
 | Operator/control-plane discovery | `IHonuaCatalogClient` in `Honua.Sdk.Admin.Catalog` | Uses admin service summaries and FeatureServer metadata for default service/layer discovery. Explicit groups, saved source descriptors and metadata filters require a server exposing the legacy metadata-resource API. Requires admin/control-plane auth. |
 | STAC asset cataloging | `IHonuaStacClient` in `Honua.Sdk.Catalogs` (`Honua.Sdk.Catalogs.Stac`) | Use for STAC catalog discovery, collections, item pages, item detail, GET/POST search, asset links, bbox/time filters, fields projection, paging, and raw JSON access. |
-| Migration source assessment | Admin migration models and client extensions in `Honua.Sdk.Admin` | Use for external ArcGIS/GeoServer inventory artifacts, compatibility assessments, manifests, and readiness evidence. |
+| Migration source assessment | Admin migration models and client extensions in `Honua.Sdk.Admin` | Use for external GeoServices REST/GeoServer inventory artifacts, compatibility assessments, manifests, and readiness evidence. |
 | Exact protocol capabilities | Native protocol clients | Use `Honua.Sdk.GeoServices` for FeatureServer metadata, `Honua.Sdk.OgcFeatures` for collections/queryables/items and the `Honua.Sdk.OgcFeatures.Wfs` types for capabilities and DescribeFeatureType, and `Honua.Sdk.Scenes` for scene metadata. |
 
 ## OGC API Records Client
