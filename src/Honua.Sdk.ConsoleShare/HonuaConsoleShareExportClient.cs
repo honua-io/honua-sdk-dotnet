@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Console.Share;
 using Honua.Sdk.ConsoleShare.Exceptions;
 using Honua.Sdk.ConsoleShare.Models;
@@ -168,7 +169,7 @@ public sealed class HonuaConsoleShareExportClient : IHonuaConsoleShareExportClie
         EnsureId(exportId, nameof(exportId));
         EnsureId(runId, nameof(runId));
 
-        var path = $"{ExportsPath}/{Uri.EscapeDataString(exportId)}/runs/{Uri.EscapeDataString(runId)}";
+        var path = $"{ExportsPath}/{HonuaPathSegment.Escape(exportId, nameof(exportId))}/runs/{HonuaPathSegment.Escape(runId, nameof(runId))}";
         using var message = new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.RelativeOrAbsolute));
         return await SendForJsonAsync(
             message,
@@ -332,7 +333,7 @@ public sealed class HonuaConsoleShareExportClient : IHonuaConsoleShareExportClie
 
     private static Uri ExportPath(string exportId, string? suffix = null, QueryBuilder? query = null)
     {
-        var path = $"{ExportsPath}/{Uri.EscapeDataString(exportId)}";
+        var path = $"{ExportsPath}/{HonuaPathSegment.Escape(exportId, nameof(exportId))}";
         if (suffix is not null)
         {
             path = $"{path}/{suffix}";
@@ -342,7 +343,7 @@ public sealed class HonuaConsoleShareExportClient : IHonuaConsoleShareExportClie
     }
 
     private static string ItemTrafficPath(string serviceName, int layerId)
-        => $"{ServicesPath}/{Uri.EscapeDataString(serviceName)}/layers/{layerId.ToString(CultureInfo.InvariantCulture)}/share/traffic";
+        => $"{ServicesPath}/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/layers/{layerId.ToString(CultureInfo.InvariantCulture)}/share/traffic";
 
     private static Uri RelativeUri(string path, QueryBuilder? query = null)
     {
@@ -351,12 +352,7 @@ public sealed class HonuaConsoleShareExportClient : IHonuaConsoleShareExportClie
     }
 
     private static void EnsureId(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Identifier must be supplied.", parameterName);
-        }
-    }
+        => _ = HonuaPathSegment.Escape(value, parameterName);
 
     private sealed class QueryBuilder
     {

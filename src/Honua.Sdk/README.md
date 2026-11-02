@@ -26,7 +26,7 @@ builder.Services.AddHonua(o =>
 
 After that, the common default clients (`IHonuaGrpcClient`,
 `IHonuaProcessGrpcClient`, `IHonuaAdminClient`, `IHonuaOgcFeaturesClient`,
-`IHonuaProcessesClient`, `IHonuaWfsClient`, `IHonuaGeocodingClient`, plus the
+`IHonuaProcessesClient`, `IHonuaWfsClient`, `IHonuaOgcTilesClient`, `IHonuaGeocodingClient`, plus the
 shared `IHonuaFeatureQueryClient` / `IHonuaFeatureEditClient` /
 `IHonuaFeatureAttachmentClient` abstractions) are available for injection.
 Opt-in modules such as Studio and ConsoleShare are available after enabling
@@ -44,6 +44,7 @@ situational sub-packages or to opt out of any default module:
 | `UseAdmin` | `true` | `IHonuaAdminClient` + `IHonuaCatalogClient` (REST control plane) |
 | `UseGeocoding` | `true` | `IHonuaGeocodingClient` + `IHonuaBatchGeocodingClient` |
 | `UseOgcFeatures` | `true` | `IHonuaOgcFeaturesClient` |
+| `UseOgcTiles` | `true` | `IHonuaOgcTilesClient` (OGC API Tiles; independent of `UseOgcFeatures`) |
 | `UseProcesses` | `true` | `IHonuaProcessesClient` (OGC API Processes REST) |
 | `UseWfs` | `true` | `IHonuaWfsClient` (ships inside Honua.Sdk.OgcFeatures) |
 | `UseGeoServices` | `false` | `IHonuaFeatureServerClient` |

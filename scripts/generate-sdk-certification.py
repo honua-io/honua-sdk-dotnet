@@ -28,7 +28,8 @@ TEST_ROOTS = (
     ROOT / "tests" / "Honua.Sdk.Conformance.Tests",
 )
 OUTPUT_PATH = ROOT / "contracts" / "sdk-certification.v1.json"
-TRACKING_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/31"
+# Closed #31 cannot own a gap. Untested governed rows stay non-pass under the open issue.
+TRACKING_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/473"
 RASTER_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/294"
 RC_FIXTURE_GAP_ISSUE = "https://github.com/honua-io/honua-sdk-dotnet/issues/308"
 RELEASE_PROFILE_ID = "honua-sdk-dotnet-2026.1"
@@ -107,6 +108,8 @@ def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str
         return "2.0.0", "core"
     if ".Styles." in client:
         return "1.0", "OGC API - Styles core"
+    if ".Tiles." in client:
+        return "1.0", "OGC API - Tiles core"
     if surface == "ogcfeatures":
         return "1.0", "OGC API - Features core"
     if ".Records." in client:
@@ -215,6 +218,14 @@ def _certification_request_url(
         path = "/wfs"
     elif ".Styles." in client:
         path = "/ogc/styles"
+    elif ".Tiles." in client:
+        if method == "ListCollectionTilesetsAsync":
+            path = f"/ogc/tiles/collections/{collection}/tiles"
+        elif method == "GetTileAsync":
+            # Zoom 0 is the painted tile the protocol integration test requests first.
+            path = f"/ogc/tiles/collections/{collection}/tiles/WebMercatorQuad/0/0/0"
+        else:
+            return None
     elif operation["surface"] == "ogcfeatures":
         path = {
             "GetLandingPageAsync": "/ogc/features",
@@ -1060,6 +1071,25 @@ def _dispatched_identity(identity: dict[str, Any]) -> dict[str, Any]:
             "client_package": identity["sdkPackageId"], "client_package_digest": digest}
 
 
+def _operation_scope_complete(
+    document: dict[str, Any], tier: str, observations: list[dict[str, Any]]
+) -> bool:
+    """True only when every governed row for the tier executed and passed.
+
+    A gap, a skip, a fail, or a row with no test is not complete. Publishing the
+    fragment with --allow-nonpass does not turn those rows into a pass.
+    """
+    governed = [
+        operation
+        for operation in document["operations"]
+        if tier in operation.get("requiredTiers", [])
+    ]
+    return bool(observations) and bool(governed) and all(
+        row.get("result") == "pass" and row.get("evidence_receipt")
+        for row in observations
+    ) and all(operation.get("tests") for operation in governed)
+
+
 def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
     identity = _identity(args)
     producer_run = _producer_run()
@@ -1270,7 +1300,7 @@ def write_evidence(args: argparse.Namespace, document: dict[str, Any]) -> int:
             "source_sha": identity["sdkPackageSourceSha"],
         },
         "operation_scope": {
-            "complete": True,
+            "complete": _operation_scope_complete(document, args.tier, observations),
             "owner_issue": TRACKING_ISSUE,
             "matrix_sha256": hashlib.sha256(_render(document).encode()).hexdigest(),
             "release_profile": document.get("releaseProfile", {}).get("id"),

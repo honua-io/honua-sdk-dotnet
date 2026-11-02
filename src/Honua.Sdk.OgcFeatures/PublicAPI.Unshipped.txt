@@ -1,1 +1,54 @@
 #nullable enable
+static Honua.Sdk.OgcFeatures.Extensions.ServiceCollectionExtensions.AddHonuaOgcTiles(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClientOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient
+Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient.GetTileAsync(string! collectionId, string! tileMatrixSetId, int tileMatrix, int tileRow, int tileCol, Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat format = Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat.Vector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile!>!
+Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient.HonuaOgcTilesClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient.ListCollectionTilesetsAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList!>!
+Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient
+Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient.GetTileAsync(string! collectionId, string! tileMatrixSetId, int tileMatrix, int tileRow, int tileCol, Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat format = Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat.Vector, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile!>!
+Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient.ListCollectionTilesetsAsync(string! collectionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList!>!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.Content.get -> System.ReadOnlyMemory<byte>
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.Content.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.IsEmpty.get -> bool
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.IsEmpty.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.MediaType.get -> string?
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.MediaType.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTile.OgcTile() -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat.Png = 1 -> Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat.Vector = 0 -> Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileFormat
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MaxTileCol.get -> int
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MaxTileCol.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MaxTileRow.get -> int
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MaxTileRow.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MinTileCol.get -> int
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MinTileCol.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MinTileRow.get -> int
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.MinTileRow.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.OgcTileMatrixSetLimit() -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.TileMatrix.get -> string!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit.TileMatrix.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.Crs.get -> string!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.Crs.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.DataType.get -> string!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.DataType.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.Links.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.OgcTileSetItem() -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.TileMatrixSetId.get -> string!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.TileMatrixSetId.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.TileMatrixSetLimits.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileMatrixSetLimit!>?
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.TileMatrixSetLimits.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.TileMatrixSetUri.get -> string?
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.TileMatrixSetUri.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.Title.get -> string?
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem.Title.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList.Links.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Models.OgcLink!>?
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList.Links.init -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList.OgcTileSetsList() -> void
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList.Tilesets.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetItem!>!
+Honua.Sdk.OgcFeatures.Tiles.Models.OgcTileSetsList.Tilesets.init -> void

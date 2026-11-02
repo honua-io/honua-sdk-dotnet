@@ -205,6 +205,63 @@ class SdkCertificationTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaisesRegex(ValueError, "installed package source"):
                 MODULE._contract_revision({"sdkCommit": "a" * 40, "sdkPackageSourceSha": source})
 
+    def test_untested_rows_cannot_pass_or_complete_the_scope(self):
+        document = MODULE.build_document()
+        self.assertTrue(document["trackingIssue"].endswith("/issues/473"))
+        self.assertNotIn("/issues/31", document["trackingIssue"])
+        self.assertFalse(document["complete"])
+        gaps = [
+            cell for cell in document["operations"]
+            if cell["releaseDenominator"] == "included" and not cell["tests"]
+        ]
+        self.assertTrue(gaps)
+        self.assertTrue(all(cell["status"] == "gap" for cell in gaps))
+        self.assertTrue(all(
+            cell["ownerIssue"].startswith("https://github.com/honua-io/honua-sdk-dotnet/issues/")
+            and "/issues/31" not in cell["ownerIssue"]
+            for cell in document["operations"]
+            if cell["status"] != "exercised"
+        ))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trx = root / "lookalike.trx"
+            trx.write_text(
+                '<TestRun><Results><UnitTestResult testName="Fixture.Lookalike" outcome="Passed" />'
+                '</Results></TestRun>'
+            )
+            gap_document = {
+                "operations": [{
+                    "id": "Gap.One", "surface": "admin",
+                    "client": "Honua.Sdk.Admin.IHonuaAdminClient",
+                    "operation": "ListAsync", "status": "gap",
+                    "requiredTiers": ["nightly"], "scenarioFacets": ["read-only"],
+                    "tests": ["Fixture.Lookalike"], "ownerIssue": MODULE.TRACKING_ISSUE,
+                    "releaseDenominator": "included",
+                }],
+                "releaseProfile": {"id": "test", "denominator": 1, "excluded": []},
+            }
+            args = Namespace(
+                tier="nightly", trx=[trx], evidence=root / "evidence.json", started_at=None,
+                sdk_commit="a" * 40, sdk_version="1.2.3", server_source_sha="b" * 40,
+                image_source_revision="b" * 40,
+                server_image="ghcr.io/honua-io/honua-server@sha256:" + "c" * 64,
+                sdk_package_id="Honua.Sdk", sdk_package_digest="sha256:" + "e" * 64,
+                sdk_package_source_sha="a" * 40,
+                release_cut=None, candidate_cut="2026-01-01T00:00:00Z",
+                fixture_revision="sha256:" + "d" * 64, seed_revision="b" * 40,
+                evidence_uri="https://example.test/run/1", allow_nonpass=True,
+                **self._request_context(),
+            )
+            self.assertEqual(0, self._write_evidence(args, gap_document))
+            fragment = json.loads(args.evidence.read_text())
+            self.assertFalse(fragment["operation_scope"]["complete"])
+            self.assertTrue(fragment["operation_scope"]["owner_issue"].endswith("/issues/473"))
+            observed = fragment["observations"][0]
+            self.assertEqual("skip", observed["result"])
+            self.assertNotEqual("pass", observed["result"])
+            self.assertIsNone(observed["evidence_receipt"])
+            self.assertIn("/issues/473", observed["skip_reason"])
+
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
         self.assertGreater(document["summary"]["total"], 0)
@@ -621,6 +678,29 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(MODULE._certification_request_url(
                 {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
 
+    def test_ogc_tiles_request_urls_name_the_tiles_surface(self):
+        identity = {
+            "baseUrl": "https://candidate.test/",
+            "grpcBaseUrl": "https://candidate.test:8443/",
+            "serviceId": "places",
+            "layerId": "0",
+            "collectionId": "0",
+        }
+        client = "Honua.Sdk.OgcFeatures.Tiles.IHonuaOgcTilesClient"
+        operation = {"surface": "ogcfeatures", "client": client, "operation": "GetTileAsync"}
+        self.assertEqual(("1.0", "OGC API - Tiles core"), MODULE._certification_protocol_context(operation))
+        self.assertEqual(
+            "https://candidate.test/ogc/tiles/collections/0/tiles",
+            MODULE._certification_request_url(
+                {**operation, "operation": "ListCollectionTilesetsAsync"}, identity),
+        )
+        self.assertEqual(
+            "https://candidate.test/ogc/tiles/collections/0/tiles/WebMercatorQuad/0/0/0",
+            MODULE._certification_request_url(operation, identity),
+        )
+        self.assertIsNone(MODULE._certification_request_url(
+            {**operation, "operation": "UnknownAsync"}, identity))
+
     def test_restored_fixture_urls_require_exact_operation_targets(self):
         identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
                     "serviceId": "WRONG-feature-service", "layerId": "0", "collectionId": "places",
@@ -835,6 +915,36 @@ class SdkCertificationTests(unittest.TestCase):
             "FeatureServerApplyEdits_AddUpdateDelete_RoundTrips" in cell["tests"]
             for cell in edit_operations
         ))
+
+    def test_ogc_tiles_operations_stay_gaps_until_the_published_package_can_run_them(self):
+        # The live fact sits below the protocol-test root. The installed certification
+        # consumer compiles only that root against the pinned package, which does not
+        # ship this client yet, so the fact is not a canonical certification test.
+        document = MODULE.build_document()
+        cells = [
+            cell for cell in document["operations"]
+            if cell["client"].endswith("IHonuaOgcTilesClient")
+        ]
+        self.assertEqual(
+            {"ListCollectionTilesetsAsync", "GetTileAsync"},
+            {cell["operation"] for cell in cells},
+        )
+        for cell in cells:
+            self.assertEqual("gap", cell["status"], cell["id"])
+            self.assertEqual(["nightly", "release"], cell["requiredTiers"], cell["id"])
+            self.assertEqual([], cell["tests"], cell["id"])
+            self.assertEqual("included", cell["releaseDenominator"], cell["id"])
+            self.assertEqual(MODULE.TRACKING_ISSUE, cell["ownerIssue"], cell["id"])
+            self.assertEqual(
+                "Concrete public SDK operation has no canonical live certification test.",
+                cell["disposition"],
+                cell["id"],
+            )
+            self.assertEqual(
+                ["Honua.Sdk.OgcFeatures.Tiles.HonuaOgcTilesClient"],
+                cell["implementations"],
+                cell["id"],
+            )
 
     def test_explicit_source_facade_delegation_maps_shared_query_operation(self):
         document = MODULE.build_document()

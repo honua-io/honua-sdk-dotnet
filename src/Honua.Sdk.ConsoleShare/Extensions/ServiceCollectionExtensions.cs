@@ -3,7 +3,6 @@
 
 using Honua.Sdk.Internal.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Honua.Sdk.ConsoleShare.Extensions;
 
@@ -22,23 +21,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var snapshot = new HonuaConsoleShareClientOptions();
-        configure(snapshot);
-        HonuaConsoleShareClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
-        HonuaConsoleShareClientOptions.ValidateTimeout(snapshot.Timeout);
-
-        services.AddSingleton<IOptions<HonuaConsoleShareClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaConsoleShareAuthHandler>();
-        var httpBuilder = services.AddHttpClient<IHonuaConsoleShareClient, HonuaConsoleShareClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<HonuaConsoleShareClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
-        })
-        .AddHttpMessageHandler<HonuaConsoleShareAuthHandler>();
-
-        httpBuilder.ConfigureHonuaRestHttpClient(snapshot);
-
+        AddConsoleShareClient<IHonuaConsoleShareClient, HonuaConsoleShareClient>(services, configure);
         return services;
     }
 
@@ -57,23 +40,7 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var snapshot = new HonuaConsoleShareClientOptions();
-        configure(snapshot);
-        HonuaConsoleShareClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
-        HonuaConsoleShareClientOptions.ValidateTimeout(snapshot.Timeout);
-
-        services.AddSingleton<IOptions<HonuaConsoleShareClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaConsoleShareAuthHandler>();
-        var httpBuilder = services.AddHttpClient<IHonuaConsoleShareExportClient, HonuaConsoleShareExportClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<HonuaConsoleShareClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
-        })
-        .AddHttpMessageHandler<HonuaConsoleShareAuthHandler>();
-
-        httpBuilder.ConfigureHonuaRestHttpClient(snapshot);
-
+        AddConsoleShareClient<IHonuaConsoleShareExportClient, HonuaConsoleShareExportClient>(services, configure);
         return services;
     }
 
@@ -92,24 +59,33 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
+        AddConsoleShareClient<IHonuaConsoleShareOpenDataClient, HonuaConsoleShareOpenDataClient>(services, configure);
+        return services;
+    }
+
+    private static void AddConsoleShareClient<TClient, TImplementation>(
+        IServiceCollection services,
+        Action<HonuaConsoleShareClientOptions> configure)
+        where TClient : class
+        where TImplementation : class, TClient
+    {
         var snapshot = new HonuaConsoleShareClientOptions();
         configure(snapshot);
         HonuaConsoleShareClientOptions.ValidateBaseAddress(snapshot.BaseAddress);
         HonuaConsoleShareClientOptions.ValidateTimeout(snapshot.Timeout);
 
-        services.AddSingleton<IOptions<HonuaConsoleShareClientOptions>>(Options.Create(snapshot));
-        services.AddTransient<HonuaConsoleShareAuthHandler>();
-        var httpBuilder = services.AddHttpClient<IHonuaConsoleShareOpenDataClient, HonuaConsoleShareOpenDataClient>((sp, client) =>
+        // Each registration closes over its own snapshot. A shared IOptions singleton
+        // would let a later AddHonuaConsoleShare* call replace the base address and
+        // credentials of clients registered earlier.
+        var httpBuilder = services.AddHttpClient<TClient, TImplementation>((_, client) =>
         {
-            var options = sp.GetRequiredService<IOptions<HonuaConsoleShareClientOptions>>().Value;
-            client.BaseAddress = options.BaseAddress;
-            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(options.Timeout, options.EnableRetry);
+            client.BaseAddress = snapshot.BaseAddress;
+            client.Timeout = Honua.Sdk.Abstractions.HonuaResilienceTimeouts.HttpClientTimeout(
+                snapshot.Timeout,
+                snapshot.EnableRetry);
         })
-        .AddHttpMessageHandler<HonuaConsoleShareAuthHandler>();
+        .AddHttpMessageHandler(_ => new HonuaConsoleShareAuthHandler(snapshot));
 
         httpBuilder.ConfigureHonuaRestHttpClient(snapshot);
-
-        return services;
     }
-
 }

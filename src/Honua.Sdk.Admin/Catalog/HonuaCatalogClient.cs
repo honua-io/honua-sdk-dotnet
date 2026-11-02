@@ -7,6 +7,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Admin.Exceptions;
 using Honua.Sdk.Admin.Models;
@@ -327,7 +328,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         string serviceName,
         CancellationToken cancellationToken)
     {
-        var url = $"/rest/services/{Uri.EscapeDataString(serviceName)}/FeatureServer?f=json";
+        var url = $"/rest/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/FeatureServer?f=json";
         try
         {
             return await GetRawAsync(url, HonuaAdminJsonContext.Default.CatalogFeatureServerServiceInfo, cancellationToken)
@@ -344,7 +345,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         int layerId,
         CancellationToken cancellationToken)
     {
-        var url = $"/rest/services/{Uri.EscapeDataString(serviceName)}/FeatureServer/{layerId}?f=json";
+        var url = $"/rest/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/FeatureServer/{layerId}?f=json";
         try
         {
             return await GetRawAsync(url, HonuaAdminJsonContext.Default.CatalogFeatureServerLayerInfo, cancellationToken)
@@ -405,7 +406,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
             Protocol = FeatureProtocolIds.GeoServicesFeatureService,
             Locator = new SourceLocator
             {
-                Url = $"/rest/services/{Uri.EscapeDataString(service.Name)}/FeatureServer/{layer.Id}",
+                Url = $"/rest/services/{HonuaPathSegment.Escape(service.Name, nameof(service.Name))}/FeatureServer/{layer.Id}",
                 ServiceId = service.Name,
                 LayerId = layer.Id
             },

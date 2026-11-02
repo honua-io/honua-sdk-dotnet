@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Console.Share;
 using Honua.Sdk.ConsoleShare.Exceptions;
 using Honua.Sdk.ConsoleShare.Models;
@@ -211,7 +212,7 @@ public sealed class HonuaConsoleShareClient : IHonuaConsoleShareClient
 
     private static Uri SharePath(string shareId, string? suffix = null)
     {
-        var path = $"{BasePath}/{Uri.EscapeDataString(shareId)}";
+        var path = $"{BasePath}/{HonuaPathSegment.Escape(shareId, nameof(shareId))}";
         if (suffix is not null)
         {
             path = $"{path}/{suffix}";
@@ -221,10 +222,5 @@ public sealed class HonuaConsoleShareClient : IHonuaConsoleShareClient
     }
 
     private static void EnsureId(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Identifier must be supplied.", parameterName);
-        }
-    }
+        => _ = HonuaPathSegment.Escape(value, parameterName);
 }

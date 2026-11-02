@@ -21,7 +21,10 @@ is exercised only when every concrete implementation has live evidence.
 Provider-neutral interfaces without a concrete Honua transport are recorded as
 `non-addressable`; they are not passes. Concrete methods without an executable
 live test are recorded as `gap` and owned by
-[honua-sdk-dotnet#31](https://github.com/honua-io/honua-sdk-dotnet/issues/31).
+[honua-sdk-dotnet#473](https://github.com/honua-io/honua-sdk-dotnet/issues/473).
+A gap is `skip` evidence with that issue link. It is never a pass, and the
+fragment's `operation_scope.complete` stays false while any governed row lacks
+an executing test.
 Raster implementation gaps remain owned by
 [honua-sdk-dotnet#294](https://github.com/honua-io/honua-sdk-dotnet/issues/294).
 

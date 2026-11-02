@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Console.Share;
 using Honua.Sdk.ConsoleShare.Exceptions;
 using Honua.Sdk.ConsoleShare.Models;
@@ -134,7 +135,7 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
     {
         EnsureId(itemId, nameof(itemId));
 
-        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"datasets/{Uri.EscapeDataString(itemId)}"));
+        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"datasets/{HonuaPathSegment.Escape(itemId, nameof(itemId))}"));
         return await SendForEnvelopeAsync(
             message,
             ConsoleShareJsonContext.Default.ApiResponseEnvelopeHonuaOpenDataPage,
@@ -147,7 +148,7 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
     {
         EnsureId(itemId, nameof(itemId));
 
-        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"datasets/{Uri.EscapeDataString(itemId)}/data.json"));
+        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"datasets/{HonuaPathSegment.Escape(itemId, nameof(itemId))}/data.json"));
         return await SendForJsonAsync(
             message,
             ConsoleShareJsonContext.Default.HonuaDcatCatalog,
@@ -160,7 +161,7 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
     {
         EnsureId(itemId, nameof(itemId));
 
-        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"datasets/{Uri.EscapeDataString(itemId)}/schema.org"));
+        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"datasets/{HonuaPathSegment.Escape(itemId, nameof(itemId))}/schema.org"));
         return await SendForJsonAsync(
             message,
             ConsoleShareJsonContext.Default.HonuaSchemaOrgDataset,
@@ -184,7 +185,7 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
     {
         EnsureId(collectionId, nameof(collectionId));
 
-        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"stac/collections/{Uri.EscapeDataString(collectionId)}"));
+        using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath($"stac/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}"));
         return await SendForJsonAsync(
             message,
             ConsoleShareJsonContext.Default.HonuaStacCollection,
@@ -198,7 +199,7 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
         EnsureId(collectionId, nameof(collectionId));
         EnsureId(itemId, nameof(itemId));
 
-        var path = $"stac/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(itemId)}";
+        var path = $"stac/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(itemId, nameof(itemId))}";
         using var message = new HttpRequestMessage(HttpMethod.Get, PublicPath(path));
         return await SendForJsonAsync(
             message,
@@ -317,7 +318,7 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
 
     private static Uri OpenDataPath(string itemId, string? suffix = null)
     {
-        var path = $"{AdminBasePath}/{Uri.EscapeDataString(itemId)}/open-data";
+        var path = $"{AdminBasePath}/{HonuaPathSegment.Escape(itemId, nameof(itemId))}/open-data";
         if (suffix is not null)
         {
             path = $"{path}/{suffix}";
@@ -330,10 +331,5 @@ public sealed class HonuaConsoleShareOpenDataClient : IHonuaConsoleShareOpenData
         => new($"{PublicBasePath}/{relative}", UriKind.RelativeOrAbsolute);
 
     private static void EnsureId(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Identifier must be supplied.", parameterName);
-        }
-    }
+        => _ = HonuaPathSegment.Escape(value, parameterName);
 }

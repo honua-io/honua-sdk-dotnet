@@ -1,1 +1,3 @@
 #nullable enable
+Honua.Sdk.HonuaSdkOptions.UseOgcTiles.get -> bool
+Honua.Sdk.HonuaSdkOptions.UseOgcTiles.set -> void
