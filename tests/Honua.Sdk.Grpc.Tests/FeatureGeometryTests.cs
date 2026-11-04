@@ -42,7 +42,7 @@ public class FeatureGeometryTests
         Assert.Equal(12.5, point.Coordinate.Z);
         Assert.Equal(4.25, point.Coordinate.M);
 
-        // The Esri JSON dictionary is still populated for backward compatibility.
+        // The GeoServices JSON dictionary is still populated for backward compatibility.
         Assert.NotNull(feature.Geometry);
     }
 
@@ -87,7 +87,7 @@ public class FeatureGeometryTests
     }
 
     [Fact]
-    public void ToGeometry_ReadsEsriJsonDictionary_WhenNoNtsCarried()
+    public void ToGeometry_ReadsGeoServicesJsonDictionary_WhenNoNtsCarried()
     {
         var feature = new Feature
         {

@@ -178,7 +178,7 @@ internal static class ProtoAdapter
 
         if (feature.NtsGeometry is not null)
         {
-            // NTS-native write path: convert straight to the proto with no Esri JSON round-trip.
+            // NTS-native write path: convert straight to the proto with no GeoServices JSON round-trip.
             proto.Geometry = GrpcGeometryConverter.WriteGeometry(feature.NtsGeometry);
         }
         else if (feature.Geometry is not null)
@@ -271,7 +271,7 @@ internal static class ProtoAdapter
         IReadOnlyDictionary<string, object?>? esriGeometry = null;
         if (feature.Geometry is not null && feature.Geometry.ShapeCase != Proto.Geometry.ShapeOneofCase.None)
         {
-            // Read the proto geometry once into NTS (the proto-native shape) and derive the Esri
+            // Read the proto geometry once into NTS (the proto-native shape) and derive the GeoServices
             // JSON dictionary from that same instance, so there is no serialize-then-reparse and the
             // existing proto->NTS converter is the source of truth for SDK query results.
             ntsGeometry = GrpcGeometryConverter.ReadGeometry(feature.Geometry);

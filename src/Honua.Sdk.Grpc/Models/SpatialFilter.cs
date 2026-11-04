@@ -3,15 +3,10 @@
 
 namespace Honua.Sdk.Grpc.Models;
 
-/// <summary>
-/// Spatial filter parameters for feature queries.
-/// Geometry uses Esri JSON shape conventions.
-/// </summary>
+/// <summary>Spatial filter parameters for feature queries; geometry uses GeoServices JSON shapes.</summary>
 public sealed class SpatialFilter
 {
-    /// <summary>
-    /// Filter geometry in Esri JSON form (point, envelope, multipoint, paths, or rings).
-    /// </summary>
+    /// <summary>Filter geometry in GeoServices JSON form (point, envelope, multipoint, paths or rings).</summary>
     public IReadOnlyDictionary<string, object?>? Geometry { get; set; }
 
     /// <summary>

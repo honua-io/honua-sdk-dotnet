@@ -13,7 +13,7 @@ public static class FeatureServerVectorFormats
 {
     /// <summary>Vector payload formats supported by FeatureServer typed vector queries.</summary>
     public static IReadOnlyList<VectorPayloadFormat> SupportedFormats { get; } =
-        [VectorPayloadFormat.EsriJson, VectorPayloadFormat.GeoJson];
+        [VectorPayloadFormat.GeoServicesJson, VectorPayloadFormat.GeoJson];
 
     /// <summary>
     /// Converts a shared vector format to the FeatureServer query format value.
@@ -22,7 +22,7 @@ public static class FeatureServerVectorFormats
     /// <returns>The FeatureServer format value.</returns>
     public static FeatureServerFormat ToFeatureServerFormat(VectorPayloadFormat format) => format switch
     {
-        VectorPayloadFormat.EsriJson => FeatureServerFormat.Json,
+        VectorPayloadFormat.GeoServicesJson => FeatureServerFormat.Json,
         VectorPayloadFormat.GeoJson => FeatureServerFormat.GeoJson,
         VectorPayloadFormat.Gml => throw new NotSupportedException("FeatureServer does not expose GML query output."),
         _ => throw new NotSupportedException($"Vector payload format '{format}' is not supported by FeatureServer.")
@@ -35,7 +35,7 @@ public static class FeatureServerVectorFormats
     /// <returns>The shared vector payload format.</returns>
     public static VectorPayloadFormat FromFeatureServerFormat(FeatureServerFormat? format) => format switch
     {
-        null or FeatureServerFormat.Json => VectorPayloadFormat.EsriJson,
+        null or FeatureServerFormat.Json => VectorPayloadFormat.GeoServicesJson,
         FeatureServerFormat.GeoJson => VectorPayloadFormat.GeoJson,
         FeatureServerFormat.Pbf => throw new NotSupportedException("PBF vector payload parsing is not implemented by this SDK."),
         FeatureServerFormat.FlatGeobuf => throw new NotSupportedException("FlatGeobuf vector payload parsing is not implemented by this SDK."),

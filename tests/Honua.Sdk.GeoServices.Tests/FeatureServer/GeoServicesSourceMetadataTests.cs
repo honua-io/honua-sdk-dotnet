@@ -11,7 +11,7 @@ using Honua.Sdk.GeoServices.Tests.Fixtures;
 
 namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 
-public sealed class ArcGisSourceMetadataTests
+public sealed class GeoServicesSourceMetadataTests
 {
     [Theory]
     [InlineData(false)]

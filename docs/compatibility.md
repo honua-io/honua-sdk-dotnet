@@ -38,7 +38,7 @@ requires `preview` or higher.
 
 ## 2026.1 Source-Import Support Matrix
 
-ArcGIS service/layer import through `Honua.Sdk.GeoServices` is qualified only
+GeoServices REST service/layer import through `Honua.Sdk.GeoServices` is qualified only
 for the supported representations in the
 [source-import certification](sdk-certification.md#import-fidelity-for-20261).
 Package API availability alone does not establish lossless import support.

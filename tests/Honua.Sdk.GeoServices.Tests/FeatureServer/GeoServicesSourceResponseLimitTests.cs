@@ -19,7 +19,7 @@ namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 /// body fails with a typed exception and is never fully buffered, and <c>queryAttachments</c> lists
 /// attachments for a batch of features in one request.
 /// </summary>
-public sealed class ArcGisSourceResponseLimitTests
+public sealed class GeoServicesSourceResponseLimitTests
 {
     private const long Limit = 4096;
 
@@ -70,7 +70,7 @@ public sealed class ArcGisSourceResponseLimitTests
         Assert.Equal(Limit, ex.MaxResponseBytes);
         Assert.Equal(Limit + 1, ex.DeclaredContentLength);
         Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
-        Assert.Equal(new Uri("https://gis.example.com/arcgis/rest/services/Hydrants/FeatureServer/0?f=json"), ex.RequestUri);
+        Assert.Equal(new Uri("https://gis.example.com/gis/rest/services/Hydrants/FeatureServer/0?f=json"), ex.RequestUri);
         Assert.IsAssignableFrom<HonuaException>(ex);
         Assert.True(body.Disposed);
     }
@@ -212,7 +212,7 @@ public sealed class ArcGisSourceResponseLimitTests
 
         var response = await client.QueryAttachmentsAsync("Utilities/Water", 0, [1, 2, 3]);
 
-        Assert.Equal(["https://gis.example.com/arcgis/rest/services/Utilities/Water/FeatureServer/0/queryAttachments?objectIds=1%2C2%2C3&returnUrl=false&f=json"], sent);
+        Assert.Equal(["https://gis.example.com/gis/rest/services/Utilities/Water/FeatureServer/0/queryAttachments?objectIds=1%2C2%2C3&returnUrl=false&f=json"], sent);
         Assert.Equal(2, response.AttachmentGroups.Count);
         var first = response.AttachmentGroups[0];
         Assert.Equal(1, first.ParentObjectId);
@@ -261,7 +261,7 @@ public sealed class ArcGisSourceResponseLimitTests
         await client.QueryAttachmentsAsync("Hydrants", 0, objectIds);
 
         Assert.Equal("POST", method);
-        Assert.Equal("https://gis.example.com/arcgis/rest/services/Hydrants/FeatureServer/0/queryAttachments", url);
+        Assert.Equal("https://gis.example.com/gis/rest/services/Hydrants/FeatureServer/0/queryAttachments", url);
         Assert.StartsWith("objectIds=100000%2C100001%2C", form, StringComparison.Ordinal);
         Assert.EndsWith("&returnUrl=false&f=json", form, StringComparison.Ordinal);
     }
@@ -282,7 +282,7 @@ public sealed class ArcGisSourceResponseLimitTests
         Func<HttpRequestMessage, HttpResponseMessage> respond, long maxResponseBytes = Limit)
     {
         var handler = new MockHttpHandler(request => Task.FromResult(WithRequest(respond(request), request)));
-        var http = new HttpClient(handler) { BaseAddress = new Uri("https://gis.example.com/arcgis/") };
+        var http = new HttpClient(handler) { BaseAddress = new Uri("https://gis.example.com/gis/") };
         return new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { MaxResponseBytes = maxResponseBytes });
     }
 

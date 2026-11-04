@@ -5,17 +5,17 @@ description: "Writing Honua GP processes against the SDK: the contract a process
 resource: "honua://capability/process.ogc-api-processes"
 tags: [geoprocessing, authoring]
 ---
-# Process authoring & ArcObjects-GP migration
+# Process authoring and compiled GP tool migration
 
 This guide covers authoring Honua geoprocessing (GP) processes in C# with the
 `Honua.Sdk.Processes` authoring API, testing them locally with the in-process
-harness, mapping common ArcObjects / ArcPy GP idioms onto Honua processes, and
+harness, mapping common compiled GP tool idioms onto Honua processes, and
 federating an existing compiled .NET GP service during a phased migration.
 
 Honua runs geoprocessing as [OGC API Processes](https://ogcapi.ogc.org/processes/).
 A process declares typed inputs and outputs and is executed as an asynchronous
 job. Honua GP executors are themselves C#, so for .NET shops the migration path
-is **reimplement-as-Honua-process**: compiled ArcObjects assemblies cannot be
+is **reimplement-as-Honua-process**: compiled GP assemblies cannot be
 source-translated, so the logic is re-expressed against the Honua process model.
 Federation bridges the gap while that port is in progress.
 
@@ -149,38 +149,32 @@ var plan = HonuaProcessAuthoring.DefinePlan("p")
 var run = await harness.RunAsync(plan.Steps[0]);
 ```
 
-## ArcObjects / ArcPy GP idiom → Honua process mapping
+## Compiled GP tool idiom → Honua process mapping
 
-Compiled ArcObjects GP tools cannot be source-translated; the migration is a
+Compiled GP tools cannot be source-translated; the migration is a
 reimplementation against the Honua process model. The table maps the idioms a
-.NET / ArcPy GP author reaches for onto their Honua equivalents.
+.NET GP author reaches for onto their Honua equivalents.
 
-| ArcObjects / ArcPy idiom | Honua process equivalent |
+| Compiled GP tool idiom | Honua process equivalent |
 |---|---|
 | `IGPFunction` / `IGPFunction2` tool class | `IHonuaProcessExecutor` (server-side: `IJobExecutor`) |
 | `Execute(IArray parameters, ITrackCancel, IGPEnvironmentManager, IGPMessages)` | `ExecuteAsync(HonuaProcessJobInput, IHonuaProcessExecutionContext, CancellationToken)` |
 | `ParameterInfo` / `IGPParameter` collection | `HonuaProcessBuilder.AddInput(...)` declarations |
 | `IGPParameter.DataType` (`GPFeatureLayer`, `GPLong`, `GPDouble`, `GPBoolean`, `GPSpatialReference`) | `HonuaProcessParameterValueType` (`LayerId`, `WholeNumber`, `FloatingPoint`, `Flag`, `Srid`) |
-| Output parameter (`Direction = esriGPParameterDirectionOutput`) | `HonuaProcessBuilder.AddOutput(...)` + `HonuaProcessJobResult.Outputs` |
+| Output parameter (output direction) | `HonuaProcessBuilder.AddOutput(...)` + `HonuaProcessJobResult.Outputs` |
 | `IGPMessages.AddMessage(...)` | `IHonuaProcessExecutionContext.AppendLogAsync(...)` |
 | `IStepProgressor` / `IGPMessages` percent updates | `IHonuaProcessExecutionContext.ReportProgressAsync(percent, phase)` |
 | `ITrackCancel.Continue()` polling | `CancellationToken` / `ThrowIfCancellationRequested()` |
-| ModelBuilder model (chained tools) | `HonuaAnalysisPlanBuilder` plan with `dependsOn` steps |
-| `arcpy.Buffer_analysis(in, out, dist)` one-shot call | one `AddGeoprocessStep("buffer", "geometry.buffer", ...)` in a plan |
+| Chained-tool model | `HonuaAnalysisPlanBuilder` plan with `dependsOn` steps |
+| One-shot buffer tool call | one `AddGeoprocessStep("buffer", "geometry.buffer", ...)` in a plan |
 | Tool returns derived feature class | output artifact of kind `FeatureLayer` |
-| `arcpy.env.outputCoordinateSystem` and friends | step inputs (`srid`) / `HonuaProcessExecutionContext` metadata |
+| Output coordinate system environment setting | step inputs (`srid`) / `HonuaProcessExecutionContext` metadata |
 | `GPToolbox` (.tbx) grouping of tools | the process catalog at `/ogc/processes/processes` |
 | Synchronous in-process tool execution | asynchronous OGC job (`jobControlOptions: ["async-execute"]`) |
 
 ### Worked example
 
-ArcPy:
-
-```python
-arcpy.analysis.Buffer("parcels", "parcels_buf", "100 Meters")
-```
-
-Honua (authored plan + executor logic):
+A one-shot buffer of a `parcels` layer by 100 meters becomes an authored plan:
 
 ```csharp
 var plan = HonuaProcessAuthoring.DefinePlan("buffer-parcels")
@@ -197,7 +191,7 @@ geoprocessing runtime as an `IJobExecutor`.
 
 ## Federating an existing compiled .NET GP service
 
-While ArcObjects tools are being reimplemented, the existing compiled .NET GP
+While compiled GP tools are being reimplemented, the existing compiled .NET GP
 service keeps running and is **federated** behind Honua so callers see one
 process catalog. The bridge is operational, not a code change in this SDK:
 
@@ -209,7 +203,7 @@ process catalog. The bridge is operational, not a code change in this SDK:
 2. **Register the facade as a federated process source** in Honua Server so its
    processes appear alongside native ones in `/ogc/processes/processes`. Honua
    routes execution for those ids to the legacy facade.
-3. **Migrate tool-by-tool.** As each ArcObjects tool is reimplemented as a
+3. **Migrate tool-by-tool.** As each compiled GP tool is reimplemented as a
    native `IJobExecutor`, flip its process id from the federated facade to the
    native executor. The process id and I/O contract are unchanged, so callers
    and authored plans are unaffected.
@@ -219,7 +213,7 @@ Authoring descriptions for both the federated and native versions with the same
 `HonuaProcessBuilder` code keeps the contract identical across the cutover, which
 is what makes the tool-by-tool swap transparent to clients.
 
-> Scope note: a codemod that automatically translates compiled .NET / ArcObjects
+> Scope note: a codemod that automatically translates compiled .NET
 > tools is **not** feasible and is out of scope. Federation plus manual
 > reimplementation is the supported path.
 

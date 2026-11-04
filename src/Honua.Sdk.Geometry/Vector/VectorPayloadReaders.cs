@@ -15,7 +15,7 @@ public static class VectorPayloadReaders
     /// <returns>A reader for the requested format.</returns>
     public static IVectorPayloadReader ForFormat(VectorPayloadFormat format) => format switch
     {
-        VectorPayloadFormat.EsriJson => EsriJsonVectorPayloadReader.Instance,
+        VectorPayloadFormat.GeoServicesJson => GeoServicesJsonVectorPayloadReader.Instance,
         VectorPayloadFormat.GeoJson => GeoJsonVectorPayloadReader.Instance,
         VectorPayloadFormat.Gml => GmlVectorPayloadReader.Instance,
         _ => throw new NotSupportedException($"Vector payload format '{format}' is not supported.")

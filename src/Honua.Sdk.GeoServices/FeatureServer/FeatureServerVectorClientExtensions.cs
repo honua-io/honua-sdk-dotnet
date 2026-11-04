@@ -12,17 +12,7 @@ namespace Honua.Sdk.GeoServices.FeatureServer;
 /// </summary>
 public static class FeatureServerVectorClientExtensions
 {
-    /// <summary>
-    /// Executes a feature query and parses supported vector payload formats into typed features
-    /// with NetTopologySuite geometries.
-    /// </summary>
-    /// <param name="client">FeatureServer client.</param>
-    /// <param name="serviceId">The service identifier.</param>
-    /// <param name="layerId">The layer ID within the service.</param>
-    /// <param name="query">Query parameters including filters, paging, and projection.</param>
-    /// <param name="format">Optional shared vector format. Defaults to the format specified by <paramref name="query"/>, or Esri JSON.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The parsed typed vector payload.</returns>
+    /// <summary>Runs a feature query and parses the vector payload into typed features with NetTopologySuite geometries.</summary>
     public static async Task<VectorPayloadFeatureSet> QueryVectorAsync(
         this IHonuaFeatureServerClient client,
         string serviceId,

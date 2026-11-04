@@ -499,7 +499,7 @@ public class ProtoAdapterTests
     }
 
     [Fact]
-    public void ConvertGeometry_Point_ReturnsEsriJson()
+    public void ConvertGeometry_Point_ReturnsGeoServicesJson()
     {
         var geom = new Proto.Geometry
         {

@@ -9,14 +9,7 @@ using Honua.Sdk.GeoServices.Tests.Fixtures;
 
 namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 
-/// <summary>
-/// Preservation gaps found by the #341 installed-package certification against the 2026.1
-/// candidate (certification/geoservices-source-import): typed metadata that parsed but dropped
-/// source members, Z/M that could not be requested, and offset paging that yielded duplicates
-/// from a source ignoring <c>resultOffset</c>. Fixtures are raw ArcGIS REST JSON; every source
-/// member must survive the typed model, so recognition without preservation fails.
-/// </summary>
-public sealed class ArcGisSourcePreservationTests
+public sealed class GeoServicesSourcePreservationTests
 {
     private const string ServiceJson = """
         {

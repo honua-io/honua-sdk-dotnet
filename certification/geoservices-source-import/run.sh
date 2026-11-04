@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Lossless ArcGIS service/layer import certification (honua-sdk-dotnet#341).
+# Lossless GeoServices REST service and layer import certification.
 #
-# Boots the digest-pinned honua-server candidate as a live ArcGIS REST source,
+# Boots the digest-pinned honua-server candidate as a live GeoServices REST source,
 # publishes fixture/source-sites.v1.sql through the supported admin API, restores
 # the requested Honua.Sdk.GeoServices version from nuget.org only, and runs the
 # installed-package consumer. A second run with a deliberately corrupted oracle

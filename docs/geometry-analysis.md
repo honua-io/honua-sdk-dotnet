@@ -31,7 +31,7 @@ All types live in `Honua.Sdk.Geometry`. See the
 | `NearestGeometryVertex` | `Vertex`, `CoordinateIndex`, `Distance` returned by `FindNearestVertex`. |
 | `GeometryText` | Static WKT/WKB conversion: `ReadWkt`, `WriteWkt`, `ReadWkb`, `WriteWkb`. |
 | `GeoJsonGeometryConverter` | Static GeoJSON conversion: `ReadGeometry(JsonElement)`, `ReadGeometry(string)`, `WriteGeometry`, `WriteGeometryString`. |
-| `GeoServicesGeometryConverter` | Esri GeoServices JSON geometry conversion (mirrors the GeoJSON converter). |
+| `GeoServicesGeometryConverter` | GeoServices JSON geometry conversion (mirrors the GeoJSON converter). |
 | `GrpcGeometryConverter` | Conversion between NTS geometries and the gRPC `Geometry` message. |
 | `GeographicBoundingBox` | Validated `(west, south, east, north)` envelope for catalog payloads. |
 

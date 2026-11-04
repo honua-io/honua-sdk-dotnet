@@ -172,5 +172,5 @@ Assert.True(run.Succeeded);
 ```
 
 See [`docs/process-authoring.md`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/process-authoring.md)
-for the full guide, including the ArcObjects/ArcPy GP migration mapping and the
+for the full guide, including the compiled GP tool migration mapping and the
 federate-bridge approach.

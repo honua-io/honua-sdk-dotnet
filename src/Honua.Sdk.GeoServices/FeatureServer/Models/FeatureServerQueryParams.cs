@@ -103,7 +103,7 @@ internal sealed record FeatureServerStatisticDefinition
 /// </summary>
 public sealed record FeatureServerSpatialFilter
 {
-    /// <summary>Geometry JSON for the spatial filter (Esri JSON format).</summary>
+    /// <summary>Geometry JSON for the spatial filter (GeoServices JSON format).</summary>
     public string? Geometry { get; init; }
 
     /// <summary>Geometry type (e.g., "esriGeometryEnvelope", "esriGeometryPoint").</summary>

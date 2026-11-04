@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "generator": "src/Honua.Core/Features/Licensing/Domain/CapabilityKeyCatalog.cs",
   "trackingIssue": "#2893",
-  "description": "Canonical customer-facing capability key vocabulary (Community + Pro + Enterprise) and its crosswalks to the evidence vocabularies that don't otherwise join: honua-esri-assess's verdict registry, client-interop certification envelopes (client_lane x protocol), the geoservices REST parity index, and geobench benchmark scenarios. Hard Esri lock-ins (Utility Network, Parcel Fabric, Linear Referencing) are intentionally absent from esriAssess below -- see capability-no-go-allowlist.v1.json.",
+  "description": "Canonical customer-facing capability key vocabulary (Community + Pro + Enterprise) and its crosswalks to the evidence vocabularies that don't otherwise join: readiness-assessment tool's verdict registry, client-interop certification envelopes (client_lane x protocol), the geoservices REST parity index, and geobench benchmark scenarios. Hard GeoServices lock-ins (Utility Network, Parcel Fabric, Linear Referencing) are intentionally absent from geoservicesAssess below -- see capability-no-go-allowlist.v1.json.",
   "capabilities": [
     {
       "key": "admin.control-plane",
@@ -282,7 +282,7 @@
       "displayName": "FeatureServer Editing",
       "category": "Editing",
       "edition": "Pro",
-      "description": "Create, update, and delete features through the Esri GeoServices FeatureServer write surface \u2014 applyEdits, addFeatures, updateFeatures, deleteFeatures, and calculate."
+      "description": "Create, update, and delete features through the GeoServices REST FeatureServer write surface \u2014 applyEdits, addFeatures, updateFeatures, deleteFeatures, and calculate."
     },
     {
       "key": "enrichment.datasets",
@@ -363,17 +363,17 @@
     },
     {
       "key": "identity.portal-sharing",
-      "displayName": "ArcGIS Portal Sharing Read Surface",
+      "displayName": "GeoServices REST Portal Sharing Read Surface",
       "category": "Identity",
       "edition": "Community",
-      "description": "Expose the read-only /sharing/rest Portal facade (info, portals/self, search, content/items) so Esri clients can discover Honua content as portal items."
+      "description": "Expose the read-only /sharing/rest Portal facade (info, portals/self, search, content/items) so GeoServices clients can discover Honua content as portal items."
     },
     {
       "key": "identity.portal-token",
-      "displayName": "ArcGIS Portal Token Issuance",
+      "displayName": "GeoServices REST Portal Token Issuance",
       "category": "Identity",
       "edition": "Community",
-      "description": "Expose POST/GET /sharing/rest/generateToken so Esri clients can authenticate against Honua-secured /rest/services."
+      "description": "Expose POST/GET /sharing/rest/generateToken so GeoServices clients can authenticate against Honua-secured /rest/services."
     },
     {
       "key": "identity.saml",
@@ -408,7 +408,7 @@
       "displayName": "GeoServices Import",
       "category": "Import",
       "edition": "Enterprise",
-      "description": "Import layers from ArcGIS REST services."
+      "description": "Import layers from GeoServices REST services."
     },
     {
       "key": "ops.health",
@@ -450,7 +450,7 @@
       "displayName": "Geoprocessing Task Execution",
       "category": "Process",
       "edition": "Community",
-      "description": "Submit and poll geoprocessing tasks through the Esri GeoServices GPServer surface. Print/export-specific tasks are gated by printing.* entitlement keys."
+      "description": "Submit and poll geoprocessing tasks through the GeoServices REST GPServer surface. Print/export-specific tasks are gated by printing.* entitlement keys."
     },
     {
       "key": "process.ogc-api-processes",
@@ -541,7 +541,7 @@
       "displayName": "FeatureServer Query",
       "category": "Serve",
       "edition": "Community",
-      "description": "Query and read features through the Esri GeoServices FeatureServer surface (query, metadata, related records, domains, shared templates)."
+      "description": "Query and read features through the GeoServices REST FeatureServer surface (query, metadata, related records, domains, shared templates)."
     },
     {
       "key": "serve.geoservices-geocodeserver",
@@ -555,21 +555,21 @@
       "displayName": "Geometry Service",
       "category": "Serve",
       "edition": "Community",
-      "description": "Server-side geometry operations (project, buffer, simplify, union, and related utilities) through the Esri GeometryServer surface."
+      "description": "Server-side geometry operations (project, buffer, simplify, union, and related utilities) through the GeoServices GeometryServer surface."
     },
     {
       "key": "serve.geoservices-imageserver",
       "displayName": "ImageServer",
       "category": "Serve",
       "edition": "Community",
-      "description": "Serve raster imagery and coverage metadata through the Esri GeoServices ImageServer surface."
+      "description": "Serve raster imagery and coverage metadata through the GeoServices REST ImageServer surface."
     },
     {
       "key": "serve.geoservices-mapserver",
       "displayName": "MapServer",
       "category": "Serve",
       "edition": "Community",
-      "description": "Serve map images, identify, and export through the Esri GeoServices MapServer surface."
+      "description": "Serve map images, identify, and export through the GeoServices REST MapServer surface."
     },
     {
       "key": "serve.geoservices-root",
@@ -583,14 +583,14 @@
       "displayName": "VectorTileServer",
       "category": "Serve",
       "edition": "Community",
-      "description": "Serve Esri vector tile services through the GeoServices VectorTileServer surface."
+      "description": "Serve GeoServices vector tile services through the GeoServices VectorTileServer surface."
     },
     {
       "key": "serve.i3s-scene",
       "displayName": "I3S Scene Serving",
       "category": "Serve",
       "edition": "Community",
-      "description": "Serve published I3S scene layers Esri clients consume directly."
+      "description": "Serve published I3S scene layers GeoServices clients consume directly."
     },
     {
       "key": "serve.odata",
@@ -776,7 +776,7 @@
     }
   ],
   "crosswalks": {
-    "esriAssess": [
+    "geoservicesAssess": [
       {
         "assessKey": "web-map",
         "capability": "identity.portal-sharing",
@@ -805,7 +805,7 @@
       {
         "assessKey": "scene-service",
         "capability": "serve.i3s-scene",
-        "note": "Esri SceneServer/Scene Layer Package fidelity maps to Honua's I3S scene serving; 3D Tiles (serve.3d-tiles-scene) is the OGC-native alternative."
+        "note": "GeoServices SceneServer/Scene Layer Package fidelity maps to Honua's I3S scene serving; 3D Tiles (serve.3d-tiles-scene) is the OGC-native alternative."
       },
       {
         "assessKey": "survey123",
@@ -909,22 +909,22 @@
         "capability": "serve.wmts"
       },
       {
-        "clientLane": "desktop-arcgis",
+        "clientLane": "desktop-gis",
         "protocol": "featureserver",
         "capability": "serve.geoservices-featureserver"
       },
       {
-        "clientLane": "desktop-arcgis",
+        "clientLane": "desktop-gis",
         "protocol": "mapserver",
         "capability": "serve.geoservices-mapserver"
       },
       {
-        "clientLane": "arcgis-stub",
+        "clientLane": "geoservices-rest-stub",
         "protocol": "featureserver",
         "capability": "serve.geoservices-featureserver"
       },
       {
-        "clientLane": "arcgis-stub",
+        "clientLane": "geoservices-rest-stub",
         "protocol": "mapserver",
         "capability": "serve.geoservices-mapserver"
       },
@@ -984,7 +984,7 @@
         "capability": "serve.odata"
       }
     ],
-    "esriCompatMatrix": [
+    "geoservicesCompatMatrix": [
       {
         "serviceId": "feature-server",
         "capability": "serve.geoservices-featureserver"

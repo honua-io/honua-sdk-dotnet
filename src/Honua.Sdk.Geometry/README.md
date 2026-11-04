@@ -4,7 +4,7 @@ NetTopologySuite-backed geometry and CRS helpers used across the Honua .NET SDK:
 spatial-reference parsing (`HonuaSpatialReference`), ProjNet coordinate transforms
 (`HonuaCoordinateTransformer`), planar analysis (`HonuaPlanarGeometryAnalyzer`:
 distance, length, area, buffer, simplify, nearest points), geofence evaluation,
-and GeoJSON / EsriJSON / GML / gRPC geometry converters.
+and GeoJSON / GeoServices JSON / GML / gRPC geometry converters.
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
