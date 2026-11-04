@@ -68,7 +68,7 @@ Before opening a PR, verify:
 
 - [ ] `dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true` is clean — zero warnings, zero errors.
 - [ ] `dotnet test Honua.Sdk.sln --configuration Release --no-build` is green; integration tests under `tests/Honua.Sdk.IntegrationTests` / `tests/Honua.Sdk.ProtocolIntegration.Tests` may stay skipped (environment-gated) unless your change touches their fixtures.
-- [ ] You added or updated XML doc comments on any new public type or member. Missing-doc warnings fail the build under `TreatWarningsAsErrors`.
+- [ ] Every new public type or member has a one-line `/// <summary>` (missing-doc warnings fail the build under `TreatWarningsAsErrors`), and nothing else in XML docs; internal members have none.
 - [ ] You added unit tests for new behavior. Code-coverage floors (75% line / 60% branch, see `.github/workflows/ci.yml`) are enforced solution-wide against the merged report; new packages should meet or exceed those numbers.
 - [ ] Public-API surface changes pass `scripts/validate-api-compat.sh` (the CI `api-compat` job runs this against the prior `dotnet-sdk-v*` tag).
 - [ ] The change does not break the `Honua.Sdk.Abstractions` provider-neutral contracts unless the change is intentional and version-gated; see [docs/feature-edits.md](docs/feature-edits.md).
