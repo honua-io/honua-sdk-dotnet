@@ -29,8 +29,9 @@ python3 scripts/check-okf-bundle.py                         # docs/ bundle gate 
 - Follow `CONTRIBUTING.md` "Style and conventions" (`*Async` + `cancellationToken`, options
   validation, `HonuaException` hierarchy) and its pull-request checklist, including the
   new-package checklist.
-- Every new public member needs `///` XML docs (a missing doc fails the build) and an entry in
-  the package's `PublicAPI.Unshipped.txt` (`docs/public-api-approval.md`).
+- Every new public member needs a one-line `/// <summary>` that customers see in IntelliSense (a
+  missing doc fails the build), no other XML doc tags, and an entry in the package's
+  `PublicAPI.Unshipped.txt` (`docs/public-api-approval.md`). Internal members get no XML docs.
 - Geometry and CRS work goes through NetTopologySuite + ProjNet via `Honua.Sdk.Geometry`, never
   hand-rolled predicates, WKT/WKB parsing or transforms. Geodesic math uses a proven geodesy
   library or the server's GeometryServer.
@@ -53,6 +54,23 @@ package or a type that is near this line, read `docs/internal/repo-boundary.md`.
 - Client retry/timeout behavior: `docs/client-behavior.md`; failure modes: `docs/troubleshooting.md`.
 - Release and NuGet publishing: `docs/release.md`. Conformance fixtures: `conformance/README.md`.
 - Cross-repo sequencing and backlog: `docs/internal/`.
+
+## Review guidelines
+Reviews (people, Codex, Claude) judge the lines a PR adds or changes by Robert C. Martin's *Clean Code*
+and cite smell codes ([rubric](https://github.com/honua-io/.github/blob/main/clean-code/RUBRIC.md)). The
+`Clean code` PR check enforces what a tool can decide; `quality-exception: <reason>` in the PR body is logged.
+
+BLOCKING:
+- G5 duplication: search first; reuse or consolidate, never copy a handler, parser or validator.
+- C1 history, ticket/PR refs or reviewer notes in code; C2-C4 obsolete, redundant or rambling comments;
+  C5 commented-out code. Comment only what the code cannot say.
+- XML doc comments (`///`) in application code; published SDKs keep at most a one-line `<summary>`
+  on public members.
+- N1 names that hide intent; F1 more than 3 parameters; F2 output arguments; F3 boolean flag arguments.
+- Over budget with no reason in the PR: functions ~40 lines or 2 nesting levels; classes, files ~400 lines.
+
+WARNING: the rubric's other smells (N2-N7, G6-G36, T1-T9), e.g. G25 magic numbers or G12
+single-implementation interfaces.
 
 <!-- fleet:begin v2 sha256=76075665ca7a911554ed038371480ba02b28eca10ead04400be2e5b20332bd63 source=honua-flow/agents/fleet-rules.md -->
 ## Fleet rules (all Honua repos)
