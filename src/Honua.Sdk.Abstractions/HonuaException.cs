@@ -19,11 +19,7 @@ public abstract class HonuaException : Exception
     /// </summary>
     public virtual int? HttpStatus => null;
 
-    /// <summary>
-    /// The normalized RFC 7807 problem document for the failure, when the server returned one, or
-    /// <see langword="null"/>. Protocol-specific extras (gRPC status, GeoServices error code, the
-    /// Esri-spec <c>Problem</c>, etc.) remain available on the derived exception type.
-    /// </summary>
+    /// <summary>The RFC 7807 problem document the server returned, or null; protocol-specific detail lives on derived types.</summary>
     public virtual HonuaProblemDetails? ProblemDetails => null;
 
     /// <summary>The normalized machine terminal receipt, when the failure came from a remote protocol.</summary>

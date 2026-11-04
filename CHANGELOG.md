@@ -111,7 +111,7 @@ All notable changes to the Honua .NET SDK will be documented in this file.
 ### Features
 
 * **geoservices:** preserve raw source metadata through bounded SDK reads ([#389](https://github.com/honua-io/honua-sdk-dotnet/issues/389)) ([c9d31fd](https://github.com/honua-io/honua-sdk-dotnet/commit/c9d31fd73440bebfb0c6f838efc94e5310153b51))
-* **geoservices:** type the remaining ArcGIS importer layer and service members ([#379](https://github.com/honua-io/honua-sdk-dotnet/issues/379)) ([3165cd5](https://github.com/honua-io/honua-sdk-dotnet/commit/3165cd5a1c8532a50f8107019a7b060f03f47f72))
+* **geoservices:** type the remaining GeoServices REST importer layer and service members ([#379](https://github.com/honua-io/honua-sdk-dotnet/issues/379)) ([3165cd5](https://github.com/honua-io/honua-sdk-dotnet/commit/3165cd5a1c8532a50f8107019a7b060f03f47f72))
 
 
 ### Bug Fixes
@@ -129,8 +129,8 @@ All notable changes to the Honua .NET SDK will be documented in this file.
 
 ### Features
 
-* **geoservices:** address arbitrary ArcGIS source roots and bound source bodies ([#376](https://github.com/honua-io/honua-sdk-dotnet/issues/376)) ([40cb193](https://github.com/honua-io/honua-sdk-dotnet/commit/40cb1938a267a8cfba5dcdbb6152544e55871440))
-* **geoservices:** certify lossless ArcGIS source import on the 2026.1 candidate ([#372](https://github.com/honua-io/honua-sdk-dotnet/issues/372)) ([efaa836](https://github.com/honua-io/honua-sdk-dotnet/commit/efaa83644f1013e01aa59a28f0e1f1c6d52222b8))
+* **geoservices:** address arbitrary GeoServices REST source roots and bound source bodies ([#376](https://github.com/honua-io/honua-sdk-dotnet/issues/376)) ([40cb193](https://github.com/honua-io/honua-sdk-dotnet/commit/40cb1938a267a8cfba5dcdbb6152544e55871440))
+* **geoservices:** certify lossless GeoServices REST source import on the 2026.1 candidate ([#372](https://github.com/honua-io/honua-sdk-dotnet/issues/372)) ([efaa836](https://github.com/honua-io/honua-sdk-dotnet/commit/efaa83644f1013e01aa59a28f0e1f1c6d52222b8))
 
 ## [1.7.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.6.4...dotnet-sdk-v1.7.0) (2026-09-14)
 
@@ -139,7 +139,7 @@ All notable changes to the Honua .NET SDK will be documented in this file.
 
 * **admin:** typed GeoServices/migration import lifecycle client ([#342](https://github.com/honua-io/honua-sdk-dotnet/issues/342)) ([9af4d40](https://github.com/honua-io/honua-sdk-dotnet/commit/9af4d40259084056e6c903791bb48c0c1cea3234))
 * **errors:** expose terminal failure receipts ([#333](https://github.com/honua-io/honua-sdk-dotnet/issues/333)) ([#335](https://github.com/honua-io/honua-sdk-dotnet/issues/335)) ([d92efe9](https://github.com/honua-io/honua-sdk-dotnet/commit/d92efe92c1a6c8b8542aff7ab486d9391cdd8b07))
-* **geoservices:** close source-client fidelity and completeness gaps for ArcGIS import ([#343](https://github.com/honua-io/honua-sdk-dotnet/issues/343)) ([0d2a5ea](https://github.com/honua-io/honua-sdk-dotnet/commit/0d2a5ea8d7859ea670fab49e69d1f8d2a09d7524))
+* **geoservices:** close source-client fidelity and completeness gaps for GeoServices REST import ([#343](https://github.com/honua-io/honua-sdk-dotnet/issues/343)) ([0d2a5ea](https://github.com/honua-io/honua-sdk-dotnet/commit/0d2a5ea8d7859ea670fab49e69d1f8d2a09d7524))
 
 
 ### Bug Fixes
@@ -265,7 +265,7 @@ All notable changes to the Honua .NET SDK will be documented in this file.
 
 ### Bug Fixes
 
-* correct GML numeric typing and Esri polygon ring orientation ([#239](https://github.com/honua-io/honua-sdk-dotnet/issues/239)) ([96bd16d](https://github.com/honua-io/honua-sdk-dotnet/commit/96bd16d6913951bf81b818ed0989a32785ddcdb5))
+* correct GML numeric typing and GeoServices polygon ring orientation ([#239](https://github.com/honua-io/honua-sdk-dotnet/issues/239)) ([96bd16d](https://github.com/honua-io/honua-sdk-dotnet/commit/96bd16d6913951bf81b818ed0989a32785ddcdb5))
 * correct vendored proto license header to Apache-2.0 ([#240](https://github.com/honua-io/honua-sdk-dotnet/issues/240)) ([2308379](https://github.com/honua-io/honua-sdk-dotnet/commit/23083799d4ccb7dc4b56703e19855f18702376ee))
 * harden auto-pagination handling and GeoServices error-code mapping ([#238](https://github.com/honua-io/honua-sdk-dotnet/issues/238)) ([6c34152](https://github.com/honua-io/honua-sdk-dotnet/commit/6c3415230eb58a6819963824c783ade7fae63135))
 

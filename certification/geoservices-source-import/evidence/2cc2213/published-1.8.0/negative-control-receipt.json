@@ -184,7 +184,7 @@
       "id": "auth.none-rejected",
       "criterion": "AC4 protected source without credentials fails explicitly",
       "verdict": "pass",
-      "detail": "HonuaFeatureServerException http=499 esriCode=499"
+      "detail": "HonuaFeatureServerException http=499 geoServicesCode=499"
     },
     {
       "id": "auth.api-key",
@@ -194,7 +194,7 @@
     },
     {
       "id": "auth.token",
-      "criterion": "AC4 ArcGIS token credential handler",
+      "criterion": "AC4 GeoServices REST token credential handler",
       "verdict": "pass",
       "detail": "count 25 over https; 2 request(s) all carried [token-param=True authorization=none x-api-key=False]"
     },
@@ -212,9 +212,9 @@
     },
     {
       "id": "auth.invalid-token",
-      "criterion": "AC4 HTTP-200 Esri error envelope for an invalid token",
+      "criterion": "AC4 HTTP-200 GeoServices error envelope for an invalid token",
       "verdict": "pass",
-      "detail": "HonuaFeatureServerException http=498 esriCode=498 details=3"
+      "detail": "HonuaFeatureServerException http=498 geoServicesCode=498 details=3"
     },
     {
       "id": "auth.basic-rejected",
@@ -224,15 +224,15 @@
     },
     {
       "id": "errors.http200-envelope.missing-layer",
-      "criterion": "AC4 HTTP-200 Esri error envelope",
+      "criterion": "AC4 HTTP-200 GeoServices error envelope",
       "verdict": "pass",
-      "detail": "HonuaFeatureServerException http=404 esriCode=404 details=3"
+      "detail": "HonuaFeatureServerException http=404 geoServicesCode=404 details=3"
     },
     {
       "id": "errors.http200-envelope.invalid-where",
-      "criterion": "AC4 HTTP-200 Esri error envelope",
+      "criterion": "AC4 HTTP-200 GeoServices error envelope",
       "verdict": "pass",
-      "detail": "HonuaFeatureServerException http=400 esriCode=400 details=4"
+      "detail": "HonuaFeatureServerException http=400 geoServicesCode=400 details=4"
     },
     {
       "id": "transport.injected-primary-handler",

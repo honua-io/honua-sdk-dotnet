@@ -81,12 +81,7 @@ public sealed class HonuaFeatureServerClient :
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HonuaFeatureServerClient"/> class that addresses an
-    /// arbitrary ArcGIS service root: any path prefix, foldered service ids, and FeatureServer or MapServer.
-    /// </summary>
-    /// <param name="httpClient">The HTTP client configured with auth handlers and, unless <see cref="HonuaFeatureServerClientOptions.RootAddress"/> is set, a base address.</param>
-    /// <param name="options">Addressing and response-size options. Values are captured at construction.</param>
+    /// <summary>Creates a client for an arbitrary GeoServices REST service root (path prefix, foldered service ids, FeatureServer or MapServer).</summary>
     public HonuaFeatureServerClient(HttpClient httpClient, HonuaFeatureServerClientOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -98,7 +93,7 @@ public sealed class HonuaFeatureServerClient :
 
         if (!Enum.IsDefined(options.ServiceType))
         {
-            throw new ArgumentException($"Unsupported ArcGIS service type '{options.ServiceType}'.", nameof(options));
+            throw new ArgumentException($"Unsupported GeoServices REST service type '{options.ServiceType}'.", nameof(options));
         }
 
         _http = httpClient;
@@ -603,7 +598,7 @@ public sealed class HonuaFeatureServerClient :
         {
             var page = await QueryAsync(serviceId, layerId, currentQuery, cancellationToken).ConfigureAwait(false);
 
-            // A source that ignores or repeats resultOffset (real Esri-compat behavior, e.g. a
+            // A source that ignores or repeats resultOffset (real GeoServices-compat behavior, e.g. a
             // layer without supportsPagination) re-serves records already yielded. Detect that
             // BEFORE yielding, so a caller never observes duplicates, and fail explicitly rather
             // than looping or silently truncating the result.
@@ -715,7 +710,7 @@ public sealed class HonuaFeatureServerClient :
 
         var mediaType = response.Content.Headers.ContentType?.MediaType;
         var inspectJson = !response.IsSuccessStatusCode
-            || vectorFormat is VectorPayloadFormat.EsriJson or VectorPayloadFormat.GeoJson
+            || vectorFormat is VectorPayloadFormat.GeoServicesJson or VectorPayloadFormat.GeoJson
             || IsJsonMediaType(mediaType);
         if (inspectJson)
         {
@@ -1480,11 +1475,6 @@ public sealed class HonuaFeatureServerClient :
         };
     }
 
-    /// <summary>
-    /// Resolves a service-relative path under <see cref="HonuaFeatureServerClientOptions.RootAddress"/> or the
-    /// HTTP client's base address, keeping any path prefix (for example <c>/Org123/arcgis/</c>) even when the
-    /// configured address omits its trailing slash.
-    /// </summary>
     private Uri CreateRequestUri(string relativeUrl)
     {
         var root = _rootAddress ?? _http.BaseAddress;

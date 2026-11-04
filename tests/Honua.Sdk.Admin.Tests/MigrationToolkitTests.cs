@@ -59,7 +59,7 @@ public sealed class MigrationToolkitTests
             new MigrationInventoryScanRequest
             {
                 SourceKind = "geoservices",
-                SourceUrl = "https://example.com/arcgis/rest/services/Parcels/FeatureServer"
+                SourceUrl = "https://example.com/gis/rest/services/Parcels/FeatureServer"
             },
             exportJson: true);
 
@@ -118,16 +118,16 @@ public sealed class MigrationToolkitTests
                   "inventory": {
                     "artifactKind": "honua.migration.source-inventory",
                     "artifactVersion": "1.0",
-                    "sourceKind": "arcgis-geoservices-rest",
+                    "sourceKind": "geoservices-rest",
                     "source": {
                       "displayName": "Field Ops",
-                      "baseUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer"
+                      "baseUrl": "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer"
                     }
                   },
                   "manifest": {
                     "artifactKind": "honua.migration.manifest",
                     "artifactVersion": "1.0",
-                    "sourceKind": "arcgis-geoservices-rest",
+                    "sourceKind": "geoservices-rest",
                     "summary": { "sourceResourceCount": 1, "targetResourceCount": 1 },
                     "targetResources": [
                       {
@@ -141,7 +141,7 @@ public sealed class MigrationToolkitTests
                   "parityEvidence": {
                     "artifactKind": "honua.migration.parity-evidence-pack",
                     "artifactVersion": "1.0",
-                    "sourceKind": "arcgis-geoservices-rest",
+                    "sourceKind": "geoservices-rest",
                     "overallState": "unknown",
                     "summary": "Manifest generated from the scan.",
                     "manifestAvailable": true
@@ -154,7 +154,7 @@ public sealed class MigrationToolkitTests
             new MigrationInventoryScanRequest
             {
                 SourceKind = "geoservices",
-                SourceUrl = "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                SourceUrl = "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
                 TargetServiceName = "field-ops"
             },
             artifactSet: "all",
@@ -165,7 +165,7 @@ public sealed class MigrationToolkitTests
         Assert.Equal("field-ops", sent.RootElement.GetProperty("targetServiceName").GetString());
         Assert.Equal("geoservices", sent.RootElement.GetProperty("sourceKind").GetString());
 
-        Assert.Equal("arcgis-geoservices-rest", result.Inventory.SourceKind);
+        Assert.Equal("geoservices-rest", result.Inventory.SourceKind);
         Assert.Equal("Field Ops", result.Inventory.Source.DisplayName);
         Assert.Equal(MigrationManifestArtifact.CurrentArtifactKind, result.Manifest.ArtifactKind);
         Assert.Equal("inspections", result.Manifest.TargetResources.Single().TargetResourceName);
@@ -195,7 +195,7 @@ public sealed class MigrationToolkitTests
     {
         var artifact = new MigrationManifestArtifact
         {
-            SourceKind = "arcgis-geoservices-rest",
+            SourceKind = "geoservices-rest",
             Source = CreateSourceIdentity(),
             Summary = new MigrationManifestSummary
             {
@@ -240,7 +240,7 @@ public sealed class MigrationToolkitTests
                 {
                     SourceStyleId = "style:parcels",
                     Action = "manual-review",
-                    Format = "arcgis-renderer",
+                    Format = "geoservices-renderer",
                     ResourceIds = ["resource:parcels"],
                     Compatibility = Partial()
                 }
@@ -251,7 +251,7 @@ public sealed class MigrationToolkitTests
                 {
                     SourceId = "style:parcels",
                     Kind = "renderer",
-                    Code = "ARCGIS_UNSUPPORTED_RENDERER",
+                    Code = "GEOSERVICES_UNSUPPORTED_RENDERER",
                     Severity = "manual-review",
                     Reason = "Renderer requires review.",
                     ManualSteps = ["Recreate renderer."]
@@ -279,7 +279,7 @@ public sealed class MigrationToolkitTests
 
         var roundTrip = JsonSerializer.Deserialize(json, HonuaAdminJsonContext.Default.MigrationManifestArtifact)!;
         Assert.Equal("manual-review", roundTrip.StyleActions.Single().Action);
-        Assert.Equal("ARCGIS_UNSUPPORTED_RENDERER", roundTrip.ManualReviewItems.Single().Code);
+        Assert.Equal("GEOSERVICES_UNSUPPORTED_RENDERER", roundTrip.ManualReviewItems.Single().Code);
         Assert.Equal("UNSUPPORTED", roundTrip.UnsupportedItems.Single().Code);
     }
 

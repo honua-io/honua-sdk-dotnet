@@ -14,15 +14,7 @@ using NetTopologySuite.Geometries;
 
 namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 
-/// <summary>
-/// Tests for the source-client fidelity/completeness gaps closed for #341: termination-guaranteed
-/// object-ID-batched paging, int64/GUID/null-geometry preservation, Z/M round-tripping, coded-value
-/// domain preservation, ArcGIS token/basic/bearer credential handling, and 429 Retry-After capture.
-/// Fixtures are hand-written raw JSON matching the real ArcGIS REST wire format (per the acceptance
-/// criteria's "distinguish true preservation from source metadata merely being recognized"), with
-/// independently computed expected values, not a serialize/deserialize snapshot of SDK output.
-/// </summary>
-public sealed class ArcGisSourceFidelityTests
+public sealed class GeoServicesSourceFidelityTests
 {
     [Fact]
     public async Task QueryAllFeaturesByObjectIdBatchesAsync_SourceIgnoresResultOffset_CompletesWithoutDuplicatesOrGaps()
@@ -127,7 +119,7 @@ public sealed class ArcGisSourceFidelityTests
     [Fact]
     public void GuidField_CasingAndBracesArePreservedVerbatim()
     {
-        // Esri GlobalIDs are canonically upper-case, brace-wrapped GUIDs; a lossy consumer that
+        // GeoServices GlobalIDs are canonically upper-case, brace-wrapped GUIDs; a lossy consumer that
         // normalizes casing or strips braces breaks joins against the source system of record.
         const string expected = "{6F9619FF-8B86-D011-B42D-00C04FC964FF}";
         var json = $$"""{ "attributes": { "GlobalID": "{{expected}}" } }""";
@@ -294,7 +286,7 @@ public sealed class ArcGisSourceFidelityTests
     }
 
     [Fact]
-    public async Task ArcGisSourceCredentialHandler_TokenMode_AppendsTokenQueryParameter()
+    public async Task GeoServicesSourceCredentialHandler_TokenMode_AppendsTokenQueryParameter()
     {
         HttpRequestMessage? captured = null;
         var inner = new CapturingHandler(req =>
@@ -302,17 +294,17 @@ public sealed class ArcGisSourceFidelityTests
             captured = req;
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
         });
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Token, Token = "abc123" };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Token, Token = "abc123" };
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://source.example.com") };
 
-        await http.GetAsync("/arcgis/rest/services/Parcels/FeatureServer/0?f=json");
+        await http.GetAsync("/gis/rest/services/Parcels/FeatureServer/0?f=json");
 
         Assert.Contains("token=abc123", captured!.RequestUri!.Query);
     }
 
     [Fact]
-    public async Task ArcGisSourceCredentialHandler_TokenProvider_TakesPrecedenceAndIsInvokedPerRequest()
+    public async Task GeoServicesSourceCredentialHandler_TokenProvider_TakesPrecedenceAndIsInvokedPerRequest()
     {
         HttpRequestMessage? captured = null;
         var inner = new CapturingHandler(req =>
@@ -321,23 +313,23 @@ public sealed class ArcGisSourceFidelityTests
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
         });
         var callCount = 0;
-        var credential = new ArcGisSourceCredential
+        var credential = new GeoServicesSourceCredential
         {
-            Mode = ArcGisCredentialMode.Token,
+            Mode = GeoServicesCredentialMode.Token,
             Token = "static-should-not-be-used",
             TokenProvider = _ => { callCount++; return Task.FromResult<string?>("dynamic-token"); }
         };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://source.example.com") };
 
-        await http.GetAsync("/arcgis/rest/services/Parcels/FeatureServer/0?f=json");
+        await http.GetAsync("/gis/rest/services/Parcels/FeatureServer/0?f=json");
 
         Assert.Contains("token=dynamic-token", captured!.RequestUri!.Query);
         Assert.Equal(1, callCount);
     }
 
     [Fact]
-    public async Task ArcGisSourceCredentialHandler_BasicMode_SetsExpectedAuthorizationHeader()
+    public async Task GeoServicesSourceCredentialHandler_BasicMode_SetsExpectedAuthorizationHeader()
     {
         HttpRequestMessage? captured = null;
         var inner = new CapturingHandler(req =>
@@ -345,16 +337,16 @@ public sealed class ArcGisSourceFidelityTests
             captured = req;
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
         });
-        var credential = new ArcGisSourceCredential
+        var credential = new GeoServicesSourceCredential
         {
-            Mode = ArcGisCredentialMode.Basic,
+            Mode = GeoServicesCredentialMode.Basic,
             Username = "gis-user",
             Password = "hunter2"
         };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://source.example.com") };
 
-        await http.GetAsync("/arcgis/rest/services/Parcels/FeatureServer/0?f=json");
+        await http.GetAsync("/gis/rest/services/Parcels/FeatureServer/0?f=json");
 
         // Independently computed: base64("gis-user:hunter2").
         var expected = Convert.ToBase64String(Encoding.UTF8.GetBytes("gis-user:hunter2"));
@@ -363,7 +355,7 @@ public sealed class ArcGisSourceFidelityTests
     }
 
     [Fact]
-    public async Task ArcGisSourceCredentialHandler_BearerMode_SetsBearerHeader()
+    public async Task GeoServicesSourceCredentialHandler_BearerMode_SetsBearerHeader()
     {
         HttpRequestMessage? captured = null;
         var inner = new CapturingHandler(req =>
@@ -371,21 +363,21 @@ public sealed class ArcGisSourceFidelityTests
             captured = req;
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
         });
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Bearer, BearerToken = "xyz789" };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Bearer, BearerToken = "xyz789" };
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://source.example.com") };
 
-        await http.GetAsync("/arcgis/rest/services/Parcels/FeatureServer/0?f=json");
+        await http.GetAsync("/gis/rest/services/Parcels/FeatureServer/0?f=json");
 
         Assert.Equal(new AuthenticationHeaderValue("Bearer", "xyz789"), captured!.Headers.Authorization);
     }
 
     [Fact]
-    public async Task ArcGisSourceCredentialHandler_DefaultInnerHandler_IsDisposedWithHandler()
+    public async Task GeoServicesSourceCredentialHandler_DefaultInnerHandler_IsDisposedWithHandler()
     {
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.None };
         HttpMessageHandler inner;
-        using (var handler = new ArcGisSourceCredentialHandler(credential))
+        using (var handler = new GeoServicesSourceCredentialHandler(credential))
         {
             inner = handler.InnerHandler!;
         }
@@ -397,11 +389,11 @@ public sealed class ArcGisSourceFidelityTests
     }
 
     [Fact]
-    public void ArcGisSourceCredentialHandler_SuppliedInnerHandler_IsDisposedExactlyOnce()
+    public void GeoServicesSourceCredentialHandler_SuppliedInnerHandler_IsDisposedExactlyOnce()
     {
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None };
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.None };
         using var inner = new DisposalTrackingHandler();
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
 
         Assert.Equal(0, inner.DisposeCount);
         handler.Dispose();

@@ -7,23 +7,18 @@ using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.Admin.Models;
 
-/// <summary>
-/// ArcGIS credential descriptor for GeoServices discovery and import requests. Prefer the
-/// <c>*SecretReference</c> fields for queued/durable operations; the inline <see cref="AccessToken"/>
-/// and <see cref="Password"/> fields are accepted by the server for discovery-only calls but are
-/// rejected for queued imports.
-/// </summary>
+/// <summary>Source credentials for GeoServices REST discovery and import; queued imports accept only the secret-reference fields.</summary>
 public sealed record GeoservicesCredentialDescriptor
 {
     /// <summary>Authentication mode label (for example <c>token</c>, <c>basic</c>, <c>bearer</c>, or <c>oauth</c>).</summary>
     [JsonPropertyName("mode")]
     public string? Mode { get; init; }
 
-    /// <summary>Secret reference for an ArcGIS token or OAuth access token.</summary>
+    /// <summary>Secret reference for a GeoServices REST token or OAuth access token.</summary>
     [JsonPropertyName("accessTokenSecretReference")]
     public string? AccessTokenSecretReference { get; init; }
 
-    /// <summary>Inline ArcGIS token or OAuth access token. Discovery-only; rejected for queued imports.</summary>
+    /// <summary>Inline GeoServices REST token or OAuth access token. Discovery-only; rejected for queued imports.</summary>
     [JsonPropertyName("accessToken")]
     public string? AccessToken { get; init; }
 
@@ -48,13 +43,10 @@ public sealed record GeoservicesCredentialDescriptor
     public string? OAuthTokenEndpoint { get; init; }
 }
 
-/// <summary>
-/// Request to discover the layers and metadata exposed by an ArcGIS service
-/// (<c>POST /api/v1/admin/import/geoservices/discover</c>).
-/// </summary>
+/// <summary>Request body for <c>POST /api/v1/admin/import/geoservices/discover</c>.</summary>
 public sealed record GeoservicesDiscoverRequest
 {
-    /// <summary>URL of the ArcGIS service to discover.</summary>
+    /// <summary>URL of the GeoServices REST service to discover.</summary>
     [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "The GeoServices import JSON contract represents source URLs as strings.")]
     [JsonPropertyName("serviceUrl")]
     public required string ServiceUrl { get; init; }
@@ -63,12 +55,12 @@ public sealed record GeoservicesDiscoverRequest
     [JsonPropertyName("timeoutSeconds")]
     public int? TimeoutSeconds { get; init; }
 
-    /// <summary>Optional ArcGIS credential descriptor for discovery.</summary>
+    /// <summary>Optional GeoServices REST credential descriptor for discovery.</summary>
     [JsonPropertyName("credentials")]
     public GeoservicesCredentialDescriptor? Credentials { get; init; }
 }
 
-/// <summary>Layer summary returned by ArcGIS service discovery.</summary>
+/// <summary>Layer summary returned by GeoServices REST service discovery.</summary>
 public sealed record GeoservicesLayerSummary
 {
     /// <summary>Source layer id.</summary>
@@ -83,7 +75,7 @@ public sealed record GeoservicesLayerSummary
     [JsonPropertyName("description")]
     public string? Description { get; init; }
 
-    /// <summary>Esri geometry type (for example <c>esriGeometryPoint</c>).</summary>
+    /// <summary>GeoServices geometry type (for example <c>esriGeometryPoint</c>).</summary>
     [JsonPropertyName("geometryType")]
     public string? GeometryType { get; init; }
 
@@ -131,7 +123,7 @@ public sealed record GeoservicesDiscoverResponse
 /// </summary>
 public sealed record GeoservicesStartImportRequest
 {
-    /// <summary>URL of the ArcGIS service.</summary>
+    /// <summary>URL of the GeoServices REST service.</summary>
     [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "The GeoServices import JSON contract represents source URLs as strings.")]
     [JsonPropertyName("serviceUrl")]
     public required string ServiceUrl { get; init; }
@@ -156,7 +148,7 @@ public sealed record GeoservicesStartImportRequest
     [JsonPropertyName("overwriteExisting")]
     public bool? OverwriteExisting { get; init; }
 
-    /// <summary>Optional Esri WHERE clause used to filter source features.</summary>
+    /// <summary>Optional GeoServices WHERE clause used to filter source features.</summary>
     [JsonPropertyName("whereClause")]
     public string? WhereClause { get; init; }
 
@@ -184,10 +176,7 @@ public sealed record GeoservicesStartImportRequest
     [JsonPropertyName("serviceName")]
     public string? ServiceName { get; init; }
 
-    /// <summary>
-    /// Optional ArcGIS credential descriptor. Queued imports must use the
-    /// <c>*SecretReference</c> fields; inline secrets are rejected.
-    /// </summary>
+    /// <summary>Optional source credentials; queued imports accept only the secret-reference fields.</summary>
     [JsonPropertyName("credentials")]
     public GeoservicesCredentialDescriptor? Credentials { get; init; }
 }
@@ -329,14 +318,14 @@ public sealed record GeoservicesImportProgress
     [JsonPropertyName("percentComplete")]
     public double? PercentComplete { get; init; }
 
-    /// <summary>Source ArcGIS service URL.</summary>
+    /// <summary>Source GeoServices REST service URL.</summary>
     [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "The GeoServices import JSON contract represents source URLs as strings.")]
     [JsonPropertyName("sourceServiceUrl")]
     public required string SourceServiceUrl { get; init; }
 
     /// <summary>Stable source kind identifier.</summary>
     [JsonPropertyName("sourceKind")]
-    public string SourceKind { get; init; } = "arcgis-geoservices-rest";
+    public string SourceKind { get; init; } = "geoservices-rest";
 
     /// <summary>Source layer id.</summary>
     [JsonPropertyName("sourceLayerId")]
@@ -704,7 +693,7 @@ public sealed record MigrationBatchLayerSpec
     [JsonPropertyName("sourceResourceId")]
     public required string SourceResourceId { get; init; }
 
-    /// <summary>Source ArcGIS service URL.</summary>
+    /// <summary>Source GeoServices REST service URL.</summary>
     [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "The GeoServices import JSON contract represents source URLs as strings.")]
     [JsonPropertyName("serviceUrl")]
     public required string ServiceUrl { get; init; }
@@ -736,7 +725,7 @@ public sealed record MigrationBatchLayerSpec
 /// </summary>
 public sealed record MigrationBatchStartRequest
 {
-    /// <summary>Source kind identifier, such as <c>arcgis-geoservices-rest</c>.</summary>
+    /// <summary>Source kind identifier, such as <c>geoservices-rest</c>.</summary>
     [JsonPropertyName("sourceKind")]
     public required string SourceKind { get; init; }
 
@@ -781,7 +770,7 @@ public sealed record MigrationBatchChildResponse
     [JsonPropertyName("sourceResourceId")]
     public required string SourceResourceId { get; init; }
 
-    /// <summary>Source ArcGIS service URL.</summary>
+    /// <summary>Source GeoServices REST service URL.</summary>
     [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "The migration batch JSON contract represents source URLs as strings.")]
     [JsonPropertyName("serviceUrl")]
     public required string ServiceUrl { get; init; }
@@ -1098,7 +1087,7 @@ public sealed record MigrationRunDto
     [JsonPropertyName("runId")]
     public required string RunId { get; init; }
 
-    /// <summary>Source kind (for example <c>arcgis-geoservices-rest</c>).</summary>
+    /// <summary>Source kind (for example <c>geoservices-rest</c>).</summary>
     [JsonPropertyName("sourceKind")]
     public required string SourceKind { get; init; }
 

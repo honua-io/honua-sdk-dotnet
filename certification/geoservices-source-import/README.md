@@ -1,7 +1,7 @@
 # GeoServices source-import certification
 
-This directory certifies the supported ArcGIS service/layer source representations through the
-**installed** `Honua.Sdk.GeoServices` package against a live ArcGIS REST source,
+This directory certifies the supported GeoServices REST service/layer source representations through the
+**installed** `Honua.Sdk.GeoServices` package against a live GeoServices REST source,
 for [honua-sdk-dotnet#341](https://github.com/honua-io/honua-sdk-dotnet/issues/341).
 
 It is not part of `Honua.Sdk.sln` and never builds against SDK source: the
@@ -98,7 +98,7 @@ published-bytes receipt and cannot close #341.
 
 The negative control failed exactly `data.int64-precision` in the 1.10.0 replay
 (expected `9007199254740992`, actual `9007199254740993`), as required. The
-focused ArcGIS source regression suite also passed all 83 tests with zero skips;
+focused GeoServices REST source regression suite also passed all 83 tests with zero skips;
 named results are in the 1.10.0 evidence directory. The 41 passing cells comprise
 40 live-source/package-identity cells and one supplemental authored transport
 fixture cell; the three released live cases are not included in that count.

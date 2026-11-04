@@ -18,7 +18,7 @@ it, and fails the build if a mapped key does not actually exist in the
 resolved list.
 
 Key-list resolution order (same pattern used by honua-samples and
-honua-esri-assess):
+the readiness-assessment tool):
 
 1. **`KEY_LIST_URL` env var**, if set to an `http(s)` URL -- fetched at run
    time. This is the one-line swap point if CI ever needs to pin a different

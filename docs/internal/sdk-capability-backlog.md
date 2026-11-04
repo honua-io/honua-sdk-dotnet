@@ -6,35 +6,14 @@
 > opening or implementing follow-up work.
 
 This backlog maps Honua .NET SDK gaps against the capability areas exposed by
-ArcGIS Maps SDK for .NET 300.x, while deliberately excluding UI, map display,
+desktop GIS client capabilities, while deliberately excluding UI, map display,
 scene display, renderer, labeling, and toolkit component work from the core SDK
 scope.
 
 Cross-repo implementation order is tracked in
 [`cross-repo-sdk-sequencing.md`](cross-repo-sdk-sequencing.md).
 
-Reference capability areas:
-
-- ArcGIS .NET key features:
-  https://developers.arcgis.com/net/key-features/
-- Query:
-  https://developers.arcgis.com/net/query/
-- Edit features:
-  https://developers.arcgis.com/net/edit-features/
-- Geometry and spatial reference:
-  https://developers.arcgis.com/net/geometry-and-spatial-reference/
-- Offline maps, scenes, and data:
-  https://developers.arcgis.com/net/offline-maps-scenes-and-data/
-- Geocode and search:
-  https://developers.arcgis.com/net/geocode-and-search/
-- Route and directions:
-  https://developers.arcgis.com/net/route-and-directions/
-- Real-time:
-  https://developers.arcgis.com/net/real-time/
-- Portal metadata and search:
-  https://developers.arcgis.com/net/arcgis-organization-portals/portal-metadata-and-search/
-- Security and authentication:
-  https://developers.arcgis.com/net/security-and-authentication/
+Capability research covers common query, editing, geometry, offline, geocoding, routing, real-time, portal, security, and display workflows across desktop GIS clients.
 
 ## Scope Gate
 
@@ -739,7 +718,7 @@ For web display, a pragmatic stack is:
 
 This is a good fit because deck.gl is built for high-performance WebGPU/WebGL2
 visualization, accepts GeoJSON through `GeoJsonLayer`, supports picking, and
-integrates with basemap providers including MapLibre and ArcGIS. MapLibre should
+integrates with MapLibre and other basemap services. MapLibre should
 own cartographic base-map behavior; deck.gl should own data visualization
 overlays. Native .NET display can be evaluated separately with MAUI/WPF-specific
 packages, but those should consume the same source descriptors and GeoJSON or

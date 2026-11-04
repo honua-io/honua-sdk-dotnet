@@ -1,6 +1,6 @@
 # Honua.Sdk.GeoServices
 
-REST clients for the Honua FeatureServer (ArcGIS GeoServices-compatible) read,
+REST clients for the Honua FeatureServer (GeoServices REST GeoServices-compatible) read,
 query, statistics, and apply-edits API, plus the GeoServices NAServer routing,
 service-area, and closest-facility client.
 
@@ -46,19 +46,19 @@ await foreach (var page in client.QueryPagesAsync(
 }
 ```
 
-### ArcGIS sources (import)
+### GeoServices REST sources (import)
 
-`HonuaFeatureServerClient` can also read an external ArcGIS service. Parse the
-service root URL: it may carry a path prefix (ArcGIS Online `/<org>/arcgis/`, a web
-adaptor's `/arcgis/`), folders (`Utilities/Water`), and `FeatureServer` or
+`HonuaFeatureServerClient` can also read an external GeoServices REST service. Parse the
+service root URL: it may carry a path prefix (hosted GIS organization `/<org>/gis/`, a web
+adaptor's `/gis/`), folders (`Utilities/Water`), and `FeatureServer` or
 `MapServer`. Discovery, query, `queryAttachments` and attachment requests all
 resolve under that root.
 
 ```csharp
 using Honua.Sdk.GeoServices.FeatureServer;
 
-var root = ArcGisServiceRoot.Parse(
-    new Uri("https://gis.example.com/arcgis/rest/services/Utilities/Water/MapServer"));
+var root = GeoServicesServiceRoot.Parse(
+    new Uri("https://gis.example.com/gis/rest/services/Utilities/Water/MapServer"));
 var source = new HonuaFeatureServerClient(httpClient, root.ToClientOptions());
 
 var layer = await source.GetLayerInfoAsync(root.ServiceId, 0, cancellationToken);

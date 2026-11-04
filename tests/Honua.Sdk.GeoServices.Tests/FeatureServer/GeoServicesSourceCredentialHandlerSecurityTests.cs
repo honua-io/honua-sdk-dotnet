@@ -11,32 +11,28 @@ using Honua.Sdk.GeoServices.FeatureServer;
 
 namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 
-/// <summary>
-/// Transport guards on <see cref="ArcGisSourceCredentialHandler"/>: the plain-HTTP credential guard,
-/// redirect suppression on the default transport, and binding the credential to the source origin.
-/// </summary>
-public sealed class ArcGisSourceCredentialHandlerSecurityTests
+public sealed class GeoServicesSourceCredentialHandlerSecurityTests
 {
-    private static readonly Uri HttpsSource = new("https://source.example.com/arcgis/rest/services/");
+    private static readonly Uri HttpsSource = new("https://source.example.com/gis/rest/services/");
 
-    public static TheoryData<ArcGisSourceCredential> Credentials() => new()
+    public static TheoryData<GeoServicesSourceCredential> Credentials() => new()
     {
-        new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Token, Token = "abc123" },
-        new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Basic, Username = "gis-user", Password = "hunter2" },
-        new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Bearer, BearerToken = "xyz789" },
+        new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Token, Token = "abc123" },
+        new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Basic, Username = "gis-user", Password = "hunter2" },
+        new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Bearer, BearerToken = "xyz789" },
     };
 
     [Theory]
     [MemberData(nameof(Credentials))]
-    public async Task PlainHttpNonLoopbackRequest_WithCredential_Throws(ArcGisSourceCredential credential)
+    public async Task PlainHttpNonLoopbackRequest_WithCredential_Throws(GeoServicesSourceCredential credential)
     {
         var inner = new CapturingHandler();
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler);
 
         // Same type and message as HonuaAuthHandler<TOptions> for the same send-time refusal.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => http.GetAsync(new Uri("http://source.example.com/arcgis/rest/services/Parcels/FeatureServer/0?f=json")));
+            () => http.GetAsync(new Uri("http://source.example.com/gis/rest/services/Parcels/FeatureServer/0?f=json")));
 
         Assert.Equal(HonuaAuthenticationSupport.InsecureTransportRejectedMessage, exception.Message);
         Assert.Null(inner.Captured);
@@ -44,11 +40,11 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
 
     [Theory]
     [MemberData(nameof(Credentials))]
-    public void PlainHttpNonLoopbackSourceBaseAddress_WithCredential_ThrowsAtConstruction(ArcGisSourceCredential credential)
+    public void PlainHttpNonLoopbackSourceBaseAddress_WithCredential_ThrowsAtConstruction(GeoServicesSourceCredential credential)
     {
-        var bound = credential with { SourceBaseAddress = new Uri("http://source.example.com/arcgis/") };
+        var bound = credential with { SourceBaseAddress = new Uri("http://source.example.com/gis/") };
 
-        var exception = Assert.Throws<HonuaConfigurationException>(() => new ArcGisSourceCredentialHandler(bound, new CapturingHandler()));
+        var exception = Assert.Throws<HonuaConfigurationException>(() => new GeoServicesSourceCredentialHandler(bound, new CapturingHandler()));
 
         Assert.Equal(HonuaAuthenticationSupport.InsecureTransportRejectedMessage, exception.Message);
     }
@@ -57,29 +53,29 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
     public async Task PlainHttpNonLoopbackRequest_WithoutCredential_IsAllowed()
     {
         var inner = new CapturingHandler();
-        using var handler = new ArcGisSourceCredentialHandler(new ArcGisSourceCredential { Mode = ArcGisCredentialMode.None }, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.None }, inner);
         using var http = new HttpClient(handler);
 
-        using var response = await http.GetAsync(new Uri("http://source.example.com/arcgis/rest/services?f=json"));
+        using var response = await http.GetAsync(new Uri("http://source.example.com/gis/rest/services?f=json"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Null(inner.Captured!.Headers.Authorization);
     }
 
     [Theory]
-    [InlineData("http://localhost:6080/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
-    [InlineData("http://127.0.0.1:6080/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
-    [InlineData("http://[::1]:6080/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("http://localhost:6080/gis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("http://127.0.0.1:6080/gis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("http://[::1]:6080/gis/rest/services/Parcels/FeatureServer/0?f=json")]
     public async Task PlainHttpLoopbackRequest_WithCredential_IsAllowed(string address)
     {
         var inner = new CapturingHandler();
-        var credential = new ArcGisSourceCredential
+        var credential = new GeoServicesSourceCredential
         {
-            Mode = ArcGisCredentialMode.Token,
+            Mode = GeoServicesCredentialMode.Token,
             Token = "abc123",
             SourceBaseAddress = new Uri(address),
         };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler);
 
         await http.GetAsync(new Uri(address));
@@ -88,21 +84,21 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
     }
 
     [Theory]
-    [InlineData("https://attacker.example/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
-    [InlineData("http://source.example.com/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
-    [InlineData("https://source.example.com:8443/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
-    [InlineData("https://sub.source.example.com/arcgis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("https://attacker.example/gis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("http://source.example.com/gis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("https://source.example.com:8443/gis/rest/services/Parcels/FeatureServer/0?f=json")]
+    [InlineData("https://sub.source.example.com/gis/rest/services/Parcels/FeatureServer/0?f=json")]
     public async Task DifferentOriginRequest_DoesNotCarryCredential(string address)
     {
         foreach (var credential in new[]
         {
-            new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Token, Token = "abc123", SourceBaseAddress = HttpsSource },
-            new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Basic, Username = "u", Password = "p", SourceBaseAddress = HttpsSource },
-            new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Bearer, BearerToken = "xyz789", SourceBaseAddress = HttpsSource },
+            new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Token, Token = "abc123", SourceBaseAddress = HttpsSource },
+            new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Basic, Username = "u", Password = "p", SourceBaseAddress = HttpsSource },
+            new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Bearer, BearerToken = "xyz789", SourceBaseAddress = HttpsSource },
         })
         {
             var inner = new CapturingHandler();
-            using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+            using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
             using var http = new HttpClient(handler);
 
             await http.GetAsync(new Uri(address));
@@ -114,18 +110,18 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
 
     [Theory]
     [MemberData(nameof(Credentials))]
-    public async Task WithoutSourceBaseAddress_RejectedPlainHttpRequest_DoesNotBindOrigin(ArcGisSourceCredential credential)
+    public async Task WithoutSourceBaseAddress_RejectedPlainHttpRequest_DoesNotBindOrigin(GeoServicesSourceCredential credential)
     {
         var inner = new CapturingHandler();
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => http.GetAsync(new Uri("http://source.example.com/arcgis/rest/services?f=json")));
+            () => http.GetAsync(new Uri("http://source.example.com/gis/rest/services?f=json")));
         Assert.Null(inner.Captured);
 
         // The HTTPS retry the refusal asks for must still carry the credential.
-        await http.GetAsync(new Uri("https://source.example.com/arcgis/rest/services?f=json"));
+        await http.GetAsync(new Uri("https://source.example.com/gis/rest/services?f=json"));
         var captured = inner.Captured!;
         Assert.True(
             captured.Headers.Authorization is not null ||
@@ -137,17 +133,17 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
     public async Task WithoutSourceBaseAddress_CredentialIsBoundToFirstRequestOrigin()
     {
         var inner = new CapturingHandler();
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Bearer, BearerToken = "xyz789" };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Bearer, BearerToken = "xyz789" };
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler);
 
-        await http.GetAsync(new Uri("https://source.example.com/arcgis/rest/services?f=json"));
+        await http.GetAsync(new Uri("https://source.example.com/gis/rest/services?f=json"));
         Assert.Equal(new AuthenticationHeaderValue("Bearer", "xyz789"), inner.Captured!.Headers.Authorization);
 
         await http.GetAsync(new Uri("https://attacker.example/steal"));
         Assert.Null(inner.Captured!.Headers.Authorization);
 
-        await http.GetAsync(new Uri("https://source.example.com/arcgis/rest/services/Parcels/FeatureServer?f=json"));
+        await http.GetAsync(new Uri("https://source.example.com/gis/rest/services/Parcels/FeatureServer?f=json"));
         Assert.Equal(new AuthenticationHeaderValue("Bearer", "xyz789"), inner.Captured!.Headers.Authorization);
     }
 
@@ -155,37 +151,37 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
     public async Task SameOriginHttpsRequest_GetsToken()
     {
         var inner = new CapturingHandler();
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Token, Token = "a b&c", SourceBaseAddress = HttpsSource };
-        using var handler = new ArcGisSourceCredentialHandler(credential, inner);
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Token, Token = "a b&c", SourceBaseAddress = HttpsSource };
+        using var handler = new GeoServicesSourceCredentialHandler(credential, inner);
         using var http = new HttpClient(handler) { BaseAddress = HttpsSource };
 
         await http.GetAsync(new Uri("Parcels/FeatureServer/0?f=json", UriKind.Relative));
 
-        Assert.Equal("https://source.example.com/arcgis/rest/services/Parcels/FeatureServer/0?f=json&token=a%20b%26c", inner.Captured!.RequestUri!.AbsoluteUri);
+        Assert.Equal("https://source.example.com/gis/rest/services/Parcels/FeatureServer/0?f=json&token=a%20b%26c", inner.Captured!.RequestUri!.AbsoluteUri);
     }
 
     [Fact]
     public async Task SameOriginHttpsRequest_GetsBasicAndBearerHeaders()
     {
         var basicInner = new CapturingHandler();
-        using (var handler = new ArcGisSourceCredentialHandler(
-            new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Basic, Username = "gis-user", Password = "hunter2", SourceBaseAddress = HttpsSource },
+        using (var handler = new GeoServicesSourceCredentialHandler(
+            new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Basic, Username = "gis-user", Password = "hunter2", SourceBaseAddress = HttpsSource },
             basicInner))
         using (var http = new HttpClient(handler))
         {
-            await http.GetAsync(new Uri("https://source.example.com:443/arcgis/rest/services?f=json"));
+            await http.GetAsync(new Uri("https://source.example.com:443/gis/rest/services?f=json"));
         }
 
         var expected = Convert.ToBase64String(Encoding.UTF8.GetBytes("gis-user:hunter2"));
         Assert.Equal(new AuthenticationHeaderValue("Basic", expected), basicInner.Captured!.Headers.Authorization);
 
         var bearerInner = new CapturingHandler();
-        using (var handler = new ArcGisSourceCredentialHandler(
-            new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Bearer, BearerToken = "xyz789", SourceBaseAddress = HttpsSource },
+        using (var handler = new GeoServicesSourceCredentialHandler(
+            new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Bearer, BearerToken = "xyz789", SourceBaseAddress = HttpsSource },
             bearerInner))
         using (var http = new HttpClient(handler))
         {
-            await http.GetAsync(new Uri("https://SOURCE.example.com/arcgis/rest/services?f=json"));
+            await http.GetAsync(new Uri("https://SOURCE.example.com/gis/rest/services?f=json"));
         }
 
         Assert.Equal(new AuthenticationHeaderValue("Bearer", "xyz789"), bearerInner.Captured!.Headers.Authorization);
@@ -194,14 +190,14 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
     [Fact]
     public void InvalidSourceBaseAddress_Throws()
     {
-        var credential = new ArcGisSourceCredential
+        var credential = new GeoServicesSourceCredential
         {
-            Mode = ArcGisCredentialMode.Token,
+            Mode = GeoServicesCredentialMode.Token,
             Token = "abc123",
             SourceBaseAddress = new Uri("ftp://source.example.com/"),
         };
 
-        Assert.Throws<HonuaConfigurationException>(() => new ArcGisSourceCredentialHandler(credential, new CapturingHandler()));
+        Assert.Throws<HonuaConfigurationException>(() => new GeoServicesSourceCredentialHandler(credential, new CapturingHandler()));
     }
 
     [Fact]
@@ -222,16 +218,16 @@ public sealed class ArcGisSourceCredentialHandlerSecurityTests
         var serverTask = ServeSingleRedirectAsync(source, $"http://127.0.0.1:{targetPort}/collect", cts.Token);
 #pragma warning restore CA2025
 
-        var credential = new ArcGisSourceCredential
+        var credential = new GeoServicesSourceCredential
         {
-            Mode = ArcGisCredentialMode.Token,
+            Mode = GeoServicesCredentialMode.Token,
             Token = "abc123",
             SourceBaseAddress = new Uri($"http://127.0.0.1:{sourcePort}/"),
         };
-        using var handler = new ArcGisSourceCredentialHandler(credential);
+        using var handler = new GeoServicesSourceCredentialHandler(credential);
         using var http = new HttpClient(handler);
 
-        using var response = await http.GetAsync(new Uri($"http://127.0.0.1:{sourcePort}/arcgis/rest/services?f=json"), cts.Token);
+        using var response = await http.GetAsync(new Uri($"http://127.0.0.1:{sourcePort}/gis/rest/services?f=json"), cts.Token);
 
         Assert.Equal(HttpStatusCode.Found, response.StatusCode);
         var requestLine = await serverTask;

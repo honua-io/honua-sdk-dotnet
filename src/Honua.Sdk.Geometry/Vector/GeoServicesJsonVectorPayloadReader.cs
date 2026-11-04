@@ -8,21 +8,19 @@ using NetTopologySuite.Geometries;
 
 namespace Honua.Sdk.Geometry.Vector;
 
-/// <summary>
-/// Reads GeoServices/Esri JSON feature payloads into typed vector features.
-/// </summary>
-public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
+/// <summary>Reads GeoServices JSON feature payloads into typed vector features.</summary>
+public sealed class GeoServicesJsonVectorPayloadReader : IVectorPayloadReader
 {
     private static readonly GeometryFactory DefaultGeometryFactory =
         NtsGeometryServices.Instance.CreateGeometryFactory();
 
     /// <summary>Shared stateless reader instance.</summary>
-    public static EsriJsonVectorPayloadReader Instance { get; } = new();
+    public static GeoServicesJsonVectorPayloadReader Instance { get; } = new();
 
-    /// <inheritdoc />
-    public VectorPayloadFormat Format => VectorPayloadFormat.EsriJson;
+    /// <summary>The GeoServices JSON vector payload format.</summary>
+    public VectorPayloadFormat Format => VectorPayloadFormat.GeoServicesJson;
 
-    /// <inheritdoc />
+    /// <summary>Reads a GeoServices JSON payload from a stream.</summary>
     public async Task<VectorPayloadFeatureSet> ReadAsync(
         Stream stream,
         VectorPayloadReadOptions? options = null,
@@ -34,17 +32,12 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
         return Read(document.RootElement, options);
     }
 
-    /// <summary>
-    /// Reads a GeoServices/Esri JSON payload from a JSON element.
-    /// </summary>
-    /// <param name="root">Payload root element.</param>
-    /// <param name="options">Optional reader settings.</param>
-    /// <returns>The typed feature collection.</returns>
+    /// <summary>Reads a GeoServices JSON payload from a JSON element.</summary>
     public VectorPayloadFeatureSet Read(JsonElement root, VectorPayloadReadOptions? options = null)
     {
         if (root.ValueKind != JsonValueKind.Object)
         {
-            throw new JsonException("Esri JSON vector payload must be a JSON object.");
+            throw new JsonException("GeoServices JSON vector payload must be a JSON object.");
         }
 
         var spatialReference = root.TryGetProperty("spatialReference", out var srElement)
@@ -213,8 +206,7 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
             return null;
         }
 
-        // Esri provides latestWkid as the EPSG-correct code when the wkid is an
-        // Esri-proprietary identifier; prefer it when present.
+        // latestWkid carries the EPSG code when wkid is a non-EPSG identifier.
         if (TryGetInt32(spatialReference, "latestWkid", out var latestWkid) && latestWkid > 0)
         {
             return FormatWkidAuthority(latestWkid);
@@ -228,13 +220,7 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
         return TryGetString(spatialReference, "wkt");
     }
 
-    /// <summary>
-    /// Formats an Esri WKID as an authority-qualified CRS identifier. Known
-    /// Esri-proprietary WKIDs are mapped to their EPSG equivalents (e.g. 102100 and
-    /// 102113 to Web Mercator EPSG:3857). WKIDs that fall in Esri-only ranges with no
-    /// EPSG equivalent are emitted with an <c>ESRI:</c> authority prefix so EPSG-based
-    /// resolvers do not choke; all other codes are treated as standard EPSG codes.
-    /// </summary>
+    // ESRI:<code> is the PROJ/GDAL/OGC authority name for these codes; keep it for interop.
     private static string FormatWkidAuthority(int wkid)
     {
         switch (wkid)
@@ -244,17 +230,12 @@ public sealed class EsriJsonVectorPayloadReader : IVectorPayloadReader
                 return "EPSG:3857";
         }
 
-        return IsEsriProprietaryWkid(wkid)
+        return IsNonEpsgWkid(wkid)
             ? string.Create(CultureInfo.InvariantCulture, $"ESRI:{wkid}")
             : string.Create(CultureInfo.InvariantCulture, $"EPSG:{wkid}");
     }
 
-    /// <summary>
-    /// Returns whether the given WKID falls in a range reserved for Esri-proprietary
-    /// spatial references that are not EPSG codes (the 53xxx, 54xxx, and 102xxx
-    /// ranges), excluding codes already mapped to an EPSG equivalent.
-    /// </summary>
-    private static bool IsEsriProprietaryWkid(int wkid)
+    private static bool IsNonEpsgWkid(int wkid)
         => wkid is (>= 53000 and <= 54999) or (>= 102000 and <= 103999);
 
     private static bool TryReadSrid(string? spatialReference, out int srid)

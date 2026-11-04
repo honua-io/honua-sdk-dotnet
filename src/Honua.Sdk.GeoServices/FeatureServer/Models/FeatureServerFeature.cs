@@ -17,7 +17,7 @@ public sealed class FeatureServerFeature
     [JsonPropertyName("attributes")]
     public Dictionary<string, JsonElement>? Attributes { get; init; }
 
-    /// <summary>Feature geometry as a raw JSON element (Esri JSON format).</summary>
+    /// <summary>Feature geometry as a raw JSON element (GeoServices JSON format).</summary>
     [JsonPropertyName("geometry")]
     public JsonElement? Geometry { get; init; }
 }

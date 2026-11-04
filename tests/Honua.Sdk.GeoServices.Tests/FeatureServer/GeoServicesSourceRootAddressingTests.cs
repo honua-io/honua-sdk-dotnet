@@ -10,28 +10,22 @@ using Honua.Sdk.GeoServices.Tests.Fixtures;
 
 namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 
-/// <summary>
-/// honua-sdk-dotnet#373: a source client addresses an arbitrary ArcGIS service root (path prefix, folders,
-/// FeatureServer or MapServer) for every discovery, query, queryAttachments and attachment request. Each
-/// case drives the client through a capturing handler and asserts the exact URLs sent, in the format of the
-/// issue's evidence block.
-/// </summary>
-public sealed class ArcGisSourceRootAddressingTests
+public sealed class GeoServicesSourceRootAddressingTests
 {
-    public static TheoryData<string, string?, string, ArcGisServiceType, string> SourceShapes => new()
+    public static TheoryData<string, string?, string, GeoServicesServiceType, string> SourceShapes => new()
     {
         // label, HttpClient.BaseAddress, serviceId, service type, expected service root
-        { "ArcGIS Online hosted (/<org>/arcgis prefix)", "https://services.arcgis.com/Org123/arcgis/", "Hydrants", ArcGisServiceType.FeatureServer, "https://services.arcgis.com/Org123/arcgis/rest/services/Hydrants/FeatureServer" },
-        { "ArcGIS Enterprise web adaptor (/arcgis prefix)", "https://gis.example.com/arcgis/", "Inspections", ArcGisServiceType.FeatureServer, "https://gis.example.com/arcgis/rest/services/Inspections/FeatureServer" },
-        { "Web adaptor base address without trailing slash", "https://gis.example.com/arcgis", "Inspections", ArcGisServiceType.FeatureServer, "https://gis.example.com/arcgis/rest/services/Inspections/FeatureServer" },
-        { "Foldered service (Utilities/Water)", "https://gis.example.com/", "Utilities/Water", ArcGisServiceType.FeatureServer, "https://gis.example.com/rest/services/Utilities/Water/FeatureServer" },
-        { "MapServer source (MapServer-MixedRenderers)", "https://gis.example.com/arcgis/", "Fixtures/MapServer-MixedRenderers", ArcGisServiceType.MapServer, "https://gis.example.com/arcgis/rest/services/Fixtures/MapServer-MixedRenderers/MapServer" },
+        { "hosted GIS organization hosted (/<org>/gis prefix)", "https://gis.example.com/Org123/gis/", "Hydrants", GeoServicesServiceType.FeatureServer, "https://gis.example.com/Org123/gis/rest/services/Hydrants/FeatureServer" },
+        { "GeoServices REST Enterprise web adaptor (/gis prefix)", "https://gis.example.com/gis/", "Inspections", GeoServicesServiceType.FeatureServer, "https://gis.example.com/gis/rest/services/Inspections/FeatureServer" },
+        { "Web adaptor base address without trailing slash", "https://gis.example.com/gis", "Inspections", GeoServicesServiceType.FeatureServer, "https://gis.example.com/gis/rest/services/Inspections/FeatureServer" },
+        { "Foldered service (Utilities/Water)", "https://gis.example.com/", "Utilities/Water", GeoServicesServiceType.FeatureServer, "https://gis.example.com/rest/services/Utilities/Water/FeatureServer" },
+        { "MapServer source (MapServer-MixedRenderers)", "https://gis.example.com/gis/", "Fixtures/MapServer-MixedRenderers", GeoServicesServiceType.MapServer, "https://gis.example.com/gis/rest/services/Fixtures/MapServer-MixedRenderers/MapServer" },
     };
 
     [Theory]
     [MemberData(nameof(SourceShapes))]
     public async Task EveryRequest_ResolvesUnderTheServiceRoot(
-        string label, string? baseAddress, string serviceId, ArcGisServiceType serviceType, string serviceRoot)
+        string label, string? baseAddress, string serviceId, GeoServicesServiceType serviceType, string serviceRoot)
     {
         var sent = new List<string>();
         var client = CreateClient(sent, baseAddress, new HonuaFeatureServerClientOptions { ServiceType = serviceType });
@@ -49,13 +43,13 @@ public sealed class ArcGisSourceRootAddressingTests
     [Fact]
     public async Task ServiceRootUrl_AddressesTheSourceWithoutABaseAddress()
     {
-        var root = ArcGisServiceRoot.Parse(new Uri("https://services.arcgis.com/Org123/arcgis/rest/services/Utilities/Water/MapServer?f=pjson"));
+        var root = GeoServicesServiceRoot.Parse(new Uri("https://gis.example.com/Org123/gis/rest/services/Utilities/Water/MapServer?f=pjson"));
         var sent = new List<string>();
         var client = CreateClient(sent, baseAddress: null, root.ToClientOptions());
 
         await DriveEveryCallAsync(client, root.ServiceId);
 
-        AssertExpectedUrls("https://services.arcgis.com/Org123/arcgis/rest/services/Utilities/Water/MapServer", sent);
+        AssertExpectedUrls("https://gis.example.com/Org123/gis/rest/services/Utilities/Water/MapServer", sent);
     }
 
     [Fact]
@@ -65,11 +59,11 @@ public sealed class ArcGisSourceRootAddressingTests
         var client = CreateClient(
             sent,
             "https://honua.example.com/",
-            new HonuaFeatureServerClientOptions { RootAddress = new Uri("https://gis.example.com/arcgis") });
+            new HonuaFeatureServerClientOptions { RootAddress = new Uri("https://gis.example.com/gis") });
 
         await client.GetLayerInfoAsync("Inspections", 0);
 
-        Assert.Equal(["https://gis.example.com/arcgis/rest/services/Inspections/FeatureServer/0?f=json"], sent);
+        Assert.Equal(["https://gis.example.com/gis/rest/services/Inspections/FeatureServer/0?f=json"], sent);
     }
 
     [Fact]
@@ -101,11 +95,11 @@ public sealed class ArcGisSourceRootAddressingTests
     public async Task FolderSegments_AreEscapedIndividually()
     {
         var sent = new List<string>();
-        var client = CreateClient(sent, "https://gis.example.com/arcgis/", options: null);
+        var client = CreateClient(sent, "https://gis.example.com/gis/", options: null);
 
         await client.GetServiceInfoAsync("Public Works/Water Mains#2");
 
-        Assert.Equal(["https://gis.example.com/arcgis/rest/services/Public%20Works/Water%20Mains%232/FeatureServer?f=json"], sent);
+        Assert.Equal(["https://gis.example.com/gis/rest/services/Public%20Works/Water%20Mains%232/FeatureServer?f=json"], sent);
     }
 
     [Theory]
@@ -119,7 +113,7 @@ public sealed class ArcGisSourceRootAddressingTests
     public async Task InvalidServiceIds_AreRejectedBeforeAnyRequest(string serviceId)
     {
         var sent = new List<string>();
-        var client = CreateClient(sent, "https://gis.example.com/arcgis/", options: null);
+        var client = CreateClient(sent, "https://gis.example.com/gis/", options: null);
 
         await Assert.ThrowsAsync<ArgumentException>(() => client.GetServiceInfoAsync(serviceId));
         Assert.Empty(sent);
@@ -132,22 +126,22 @@ public sealed class ArcGisSourceRootAddressingTests
 
         Assert.Throws<ArgumentNullException>(() => new HonuaFeatureServerClient(http, null!));
         Assert.Throws<ArgumentOutOfRangeException>(() => new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { MaxResponseBytes = 0 }));
-        Assert.Throws<ArgumentException>(() => new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { RootAddress = new Uri("arcgis/", UriKind.Relative) }));
-        Assert.Throws<ArgumentException>(() => new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { ServiceType = (ArcGisServiceType)42 }));
+        Assert.Throws<ArgumentException>(() => new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { RootAddress = new Uri("gis/", UriKind.Relative) }));
+        Assert.Throws<ArgumentException>(() => new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { ServiceType = (GeoServicesServiceType)42 }));
     }
 
-    // ── ArcGisServiceRoot ───────────────────────────────────────────
+    // ── GeoServicesServiceRoot ───────────────────────────────────────────
 
     [Theory]
-    [InlineData("https://services.arcgis.com/Org123/arcgis/rest/services/Hydrants/FeatureServer", "https://services.arcgis.com/Org123/arcgis/", "rest/services", "Hydrants", ArcGisServiceType.FeatureServer)]
-    [InlineData("https://gis.example.com/arcgis/rest/services/Inspections/FeatureServer/", "https://gis.example.com/arcgis/", "rest/services", "Inspections", ArcGisServiceType.FeatureServer)]
-    [InlineData("https://gis.example.com/rest/services/Utilities/Water/MapServer", "https://gis.example.com/", "rest/services", "Utilities/Water", ArcGisServiceType.MapServer)]
-    [InlineData("https://gis.example.com:6443/arcgis/REST/Services/Public%20Works/Mains/mapserver?f=json#x", "https://gis.example.com:6443/arcgis/", "REST/Services", "Public Works/Mains", ArcGisServiceType.MapServer)]
-    [InlineData("https://proxy.example.com/sources/Hydrants/FeatureServer", "https://proxy.example.com/sources/", "", "Hydrants", ArcGisServiceType.FeatureServer)]
+    [InlineData("https://gis.example.com/Org123/gis/rest/services/Hydrants/FeatureServer", "https://gis.example.com/Org123/gis/", "rest/services", "Hydrants", GeoServicesServiceType.FeatureServer)]
+    [InlineData("https://gis.example.com/gis/rest/services/Inspections/FeatureServer/", "https://gis.example.com/gis/", "rest/services", "Inspections", GeoServicesServiceType.FeatureServer)]
+    [InlineData("https://gis.example.com/rest/services/Utilities/Water/MapServer", "https://gis.example.com/", "rest/services", "Utilities/Water", GeoServicesServiceType.MapServer)]
+    [InlineData("https://gis.example.com:6443/gis/REST/Services/Public%20Works/Mains/mapserver?f=json#x", "https://gis.example.com:6443/gis/", "REST/Services", "Public Works/Mains", GeoServicesServiceType.MapServer)]
+    [InlineData("https://proxy.example.com/sources/Hydrants/FeatureServer", "https://proxy.example.com/sources/", "", "Hydrants", GeoServicesServiceType.FeatureServer)]
     public void ServiceRoot_ParsesPrefixFoldersAndType(
-        string serviceRoot, string rootAddress, string servicesPath, string serviceId, ArcGisServiceType serviceType)
+        string serviceRoot, string rootAddress, string servicesPath, string serviceId, GeoServicesServiceType serviceType)
     {
-        var root = ArcGisServiceRoot.Parse(new Uri(serviceRoot));
+        var root = GeoServicesServiceRoot.Parse(new Uri(serviceRoot));
 
         Assert.Equal(new Uri(rootAddress), root.RootAddress);
         Assert.Equal(servicesPath, root.ServicesPath);
@@ -162,24 +156,24 @@ public sealed class ArcGisSourceRootAddressingTests
     }
 
     [Theory]
-    [InlineData("https://gis.example.com/arcgis/rest/services/Hydrants/FeatureServer/0")]
-    [InlineData("https://gis.example.com/arcgis/rest/services/Hydrants/ImageServer")]
+    [InlineData("https://gis.example.com/gis/rest/services/Hydrants/FeatureServer/0")]
+    [InlineData("https://gis.example.com/gis/rest/services/Hydrants/ImageServer")]
     [InlineData("https://gis.example.com/FeatureServer")]
-    [InlineData("https://gis.example.com/arcgis/rest/services/FeatureServer")]
-    [InlineData("https://gis.example.com/arcgis/rest/services/a/%2E%2E/FeatureServer")]
+    [InlineData("https://gis.example.com/gis/rest/services/FeatureServer")]
+    [InlineData("https://gis.example.com/gis/rest/services/a/%2E%2E/FeatureServer")]
     public void ServiceRoot_RejectsUrlsThatAreNotServiceRoots(string candidate)
     {
-        Assert.False(ArcGisServiceRoot.TryParse(new Uri(candidate), out var root));
+        Assert.False(GeoServicesServiceRoot.TryParse(new Uri(candidate), out var root));
         Assert.Null(root);
-        Assert.Throws<ArgumentException>(() => ArcGisServiceRoot.Parse(new Uri(candidate)));
+        Assert.Throws<ArgumentException>(() => GeoServicesServiceRoot.Parse(new Uri(candidate)));
     }
 
     [Fact]
     public void ServiceRoot_RejectsRelativeAndNullUrls()
     {
-        Assert.False(ArcGisServiceRoot.TryParse(new Uri("rest/services/Hydrants/FeatureServer", UriKind.Relative), out _));
-        Assert.False(ArcGisServiceRoot.TryParse(null, out _));
-        Assert.Throws<ArgumentNullException>(() => ArcGisServiceRoot.Parse(null!));
+        Assert.False(GeoServicesServiceRoot.TryParse(new Uri("rest/services/Hydrants/FeatureServer", UriKind.Relative), out _));
+        Assert.False(GeoServicesServiceRoot.TryParse(null, out _));
+        Assert.Throws<ArgumentNullException>(() => GeoServicesServiceRoot.Parse(null!));
     }
 
     // ── helpers ─────────────────────────────────────────────────────

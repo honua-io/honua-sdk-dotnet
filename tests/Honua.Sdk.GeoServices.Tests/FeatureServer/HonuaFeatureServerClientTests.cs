@@ -1384,8 +1384,8 @@ public class HonuaFeatureServerClientTests
     [Fact]
     public async Task QueryAsync_GeoServicesErrorCodeOutOfHttpRange_KeepsTransportStatus()
     {
-        // Esri error codes (e.g. 1000) are an independent code space and must NOT be cast to
-        // HttpStatusCode. The transport status (200 here) is preserved; the Esri code is exposed
+        // GeoServices error codes (e.g. 1000) are an independent code space and must NOT be cast to
+        // HttpStatusCode. The transport status (200 here) is preserved; the GeoServices code is exposed
         // separately via GeoServicesErrorCode, and surfaced on the unified contract.
         var client = TestHelpers.CreateFeatureServerClient(_ =>
             Task.FromResult(TestHelpers.CreateGeoServicesErrorResponse(1000, "Unable to complete operation")));

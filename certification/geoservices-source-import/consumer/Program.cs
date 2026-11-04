@@ -1,7 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-// Installed-package certification for honua-sdk-dotnet#341: lossless ArcGIS
+// Installed-package certification for honua-sdk-dotnet#341: lossless GeoServices REST
 // service/layer import through the published Honua.Sdk.GeoServices package.
 //
 // Every cell drives the public SDK surface against a live source and compares
@@ -180,13 +180,13 @@ internal sealed class SourceImportCertification
 
         await RunCellAsync("auth.none-rejected", "AC4 protected source without credentials fails explicitly", NoCredentialsAsync).ConfigureAwait(false);
         await RunCellAsync("auth.api-key", "AC4 Honua API key", ApiKeyAsync).ConfigureAwait(false);
-        await RunCellAsync("auth.token", "AC4 ArcGIS token credential handler", () => CredentialAsync(ArcGisCredentialMode.Token)).ConfigureAwait(false);
-        await RunCellAsync("auth.bearer", "AC4 bearer credential handler", () => CredentialAsync(ArcGisCredentialMode.Bearer)).ConfigureAwait(false);
-        await RunCellAsync("auth.basic", "AC4 basic credential handler", () => CredentialAsync(ArcGisCredentialMode.Basic)).ConfigureAwait(false);
-        await RunCellAsync("auth.invalid-token", "AC4 HTTP-200 Esri error envelope for an invalid token", InvalidTokenAsync).ConfigureAwait(false);
+        await RunCellAsync("auth.token", "AC4 GeoServices REST token credential handler", () => CredentialAsync(GeoServicesCredentialMode.Token)).ConfigureAwait(false);
+        await RunCellAsync("auth.bearer", "AC4 bearer credential handler", () => CredentialAsync(GeoServicesCredentialMode.Bearer)).ConfigureAwait(false);
+        await RunCellAsync("auth.basic", "AC4 basic credential handler", () => CredentialAsync(GeoServicesCredentialMode.Basic)).ConfigureAwait(false);
+        await RunCellAsync("auth.invalid-token", "AC4 HTTP-200 GeoServices error envelope for an invalid token", InvalidTokenAsync).ConfigureAwait(false);
         await RunCellAsync("auth.basic-rejected", "AC4 wrong basic password fails explicitly", BasicRejectedAsync).ConfigureAwait(false);
-        await RunCellAsync("errors.http200-envelope.missing-layer", "AC4 HTTP-200 Esri error envelope", MissingLayerAsync).ConfigureAwait(false);
-        await RunCellAsync("errors.http200-envelope.invalid-where", "AC4 HTTP-200 Esri error envelope", InvalidWhereAsync).ConfigureAwait(false);
+        await RunCellAsync("errors.http200-envelope.missing-layer", "AC4 HTTP-200 GeoServices error envelope", MissingLayerAsync).ConfigureAwait(false);
+        await RunCellAsync("errors.http200-envelope.invalid-where", "AC4 HTTP-200 GeoServices error envelope", InvalidWhereAsync).ConfigureAwait(false);
         await RunCellAsync("transport.injected-primary-handler", "AC4 injectable HTTP transport", InjectedTransportAsync).ConfigureAwait(false);
         await RunCellAsync("transport.cancellation", "AC4 cancellation preserved mid-enumeration", CancellationAsync).ConfigureAwait(false);
         await RunCellAsync("transport.bounded-streaming", "AC4 raw query response is streamed, not buffered", BoundedStreamingAsync).ConfigureAwait(false);
@@ -265,7 +265,7 @@ internal sealed class SourceImportCertification
 
     private (ServiceProvider Provider, IHonuaFeatureServerClient Client, TransportProbe Probe) CreateClient(
         Uri baseAddress,
-        ArcGisSourceCredential? credential = null,
+        GeoServicesSourceCredential? credential = null,
         bool useApiKey = true,
         Action<HonuaGeoServicesClientOptions>? configure = null)
     {
@@ -283,7 +283,7 @@ internal sealed class SourceImportCertification
             options.PrimaryHttpMessageHandlerFactory = () =>
             {
                 HttpMessageHandler recording = new RecordingHandler(probe, CreateTransport());
-                return credential is null ? recording : new ArcGisSourceCredentialHandler(credential, recording);
+                return credential is null ? recording : new GeoServicesSourceCredentialHandler(credential, recording);
             };
             configure?.Invoke(options);
         });
@@ -843,8 +843,8 @@ internal sealed class SourceImportCertification
             catch (HonuaFeatureServerException exception)
             {
                 return exception.GeoServicesErrorCode is 499 or 401 or 403 || exception.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
-                    ? $"HonuaFeatureServerException http={(int)exception.StatusCode} esriCode={exception.GeoServicesErrorCode}"
-                    : throw new CellFailure($"unexpected rejection http={(int)exception.StatusCode} esriCode={exception.GeoServicesErrorCode}");
+                    ? $"HonuaFeatureServerException http={(int)exception.StatusCode} geoServicesCode={exception.GeoServicesErrorCode}"
+                    : throw new CellFailure($"unexpected rejection http={(int)exception.StatusCode} geoServicesCode={exception.GeoServicesErrorCode}");
             }
         }
     }
@@ -862,16 +862,16 @@ internal sealed class SourceImportCertification
         }
     }
 
-    private async Task<string> CredentialAsync(ArcGisCredentialMode mode)
+    private async Task<string> CredentialAsync(GeoServicesCredentialMode mode)
     {
         var credential = mode switch
         {
-            ArcGisCredentialMode.Token => new ArcGisSourceCredential { Mode = mode, Token = _args.Required("portal-token") },
-            ArcGisCredentialMode.Bearer => new ArcGisSourceCredential { Mode = mode, BearerToken = _args.Required("portal-token") },
-            ArcGisCredentialMode.Basic => new ArcGisSourceCredential { Mode = mode, Username = _args.Required("basic-user"), Password = _args.Required("basic-password") },
+            GeoServicesCredentialMode.Token => new GeoServicesSourceCredential { Mode = mode, Token = _args.Required("portal-token") },
+            GeoServicesCredentialMode.Bearer => new GeoServicesSourceCredential { Mode = mode, BearerToken = _args.Required("portal-token") },
+            GeoServicesCredentialMode.Basic => new GeoServicesSourceCredential { Mode = mode, Username = _args.Required("basic-user"), Password = _args.Required("basic-password") },
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),
         };
-        var source = new Uri(_args.Required(mode == ArcGisCredentialMode.Basic ? "basic-url" : "tls-url"));
+        var source = new Uri(_args.Required(mode == GeoServicesCredentialMode.Basic ? "basic-url" : "tls-url"));
         var (provider, client, probe) = CreateClient(source, credential, useApiKey: false);
         using (provider)
         {
@@ -886,8 +886,8 @@ internal sealed class SourceImportCertification
 
             var expectedMarker = mode switch
             {
-                ArcGisCredentialMode.Token => "token-param=True authorization=none x-api-key=False",
-                ArcGisCredentialMode.Bearer => "token-param=False authorization=Bearer x-api-key=False",
+                GeoServicesCredentialMode.Token => "token-param=True authorization=none x-api-key=False",
+                GeoServicesCredentialMode.Bearer => "token-param=False authorization=Bearer x-api-key=False",
                 _ => "token-param=False authorization=Basic x-api-key=False",
             };
             return probe.Observations.All(observation => observation.EndsWith(expectedMarker, StringComparison.Ordinal))
@@ -898,7 +898,7 @@ internal sealed class SourceImportCertification
 
     private async Task<string> InvalidTokenAsync()
     {
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Token, Token = "lane-341-not-a-token" };
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Token, Token = "lane-341-not-a-token" };
         var (provider, client, _) = CreateClient(new Uri(_args.Required("tls-url")), credential, useApiKey: false);
         using (provider)
         {
@@ -910,14 +910,14 @@ internal sealed class SourceImportCertification
             }
             catch (HonuaFeatureServerException exception) when (exception.GeoServicesErrorCode == 498)
             {
-                return $"HonuaFeatureServerException http={(int)exception.StatusCode} esriCode=498 details={exception.Details?.Count ?? 0}";
+                return $"HonuaFeatureServerException http={(int)exception.StatusCode} geoServicesCode=498 details={exception.Details?.Count ?? 0}";
             }
         }
     }
 
     private async Task<string> BasicRejectedAsync()
     {
-        var credential = new ArcGisSourceCredential { Mode = ArcGisCredentialMode.Basic, Username = _args.Required("basic-user"), Password = "wrong-password" };
+        var credential = new GeoServicesSourceCredential { Mode = GeoServicesCredentialMode.Basic, Username = _args.Required("basic-user"), Password = "wrong-password" };
         var (provider, client, _) = CreateClient(new Uri(_args.Required("basic-url")), credential, useApiKey: false);
         using (provider)
         {
@@ -947,7 +947,7 @@ internal sealed class SourceImportCertification
             }
             catch (HonuaFeatureServerException exception) when (exception.GeoServicesErrorCode == 404 && exception.Details is { Count: > 0 })
             {
-                return $"HonuaFeatureServerException http={(int)exception.StatusCode} esriCode=404 details={exception.Details.Count}";
+                return $"HonuaFeatureServerException http={(int)exception.StatusCode} geoServicesCode=404 details={exception.Details.Count}";
             }
         }
     }
@@ -965,7 +965,7 @@ internal sealed class SourceImportCertification
             }
             catch (HonuaFeatureServerException exception) when (exception.GeoServicesErrorCode == 400)
             {
-                return $"HonuaFeatureServerException http={(int)exception.StatusCode} esriCode=400 details={exception.Details?.Count ?? 0}";
+                return $"HonuaFeatureServerException http={(int)exception.StatusCode} geoServicesCode=400 details={exception.Details?.Count ?? 0}";
             }
         }
     }

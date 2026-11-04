@@ -528,9 +528,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     // ── GeoServices import lifecycle (single layer) ─────────────────────────
 
-    /// <summary>
-    /// Discovers the layers and metadata exposed by an ArcGIS service.
-    /// </summary>
+    /// <summary>Discovers the layers and metadata exposed by a GeoServices REST service.</summary>
     public async Task<GeoservicesDiscoverResponse> DiscoverGeoservicesServiceAsync(
         GeoservicesDiscoverRequest request,
         CancellationToken cancellationToken = default)

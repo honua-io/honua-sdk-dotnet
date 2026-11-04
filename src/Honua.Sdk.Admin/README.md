@@ -67,7 +67,7 @@ var replay = await events.ReplayFeatureEventsAsync(
 
 ## GeoServices/migration import lifecycle
 
-Discover an ArcGIS service, queue a single-layer import, and wait for it to
+Discover a GeoServices REST service, queue a single-layer import, and wait for it to
 reach a terminal status without ever risking a duplicate import on retry:
 
 ```csharp
@@ -77,11 +77,11 @@ var admin = provider.GetRequiredService<IHonuaAdminClient>();
 
 var discovered = await admin.DiscoverGeoservicesServiceAsync(new GeoservicesDiscoverRequest
 {
-    ServiceUrl = "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+    ServiceUrl = "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
     Credentials = new GeoservicesCredentialDescriptor
     {
         Mode = "token",
-        AccessTokenSecretReference = "secret://arcgis/token"
+        AccessTokenSecretReference = "secret://gis/token"
     }
 });
 
@@ -111,7 +111,7 @@ rolled-up status plus per-child job ids:
 ```csharp
 var batch = await admin.StartMigrationBatchAsync(new MigrationBatchStartRequest
 {
-    SourceKind = "arcgis-geoservices-rest",
+    SourceKind = "geoservices-rest",
     Layers =
     [
         new MigrationBatchLayerSpec

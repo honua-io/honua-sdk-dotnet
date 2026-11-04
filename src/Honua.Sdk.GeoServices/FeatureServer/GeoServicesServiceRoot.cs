@@ -5,13 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Honua.Sdk.GeoServices.FeatureServer;
 
-/// <summary>
-/// An ArcGIS service root URL (<c>.../FeatureServer</c> or <c>.../MapServer</c>) split into the parts a
-/// <see cref="HonuaFeatureServerClient"/> addresses: the root (with any path prefix such as
-/// <c>/&lt;org&gt;/arcgis/</c> or a web adaptor's <c>/arcgis/</c>), the services directory, the possibly
-/// foldered service id, and the service type.
-/// </summary>
-public sealed record ArcGisServiceRoot
+/// <summary>A GeoServices REST service root URL split into root (with any path prefix), services directory, service id and service type.</summary>
+public sealed record GeoServicesServiceRoot
 {
     private const string RestSegment = "rest";
     private const string ServicesSegment = "services";
@@ -26,31 +21,21 @@ public sealed record ArcGisServiceRoot
     public required string ServiceId { get; init; }
 
     /// <summary>The service type named by the final URL segment.</summary>
-    public required ArcGisServiceType ServiceType { get; init; }
+    public required GeoServicesServiceType ServiceType { get; init; }
 
-    /// <summary>
-    /// Parses an absolute service root URL. The query string and fragment are ignored.
-    /// </summary>
-    /// <param name="serviceRootUrl">A URL whose last path segment is <c>FeatureServer</c> or <c>MapServer</c>.</param>
-    /// <returns>The parsed service root.</returns>
-    /// <exception cref="ArgumentException">The URL is relative or does not end at a FeatureServer or MapServer service root.</exception>
-    public static ArcGisServiceRoot Parse(Uri serviceRootUrl)
+    /// <summary>Parses an absolute URL ending at a FeatureServer or MapServer root, ignoring query and fragment; throws <see cref="ArgumentException"/> otherwise.</summary>
+    public static GeoServicesServiceRoot Parse(Uri serviceRootUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceRootUrl);
         return TryParse(serviceRootUrl, out var root)
             ? root
             : throw new ArgumentException(
-                "An ArcGIS service root URL must be absolute and end with a service name followed by FeatureServer or MapServer.",
+                "A GeoServices REST service root URL must be absolute and end with a service name followed by FeatureServer or MapServer.",
                 nameof(serviceRootUrl));
     }
 
-    /// <summary>
-    /// Attempts to parse an absolute service root URL. The query string and fragment are ignored.
-    /// </summary>
-    /// <param name="serviceRootUrl">A URL whose last path segment is <c>FeatureServer</c> or <c>MapServer</c>.</param>
-    /// <param name="root">The parsed service root when this method returns <c>true</c>.</param>
-    /// <returns><c>true</c> when the URL is an absolute FeatureServer or MapServer service root.</returns>
-    public static bool TryParse(Uri? serviceRootUrl, [NotNullWhen(true)] out ArcGisServiceRoot? root)
+    /// <summary>Tries to parse an absolute URL ending at a FeatureServer or MapServer root, ignoring query and fragment.</summary>
+    public static bool TryParse(Uri? serviceRootUrl, [NotNullWhen(true)] out GeoServicesServiceRoot? root)
     {
         root = null;
         if (serviceRootUrl is null || !serviceRootUrl.IsAbsoluteUri)
@@ -65,7 +50,7 @@ public sealed record ArcGisServiceRoot
         }
 
         // The services directory is the last "rest/services" pair before the type segment; everything
-        // before it is the deployment prefix (ArcGIS Online org, web adaptor name) and everything after
+        // before it is the deployment prefix (hosted GIS organization org, web adaptor name) and everything after
         // it is the (possibly foldered) service id. Without that pair only the service name is known.
         var servicesIndex = -1;
         for (var i = segments.Length - 2; i >= 1; i--)
@@ -88,7 +73,7 @@ public sealed record ArcGisServiceRoot
         }
 
         var prefix = string.Concat(segments[..prefixLength].Select(segment => segment + "/"));
-        root = new ArcGisServiceRoot
+        root = new GeoServicesServiceRoot
         {
             RootAddress = new Uri(serviceRootUrl.GetLeftPart(UriPartial.Authority) + "/" + prefix, UriKind.Absolute),
             ServicesPath = servicesPath,
@@ -98,11 +83,7 @@ public sealed record ArcGisServiceRoot
         return true;
     }
 
-    /// <summary>
-    /// Creates client options that address this service root.
-    /// </summary>
-    /// <param name="maxResponseBytes">Response body ceiling in bytes; defaults to <see cref="HonuaFeatureServerClientOptions.DefaultMaxResponseBytes"/>.</param>
-    /// <returns>Options for <see cref="HonuaFeatureServerClient(HttpClient, HonuaFeatureServerClientOptions)"/>; pass <see cref="ServiceId"/> as the service id.</returns>
+    /// <summary>Creates client options that address this service root; pass <see cref="ServiceId"/> as the service id on each call.</summary>
     public HonuaFeatureServerClientOptions ToClientOptions(long maxResponseBytes = HonuaFeatureServerClientOptions.DefaultMaxResponseBytes) => new()
     {
         RootAddress = RootAddress,
@@ -111,17 +92,17 @@ public sealed record ArcGisServiceRoot
         MaxResponseBytes = maxResponseBytes,
     };
 
-    private static bool TryParseServiceType(string segment, out ArcGisServiceType serviceType)
+    private static bool TryParseServiceType(string segment, out GeoServicesServiceType serviceType)
     {
-        if (segment.Equals(nameof(ArcGisServiceType.FeatureServer), StringComparison.OrdinalIgnoreCase))
+        if (segment.Equals(nameof(GeoServicesServiceType.FeatureServer), StringComparison.OrdinalIgnoreCase))
         {
-            serviceType = ArcGisServiceType.FeatureServer;
+            serviceType = GeoServicesServiceType.FeatureServer;
             return true;
         }
 
-        if (segment.Equals(nameof(ArcGisServiceType.MapServer), StringComparison.OrdinalIgnoreCase))
+        if (segment.Equals(nameof(GeoServicesServiceType.MapServer), StringComparison.OrdinalIgnoreCase))
         {
-            serviceType = ArcGisServiceType.MapServer;
+            serviceType = GeoServicesServiceType.MapServer;
             return true;
         }
 

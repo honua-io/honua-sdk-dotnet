@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader</Target>
+    <Left>lib/net10.0/Honua.Sdk.Geometry.dll</Left>
+    <Right>lib/net10.0/Honua.Sdk.Geometry.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Honua.Sdk.Geometry.FeatureGeometryFormat.EsriJson</Target>
+    <Left>lib/net10.0/Honua.Sdk.Geometry.dll</Left>
+    <Right>lib/net10.0/Honua.Sdk.Geometry.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Honua.Sdk.Geometry.Vector.VectorPayloadFormat.EsriJson</Target>
+    <Left>lib/net10.0/Honua.Sdk.Geometry.dll</Left>
+    <Right>lib/net10.0/Honua.Sdk.Geometry.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>
