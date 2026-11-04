@@ -1,1 +1,17 @@
 #nullable enable
+*REMOVED*Honua.Sdk.Geometry.FeatureGeometryFormat.EsriJson = 1 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+*REMOVED*Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader
+*REMOVED*Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.EsriJsonVectorPayloadReader() -> void
+*REMOVED*Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+*REMOVED*Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+*REMOVED*Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+*REMOVED*Honua.Sdk.Geometry.Vector.VectorPayloadFormat.EsriJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+*REMOVED*static Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader!
+Honua.Sdk.Geometry.FeatureGeometryFormat.GeoServicesJson = 1 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader
+Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.GeoServicesJsonVectorPayloadReader() -> void
+Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoServicesJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+static Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader!

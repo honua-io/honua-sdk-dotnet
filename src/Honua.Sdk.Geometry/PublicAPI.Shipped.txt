@@ -2,7 +2,7 @@
 const Honua.Sdk.Geometry.GeographicBoundingBox.Wgs84CrsIdentifier = "EPSG:4326" -> string!
 Honua.Sdk.Geometry.FeatureGeometryFormat
 Honua.Sdk.Geometry.FeatureGeometryFormat.Auto = 0 -> Honua.Sdk.Geometry.FeatureGeometryFormat
-Honua.Sdk.Geometry.FeatureGeometryFormat.GeoServicesJson = 1 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.FeatureGeometryFormat.EsriJson = 1 -> Honua.Sdk.Geometry.FeatureGeometryFormat
 Honua.Sdk.Geometry.FeatureGeometryFormat.GeoJson = 2 -> Honua.Sdk.Geometry.FeatureGeometryFormat
 Honua.Sdk.Geometry.FeatureRecordGeometryExtensions
 Honua.Sdk.Geometry.GeographicBoundingBox
@@ -140,11 +140,11 @@ Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.Equals(Honua.Sdk.Geometry.Plana
 Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.PlanarGeometryAnalysisOptions() -> void
 Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.SourceSpatialReference.get -> Honua.Sdk.Geometry.HonuaSpatialReference?
 Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.SourceSpatialReference.init -> void
-Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader
-Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.GeoServicesJsonVectorPayloadReader() -> void
-Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
-Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
-Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.EsriJsonVectorPayloadReader() -> void
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
+Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
 Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader
 Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
 Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.GeoJsonVectorPayloadReader() -> void
@@ -199,7 +199,7 @@ Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ObjectIds.get -> System.Collec
 Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.ObjectIds.init -> void
 Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet.VectorPayloadFeatureSet() -> void
 Honua.Sdk.Geometry.Vector.VectorPayloadFormat
-Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoServicesJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.VectorPayloadFormat.EsriJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
 Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoJson = 2 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
 Honua.Sdk.Geometry.Vector.VectorPayloadFormat.Gml = 3 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
 Honua.Sdk.Geometry.Vector.VectorPayloadFormat.Unspecified = 0 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
@@ -300,7 +300,7 @@ static Honua.Sdk.Geometry.NearestGeometryVertex.operator !=(Honua.Sdk.Geometry.N
 static Honua.Sdk.Geometry.NearestGeometryVertex.operator ==(Honua.Sdk.Geometry.NearestGeometryVertex? left, Honua.Sdk.Geometry.NearestGeometryVertex? right) -> bool
 static Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.operator !=(Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? left, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? right) -> bool
 static Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions.operator ==(Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? left, Honua.Sdk.Geometry.PlanarGeometryAnalysisOptions? right) -> bool
-static Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader!
+static Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader!
 static Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GeoJsonVectorPayloadReader!
 static Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GmlVectorPayloadReader!
 static Honua.Sdk.Geometry.Vector.VectorPayloadFeature.operator !=(Honua.Sdk.Geometry.Vector.VectorPayloadFeature? left, Honua.Sdk.Geometry.Vector.VectorPayloadFeature? right) -> bool

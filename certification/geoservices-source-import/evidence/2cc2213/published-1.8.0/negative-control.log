@@ -24,15 +24,15 @@ PASS     paging.offset-pages: 3 page(s), 3 request(s), 25 record(s) yielded, 0 d
 PASS     paging.object-id-batches: 4 batch(es) of <=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set
 PASS     paging.offset-ignoring-source.offset-pages: 1 page(s), 2 request(s), 10 record(s) yielded, 0 duplicate(s), 15 omitted; failed explicitly with InvalidOperationException before yielding a duplicate
 PASS     paging.offset-ignoring-source.object-id-batches: 4 batch(es) of <=7, 5 request(s), 25 record(s), 0 duplicate(s); complete fixture set
-PASS     auth.none-rejected: HonuaFeatureServerException http=499 geoServicesCode=499
+PASS     auth.none-rejected: HonuaFeatureServerException http=499 esriCode=499
 PASS     auth.api-key: count 25; GET /rest/services/cert341_source/FeatureServer/1/query token-param=False authorization=none x-api-key=True
 PASS     auth.token: count 25 over https; 2 request(s) all carried [token-param=True authorization=none x-api-key=False]
 PASS     auth.bearer: count 25 over https; 2 request(s) all carried [token-param=False authorization=Bearer x-api-key=False]
 PASS     auth.basic: count 25 over http; 2 request(s) all carried [token-param=False authorization=Basic x-api-key=False]
-PASS     auth.invalid-token: HonuaFeatureServerException http=498 geoServicesCode=498 details=3
+PASS     auth.invalid-token: HonuaFeatureServerException http=498 esriCode=498 details=3
 PASS     auth.basic-rejected: HonuaFeatureServerException http=401
-PASS     errors.http200-envelope.missing-layer: HonuaFeatureServerException http=404 geoServicesCode=404 details=3
-PASS     errors.http200-envelope.invalid-where: HonuaFeatureServerException http=400 geoServicesCode=400 details=4
+PASS     errors.http200-envelope.missing-layer: HonuaFeatureServerException http=404 esriCode=404 details=3
+PASS     errors.http200-envelope.invalid-where: HonuaFeatureServerException http=400 esriCode=400 details=4
 PASS     transport.injected-primary-handler: both requests traversed the injected primary handler: GET /rest/services/cert341_source/FeatureServer token-param=False authorization=none x-api-key=True | GET /rest/services/cert341_source/FeatureServer/1 token-param=False authorization=none x-api-key=True
 PASS     transport.cancellation: OperationCanceledException after the first page; no further request was sent
 PASS     transport.bounded-streaming: raw query content is a forward-only network stream (BrotliStream)
