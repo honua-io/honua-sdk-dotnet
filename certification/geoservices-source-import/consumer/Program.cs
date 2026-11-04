@@ -1,8 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-// Installed-package certification for honua-sdk-dotnet#341: lossless GeoServices REST
-// service/layer import through the published Honua.Sdk.GeoServices package.
+// Installed-package certification of lossless GeoServices REST service and layer
+// import through the published Honua.Sdk.GeoServices package.
 //
 // Every cell drives the public SDK surface against a live source and compares
 // the result with either (a) the hand-derived fixture oracle, for data values,

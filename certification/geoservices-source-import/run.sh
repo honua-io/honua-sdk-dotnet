@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lossless GeoServices REST service/layer import certification (honua-sdk-dotnet#341).
+# Lossless GeoServices REST service and layer import certification.
 #
 # Boots the digest-pinned honua-server candidate as a live GeoServices REST source,
 # publishes fixture/source-sites.v1.sql through the supported admin API, restores
