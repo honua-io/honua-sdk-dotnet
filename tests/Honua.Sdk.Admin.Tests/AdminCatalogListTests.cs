@@ -1,7 +1,6 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-using System.Net;
 using Honua.Sdk.Admin.Models;
 using Honua.Sdk.Admin.Tests.Fixtures;
 
@@ -135,12 +134,8 @@ public sealed class AdminCatalogListTests
     [Fact]
     public async Task ListLayersPageAsync_RejectsANameQueryLongerThan200CharactersBeforeHttp()
     {
-        var calls = 0;
         var client = TestHelpers.CreateClient(_ =>
-        {
-            calls++;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-        });
+            throw new InvalidOperationException("The name query is rejected before the request."));
 
         var error = await Assert.ThrowsAsync<ArgumentException>(() =>
             client.ListLayersPageAsync(
@@ -148,7 +143,6 @@ public sealed class AdminCatalogListTests
                 new LayerListQuery { NameQuery = new string('a', 201) }));
 
         Assert.Equal("nameQuery", error.ParamName);
-        Assert.Equal(0, calls);
     }
 
     [Theory]
