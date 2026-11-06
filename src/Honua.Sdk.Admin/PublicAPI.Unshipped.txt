@@ -875,3 +875,49 @@ Honua.Sdk.Admin.Models.PublishLayerRequest.StorageMode.get -> string?
 Honua.Sdk.Admin.Models.PublishLayerRequest.StorageMode.init -> void
 Honua.Sdk.Admin.Models.PublishLayerRequest.Capabilities.get -> System.Collections.Generic.IReadOnlyList<string!>?
 Honua.Sdk.Admin.Models.PublishLayerRequest.Capabilities.init -> void
+Honua.Sdk.Admin.HonuaAdminClient.ListLayersPageAsync(string! connectionId, Honua.Sdk.Admin.Models.LayerListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.PublishedLayerPage!>!
+Honua.Sdk.Admin.HonuaAdminClient.ListServicesPageAsync(Honua.Sdk.Admin.Models.ServiceListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.ServiceListPage!>!
+Honua.Sdk.Admin.IHonuaAdminLayersClient.ListLayersPageAsync(string! connectionId, Honua.Sdk.Admin.Models.LayerListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.PublishedLayerPage!>!
+Honua.Sdk.Admin.IHonuaAdminServicesClient.ListServicesPageAsync(Honua.Sdk.Admin.Models.ServiceListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.ServiceListPage!>!
+Honua.Sdk.Admin.Models.LayerListQuery
+Honua.Sdk.Admin.Models.LayerListQuery.LayerListQuery() -> void
+Honua.Sdk.Admin.Models.LayerListQuery.NameQuery.get -> string?
+Honua.Sdk.Admin.Models.LayerListQuery.NameQuery.init -> void
+Honua.Sdk.Admin.Models.LayerListQuery.Page.get -> int
+Honua.Sdk.Admin.Models.LayerListQuery.Page.init -> void
+Honua.Sdk.Admin.Models.LayerListQuery.PageSize.get -> int
+Honua.Sdk.Admin.Models.LayerListQuery.PageSize.init -> void
+Honua.Sdk.Admin.Models.LayerListQuery.ServiceName.get -> string?
+Honua.Sdk.Admin.Models.LayerListQuery.ServiceName.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage
+Honua.Sdk.Admin.Models.PublishedLayerPage.Items.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.PublishedLayerSummary!>!
+Honua.Sdk.Admin.Models.PublishedLayerPage.Items.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.Page.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerPage.Page.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.PageSize.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerPage.PageSize.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.PublishedLayerPage() -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.Total.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerPage.Total.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage
+Honua.Sdk.Admin.Models.ServiceListPage.Items.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.ServiceSummary!>!
+Honua.Sdk.Admin.Models.ServiceListPage.Items.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.LayerTotal.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.LayerTotal.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.Page.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.Page.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.PageSize.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.PageSize.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.ServiceListPage() -> void
+Honua.Sdk.Admin.Models.ServiceListPage.Total.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.Total.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery
+Honua.Sdk.Admin.Models.ServiceListQuery.FolderId.get -> string?
+Honua.Sdk.Admin.Models.ServiceListQuery.FolderId.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.NameQuery.get -> string?
+Honua.Sdk.Admin.Models.ServiceListQuery.NameQuery.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.Page.get -> int
+Honua.Sdk.Admin.Models.ServiceListQuery.Page.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.PageSize.get -> int
+Honua.Sdk.Admin.Models.ServiceListQuery.PageSize.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.ServiceListQuery() -> void

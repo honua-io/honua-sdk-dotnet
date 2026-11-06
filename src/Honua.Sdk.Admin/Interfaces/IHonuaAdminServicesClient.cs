@@ -18,6 +18,12 @@ public interface IHonuaAdminServicesClient
     /// <returns>A list of service summaries.</returns>
     Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Returns one page of admin services, including the count of every match.</summary>
+    Task<ServiceListPage> ListServicesPageAsync(
+        ServiceListQuery? query = null, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException(
+            "Use HonuaAdminClient to read one page of admin services.");
+
     /// <summary>
     /// Gets the settings for a specific service.
     /// </summary>

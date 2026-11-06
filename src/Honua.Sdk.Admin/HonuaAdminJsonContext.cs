@@ -17,6 +17,7 @@ namespace Honua.Sdk.Admin;
     PropertyNameCaseInsensitive = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(ApiResponse<ServiceSummary[]>))]
+[JsonSerializable(typeof(ApiResponse<ServiceListPage>))]
 [JsonSerializable(typeof(CatalogFeatureServerServiceInfo))]
 [JsonSerializable(typeof(CatalogFeatureServerLayerInfo))]
 [JsonSerializable(typeof(SourceDescriptor))]
@@ -36,6 +37,7 @@ namespace Honua.Sdk.Admin;
 [JsonSerializable(typeof(ApiResponse<AdminVersionResponse>))]
 [JsonSerializable(typeof(ApiResponse<AdminCapabilitiesResponse>))]
 [JsonSerializable(typeof(ApiResponse<PublishedLayerSummary[]>))]
+[JsonSerializable(typeof(ApiResponse<PublishedLayerPage>))]
 [JsonSerializable(typeof(ApiResponse<PublishedLayerSummary>))]
 [JsonSerializable(typeof(ApiResponse<LayerStyleResponse>))]
 [JsonSerializable(typeof(ApiResponse<RecentError[]>))]

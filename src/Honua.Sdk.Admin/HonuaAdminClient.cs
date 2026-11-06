@@ -36,13 +36,28 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Services ──────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken cancellationToken = default)
+        => AdminCatalogWalker.ReadAllAsync(
+            (pageNumber, token) => ReadServiceSliceAsync(pageNumber, token),
+            cancellationToken);
+
+    /// <summary>Returns one page of admin services, including the count of every match.</summary>
+    public async Task<ServiceListPage> ListServicesPageAsync(
+        ServiceListQuery? query = null, CancellationToken cancellationToken = default)
     {
-        var data = await GetAsync<ServiceSummary[]>(
-            $"{ApiPrefix}/services/",
-            HonuaAdminJsonContext.Default.ApiResponseServiceSummaryArray,
+        var data = await GetAsync<ServiceListPage>(
+            $"{ApiPrefix}/services/{AdminCatalogQuery.ForServices(query)}",
+            HonuaAdminJsonContext.Default.ApiResponseServiceListPage,
             cancellationToken).ConfigureAwait(false);
-        return data ?? [];
+        return data ?? new ServiceListPage();
+    }
+
+    private async Task<AdminCatalogWalker.Slice<ServiceSummary>> ReadServiceSliceAsync(
+        int pageNumber, CancellationToken cancellationToken)
+    {
+        var page = await ListServicesPageAsync(new ServiceListQuery { Page = pageNumber }, cancellationToken)
+            .ConfigureAwait(false);
+        return new AdminCatalogWalker.Slice<ServiceSummary>(page.Items, page.Page, page.PageSize, page.Total);
     }
 
     /// <inheritdoc />
@@ -376,15 +391,32 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Layers ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(string connectionId, string? serviceName = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(
+        string connectionId, string? serviceName = null, CancellationToken cancellationToken = default)
+        => AdminCatalogWalker.ReadAllAsync(
+            (pageNumber, token) => ReadLayerSliceAsync(connectionId, serviceName, pageNumber, token),
+            cancellationToken);
+
+    /// <summary>Returns one page of layers published on a connection.</summary>
+    public async Task<PublishedLayerPage> ListLayersPageAsync(
+        string connectionId, LayerListQuery? query = null, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
-        var query = BuildQuery(("serviceName", serviceName));
-        var data = await GetAsync<PublishedLayerSummary[]>(
-            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/{query}",
-            HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
+        var data = await GetAsync<PublishedLayerPage>(
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/{AdminCatalogQuery.ForLayers(query)}",
+            HonuaAdminJsonContext.Default.ApiResponsePublishedLayerPage,
             cancellationToken).ConfigureAwait(false);
-        return data ?? [];
+        return data ?? new PublishedLayerPage();
+    }
+
+    private async Task<AdminCatalogWalker.Slice<PublishedLayerSummary>> ReadLayerSliceAsync(
+        string connectionId, string? serviceName, int pageNumber, CancellationToken cancellationToken)
+    {
+        var page = await ListLayersPageAsync(
+            connectionId,
+            new LayerListQuery { Page = pageNumber, ServiceName = serviceName },
+            cancellationToken).ConfigureAwait(false);
+        return new AdminCatalogWalker.Slice<PublishedLayerSummary>(page.Items, page.Page, page.PageSize, page.Total);
     }
 
     /// <inheritdoc />
@@ -1628,18 +1660,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     private static string? GetETag(HttpResponseMessage response) => response.Headers.ETag?.ToString();
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
-
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+        => AdminQueryString.Format(parameters);
 
     private static string NormalizeSecureConnectionId(string id, string parameterName)
     {

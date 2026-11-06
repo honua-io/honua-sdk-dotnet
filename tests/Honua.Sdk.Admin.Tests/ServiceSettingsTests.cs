@@ -21,7 +21,16 @@ public sealed class ServiceSettingsTests
         {
             Assert.Contains("/admin/services/", req.RequestUri!.PathAndQuery);
             Assert.Equal(HttpMethod.Get, req.Method);
-            return Task.FromResult(TestHelpers.CreateJsonResponse(services));
+            Assert.Contains("page=1", req.RequestUri.Query, StringComparison.Ordinal);
+            Assert.Contains("pageSize=100", req.RequestUri.Query, StringComparison.Ordinal);
+            return Task.FromResult(TestHelpers.CreateJsonResponse(new
+            {
+                items = services,
+                page = 1,
+                pageSize = 100,
+                total = services.Length,
+                layerTotal = 4
+            }));
         });
 
         var result = await client.ListServicesAsync();
