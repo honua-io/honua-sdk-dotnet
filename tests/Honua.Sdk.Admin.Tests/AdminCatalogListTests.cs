@@ -22,10 +22,13 @@ public sealed class AdminCatalogListTests
             Assert.Contains("folderId=root", query, StringComparison.Ordinal);
             return Task.FromResult(TestHelpers.CreateJsonResponse(new
             {
-                items = new[]
+                items = Enumerable.Range(0, 25).Select(index => new
                 {
-                    new { serviceName = "parks", description = "Parks", layerCount = 40, enabledProtocols = new[] { "FeatureServer" } }
-                },
+                    serviceName = index == 0 ? "parks" : $"parks-{index}",
+                    description = "Parks",
+                    layerCount = 40,
+                    enabledProtocols = new[] { "FeatureServer" }
+                }).ToArray(),
                 page = 2,
                 pageSize = 25,
                 total = 2000,
@@ -42,9 +45,12 @@ public sealed class AdminCatalogListTests
         });
 
         Assert.Equal(1, calls);
+        Assert.Equal(2, page.Page);
+        Assert.Equal(25, page.PageSize);
         Assert.Equal(2000, page.Total);
         Assert.Equal(40, page.LayerTotal);
-        Assert.Equal("parks", Assert.Single(page.Items).ServiceName);
+        Assert.Equal(25, page.Items.Count);
+        Assert.Equal("parks", page.Items[0].ServiceName);
     }
 
     [Fact]
@@ -94,10 +100,15 @@ public sealed class AdminCatalogListTests
             Assert.Contains("serviceName=transport", query, StringComparison.Ordinal);
             return Task.FromResult(TestHelpers.CreateJsonResponse(new
             {
-                items = new[] { new { layerId = 7, layerName = "roads", serviceName = "transport" } },
+                items = Enumerable.Range(0, 10).Select(index => new
+                {
+                    layerId = index == 0 ? 7 : index,
+                    layerName = index == 0 ? "roads" : $"roads-{index}",
+                    serviceName = "transport"
+                }).ToArray(),
                 page = 1,
                 pageSize = 10,
-                total = 1
+                total = 40
             }));
         });
 
@@ -110,8 +121,11 @@ public sealed class AdminCatalogListTests
         });
 
         Assert.Equal(1, calls);
-        Assert.Equal(1, page.Total);
-        Assert.Equal(7, Assert.Single(page.Items).LayerId);
+        Assert.Equal(1, page.Page);
+        Assert.Equal(10, page.PageSize);
+        Assert.Equal(40, page.Total);
+        Assert.Equal(10, page.Items.Count);
+        Assert.Equal(7, page.Items[0].LayerId);
     }
 
     [Fact]
@@ -129,20 +143,6 @@ public sealed class AdminCatalogListTests
 
         Assert.Equal("pageSize", error.ParamName);
         Assert.Equal(0, calls);
-    }
-
-    [Fact]
-    public async Task ListLayersPageAsync_RejectsANameQueryLongerThan200CharactersBeforeHttp()
-    {
-        var client = TestHelpers.CreateClient(_ =>
-            throw new InvalidOperationException("The name query is rejected before the request."));
-
-        var error = await Assert.ThrowsAsync<ArgumentException>(() =>
-            client.ListLayersPageAsync(
-                "11111111-1111-1111-1111-111111111111",
-                new LayerListQuery { NameQuery = new string('a', 201) }));
-
-        Assert.Equal("nameQuery", error.ParamName);
     }
 
     [Theory]

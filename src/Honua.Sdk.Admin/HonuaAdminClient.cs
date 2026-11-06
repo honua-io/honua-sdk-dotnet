@@ -1660,18 +1660,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     private static string? GetETag(HttpResponseMessage response) => response.Headers.ETag?.ToString();
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
-
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+        => AdminQueryString.Format(parameters);
 
     private static string NormalizeSecureConnectionId(string id, string parameterName)
     {

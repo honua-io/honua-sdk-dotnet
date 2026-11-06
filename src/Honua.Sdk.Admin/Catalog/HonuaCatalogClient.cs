@@ -93,7 +93,8 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
-        var services = (await LoadServicesAsync(CatalogMetadataIndex.Empty, cancellationToken, serviceName).ConfigureAwait(false)).Services;
+        var services = (await LoadServicesAsync(
+            CatalogMetadataIndex.Empty, cancellationToken, LookupNameQuery(serviceName)).ConfigureAwait(false)).Services;
         return services.FirstOrDefault(service => string.Equals(service.Name, serviceName, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -117,7 +118,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
         var metadata = CatalogMetadataIndex.Empty;
-        var service = (await LoadServicesAsync(metadata, cancellationToken, serviceName).ConfigureAwait(false)).Services
+        var service = (await LoadServicesAsync(metadata, cancellationToken, LookupNameQuery(serviceName)).ConfigureAwait(false)).Services
             .FirstOrDefault(candidate => string.Equals(candidate.Name, serviceName, StringComparison.OrdinalIgnoreCase));
         if (service is null)
         {
@@ -1010,19 +1011,11 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
             _ => FeatureSpatialGeometryType.Unspecified
         };
 
-    private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
+    private static string? LookupNameQuery(string serviceName)
+        => serviceName.Length <= AdminCatalogQuery.MaxNameQueryLength ? serviceName : null;
 
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+    private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
+        => AdminQueryString.Format(parameters);
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 

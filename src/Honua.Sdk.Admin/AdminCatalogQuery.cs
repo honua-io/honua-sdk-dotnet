@@ -37,20 +37,11 @@ internal static class AdminCatalogQuery
         if (name is { Length: > MaxNameQueryLength })
             throw new ArgumentException("Name query is longer than 200 characters.", nameof(nameQuery));
 
-        var parts = new List<string>
-        {
-            "page=" + page.ToString(CultureInfo.InvariantCulture),
-            "pageSize=" + pageSize.ToString(CultureInfo.InvariantCulture)
-        };
-        Add(parts, "q", name);
-        Add(parts, extra.Key, extra.Value);
-        return "?" + string.Join("&", parts);
-    }
-
-    private static void Add(List<string> parts, string key, string? value)
-    {
-        if (!string.IsNullOrEmpty(value))
-            parts.Add(Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value));
+        return AdminQueryString.Format(
+            ("page", page.ToString(CultureInfo.InvariantCulture)),
+            ("pageSize", pageSize.ToString(CultureInfo.InvariantCulture)),
+            ("q", name),
+            extra);
     }
 
     private static string? TrimmedOrNull(string? value)
