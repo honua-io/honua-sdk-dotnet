@@ -65,7 +65,15 @@ public sealed class LayerPublishingTests
         {
             Assert.Equal(HttpMethod.Get, req.Method);
             Assert.Contains($"/admin/connections/{ConnectionId}/layers/", req.RequestUri!.PathAndQuery);
-            return Task.FromResult(TestHelpers.CreateJsonResponse(layers));
+            Assert.Contains("page=1", req.RequestUri.Query, StringComparison.Ordinal);
+            Assert.Contains("pageSize=100", req.RequestUri.Query, StringComparison.Ordinal);
+            return Task.FromResult(TestHelpers.CreateJsonResponse(new
+            {
+                items = layers,
+                page = 1,
+                pageSize = 100,
+                total = layers.Length
+            }));
         });
 
         var result = await client.ListLayersAsync(ConnectionId);
@@ -78,8 +86,10 @@ public sealed class LayerPublishingTests
     {
         var client = TestHelpers.CreateClient(req =>
         {
-            Assert.Contains("serviceName=myservice", req.RequestUri!.Query);
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            Assert.Contains("serviceName=myservice", req.RequestUri!.Query, StringComparison.Ordinal);
+            Assert.Contains("page=1", req.RequestUri.Query, StringComparison.Ordinal);
+            Assert.Contains("pageSize=100", req.RequestUri.Query, StringComparison.Ordinal);
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyLayerPage()));
         });
 
         await client.ListLayersAsync(ConnectionId, serviceName: "myservice");

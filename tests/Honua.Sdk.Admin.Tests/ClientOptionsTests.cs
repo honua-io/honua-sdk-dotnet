@@ -113,7 +113,7 @@ public sealed class ClientOptionsTests
             options.PrimaryHttpMessageHandlerFactory = () => new DelegateHandler(_ =>
             {
                 handled = true;
-                return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+                return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
             });
         });
 

@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
   "complete": false,
   "summary": {
-    "total": 330,
+    "total": 332,
     "exercised": 39,
-    "gap": 273,
+    "gap": 275,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 312,
+    "denominator": 314,
     "excluded": []
   },
   "operations": [
@@ -2935,6 +2935,34 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.ListLayersPageAsync(string,LayerListQuery?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "ListLayersPageAsync",
+      "signature": "ListLayersPageAsync(string,LayerListQuery?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.PublishLayerAsync(string,PublishLayerRequest,CancellationToken)",
       "surface": "admin",
       "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
@@ -3750,6 +3778,34 @@
       "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
       "operation": "ListServicesAsync",
       "signature": "ListServicesAsync(CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.ListServicesPageAsync(ServiceListQuery?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "ListServicesPageAsync",
+      "signature": "ListServicesPageAsync(ServiceListQuery?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",

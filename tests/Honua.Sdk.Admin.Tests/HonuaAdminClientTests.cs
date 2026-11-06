@@ -42,7 +42,7 @@ public sealed class HonuaAdminClientTests
                 capturedApiKey = values.First();
             }
 
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
 
         var authHandler = new HonuaAdminAuthHandler(options)
@@ -75,7 +75,7 @@ public sealed class HonuaAdminClientTests
         var innerHandler = new MockHttpHandler(req =>
         {
             capturedAuth = req.Headers.Authorization?.ToString();
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
 
         var authHandler = new HonuaAdminAuthHandler(options)
@@ -115,7 +115,7 @@ public sealed class HonuaAdminClientTests
             }
 
             capturedAuth = req.Headers.Authorization?.ToString();
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
 
         var authHandler = new HonuaAdminAuthHandler(options)
@@ -153,7 +153,7 @@ public sealed class HonuaAdminClientTests
         {
             req.Headers.TryGetValues("X-API-Key", out var apiValues);
             capturedCredentials.Add((apiValues?.SingleOrDefault(), req.Headers.Authorization?.ToString()));
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
 
         var authHandler = new HonuaAdminAuthHandler(options)
@@ -203,7 +203,7 @@ public sealed class HonuaAdminClientTests
         {
             capturedApiKeyHeader = req.Headers.Contains("X-API-Key");
             capturedAuthHeader = req.Headers.Authorization is not null;
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
 
         var authHandler = new HonuaAdminAuthHandler(options)
@@ -249,7 +249,7 @@ public sealed class HonuaAdminClientTests
         var innerHandler = new MockHttpHandler(req =>
         {
             capturedAuth = req.Headers.Authorization?.ToString();
-            return Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>()));
+            return Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
 
         var authHandler = new HonuaAdminAuthHandler(options)
@@ -287,7 +287,7 @@ public sealed class HonuaAdminClientTests
 
         var authHandler = new HonuaAdminAuthHandler(options)
         {
-            InnerHandler = new MockHttpHandler(_ => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())))
+            InnerHandler = new MockHttpHandler(_ => Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage())))
         };
 
         var httpClient = new HttpClient(authHandler)
@@ -316,7 +316,7 @@ public sealed class HonuaAdminClientTests
 
         var authHandler = new HonuaAdminAuthHandler(options)
         {
-            InnerHandler = new MockHttpHandler(_ => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())))
+            InnerHandler = new MockHttpHandler(_ => Task.FromResult(TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage())))
         };
 
         var httpClient = new HttpClient(authHandler)
