@@ -41,7 +41,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             (pageNumber, token) => ReadServiceSliceAsync(pageNumber, token),
             cancellationToken);
 
-    /// <inheritdoc />
+    /// <summary>Returns one page of admin services, including the count of every match.</summary>
     public async Task<ServiceListPage> ListServicesPageAsync(
         ServiceListQuery? query = null, CancellationToken cancellationToken = default)
     {
@@ -397,7 +397,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             (pageNumber, token) => ReadLayerSliceAsync(connectionId, serviceName, pageNumber, token),
             cancellationToken);
 
-    /// <inheritdoc />
+    /// <summary>Returns one page of layers published on a connection.</summary>
     public async Task<PublishedLayerPage> ListLayersPageAsync(
         string connectionId, LayerListQuery? query = null, CancellationToken cancellationToken = default)
     {
