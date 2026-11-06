@@ -13,6 +13,7 @@ import unittest
 import zipfile
 from argparse import Namespace
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "prepare-installed-package-certification.py"
@@ -343,6 +344,17 @@ class InstalledPackageCertificationTests(unittest.TestCase):
                     "2026-02-31T25:61:61Z", "2026-02-29T09:45:00Z", "2026-10-12T24:00:00Z", "0000-01-01T00:00:00Z"):
             with self.subTest(cut=cut), self.assertRaises(ValueError):
                 MODULE.validate_pins(self._pins(candidateCut=cut))
+
+    def test_candidate_cut_bounds_hours_before_the_runtime_calendar_parser(self):
+        with patch.object(MODULE, "datetime") as calendar_parser:
+            for cut in ("2026-10-12T24:00:00Z", "2026-10-12T25:00:00Z", "2026-10-12T99:00:00Z"):
+                with self.subTest(cut=cut):
+                    self.assertFalse(MODULE.valid_candidate_cut(cut))
+            calendar_parser.fromisoformat.assert_not_called()
+            for cut in ("2026-10-12T00:00:00Z", "2026-10-12T23:59:59Z"):
+                with self.subTest(cut=cut):
+                    self.assertTrue(MODULE.valid_candidate_cut(cut))
+            self.assertEqual(calendar_parser.fromisoformat.call_count, 2)
 
     def test_candidate_cut_checks_calendar_dates_in_pins_and_manifest(self):
         for cut in ("2024-02-29T23:59:59Z", "2026-10-12T09:45:00.123456Z"):
