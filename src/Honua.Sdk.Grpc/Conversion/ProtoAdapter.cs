@@ -268,14 +268,14 @@ internal static class ProtoAdapter
         }
 
         NetTopologySuite.Geometries.Geometry? ntsGeometry = null;
-        IReadOnlyDictionary<string, object?>? esriGeometry = null;
+        IReadOnlyDictionary<string, object?>? geoServicesGeometry = null;
         if (feature.Geometry is not null && feature.Geometry.ShapeCase != Proto.Geometry.ShapeOneofCase.None)
         {
             // Read the proto geometry once into NTS (the proto-native shape) and derive the GeoServices
             // JSON dictionary from that same instance, so there is no serialize-then-reparse and the
             // existing proto->NTS converter is the source of truth for SDK query results.
             ntsGeometry = GrpcGeometryConverter.ReadGeometry(feature.Geometry);
-            esriGeometry = ConvertGeometry(ntsGeometry);
+            geoServicesGeometry = ConvertGeometry(ntsGeometry);
         }
 
         return new Models.Feature
@@ -283,7 +283,7 @@ internal static class ProtoAdapter
             Id = feature.Id,
             Attributes = attributes,
             NtsGeometry = ntsGeometry,
-            Geometry = esriGeometry,
+            Geometry = geoServicesGeometry,
         };
     }
 
