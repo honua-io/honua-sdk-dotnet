@@ -2,6 +2,18 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [2.1.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v2.0.0...dotnet-sdk-v2.1.0) (2026-11-07)
+
+
+### Features
+
+* **admin:** page the service and layer lists ([#497](https://github.com/honua-io/honua-sdk-dotnet/issues/497)) ([7fd7990](https://github.com/honua-io/honua-sdk-dotnet/commit/7fd7990d4dbc34a7168f6f5e1e94f53f8b44aafe))
+
+
+### Bug Fixes
+
+* validate candidate-cut hours before calendar parsing ([#502](https://github.com/honua-io/honua-sdk-dotnet/issues/502)) ([626ecb3](https://github.com/honua-io/honua-sdk-dotnet/commit/626ecb34ee2c372272f21e651911256fc3eaf59f))
+
 ## [2.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.13.1...dotnet-sdk-v2.0.0) (2026-11-04)
 
 
