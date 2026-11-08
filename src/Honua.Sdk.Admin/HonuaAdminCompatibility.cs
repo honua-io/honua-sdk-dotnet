@@ -32,9 +32,7 @@ public static class HonuaAdminCompatibility
     /// </summary>
     public const string SupportedControlPlaneApiBasePath = "/api/v1/admin";
 
-    /// <summary>
-    /// Advisory release-channel baseline; release channels do not determine compatibility.
-    /// </summary>
+    /// <summary>Advisory release-channel baseline; release channels do not determine compatibility.</summary>
     public const string MinimumSupportedReleaseChannel = "preview";
 
     /// <summary>
