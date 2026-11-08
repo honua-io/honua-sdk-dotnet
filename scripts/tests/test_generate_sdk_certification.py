@@ -790,6 +790,30 @@ class SdkCertificationTests(unittest.TestCase):
 
         self.assertTrue(expected <= actual, expected - actual)
 
+    def test_partial_clients_preserve_concrete_operations_without_interface_duplicates(self):
+        for modifiers in ("partial", "sealed partial", "partial sealed"):
+            with self.subTest(modifiers=modifiers), tempfile.TemporaryDirectory() as directory:
+                source = Path(directory)
+                package = source / "Honua.Sdk.Admin"
+                package.mkdir()
+                (package / "FixtureClient.cs").write_text(
+                    "namespace Fixture; public interface IFixtureClient { Task ListAsync(); } "
+                    f"public {modifiers} class FixtureClient : IFixtureClient {{ "
+                    "public Task ListAsync() => Task.CompletedTask; "
+                    "public Task MainOnlyAsync() => Task.CompletedTask; }")
+                (package / "FixtureClient.Folders.cs").write_text(
+                    f"namespace Fixture; public {modifiers} class FixtureClient {{ "
+                    "public Task ExtraOnlyAsync() => Task.CompletedTask; }")
+
+                operations = MODULE._declared_operations(source)
+
+                self.assertEqual({
+                    "Fixture.IFixtureClient.ListAsync()",
+                    "Fixture.FixtureClient.MainOnlyAsync()",
+                    "Fixture.FixtureClient.ExtraOnlyAsync()",
+                }, {operation["id"] for operation in operations})
+                self.assertTrue(all(operation["implemented"] for operation in operations))
+
     def test_replica_sync_client_contract_is_cataloged(self):
         operations = MODULE.build_document()["operations"]
         replica = [
@@ -968,7 +992,7 @@ class SdkCertificationTests(unittest.TestCase):
         names = {
             "RollbackDeployOperationAsync", "RotateEncryptionKeyAsync", "ImportRasterAsync",
             "PatchItemAsync", "RollbackAsync", "CommitEditSessionAsync", "StartEditSessionAsync",
-            "ConnectAsync", "ReconnectAsync", "SubscribeAsync", "UnsubscribeAsync", "ReopenVersionAsync",
+            "ConnectAsync", "ReconnectAsync", "SubscribeAsync", "UnsubscribeAsync", "ReopenVersionAsync", "MoveServiceAsync",
         }
         matched = [cell for cell in document["operations"] if cell["operation"] in names]
         self.assertEqual(names, {cell["operation"] for cell in matched})

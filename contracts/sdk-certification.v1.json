@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
   "complete": false,
   "summary": {
-    "total": 332,
+    "total": 337,
     "exercised": 39,
-    "gap": 275,
+    "gap": 280,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 314,
+    "denominator": 319,
     "excluded": []
   },
   "operations": [
@@ -2639,6 +2639,146 @@
       ],
       "scenarioFacets": [
         "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.CreateFolderAsync(CreateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "CreateFolderAsync",
+      "signature": "CreateFolderAsync(CreateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.DeleteFolderAsync(string,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "DeleteFolderAsync",
+      "signature": "DeleteFolderAsync(string,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.ListFoldersAsync(string?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "ListFoldersAsync",
+      "signature": "ListFoldersAsync(string?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.MoveServiceAsync(string,MoveServiceRequest,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "MoveServiceAsync",
+      "signature": "MoveServiceAsync(string,MoveServiceRequest,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.UpdateFolderAsync(string,UpdateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "UpdateFolderAsync",
+      "signature": "UpdateFolderAsync(string,UpdateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
       ],
       "tests": [],
       "implementations": [
