@@ -202,7 +202,7 @@ public sealed class ServerCompatibilityResult
     public string MinimumSupportedServerVersion { get; init; } = HonuaAdminCompatibility.MinimumSupportedServerVersion;
 
     /// <summary>
-    /// Minimum server release channel supported by this SDK baseline.
+    /// Advisory release-channel baseline; release channels do not determine compatibility.
     /// </summary>
     public string MinimumSupportedReleaseChannel { get; init; } = HonuaAdminCompatibility.MinimumSupportedReleaseChannel;
 

@@ -33,7 +33,7 @@ public static class HonuaAdminCompatibility
     public const string SupportedControlPlaneApiBasePath = "/api/v1/admin";
 
     /// <summary>
-    /// Minimum server release channel expected by this SDK baseline.
+    /// Advisory release-channel baseline; release channels do not determine compatibility.
     /// </summary>
     public const string MinimumSupportedReleaseChannel = "preview";
 
@@ -93,22 +93,6 @@ public static class HonuaAdminCompatibility
                 "The advertised control-plane API major is deprecated.");
         }
 
-        var actualReleaseChannelRank = GetReleaseChannelRank(capabilities.ReleaseChannel);
-        var minimumReleaseChannelRank = GetReleaseChannelRank(MinimumSupportedReleaseChannel);
-        if (actualReleaseChannelRank < 0)
-        {
-            return Unsupported(
-                capabilities,
-                $"Release channel '{capabilities.ReleaseChannel}' is not recognized by this SDK baseline.");
-        }
-
-        if (actualReleaseChannelRank < minimumReleaseChannelRank)
-        {
-            return Unsupported(
-                capabilities,
-                $"Release channel '{capabilities.ReleaseChannel}' is below the minimum supported release channel '{MinimumSupportedReleaseChannel}'.");
-        }
-
         return new ServerCompatibilityResult
         {
             Capabilities = capabilities,
@@ -139,20 +123,6 @@ public static class HonuaAdminCompatibility
 
         return normalized.TrimEnd('/');
     }
-
-    private static int GetReleaseChannelRank(string releaseChannel)
-        => releaseChannel.Trim().ToUpperInvariant() switch
-        {
-            "NIGHTLY" => 0,
-            "DEV" => 1,
-            "ALPHA" => 2,
-            "PREVIEW" => 3,
-            "BETA" => 4,
-            "RC" => 5,
-            "STABLE" => 6,
-            "LTS" => 7,
-            _ => -1
-        };
 
     private readonly record struct SemanticVersion(int Major, int Minor, int Patch) : IComparable<SemanticVersion>
     {

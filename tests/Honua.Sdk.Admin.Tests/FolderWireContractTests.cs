@@ -47,6 +47,17 @@ public sealed class FolderWireContractTests
         Assert.Equal("PublicParcels", result.RootElement.GetProperty("publicName").GetString());
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("workspace")]
+    public void PublishLayer_RoundTripPreservesExplicitNamespace(string namespaceName)
+    {
+        var wire = $$"""{"schema":"public","table":"parcels","layerName":"Parcels","namespace":"{{namespaceName}}"}""";
+        var request = JsonSerializer.Deserialize(wire, HonuaAdminJsonContext.Default.PublishLayerRequest)!;
+        using var result = JsonDocument.Parse(JsonSerializer.Serialize(request, HonuaAdminJsonContext.Default.PublishLayerRequest));
+        Assert.Equal(namespaceName, result.RootElement.GetProperty("namespace").GetString());
+    }
+
     [Fact]
     public void PublishLayer_LegacyRequestOmitsOrganization()
     {
@@ -54,6 +65,7 @@ public sealed class FolderWireContractTests
         using var result = JsonDocument.Parse(JsonSerializer.Serialize(request, HonuaAdminJsonContext.Default.PublishLayerRequest));
         Assert.False(result.RootElement.TryGetProperty("folderId", out _));
         Assert.False(result.RootElement.TryGetProperty("publicName", out _));
+        Assert.False(result.RootElement.TryGetProperty("namespace", out _));
         Assert.Equal("parcels", result.RootElement.GetProperty("table").GetString());
     }
 }

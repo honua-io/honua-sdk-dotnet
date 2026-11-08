@@ -192,8 +192,8 @@ Major versions are coordinated across all Honua SDKs.
 ## Server Compatibility Baseline
 
 `Honua.Sdk.Admin` currently requires Honua Server
-`HonuaAdminCompatibility.MinimumSupportedServerVersion` or newer and a minimum
-server release channel baseline of `preview`. `CheckCompatibilityAsync()`
+`HonuaAdminCompatibility.MinimumSupportedServerVersion` or newer. Release channels,
+including `nightly`, are advisory and do not determine compatibility. `CheckCompatibilityAsync()`
 evaluates that server against `GET /api/v1/admin/capabilities`, including
 control-plane API major `1` and base path `/api/v1/admin`, and also surfaces
 coarse feature flags for metadata and manifest workflows.

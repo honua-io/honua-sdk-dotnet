@@ -34,7 +34,6 @@ public sealed class BootstrapCompatibilityException : Exception
 
         return
             $"Server {serverVersion} ({releaseChannel}) is not supported. " +
-            $"Minimum supported version: {compatibility.MinimumSupportedServerVersion} " +
-            $"({compatibility.MinimumSupportedReleaseChannel}+). {reason}";
+            $"Minimum supported version: {compatibility.MinimumSupportedServerVersion}. {reason}";
     }
 }
