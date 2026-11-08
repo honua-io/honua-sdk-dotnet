@@ -38,6 +38,8 @@ trap cleanup EXIT
 mkdir -p "${BASE_PACKAGES}" "${CURRENT_PACKAGES}"
 
 git -C "${ROOT}" worktree add --detach "${BASE_WORKTREE}" "${BASE_REF}" >/dev/null
+# Historical workload pins may be unavailable under the candidate SDK.
+cp "${ROOT}/global.json" "${BASE_WORKTREE}/global.json"
 dotnet tool restore --tool-manifest "${ROOT}/.config/dotnet-tools.json" >/dev/null
 
 PACKAGE_MANIFEST="${ROOT}/eng/shipped-packages.txt"
