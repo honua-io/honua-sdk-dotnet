@@ -10,6 +10,26 @@ namespace Honua.Sdk.Admin.Models;
 /// </summary>
 public sealed class ServiceSummary
 {
+    /// <summary>The owning Folder identifier, or null for Root.</summary>
+    [JsonPropertyName("folderId")]
+    public string? FolderId { get; init; }
+
+    /// <summary>The current public Folder name.</summary>
+    [JsonPropertyName("folderName")]
+    public string? FolderName { get; init; }
+
+    /// <summary>The immutable public Service name.</summary>
+    [JsonPropertyName("publicName")]
+    public string? PublicName { get; init; }
+
+    /// <summary>Display text independent of the public name.</summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; init; }
+
+    /// <summary>Reasons a catalog organization mutation may need reconciliation.</summary>
+    [JsonPropertyName("folderMutationIssues")]
+    public IReadOnlyList<string> FolderMutationIssues { get; init; } = [];
+
     /// <summary>
     /// The service name.
     /// </summary>

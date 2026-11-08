@@ -65,6 +65,40 @@ var replay = await events.ReplayFeatureEventsAsync(
     cancellationToken);
 ```
 
+## Folder management
+
+`IHonuaAdminFoldersClient` lists empty Folders, creates and updates Folders,
+deletes empty Folders, and moves logical Services between a Folder and Root.
+Each mutation requires the ETag of the reviewed catalog snapshot and returns
+the next ETag. A stale snapshot or a non-empty delete retains the standard
+`HonuaAdminApiException` response; refresh and review before trying again.
+
+```csharp
+using Honua.Sdk.Admin.Models;
+
+var folders = provider.GetRequiredService<IHonuaAdminFoldersClient>();
+var (catalog, etag) = await folders.ListFoldersAsync(cancellationToken: cancellationToken);
+var (folder, createdETag) = await folders.CreateFolderAsync(
+    new CreateFolderRequest { Name = "Survey", Title = "Field survey" },
+    new FolderMutationOptions { IfMatch = etag ?? throw new InvalidOperationException("Missing catalog ETag.") },
+    cancellationToken);
+var movedETag = await folders.MoveServiceAsync(
+    "logical-parcels", new MoveServiceRequest { FolderId = folder.Metadata.Id },
+    new FolderMutationOptions { IfMatch = createdETag ?? throw new InvalidOperationException("Missing catalog ETag.") },
+    cancellationToken);
+```
+
+Omit the namespace for unscoped operations; supply it consistently for a
+Folder and its Services to select the server-resolved tenant. An omitted
+`UpdateFolderRequest.Title` preserves the title; `new OptionalString(null)`
+clears it. `MoveServiceRequest.FolderId = null` selects Root. On publishing,
+`PublishLayerRequest.FolderId` defaults to preserving membership,
+`new OptionalString(null)` selects Root, and
+`new OptionalString(folder.Metadata.Id)` selects a Folder. `Namespace` is
+forwarded in the publishing body. `PublicName` is an immutable public Service
+name, separate from its logical identity and display title. Existing root-only
+responses remain valid when the optional organization fields are absent.
+
 ## GeoServices/migration import lifecycle
 
 Discover a GeoServices REST service, queue a single-layer import, and wait for it to

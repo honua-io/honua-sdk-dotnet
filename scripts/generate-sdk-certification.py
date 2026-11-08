@@ -69,7 +69,7 @@ PR_OPERATIONS = frozenset(
 
 MUTATION_PREFIXES = (
     "Add", "Apply", "Cancel", "Connect", "Create", "Delete", "Deprovision", "Dismiss",
-    "Commit", "Disconnect", "Execute", "Import", "Patch", "Pause", "Publish", "Remove",
+    "Commit", "Disconnect", "Execute", "Import", "Move", "Patch", "Pause", "Publish", "Remove",
     "Reconnect", "Reopen", "Resume", "Revoke", "Rollback", "Rotate", "Set", "Start", "Submit",
     "Subscribe", "Synchronize", "Trigger", "Unpublish", "UnRegister", "Unsubscribe", "Update", "Upload",
 )
@@ -453,7 +453,7 @@ def _declared_operations(src_root: Path = SRC_ROOT) -> list[dict[str, Any]]:
                 }
     for path, stripped in stripped_files.items():
         namespace = _namespace(stripped)
-        concrete_re = re.compile(r"\bpublic\s+(?:sealed\s+)?class\s+(\w+Client)\b([^\{]*)\{")
+        concrete_re = re.compile(r"\bpublic\s+(?:(?:sealed|partial)\s+)*class\s+(\w+Client)\b([^\{]*)\{")
         for declaration in concrete_re.finditer(stripped):
             concrete = declaration.group(1)
             implementation = f"{namespace}.{concrete}"

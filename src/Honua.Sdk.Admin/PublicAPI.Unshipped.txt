@@ -921,3 +921,81 @@ Honua.Sdk.Admin.Models.ServiceListQuery.Page.init -> void
 Honua.Sdk.Admin.Models.ServiceListQuery.PageSize.get -> int
 Honua.Sdk.Admin.Models.ServiceListQuery.PageSize.init -> void
 Honua.Sdk.Admin.Models.ServiceListQuery.ServiceListQuery() -> void
+Honua.Sdk.Admin.HonuaAdminClient.CreateFolderAsync(Honua.Sdk.Admin.Models.CreateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.HonuaAdminClient.DeleteFolderAsync(string! folderId, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.HonuaAdminClient.ListFoldersAsync(string? namespaceName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.Folder!>! Folders, string? ETag)>!
+Honua.Sdk.Admin.HonuaAdminClient.MoveServiceAsync(string! serviceName, Honua.Sdk.Admin.Models.MoveServiceRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.HonuaAdminClient.UpdateFolderAsync(string! folderId, Honua.Sdk.Admin.Models.UpdateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.CreateFolderAsync(Honua.Sdk.Admin.Models.CreateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.DeleteFolderAsync(string! folderId, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.ListFoldersAsync(string? namespaceName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.Folder!>! Folders, string? ETag)>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.MoveServiceAsync(string! serviceName, Honua.Sdk.Admin.Models.MoveServiceRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.UpdateFolderAsync(string! folderId, Honua.Sdk.Admin.Models.UpdateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.Models.CreateFolderRequest
+Honua.Sdk.Admin.Models.CreateFolderRequest.CreateFolderRequest() -> void
+Honua.Sdk.Admin.Models.CreateFolderRequest.Name.get -> string!
+Honua.Sdk.Admin.Models.CreateFolderRequest.Name.init -> void
+Honua.Sdk.Admin.Models.CreateFolderRequest.Title.get -> string?
+Honua.Sdk.Admin.Models.CreateFolderRequest.Title.init -> void
+Honua.Sdk.Admin.Models.Folder
+Honua.Sdk.Admin.Models.Folder.Deleted.get -> bool
+Honua.Sdk.Admin.Models.Folder.Deleted.init -> void
+Honua.Sdk.Admin.Models.Folder.Folder() -> void
+Honua.Sdk.Admin.Models.Folder.Metadata.get -> Honua.Sdk.Admin.Models.FolderMetadata!
+Honua.Sdk.Admin.Models.Folder.Metadata.init -> void
+Honua.Sdk.Admin.Models.Folder.PreviousNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.Folder.PreviousNames.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata
+Honua.Sdk.Admin.Models.FolderMetadata.FolderMetadata() -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Id.get -> string!
+Honua.Sdk.Admin.Models.FolderMetadata.Id.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Name.get -> string!
+Honua.Sdk.Admin.Models.FolderMetadata.Name.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Tenant.get -> string?
+Honua.Sdk.Admin.Models.FolderMetadata.Tenant.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Title.get -> string?
+Honua.Sdk.Admin.Models.FolderMetadata.Title.init -> void
+Honua.Sdk.Admin.Models.FolderMutationOptions
+Honua.Sdk.Admin.Models.FolderMutationOptions.FolderMutationOptions() -> void
+Honua.Sdk.Admin.Models.FolderMutationOptions.IfMatch.get -> string!
+Honua.Sdk.Admin.Models.FolderMutationOptions.IfMatch.init -> void
+Honua.Sdk.Admin.Models.FolderMutationOptions.Namespace.get -> string?
+Honua.Sdk.Admin.Models.FolderMutationOptions.Namespace.init -> void
+Honua.Sdk.Admin.Models.MoveServiceRequest
+Honua.Sdk.Admin.Models.MoveServiceRequest.FolderId.get -> string?
+Honua.Sdk.Admin.Models.MoveServiceRequest.FolderId.init -> void
+Honua.Sdk.Admin.Models.MoveServiceRequest.MoveServiceRequest() -> void
+Honua.Sdk.Admin.Models.OptionalString
+Honua.Sdk.Admin.Models.OptionalString.Equals(Honua.Sdk.Admin.Models.OptionalString other) -> bool
+Honua.Sdk.Admin.Models.OptionalString.IsSpecified.get -> bool
+Honua.Sdk.Admin.Models.OptionalString.OptionalString() -> void
+Honua.Sdk.Admin.Models.OptionalString.OptionalString(string? value) -> void
+Honua.Sdk.Admin.Models.OptionalString.Value.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.FolderId.get -> Honua.Sdk.Admin.Models.OptionalString
+Honua.Sdk.Admin.Models.PublishLayerRequest.FolderId.init -> void
+Honua.Sdk.Admin.Models.PublishLayerRequest.PublicName.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.PublicName.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.FolderId.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.FolderId.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.FolderMutationIssues.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.ServiceSummary.FolderMutationIssues.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.FolderName.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.FolderName.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.PublicName.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.PublicName.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.Title.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.Title.init -> void
+Honua.Sdk.Admin.Models.UpdateFolderRequest
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Name.get -> string?
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Name.init -> void
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Title.get -> Honua.Sdk.Admin.Models.OptionalString
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Title.init -> void
+Honua.Sdk.Admin.Models.UpdateFolderRequest.UpdateFolderRequest() -> void
+override Honua.Sdk.Admin.Models.OptionalString.GetHashCode() -> int
+static Honua.Sdk.Admin.Models.OptionalString.operator !=(Honua.Sdk.Admin.Models.OptionalString left, Honua.Sdk.Admin.Models.OptionalString right) -> bool
+static Honua.Sdk.Admin.Models.OptionalString.operator ==(Honua.Sdk.Admin.Models.OptionalString left, Honua.Sdk.Admin.Models.OptionalString right) -> bool
+~override Honua.Sdk.Admin.Models.OptionalString.Equals(object obj) -> bool
+~override Honua.Sdk.Admin.Models.OptionalString.ToString() -> string
+Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.init -> void

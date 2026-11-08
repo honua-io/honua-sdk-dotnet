@@ -123,14 +123,16 @@ allow-lists your origin and that pre-flight (`OPTIONS`) responses include the he
 
 ### `CheckCompatibilityAsync` returns `IsSupported = false`
 
-`Honua.Sdk.Admin` requires a minimum server version and release channel; see
+`Honua.Sdk.Admin` requires compatible server version and Admin API metadata; see
 [docs/compatibility.md](compatibility.md). The `UnsupportedReason` string tells you the gap.
 Common cases:
 
 - The server is older than `HonuaAdminCompatibility.MinimumSupportedServerVersion`. Upgrade the
   server, or pin the SDK to a matching prior pre-release.
-- The server's release channel (`dev`, `preview`, `stable`) is below the SDK's baseline. The
-  capabilities endpoint reports the channel; promote the server or use a matching SDK build.
+- Compatibility metadata is missing or the server version cannot be parsed.
+- The Admin API major or base path differs from the SDK contract, or the API is deprecated.
+
+Release channels, including `nightly`, are advisory and do not cause compatibility refusals.
 
 ---
 

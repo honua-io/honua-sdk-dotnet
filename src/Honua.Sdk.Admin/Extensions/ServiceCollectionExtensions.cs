@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
         // IHonuaAdminClient so consumers can inject the narrowest contract they
         // need (Services, Connections, Deploy, etc.) without taking a dependency
         // on the full aggregate surface.
+        services.AddTransient<IHonuaAdminFoldersClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminServicesClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminMetadataClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());
         services.AddTransient<IHonuaAdminCompatibilityClient>(sp => sp.GetRequiredService<IHonuaAdminClient>());

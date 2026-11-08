@@ -33,8 +33,6 @@ public sealed class CompatibilityTests
     [InlineData("0.0.9", "preview", "minimum supported server version")]
     [InlineData("1.0.0+0e03bdd06b3ca3fb", "preview", "minimum supported server version")]
     [InlineData("2025.12.0", "stable", "minimum supported server version")]
-    [InlineData("2026.1.0", "alpha", "minimum supported release channel")]
-    [InlineData("2026.1.0", "nightly", "minimum supported release channel")]
     public void Evaluate_ReturnsUnsupported_ForServerMatrixBelowBaseline(
         string serverVersion,
         string releaseChannel,
@@ -201,7 +199,7 @@ public sealed class CompatibilityTests
     }
 
     [Fact]
-    public async Task CheckCompatibilityAsync_ReturnsUnsupportedResult_WhenReleaseChannelBelowBaseline()
+    public async Task CheckCompatibilityAsync_ReturnsSupportedResult_WhenReleaseChannelIsAlpha()
     {
         var client = TestHelpers.CreateClient(_ =>
             Task.FromResult(TestHelpers.CreateJsonResponse(new
@@ -230,8 +228,45 @@ public sealed class CompatibilityTests
 
         var result = await client.CheckCompatibilityAsync();
 
-        Assert.False(result.IsSupported);
-        Assert.Contains(HonuaAdminCompatibility.MinimumSupportedReleaseChannel, result.UnsupportedReason);
+        Assert.True(result.IsSupported, result.UnsupportedReason);
+        Assert.Null(result.UnsupportedReason);
+        Assert.Equal("alpha", result.ReleaseChannel);
+    }
+
+    [Theory]
+    [InlineData("nightly")]
+    [InlineData("dev")]
+    [InlineData("alpha")]
+    [InlineData("custom")]
+    [InlineData("")]
+    public void Evaluate_CompatibleServer_AllowsAdvisoryReleaseChannels(string releaseChannel)
+    {
+        var capabilities = CreateCapabilities("2026.1.0", releaseChannel);
+
+        var result = HonuaAdminCompatibility.Evaluate(capabilities);
+
+        Assert.True(result.IsSupported, result.UnsupportedReason);
+        Assert.Null(result.UnsupportedReason);
+        Assert.Equal(releaseChannel, result.ReleaseChannel);
+    }
+
+    [Theory]
+    [InlineData("nightly")]
+    [InlineData("dev")]
+    [InlineData("alpha")]
+    [InlineData("custom")]
+    [InlineData("")]
+    public async Task CheckCompatibilityAsync_CompatibleServer_AllowsAdvisoryReleaseChannels(string releaseChannel)
+    {
+        var capabilities = CreateCapabilities("2026.1.0", releaseChannel);
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(TestHelpers.CreateJsonResponse(capabilities)));
+
+        var result = await client.CheckCompatibilityAsync();
+
+        Assert.True(result.IsSupported, result.UnsupportedReason);
+        Assert.Null(result.UnsupportedReason);
+        Assert.Equal(releaseChannel, result.ReleaseChannel);
     }
 
     private static AdminCapabilitiesResponse CreateCapabilities(

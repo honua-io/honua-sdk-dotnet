@@ -16,6 +16,12 @@ namespace Honua.Sdk.Admin;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(ApiResponse<Folder[]>))]
+[JsonSerializable(typeof(ApiResponse<Folder>))]
+[JsonSerializable(typeof(CreateFolderRequest))]
+[JsonSerializable(typeof(UpdateFolderRequest))]
+[JsonSerializable(typeof(MoveServiceRequest))]
+[JsonSerializable(typeof(OptionalString))]
 [JsonSerializable(typeof(ApiResponse<ServiceSummary[]>))]
 [JsonSerializable(typeof(ApiResponse<ServiceListPage>))]
 [JsonSerializable(typeof(CatalogFeatureServerServiceInfo))]
