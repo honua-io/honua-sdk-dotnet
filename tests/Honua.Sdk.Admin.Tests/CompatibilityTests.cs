@@ -234,6 +234,42 @@ public sealed class CompatibilityTests
         Assert.Contains(HonuaAdminCompatibility.MinimumSupportedReleaseChannel, result.UnsupportedReason);
     }
 
+    [Theory]
+    [InlineData("nightly")]
+    [InlineData("dev")]
+    [InlineData("alpha")]
+    [InlineData("custom")]
+    [InlineData("")]
+    public void Evaluate_CompatibleServer_AllowsAdvisoryReleaseChannels(string releaseChannel)
+    {
+        var capabilities = CreateCapabilities("2026.1.0", releaseChannel);
+
+        var result = HonuaAdminCompatibility.Evaluate(capabilities);
+
+        Assert.True(result.IsSupported, result.UnsupportedReason);
+        Assert.Null(result.UnsupportedReason);
+        Assert.Equal(releaseChannel, result.ReleaseChannel);
+    }
+
+    [Theory]
+    [InlineData("nightly")]
+    [InlineData("dev")]
+    [InlineData("alpha")]
+    [InlineData("custom")]
+    [InlineData("")]
+    public async Task CheckCompatibilityAsync_CompatibleServer_AllowsAdvisoryReleaseChannels(string releaseChannel)
+    {
+        var capabilities = CreateCapabilities("2026.1.0", releaseChannel);
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(TestHelpers.CreateJsonResponse(capabilities)));
+
+        var result = await client.CheckCompatibilityAsync();
+
+        Assert.True(result.IsSupported, result.UnsupportedReason);
+        Assert.Null(result.UnsupportedReason);
+        Assert.Equal(releaseChannel, result.ReleaseChannel);
+    }
+
     private static AdminCapabilitiesResponse CreateCapabilities(
         string serverVersion,
         string releaseChannel,
