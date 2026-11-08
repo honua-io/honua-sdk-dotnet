@@ -18,9 +18,9 @@ The sample performs one end-to-end operator flow:
 ## Contract Notes
 
 - `CheckCompatibilityAsync` is a hard gate. The sample stops before any admin
-  mutation unless the server reports version `0.1.0` or newer, release channel
-  `preview` or newer, control-plane API major `1`, and base path
-  `/api/v1/admin`.
+  mutation unless the server reports `HonuaAdminCompatibility.MinimumSupportedServerVersion`
+  or newer, control-plane API major `1`, and base path `/api/v1/admin`.
+  The release channel is displayed as advisory metadata.
 - Set either `HONUA_BOOTSTRAP_DB_PASSWORD` or
   `HONUA_BOOTSTRAP_DB_SECRET_REFERENCE`. When using
   `HONUA_BOOTSTRAP_DB_SECRET_REFERENCE`, you must also set

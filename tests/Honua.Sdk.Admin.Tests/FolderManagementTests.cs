@@ -5,8 +5,10 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Honua.Sdk.Admin.Exceptions;
+using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Admin.Models;
 using Honua.Sdk.Admin.Tests.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.Admin.Tests;
 
@@ -100,15 +102,65 @@ public sealed class FolderManagementTests
     }
 
     [Theory]
-    [InlineData(403)]
-    [InlineData(409)]
-    [InlineData(412)]
-    [InlineData(428)]
-    public async Task FolderMutation_PreservesServerRefusal(int status)
+    [InlineData("POST", 403)]
+    [InlineData("DELETE", 409)]
+    [InlineData("PATCH", 412)]
+    [InlineData("PUT", 428)]
+    public async Task FolderMutation_PreservesServerRefusal(string method, int status)
     {
-        var client = TestHelpers.CreateClient(_ => Task.FromResult(TestHelpers.CreateErrorResponse((HttpStatusCode)status, "Refresh the catalog.")));
-        var failure = await Assert.ThrowsAsync<HonuaAdminApiException>(() => client.DeleteFolderAsync("folder", new() { IfMatch = ETag }));
+        var client = TestHelpers.CreateClient(request =>
+        {
+            Assert.Equal(method, request.Method.Method);
+            return Task.FromResult(TestHelpers.CreateErrorResponse((HttpStatusCode)status, "Refresh the catalog."));
+        });
+        var options = new FolderMutationOptions { IfMatch = ETag };
+        Func<Task> mutation = method switch
+        {
+            "POST" => () => client.CreateFolderAsync(new() { Name = "Survey" }, options),
+            "PATCH" => () => client.UpdateFolderAsync("folder", new(), options),
+            "PUT" => () => client.MoveServiceAsync("service", new(), options),
+            _ => () => client.DeleteFolderAsync("folder", options)
+        };
+        var failure = await Assert.ThrowsAsync<HonuaAdminApiException>(mutation);
         Assert.Equal((HttpStatusCode)status, failure.StatusCode);
+        Assert.Equal("Refresh the catalog.", failure.Message);
+        Assert.Contains("Refresh the catalog.", failure.ResponseBody, StringComparison.Ordinal);
+        Assert.NotNull(failure.FailureReceipt);
+    }
+
+    [Theory]
+    [InlineData("list")]
+    [InlineData("create")]
+    [InlineData("update")]
+    [InlineData("delete")]
+    [InlineData("move")]
+    public async Task LegacyFoldersClient_RejectsUnsupportedFolderCalls(string operation)
+    {
+        IHonuaAdminFoldersClient client = new LegacyFoldersClient();
+        var options = new FolderMutationOptions { IfMatch = ETag };
+        Func<Task> call = operation switch
+        {
+            "list" => () => client.ListFoldersAsync(),
+            "create" => () => client.CreateFolderAsync(new() { Name = "Survey" }, options),
+            "update" => () => client.UpdateFolderAsync("folder", new(), options),
+            "delete" => () => client.DeleteFolderAsync("folder", options),
+            _ => () => client.MoveServiceAsync("service", new(), options)
+        };
+        var failure = await Assert.ThrowsAsync<NotSupportedException>(call);
+        Assert.Contains("HonuaAdminClient", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AddHonuaAdmin_ResolvesFolderClient()
+    {
+        var services = new ServiceCollection();
+        services.AddHonuaAdmin(options =>
+        {
+            options.BaseAddress = new Uri("https://test.honua.io/mounted/");
+            options.EnableRetry = false;
+        });
+        using var provider = services.BuildServiceProvider();
+        Assert.IsType<HonuaAdminClient>(provider.GetRequiredService<IHonuaAdminFoldersClient>());
     }
 
     [Fact]
@@ -117,6 +169,12 @@ public sealed class FolderManagementTests
         using var handler = new MockHttpHandler(request =>
         {
             Assert.StartsWith("/mounted/api/v1/admin/", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            if (request.Method == HttpMethod.Put)
+            {
+                Assert.Equal("/mounted/api/v1/admin/services/a%2Fb/folder?namespace=workspace%20one", request.RequestUri.PathAndQuery);
+                Assert.Equal(ETag, Assert.Single(request.Headers.GetValues("If-Match")));
+                return Task.FromResult(WithETag(status: HttpStatusCode.NoContent));
+            }
             return Task.FromResult(request.RequestUri.AbsolutePath.EndsWith("folders", StringComparison.Ordinal)
                 ? WithETag(new[] { FolderPayload() }) : TestHelpers.CreateJsonResponse(TestHelpers.EmptyServicePage()));
         });
@@ -124,6 +182,7 @@ public sealed class FolderManagementTests
         var client = new HonuaAdminClient(http);
         await client.ListServicesAsync();
         await client.ListFoldersAsync();
+        await client.MoveServiceAsync("a/b", new(), new() { IfMatch = ETag, Namespace = "workspace one" });
     }
 
     private static object FolderPayload() => new
@@ -141,4 +200,8 @@ public sealed class FolderManagementTests
 
     private static HttpResponseMessage WithETag(HttpStatusCode status)
         => new(status) { Headers = { ETag = EntityTagHeaderValue.Parse(ETag) } };
+
+    private sealed class LegacyFoldersClient : IHonuaAdminFoldersClient
+    {
+    }
 }
