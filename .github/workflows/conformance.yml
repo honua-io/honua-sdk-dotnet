@@ -29,7 +29,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  DOTNET_VERSION: "10.0.401"
+  DOTNET_VERSION: "10.0.403"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # Pinned honua-server image by digest (see conformance/PINS.md): the honua-release

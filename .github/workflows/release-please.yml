@@ -73,7 +73,7 @@ jobs:
         if: steps.release-pr.outputs.sha != ''
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: '10.0.401'
+          dotnet-version: '10.0.403'
 
       - name: Pin and verify SDK workload tuple
         if: steps.release-pr.outputs.sha != ''
@@ -101,7 +101,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$(dotnet --version)" != '10.0.401' ]] || [[ "$(git rev-parse HEAD)" != "${RELEASE_HEAD}" ]]; then
+          if [[ "$(dotnet --version)" != '10.0.403' ]] || [[ "$(git rev-parse HEAD)" != "${RELEASE_HEAD}" ]]; then
             echo '::error::Release toolchain or checked-out PR head changed.' >&2
             exit 1
           fi
