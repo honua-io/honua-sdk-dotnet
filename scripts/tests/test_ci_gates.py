@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 
 
@@ -189,6 +192,118 @@ class ApiCompatibilityGateTests(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode)
         self.assertIn("explicitly approved", result.stdout)
+
+
+class ApiCompatibilityBaselineToolchainTests(unittest.TestCase):
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.directory = Path(temporary.name)
+        self.candidate = self.directory / "candidate"
+        self.baseline = self.directory / "historical-source"
+        for checkout, version in ((self.candidate, "10.0.403"), (self.baseline, "10.0.401")):
+            (checkout / "src").mkdir(parents=True)
+            (checkout / "global.json").write_text(json.dumps({"sdk": {
+                "version": version, "workloadVersion": version, "rollForward": "disable"}}))
+            (checkout / "src/Library.csproj").write_text(f"<Project><Version>{version}</Version></Project>")
+            (checkout / "src/Library.cs").write_text(f'public class Library {{ public const string Version = "{version}"; }}')
+            (checkout / "Directory.Packages.props").write_text(f'<Project><PackageVersion Include="Fixture" Version="{version}" /></Project>')
+        for script in ("validate-api-compat.sh", "run-api-compat-check.sh"):
+            destination = self.candidate / "scripts" / script
+            destination.parent.mkdir(exist_ok=True)
+            shutil.copy2(ROOT / "scripts" / script, destination)
+        (self.candidate / "eng").mkdir()
+        (self.candidate / "eng/shipped-packages.txt").write_text("src/Library.csproj|Honua.Sdk.Fixture\n")
+        self.log = self.directory / "commands.jsonl"
+        self.install_fake_commands()
+
+    def install_fake_commands(self) -> None:
+        commands = {
+            "git": """
+                import os, shutil, sys
+                from pathlib import Path
+                args = sys.argv[3:]
+                if args[0] == 'rev-parse':
+                    sys.exit(0)
+                if args[:2] == ['worktree', 'add']:
+                    shutil.copytree(os.environ['TEST_BASELINE'], args[3])
+                elif args[:2] == ['worktree', 'remove']:
+                    shutil.rmtree(args[3])
+                else:
+                    sys.exit('Unexpected git command: ' + repr(args))
+            """,
+            "dotnet": """
+                import json, os, sys
+                from pathlib import Path
+                args = sys.argv[1:]
+                call = {'args': args}
+                if args[0] == 'pack':
+                    checkout = Path(args[1]).parents[1]
+                    call['sdk'] = json.loads((checkout / 'global.json').read_text())
+                    call['source'] = {name: (checkout / name).read_text() for name in (
+                        'src/Library.csproj', 'src/Library.cs', 'Directory.Packages.props')}
+                with open(os.environ['TEST_COMMAND_LOG'], 'a') as output:
+                    output.write(json.dumps(call) + '\\n')
+                if args[0] == 'pack':
+                    candidate = Path(os.environ['TEST_CANDIDATE'])
+                    if call['sdk'] != json.loads((candidate / 'global.json').read_text()):
+                        sys.exit('Historical workload is unavailable under candidate SDK')
+                    output = Path(args[args.index('-o') + 1])
+                    (output / 'Honua.Sdk.Fixture.1.0.0.nupkg').write_text('fixture')
+                elif args[:3] == ['tool', 'run', 'apicompat']:
+                    sys.exit(int(os.environ['TEST_COMPAT_EXIT']))
+                elif args[:2] != ['tool', 'restore']:
+                    sys.exit('Unexpected dotnet command: ' + repr(args))
+            """,
+        }
+        self.bin_directory = self.directory / "bin"
+        self.bin_directory.mkdir()
+        for name, source in commands.items():
+            executable = self.bin_directory / name
+            executable.write_text("#!/usr/bin/env python3\n" + textwrap.dedent(source))
+            executable.chmod(0o755)
+
+    def run_validation(self, comparison_exit: int = 0) -> subprocess.CompletedProcess[str]:
+        environment = os.environ.copy()
+        for name in ("HONUA_API_COMPAT_ALLOW_BREAKING", "HONUA_API_COMPAT_BREAKING_APPROVAL"):
+            environment.pop(name, None)
+        environment.update({
+            "PATH": str(self.bin_directory) + os.pathsep + environment["PATH"],
+            "TEST_BASELINE": str(self.baseline), "TEST_CANDIDATE": str(self.candidate),
+            "TEST_COMMAND_LOG": str(self.log), "TEST_COMPAT_EXIT": str(comparison_exit),
+        })
+        return subprocess.run(
+            ["bash", str(self.candidate / "scripts/validate-api-compat.sh"), "historical"],
+            env=environment, capture_output=True, text=True, check=False,
+        )
+
+    def test_baseline_uses_candidate_tuple_without_changing_api_or_dependency_source(self) -> None:
+        result = self.run_validation()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        calls = [json.loads(line) for line in self.log.read_text().splitlines()]
+        packs = [call for call in calls if call["args"][0] == "pack"]
+        self.assertEqual(2, len(packs))
+        candidate_pin = json.loads((self.candidate / "global.json").read_text())
+        for call, checkout in zip(packs, (self.baseline, self.candidate)):
+            self.assertEqual(candidate_pin, call["sdk"])
+            for name, contents in call["source"].items():
+                self.assertEqual((checkout / name).read_text(), contents)
+            self.assertIn("/p:TreatWarningsAsErrors=true", call["args"])
+            self.assertIn("/p:ContinuousIntegrationBuild=true", call["args"])
+        self.assertIn("/p:NuGetAudit=false", packs[0]["args"])
+        self.assertNotIn("/p:NuGetAudit=false", packs[1]["args"])
+        comparison = calls[-1]["args"]
+        self.assertEqual(["tool", "run", "apicompat", "--", "package"], comparison[:5])
+        self.assertIn("--baseline-package", comparison)
+        self.assertIn("--run-api-compat", comparison)
+        self.assertIn("--enable-rule-cannot-change-parameter-name", comparison)
+        self.assertNotEqual(comparison[5], comparison[comparison.index("--baseline-package") + 1])
+        self.assertEqual("10.0.401", json.loads((self.baseline / "global.json").read_text())["sdk"]["version"])
+
+    def test_comparison_failure_still_blocks_after_toolchain_alignment(self) -> None:
+        result = self.run_validation(comparison_exit=17)
+        self.assertEqual(17, result.returncode, result.stdout + result.stderr)
+        self.assertIn("API compatibility failed", result.stdout)
 
 
 if __name__ == "__main__":
