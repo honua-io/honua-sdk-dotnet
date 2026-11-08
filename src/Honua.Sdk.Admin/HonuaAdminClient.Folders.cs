@@ -25,7 +25,7 @@ public sealed partial class HonuaAdminClient
     {
         ArgumentNullException.ThrowIfNull(request);
         using var content = JsonContent.Create(request, HonuaAdminJsonContext.Default.CreateFolderRequest);
-        using var message = FolderMutation(HttpMethod.Post, $"{ApiPrefix}/folders", options, content);
+        using var message = CreateFolderMutationRequest(HttpMethod.Post, $"{ApiPrefix}/folders", options, content);
         return await ReadFolderResponseAsync(message, HonuaAdminJsonContext.Default.ApiResponseFolder, cancellationToken).ConfigureAwait(false);
     }
 
@@ -34,14 +34,14 @@ public sealed partial class HonuaAdminClient
     {
         ArgumentNullException.ThrowIfNull(request);
         using var content = JsonContent.Create(request, HonuaAdminJsonContext.Default.UpdateFolderRequest);
-        using var message = FolderMutation(HttpMethod.Patch, $"{ApiPrefix}/folders/{HonuaPathSegment.Escape(folderId, nameof(folderId))}", options, content);
+        using var message = CreateFolderMutationRequest(HttpMethod.Patch, $"{ApiPrefix}/folders/{HonuaPathSegment.Escape(folderId, nameof(folderId))}", options, content);
         return await ReadFolderResponseAsync(message, HonuaAdminJsonContext.Default.ApiResponseFolder, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Deletes an empty Folder and returns the resulting snapshot ETag.</summary>
     public async Task<string?> DeleteFolderAsync(string folderId, FolderMutationOptions options, CancellationToken cancellationToken = default)
     {
-        using var message = FolderMutation(HttpMethod.Delete, $"{ApiPrefix}/folders/{HonuaPathSegment.Escape(folderId, nameof(folderId))}", options);
+        using var message = CreateFolderMutationRequest(HttpMethod.Delete, $"{ApiPrefix}/folders/{HonuaPathSegment.Escape(folderId, nameof(folderId))}", options);
         return (await SendWithETagAsync(message, cancellationToken).ConfigureAwait(false)).ETag;
     }
 
@@ -50,11 +50,11 @@ public sealed partial class HonuaAdminClient
     {
         ArgumentNullException.ThrowIfNull(request);
         using var content = JsonContent.Create(request, HonuaAdminJsonContext.Default.MoveServiceRequest);
-        using var message = FolderMutation(HttpMethod.Put, $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/folder", options, content);
+        using var message = CreateFolderMutationRequest(HttpMethod.Put, $"{ApiPrefix}/services/{HonuaPathSegment.Escape(serviceName, nameof(serviceName))}/folder", options, content);
         return (await SendWithETagAsync(message, cancellationToken).ConfigureAwait(false)).ETag;
     }
 
-    private HttpRequestMessage FolderMutation(HttpMethod method, string path, FolderMutationOptions options, HttpContent? content = null)
+    private HttpRequestMessage CreateFolderMutationRequest(HttpMethod method, string path, FolderMutationOptions options, HttpContent? content = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.IfMatch);
@@ -73,14 +73,5 @@ public sealed partial class HonuaAdminClient
         var value = JsonSerializer.Deserialize(body, typeInfo)?.Data
             ?? throw new HonuaAdminOperationException("Server returned no Folder catalog value.", "FolderCatalog");
         return (value, etag);
-    }
-
-    private async Task<(string Body, string? ETag)> SendWithETagAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
-        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
-        return (body, GetETag(response));
     }
 }

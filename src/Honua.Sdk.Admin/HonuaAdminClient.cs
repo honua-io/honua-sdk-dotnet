@@ -1652,6 +1652,15 @@ public sealed partial class HonuaAdminClient : IHonuaAdminClient
         AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
+    private async Task<(string Body, string? ETag)> SendWithETagAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
+        return (body, GetETag(response));
+    }
+
     private Uri CreateRequestUri(string url)
     {
         var uri = new Uri(url, UriKind.RelativeOrAbsolute);
