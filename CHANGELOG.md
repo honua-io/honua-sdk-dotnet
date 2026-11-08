@@ -2,6 +2,18 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [2.2.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v2.1.0...dotnet-sdk-v2.2.0) (2026-11-08)
+
+
+### Features
+
+* **admin:** manage Folders and accept compatible nightly servers ([#511](https://github.com/honua-io/honua-sdk-dotnet/issues/511)) ([9a73f61](https://github.com/honua-io/honua-sdk-dotnet/commit/9a73f6143375ca32fbe3f056dd508f985574929e))
+
+
+### Bug Fixes
+
+* **build:** pin patched .NET native toolchain ([#510](https://github.com/honua-io/honua-sdk-dotnet/issues/510)) ([01371ae](https://github.com/honua-io/honua-sdk-dotnet/commit/01371ae9983c2a665e6db596aff15bc981d22431))
+
 ## [2.1.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v2.0.0...dotnet-sdk-v2.1.0) (2026-11-07)
 
 
