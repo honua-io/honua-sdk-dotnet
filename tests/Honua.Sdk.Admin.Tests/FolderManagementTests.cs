@@ -118,7 +118,7 @@ public sealed class FolderManagementTests
         {
             "POST" => () => client.CreateFolderAsync(new() { Name = "Survey" }, options),
             "PATCH" => () => client.UpdateFolderAsync("folder", new(), options),
-            "PUT" => () => client.MoveServiceAsync("service", new(), options),
+            "PUT" => () => client.MoveServiceAsync("service", new() { FolderId = null }, options),
             _ => () => client.DeleteFolderAsync("folder", options)
         };
         var failure = await Assert.ThrowsAsync<HonuaAdminApiException>(mutation);
@@ -144,7 +144,7 @@ public sealed class FolderManagementTests
             "create" => () => client.CreateFolderAsync(new() { Name = "Survey" }, options),
             "update" => () => client.UpdateFolderAsync("folder", new(), options),
             "delete" => () => client.DeleteFolderAsync("folder", options),
-            _ => () => client.MoveServiceAsync("service", new(), options)
+            _ => () => client.MoveServiceAsync("service", new() { FolderId = null }, options)
         };
         var failure = await Assert.ThrowsAsync<NotSupportedException>(call);
         Assert.Contains("HonuaAdminClient", failure.Message, StringComparison.Ordinal);
@@ -182,7 +182,7 @@ public sealed class FolderManagementTests
         var client = new HonuaAdminClient(http);
         await client.ListServicesAsync();
         await client.ListFoldersAsync();
-        await client.MoveServiceAsync("a/b", new(), new() { IfMatch = ETag, Namespace = "workspace one" });
+        await client.MoveServiceAsync("a/b", new() { FolderId = null }, new() { IfMatch = ETag, Namespace = "workspace one" });
     }
 
     private static object FolderPayload() => new
