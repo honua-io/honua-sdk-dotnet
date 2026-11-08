@@ -997,3 +997,5 @@ static Honua.Sdk.Admin.Models.OptionalString.operator !=(Honua.Sdk.Admin.Models.
 static Honua.Sdk.Admin.Models.OptionalString.operator ==(Honua.Sdk.Admin.Models.OptionalString left, Honua.Sdk.Admin.Models.OptionalString right) -> bool
 ~override Honua.Sdk.Admin.Models.OptionalString.Equals(object obj) -> bool
 ~override Honua.Sdk.Admin.Models.OptionalString.ToString() -> string
+Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.init -> void
