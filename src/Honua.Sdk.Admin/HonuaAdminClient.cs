@@ -18,7 +18,7 @@ namespace Honua.Sdk.Admin;
 /// <summary>
 /// HTTP client implementation for the Honua Admin REST API.
 /// </summary>
-public sealed class HonuaAdminClient : IHonuaAdminClient
+public sealed partial class HonuaAdminClient : IHonuaAdminClient
 {
     private const string ApiPrefix = "/api/v1/admin";
 
@@ -191,7 +191,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task DeleteMetadataResourceAsync(string kind, string ns, string name, string? ifMatch = null, CancellationToken cancellationToken = default)
     {
         var url = $"{ApiPrefix}/metadata/resources/{HonuaPathSegment.Escape(kind, nameof(kind))}/{HonuaPathSegment.Escape(ns, nameof(ns))}/{HonuaPathSegment.Escape(name, nameof(name))}";
-        using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+        using var request = new HttpRequestMessage(HttpMethod.Delete, CreateRequestUri(url));
 
         if (!string.IsNullOrEmpty(ifMatch))
         {
@@ -220,17 +220,14 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
         }
 
-        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
-        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
+        var (body, etag) = await SendWithETagAsync(request, cancellationToken).ConfigureAwait(false);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         var responseResource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null response.", operation);
         return new MetadataResourceResponse
         {
             Resource = responseResource,
-            ETag = GetETag(response)
+            ETag = etag
         };
     }
 
@@ -1655,7 +1652,12 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
-    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+    private Uri CreateRequestUri(string url)
+    {
+        var uri = new Uri(url, UriKind.RelativeOrAbsolute);
+        if (uri.IsAbsoluteUri || _http.BaseAddress is null) return uri;
+        return new Uri(_http.BaseAddress.GetLeftPart(UriPartial.Path).TrimEnd('/') + "/" + url.TrimStart('/'), UriKind.Absolute);
+    }
 
     private static string? GetETag(HttpResponseMessage response) => response.Headers.ETag?.ToString();
 

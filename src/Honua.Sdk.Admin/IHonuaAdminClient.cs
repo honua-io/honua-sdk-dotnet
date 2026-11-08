@@ -22,6 +22,7 @@ namespace Honua.Sdk.Admin;
 /// </remarks>
 public interface IHonuaAdminClient :
     IHonuaAdminServicesClient,
+    IHonuaAdminFoldersClient,
     IHonuaAdminMetadataClient,
     IHonuaAdminCompatibilityClient,
     IHonuaAdminManifestClient,
