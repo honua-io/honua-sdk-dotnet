@@ -27,7 +27,7 @@ jobs:
   # Pin shared security workflows to an immutable commit so this repo is not
   # exposed to parser or behavior drift on honua-io/.github@main.
   trivy:
-    uses: honua-io/.github/.github/workflows/reusable-trivy.yml@aebfacd3f3c6b551fa9bf703501c0a12a050faf3 # v0.36.0 Trivy workflow snapshot
+    uses: honua-io/.github/.github/workflows/reusable-trivy.yml@f4bdc749161f1a037a0a9c55b6995aa5295ba2c7 # v0.36.0 Trivy workflow snapshot
     with:
       scan-type: fs
 
