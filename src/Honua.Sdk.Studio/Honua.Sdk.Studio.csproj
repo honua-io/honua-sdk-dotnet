@@ -7,7 +7,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Honua.Sdk.Studio</PackageId>
-    <Description>Console Studio clients for Honua Console hosts: analysis report retrieve/render, the server capability manifest, and the Studio package-family lifecycle (draft/validate/preview/version/publish)</Description>
+    <Description>Console Studio clients for Honua Console hosts: analysis report retrieve/render, the server capability manifest, and the Studio content lifecycle (draft/validate/preview/version/publish)</Description>
     <RootNamespace>Honua.Sdk.Studio</RootNamespace>
     <Authors>Honua</Authors>
     <Copyright>Copyright (c) Honua</Copyright>
