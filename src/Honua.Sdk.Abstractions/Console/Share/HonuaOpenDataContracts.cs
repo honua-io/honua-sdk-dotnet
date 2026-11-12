@@ -5,10 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.Abstractions.Console.Share;
 
-/// <summary>
-/// Category of Console content, as evaluated for open-data publication.
-/// Mirrors the server <c>consoleContentItemType</c> contract.
-/// </summary>
+/// <summary>Category of Console content, as evaluated for open-data publication. Mirrors the server <c>consoleContentItemType</c> contract.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<HonuaConsoleContentItemType>))]
 public enum HonuaConsoleContentItemType
 {
@@ -65,10 +62,7 @@ public enum HonuaConsoleShareAccessTier
     PublicIndexed,
 }
 
-/// <summary>
-/// STAC publication lifecycle status of Console content. Mirrors the
-/// server <c>consoleStacPublicationStatus</c> contract.
-/// </summary>
+/// <summary>STAC publication lifecycle status of Console content. Mirrors the server <c>consoleStacPublicationStatus</c> contract.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<HonuaConsoleStacPublicationStatus>))]
 public enum HonuaConsoleStacPublicationStatus
 {
@@ -161,11 +155,7 @@ public sealed record HonuaOpenDataTemporalExtent
     public DateTimeOffset? End { get; init; }
 }
 
-/// <summary>
-/// The server-owned open-data page projection for Console content. Maps to the
-/// server <c>consoleOpenDataPage</c> contract; also returned (anonymous-safe)
-/// from the public open-data dataset read.
-/// </summary>
+/// <summary>The server-owned open-data page projection for Console content. Maps to the server <c>consoleOpenDataPage</c> contract; also returned (anonymous-safe) from the public open-data dataset read.</summary>
 public sealed record HonuaOpenDataPage
 {
     /// <summary>Identifier of the Console content the page describes.</summary>
@@ -357,10 +347,7 @@ public sealed record HonuaOpenDataValidationResult
     public IReadOnlyList<HonuaOpenDataValidationIssue> Issues { get; init; } = [];
 }
 
-/// <summary>
-/// STAC publication lifecycle state of Console content. Maps to the
-/// server <c>consoleStacPublicationState</c> contract.
-/// </summary>
+/// <summary>STAC publication lifecycle state of Console content. Maps to the server <c>consoleStacPublicationState</c> contract.</summary>
 public sealed record HonuaConsoleStacPublicationState
 {
     /// <summary>Console content id.</summary>

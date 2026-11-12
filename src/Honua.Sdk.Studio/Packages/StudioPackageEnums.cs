@@ -5,10 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.Studio.Packages;
 
-/// <summary>
-/// Studio content kinds supported by the shared Studio content lifecycle. Mirrors
-/// the server <c>StudioPackageFamily</c> wire discriminants.
-/// </summary>
+/// <summary>Studio content kinds supported by the shared Studio content lifecycle. Mirrors the server <c>StudioPackageFamily</c> wire discriminants.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StudioPackageFamily>))]
 public enum StudioPackageFamily
 {

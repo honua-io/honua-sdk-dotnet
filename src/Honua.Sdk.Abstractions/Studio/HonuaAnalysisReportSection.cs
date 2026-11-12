@@ -208,10 +208,7 @@ public enum HonuaReportChartKind
     Line = 1
 }
 
-/// <summary>
-/// Pointer to a related Map on the MCP surface. The full Map body is not
-/// exposed over HTTP today; only this reference appears in reports.
-/// </summary>
+/// <summary>Pointer to a related Map on the MCP surface. The full Map body is not exposed over HTTP today; only this reference appears in reports.</summary>
 public sealed record HonuaMapEmbedSection : HonuaAnalysisReportSection
 {
     /// <inheritdoc />
