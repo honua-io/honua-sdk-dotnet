@@ -126,22 +126,7 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });
-        services.AddHonuaGeocoding(options =>
-        {
-            options.BaseAddress = baseUri;
-            options.ApiKey = Options.ApiKey;
-            options.BearerToken = Options.BearerToken;
-        });
-        if (!string.IsNullOrWhiteSpace(Options.GeocodeLocatorName))
-        {
-            // AddHonuaGeocoding addresses the default "World" locator; a fixture that serves
-            // another locator name reuses the same configured HTTP client with that name.
-            var locatorName = Options.GeocodeLocatorName;
-            services.AddTransient<IHonuaGeocodingClient>(sp => new HonuaGeocodingClient(
-                sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(HonuaGeocodingClient)),
-                locatorName));
-        }
-
+        AddGeocoding(services, baseUri);
         services.AddHonuaSpec(options =>
         {
             options.BaseAddress = baseUri;
@@ -194,5 +179,26 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
         });
 
         return services.BuildServiceProvider();
+    }
+
+    private void AddGeocoding(IServiceCollection services, Uri baseUri)
+    {
+        services.AddHonuaGeocoding(options =>
+        {
+            options.BaseAddress = baseUri;
+            options.ApiKey = Options.ApiKey;
+            options.BearerToken = Options.BearerToken;
+        });
+        if (string.IsNullOrWhiteSpace(Options.GeocodeLocatorName))
+        {
+            return;
+        }
+
+        // AddHonuaGeocoding addresses the default "World" locator; a fixture that serves
+        // another locator name reuses the same configured HTTP client with that name.
+        var locatorName = Options.GeocodeLocatorName;
+        services.AddTransient<IHonuaGeocodingClient>(sp => new HonuaGeocodingClient(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(HonuaGeocodingClient)),
+            locatorName));
     }
 }
