@@ -205,7 +205,7 @@ public sealed record CapabilityManifestPackages
     /// <summary>Supported package schema versions.</summary>
     public IReadOnlyList<string> SchemaVersions { get; init; } = Array.Empty<string>();
 
-    /// <summary>Package families, including unsupported families.</summary>
+    /// <summary>Studio content kinds, including unsupported kinds.</summary>
     public IReadOnlyList<CapabilityPackageFamily> Families { get; init; } = Array.Empty<CapabilityPackageFamily>();
 
     /// <summary>Families that can be persisted through the Studio lifecycle.</summary>
@@ -215,7 +215,7 @@ public sealed record CapabilityManifestPackages
     public IReadOnlyList<string> PublicationFamilies { get; init; } = Array.Empty<string>();
 }
 
-/// <summary>One package family advertised by a capability manifest.</summary>
+/// <summary>One Studio content kind advertised by a capability manifest.</summary>
 public sealed record CapabilityPackageFamily
 {
     /// <summary>Family identifier, for example <c>map</c>.</summary>

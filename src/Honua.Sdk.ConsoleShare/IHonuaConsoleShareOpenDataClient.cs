@@ -21,10 +21,10 @@ public interface IHonuaConsoleShareOpenDataClient
 {
     /// <summary>
     /// Reads the server-owned open-data page, eligibility, STAC publication
-    /// state, and DCAT validation status for a content item.
+    /// state, and DCAT validation status for Console content.
     /// Maps to <c>GET /api/v1/console/content/{id}/open-data</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The combined open-data page projection.</returns>
     Task<HonuaOpenDataPageResponse> GetPageAsync(string itemId, CancellationToken cancellationToken = default);
@@ -33,7 +33,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// Creates or replaces the editable open-data page metadata for an item.
     /// Maps to <c>PUT /api/v1/console/content/{id}/open-data</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="request">Page metadata to persist.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The combined open-data page projection after the update.</returns>
@@ -44,7 +44,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// reason why or why not.
     /// Maps to <c>GET /api/v1/console/content/{id}/open-data/eligibility</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The eligibility decision.</returns>
     Task<HonuaOpenDataEligibility> GetEligibilityAsync(string itemId, CancellationToken cancellationToken = default);
@@ -54,7 +54,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// and reports its validation status.
     /// Maps to <c>GET /api/v1/console/content/{id}/open-data/dcat</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The generated catalog document plus validation status.</returns>
     Task<HonuaDcatExportResponse> PreviewDcatAsync(string itemId, CancellationToken cancellationToken = default);
@@ -63,7 +63,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// Reads an item's current STAC publication status and collection readback.
     /// Maps to <c>GET /api/v1/console/content/{id}/open-data/stac</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The STAC publication state.</returns>
     Task<HonuaConsoleStacPublicationState> GetStacPublicationAsync(string itemId, CancellationToken cancellationToken = default);
@@ -75,7 +75,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// <see cref="Exceptions.HonuaConsoleShareApiException"/>).
     /// Maps to <c>POST /api/v1/console/content/{id}/open-data/stac/publish</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The STAC publication state after publishing.</returns>
     Task<HonuaConsoleStacPublicationState> PublishStacAsync(string itemId, CancellationToken cancellationToken = default);
@@ -85,7 +85,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// afterward.
     /// Maps to <c>DELETE /api/v1/console/content/{id}/open-data/stac</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The STAC publication state after unpublishing.</returns>
     Task<HonuaConsoleStacPublicationState> UnpublishStacAsync(string itemId, CancellationToken cancellationToken = default);
@@ -96,7 +96,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// <see cref="Exceptions.HonuaConsoleShareApiException"/>) without leaking titles.
     /// Maps to <c>GET /api/v1/open-data/datasets/{id}</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The anonymous open-data page projection.</returns>
     Task<HonuaOpenDataPage> GetPublicDatasetAsync(string itemId, CancellationToken cancellationToken = default);
@@ -105,7 +105,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// Reads the DCAT-US 3.0 / data.json catalog for a public-indexed item.
     /// Maps to <c>GET /api/v1/open-data/datasets/{id}/data.json</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The data.json catalog document.</returns>
     Task<HonuaDcatCatalog> GetPublicDataJsonAsync(string itemId, CancellationToken cancellationToken = default);
@@ -114,7 +114,7 @@ public interface IHonuaConsoleShareOpenDataClient
     /// Reads the Schema.org Dataset JSON-LD projection for a public-indexed item.
     /// Maps to <c>GET /api/v1/open-data/datasets/{id}/schema.org</c>.
     /// </summary>
-    /// <param name="itemId">Content item identifier.</param>
+    /// <param name="itemId">Console content identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The Schema.org Dataset document.</returns>
     Task<HonuaSchemaOrgDataset> GetPublicSchemaOrgAsync(string itemId, CancellationToken cancellationToken = default);

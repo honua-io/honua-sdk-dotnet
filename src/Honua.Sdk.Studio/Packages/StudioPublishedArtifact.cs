@@ -15,7 +15,7 @@ public sealed class StudioPublishedArtifact
     /// <summary>Accepted publication request identifier.</summary>
     public required Guid PublicationId { get; init; }
 
-    /// <summary>Content item identifier.</summary>
+    /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Active immutable version identifier.</summary>
@@ -24,10 +24,10 @@ public sealed class StudioPublishedArtifact
     /// <summary>Active version number.</summary>
     public required int VersionNumber { get; init; }
 
-    /// <summary>Content item package key.</summary>
+    /// <summary>Studio content key.</summary>
     public required string PackageKey { get; init; }
 
-    /// <summary>Package family.</summary>
+    /// <summary>Studio content kind.</summary>
     public required StudioPackageFamily Family { get; init; }
 
     /// <summary>Active version's content hash.</summary>

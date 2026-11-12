@@ -8,11 +8,11 @@ clients registered by a single `AddHonuaStudio` call:
 - `IHonuaCapabilityManifestClient` — fetch the server capability manifest
   (`GET /api/v1/capabilities/manifest`, schema `honua.capability_manifest.v1`) to
   gate authoring UI and tool exposure on what the connected server supports.
-- `IHonuaStudioPackageClient` — the Studio package lifecycle
-  (`/api/v1/studio/*`): family capabilities, draft CRUD, validate, preview-plan,
-  content-version, publish-request, reopen, and rollback across every in-scope
-  package family (query, map, analysis, dashboard, report, form, app, workflow,
-  gp, etl).
+- `IHonuaStudioPackageClient` — the Studio content lifecycle
+  (`/api/v1/studio/*`): per-kind capabilities, Draft CRUD, validate, preview-plan,
+  Version save, release request, reopen, and rollback across every in-scope
+  Studio content kind (Query, Map, Analysis, Dashboard, Report, Form, App,
+  Workflow, GP, ETL).
 
 The projected shapes mirror the honua-sdk-js Studio contract
 (`src/studio/{types,validation,capability-manifest}.ts`) so the .NET and JS
@@ -121,7 +121,7 @@ if (!manifest.IsAvailable("studio.ai.generate"))
 {
     var reason = manifest.GetReasonCode("studio.ai.generate"); // e.g. "entitlement-inactive"
 }
-if (manifest.HasPackageFamily("dashboard")) { /* show the dashboard family */ }
+if (manifest.SupportsContentKind("dashboard")) { /* show the Dashboard builder */ }
 ```
 
 `GetCapability(id)` returns the full `CapabilityEntry` (`Supported`, `Available`,
@@ -131,10 +131,11 @@ unknown lifecycle strings are preserved, while a missing field is treated as
 contract drift rather than silently defaulting to GA or no opt-in. The manifest also carries
 scope, server/environment info, transports, limits, and entitlement policy.
 
-## Studio package lifecycle
+## Studio content lifecycle
 
-`IHonuaStudioPackageClient` covers the family-agnostic lifecycle; the family
-discriminant travels on `StudioPackageEnvelope`. The envelope's `Bindings`,
+`IHonuaStudioPackageClient` covers the lifecycle shared by every Studio content
+kind; the kind discriminant travels on `StudioPackageEnvelope.Family` (wire
+field `family`). The envelope's `Bindings`,
 `Dependencies`, and `Provenance` collections always serialize as arrays (the
 server rejects null for any of them).
 
@@ -172,9 +173,9 @@ HTTP 202 operation requiring approval. A pending operation has no publication
 request ID and is not evidence that the version was published. The SDK does not
 approve proposals, retry a submission automatically, or replace authorization.
 Malformed or ambiguous success payloads raise `HonuaStudioContractException`.
-Call `GetContentItemPointersAsync(itemId)` to refresh exact current/published
-version IDs after an authorized reviewer acts. This reads the existing scoped
-content-item listing, with cancellation, cursor-cycle protection and a 100-page
+Call `GetContentPointersAsync(itemId)` to refresh exact current/released
+Version IDs after an authorized reviewer acts. This reads the existing scoped
+Studio content listing (`/api/v1/studio/content-items`), with cancellation, cursor-cycle protection and a 100-page
 limit. It returns null only after a complete visible listing omits the item;
 malformed or incomplete scans fail instead of fabricating absence. A proposal's
 success status alone is not proof of the currently published pointer.
@@ -204,6 +205,19 @@ if (saved.VerifyContentHash() == false)
 }
 ```
 
+## Deprecated names
+
+These names still compile, raise an `[Obsolete]` warning and forward to their
+replacement; they are removed in the next major release. JSON field names and
+routes are unchanged.
+
+| Deprecated | Use |
+|---|---|
+| `CapabilityManifest.HasPackageFamily` | `CapabilityManifest.SupportsContentKind` |
+| `IHonuaStudioPackageClient.GetContentItemPointersAsync` | `IHonuaStudioPackageClient.GetContentPointersAsync` |
+| `HonuaAnalysisResultPackage.MapPackageId` / `AppPackageId` | `MapId` / `AppId` |
+| `HonuaMapEmbedSection.MapPackageUri` | `HonuaMapEmbedSection.MapUri` |
+
 ## Scope
 
 AI generate endpoints (`/api/v1/studio/{map,app}-packages/generate`) return
@@ -227,7 +241,7 @@ var envelope = artifact.Envelope;
 ```
 
 The response includes route, visibility, publication/item/version identifiers,
-version number, package key/family, content hash, publication time and the sealed
-package envelope. Supply the route key rather than a URL. Missing/inaccessible
+version number, content key and kind, content hash, release time and the sealed
+content envelope. Supply the route key rather than a URL. Missing/inaccessible
 routes and server failures raise `HonuaStudioApiException`; malformed publication
 responses raise `HonuaStudioContractException`.

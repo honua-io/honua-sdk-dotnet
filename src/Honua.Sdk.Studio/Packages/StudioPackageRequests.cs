@@ -6,7 +6,7 @@ namespace Honua.Sdk.Studio.Packages;
 /// <summary>Request body for creating a mutable Studio package draft.</summary>
 public sealed record CreateStudioPackageDraftRequest
 {
-    /// <summary>Optional existing content item id; omit to create a new item.</summary>
+    /// <summary>Optional existing Studio content id; omit to create new content.</summary>
     public Guid? ItemId { get; init; }
 
     /// <summary>Machine-friendly package key.</summary>
@@ -68,7 +68,7 @@ public sealed record CreateStudioPublicationRequest
     public string? WarningAcknowledgement { get; init; }
 }
 
-/// <summary>Request body for rolling a content item pointer back to an immutable version.</summary>
+/// <summary>Request body for rolling a Studio content pointer back to an immutable Version.</summary>
 public sealed record CreateStudioRollbackRequest
 {
     /// <summary>Version identifier selected as the rollback target.</summary>
