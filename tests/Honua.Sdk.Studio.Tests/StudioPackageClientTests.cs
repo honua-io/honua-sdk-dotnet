@@ -562,18 +562,6 @@ public sealed class StudioPackageClientTests
         Assert.Equal("/api/v1/studio/content-items?limit=100&cursor=next%2B%2F%3D", requests[1]);
     }
 
-    [Fact]
-    public async Task GetContentItemPointersAsync_DeprecatedAlias_ReturnsSamePointers()
-    {
-        using var http = CreateHttpClient(_ => JsonResponse(PointerEnvelope()));
-        IHonuaStudioPackageClient client = new HonuaStudioPackageClient(http);
-#pragma warning disable CS0618 // Pins the deprecated alias to its replacement.
-        var pointers = await client.GetContentItemPointersAsync(ItemId);
-#pragma warning restore CS0618
-
-        Assert.Equal(VersionId, pointers?.CurrentVersionId);
-    }
-
     [Theory]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[]}}")]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":null}}")]

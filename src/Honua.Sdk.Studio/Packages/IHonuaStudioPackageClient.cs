@@ -86,14 +86,7 @@ public interface IHonuaStudioPackageClient
         CancellationToken cancellationToken = default);
 
     /// <summary>Reads exact current and released Version pointers for visible Studio content, or null only when a complete visible listing omits it.</summary>
-#pragma warning disable CS0618 // The default delegates to the deprecated member so existing implementations keep working.
     Task<StudioContentItemPointers?> GetContentPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
-        => GetContentItemPointersAsync(itemId, cancellationToken);
-#pragma warning restore CS0618
-
-    /// <summary>Use <see cref="GetContentPointersAsync"/>.</summary>
-    [Obsolete("Use GetContentPointersAsync. Removed in the next major release.")]
-    Task<StudioContentItemPointers?> GetContentItemPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
         => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support Studio content pointer reads."));
 
     /// <summary>Submits publication and distinguishes a persisted request from a pending approval operation.</summary>

@@ -122,14 +122,6 @@ public sealed record CapabilityManifest
 
         return false;
     }
-
-    /// <summary>Use <see cref="SupportsContentKind"/>.</summary>
-    [Obsolete("Use SupportsContentKind. Removed in the next major release.")]
-    public bool HasPackageFamily(string familyId)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(familyId);
-        return SupportsContentKind(familyId);
-    }
 }
 
 /// <summary>Tenant, workspace, environment, and authentication scope of a capability manifest.</summary>

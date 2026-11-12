@@ -225,13 +225,6 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
     }
 
     /// <inheritdoc />
-    [Obsolete("Use GetContentPointersAsync. Removed in the next major release.")]
-    public Task<StudioContentItemPointers?> GetContentItemPointersAsync(
-        Guid itemId,
-        CancellationToken cancellationToken = default)
-        => GetContentPointersAsync(itemId, cancellationToken);
-
-    /// <summary>Reads exact current and released Version pointers for visible Studio content, or null only when a complete visible listing omits it.</summary>
     public async Task<StudioContentItemPointers?> GetContentPointersAsync(
         Guid itemId,
         CancellationToken cancellationToken = default)

@@ -52,16 +52,6 @@ public sealed record HonuaAnalysisResultPackage
     [JsonPropertyName("appPackageId")]
     public string? AppId { get; init; }
 
-    /// <summary>Use <see cref="MapId"/>.</summary>
-    [Obsolete("Use MapId. Removed in the next major release.")]
-    [JsonIgnore]
-    public string? MapPackageId { get => MapId; init => MapId = value; }
-
-    /// <summary>Use <see cref="AppId"/>.</summary>
-    [Obsolete("Use AppId. Removed in the next major release.")]
-    [JsonIgnore]
-    public string? AppPackageId { get => AppId; init => AppId = value; }
-
     /// <summary>Audit trail for this result.</summary>
     public required HonuaProvenanceRecord Provenance { get; init; }
 

@@ -118,7 +118,7 @@
       "replacement": "Environment (single-tenant product)"
     }
   ],
-  "deprecatedAliases": {
+  "renamedSymbols": {
     "Honua.Sdk.Studio.Capabilities.CapabilityManifest.HasPackageFamily": "Honua.Sdk.Studio.Capabilities.CapabilityManifest.SupportsContentKind",
     "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentPointersAsync",
     "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentPointersAsync",

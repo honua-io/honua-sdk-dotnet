@@ -205,19 +205,6 @@ if (saved.VerifyContentHash() == false)
 }
 ```
 
-## Deprecated names
-
-These names still compile, raise an `[Obsolete]` warning and forward to their
-replacement; they are removed in the next major release. JSON field names and
-routes are unchanged.
-
-| Deprecated | Use |
-|---|---|
-| `CapabilityManifest.HasPackageFamily` | `CapabilityManifest.SupportsContentKind` |
-| `IHonuaStudioPackageClient.GetContentItemPointersAsync` | `IHonuaStudioPackageClient.GetContentPointersAsync` |
-| `HonuaAnalysisResultPackage.MapPackageId` / `AppPackageId` | `MapId` / `AppId` |
-| `HonuaMapEmbedSection.MapPackageUri` | `HonuaMapEmbedSection.MapUri` |
-
 ## Scope
 
 AI generate endpoints (`/api/v1/studio/{map,app}-packages/generate`) return

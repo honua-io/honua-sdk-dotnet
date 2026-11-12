@@ -13,7 +13,6 @@ MEMBER_SUFFIXES = (".get", ".set", ".init")
 DOC_GLOBS = ("README.md", "INSTALL.md", "CONTRIBUTING.md", "docs/**/*.md", "src/**/README.md", "examples/**/*.md")
 SOURCE_GLOB = "src/**/*.cs"
 CUSTOMER_TEXT = re.compile(r"^\s*///|Exception\(")
-OBSOLETE_LOOKBEHIND = 4
 
 
 @dataclass(frozen=True)
@@ -56,19 +55,28 @@ def retired_prefixes(symbol: str, tokens: dict[str, str]) -> list[tuple[str, str
     return prefixes
 
 
+def removed_symbol(line: str) -> str | None:
+    line = line.strip()
+    return declared_symbol(line[len("*REMOVED*"):]) if line.startswith("*REMOVED*") else None
+
+
 def public_api_symbols() -> dict[str, str]:
     symbols: dict[str, str] = {}
+    removed: set[str] = set()
     for path in sorted(ROOT.glob("src/*/PublicAPI.*.txt")):
         for line in path.read_text(encoding="utf-8").splitlines():
+            gone = removed_symbol(line)
+            if gone is not None:
+                removed.add(gone)
             symbol = declared_symbol(line)
             if symbol is not None:
                 symbols.setdefault(symbol, path.relative_to(ROOT).as_posix())
-    return symbols
+    return {symbol: location for symbol, location in symbols.items() if symbol not in removed}
 
 
 def public_api_findings(policy: dict, symbols: dict[str, str]) -> list[Finding]:
     tokens = {rule["token"]: rule["replacement"] for rule in policy["symbolTokens"]}
-    allowed = set(policy["deprecatedAliases"]) | {entry["symbol"] for entry in policy["allowedSymbols"]}
+    allowed = {entry["symbol"] for entry in policy["allowedSymbols"]}
     findings: set[Finding] = set()
     for symbol, location in symbols.items():
         for prefix, replacement in retired_prefixes(symbol, tokens):
@@ -105,19 +113,15 @@ def doc_findings(policy: dict) -> list[Finding]:
     return findings
 
 
-def is_obsolete_in_source(symbol: str) -> bool:
-    type_name, member = symbol.split(".")[-2:]
-    declaration = re.compile(rf"\b{re.escape(member)}\b\s*[({{]")
-    for path in ROOT.glob(SOURCE_GLOB):
-        lines = path.read_text(encoding="utf-8").splitlines()
-        if not any(re.search(rf"\b(class|record|interface)\s+{re.escape(type_name)}\b", line) for line in lines):
-            continue
-        for index, line in enumerate(lines):
-            if declaration.search(line) and "=>" not in line.split(member, 1)[0]:
-                window = lines[max(0, index - OBSOLETE_LOOKBEHIND):index]
-                if any("[Obsolete(" in previous for previous in window):
-                    return True
-    return False
+def source_mentions(member: str) -> list[str]:
+    pattern = re.compile(rf"\b{re.escape(member)}\b")
+    paths = {path for glob in (SOURCE_GLOB, "tests/**/*.cs", "examples/**/*.cs") for path in ROOT.glob(glob)}
+    return sorted(
+        f"{path.relative_to(ROOT).as_posix()}:{number}"
+        for path in paths
+        if "bin" not in path.parts and "obj" not in path.parts
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1)
+        if pattern.search(line))
 
 
 class VocabularyTests(unittest.TestCase):
@@ -140,13 +144,13 @@ class VocabularyTests(unittest.TestCase):
         findings = doc_findings(self.policy)
         self.assertEqual([], [str(finding) for finding in findings])
 
-    def test_every_deprecated_alias_is_obsolete_and_ships_with_a_clean_replacement(self) -> None:
+    def test_renamed_symbols_are_gone_and_their_replacements_ship(self) -> None:
         tokens = {rule["token"]: rule["replacement"] for rule in self.policy["symbolTokens"]}
-        for alias, replacement in self.policy["deprecatedAliases"].items():
-            with self.subTest(alias=alias):
-                self.assertIn(alias, self.symbols)
+        for old, replacement in self.policy["renamedSymbols"].items():
+            with self.subTest(old=old):
+                self.assertNotIn(old, self.symbols)
+                self.assertEqual([], source_mentions(old.rsplit(".", 1)[-1]))
                 self.assertIn(replacement, self.symbols)
-                self.assertTrue(is_obsolete_in_source(alias), "alias must carry [Obsolete(...)]")
                 self.assertFalse(retired_prefixes(replacement.rsplit(".", 1)[-1], tokens))
 
     def test_allowlists_name_existing_entries_with_reasons(self) -> None:
@@ -186,6 +190,7 @@ class VocabularyTests(unittest.TestCase):
         self.assertEqual("A.B.M", declared_symbol("static A.B.M(int x) -> bool"))
         self.assertIsNone(declared_symbol("#nullable enable"))
         self.assertIsNone(declared_symbol("*REMOVED*A.B.C.get -> int"))
+        self.assertEqual("A.B.C", removed_symbol("*REMOVED*A.B.C.get -> int"))
 
 
 if __name__ == "__main__":

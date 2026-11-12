@@ -2,70 +2,106 @@
   "version": 1,
   "entries": [
     {
+      "path": "eng/api-compat/Honua.Sdk.Abstractions.xml",
+      "rule": "app-envelope",
+      "line": "    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.get_AppPackageId</Target>",
+      "reason": "API compatibility suppression recording the removal of the renamed member (no alias; unreleased product)."
+    },
+    {
+      "path": "eng/api-compat/Honua.Sdk.Abstractions.xml",
+      "rule": "map-envelope",
+      "line": "    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.get_MapPackageId</Target>",
+      "reason": "API compatibility suppression recording the removal of the renamed member (no alias; unreleased product)."
+    },
+    {
+      "path": "eng/api-compat/Honua.Sdk.Abstractions.xml",
+      "rule": "app-envelope",
+      "line": "    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.set_AppPackageId(System.String)</Target>",
+      "reason": "API compatibility suppression recording the removal of the renamed member (no alias; unreleased product)."
+    },
+    {
+      "path": "eng/api-compat/Honua.Sdk.Abstractions.xml",
+      "rule": "map-envelope",
+      "line": "    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.set_MapPackageId(System.String)</Target>",
+      "reason": "API compatibility suppression recording the removal of the renamed member (no alias; unreleased product)."
+    },
+    {
+      "path": "eng/api-compat/Honua.Sdk.Abstractions.xml",
+      "rule": "map-envelope",
+      "line": "    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.get_MapPackageUri</Target>",
+      "reason": "API compatibility suppression recording the removal of the renamed member (no alias; unreleased product)."
+    },
+    {
+      "path": "eng/api-compat/Honua.Sdk.Abstractions.xml",
+      "rule": "map-envelope",
+      "line": "    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.set_MapPackageUri(System.String)</Target>",
+      "reason": "API compatibility suppression recording the removal of the renamed member (no alias; unreleased product)."
+    },
+    {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "api-key",
       "line": "      \"token\": \"HonuaApiToken\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "hosted-map",
       "line": "      \"token\": \"HostedMap\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "map-envelope",
       "line": "      \"token\": \"MapPackage\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "app-envelope",
       "line": "      \"token\": \"AppPackage\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "serving-target",
       "line": "      \"pattern\": \"\\\\bserving targets?\\\\b\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "api-key",
       "line": "      \"pattern\": \"HonuaApiToken\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "workspace-grouping",
       "line": "      \"pattern\": \"\\\\bworkspace grouping\\\\b\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "content-item",
       "line": "      \"pattern\": \"\\\\bcontent items?\\\\b\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "map-envelope",
       "line": "    \"Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId\": \"Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "app-envelope",
       "line": "    \"Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId\": \"Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppId\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "map-envelope",
       "line": "    \"Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri\": \"Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri\"",
-      "reason": "Repository vocabulary guard policy: names the retired terms and deprecated aliases it enforces."
+      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/tests/test_vocabulary.py",
@@ -86,94 +122,76 @@
       "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
     },
     {
-      "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisReportSection.cs",
+      "path": "src/Honua.Sdk.Abstractions/PublicAPI.Unshipped.txt",
+      "rule": "app-envelope",
+      "line": "*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId.get -> string?",
+      "reason": "PublicAPI baseline recording the removal of the renamed shipped member."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/PublicAPI.Unshipped.txt",
+      "rule": "app-envelope",
+      "line": "*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId.init -> void",
+      "reason": "PublicAPI baseline recording the removal of the renamed shipped member."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/PublicAPI.Unshipped.txt",
       "rule": "map-envelope",
-      "line": "    [JsonPropertyName(\"mapPackageUri\")]",
-      "reason": "Deprecated [Obsolete] alias or the unchanged server wire field name it maps to; removed when the server migrates the field."
+      "line": "*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId.get -> string?",
+      "reason": "PublicAPI baseline recording the removal of the renamed shipped member."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/PublicAPI.Unshipped.txt",
+      "rule": "map-envelope",
+      "line": "*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId.init -> void",
+      "reason": "PublicAPI baseline recording the removal of the renamed shipped member."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/PublicAPI.Unshipped.txt",
+      "rule": "map-envelope",
+      "line": "*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri.get -> string!",
+      "reason": "PublicAPI baseline recording the removal of the renamed shipped member."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/PublicAPI.Unshipped.txt",
+      "rule": "map-envelope",
+      "line": "*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri.init -> void",
+      "reason": "PublicAPI baseline recording the removal of the renamed shipped member."
     },
     {
       "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisReportSection.cs",
       "rule": "map-envelope",
-      "line": "    public string MapPackageUri { get => MapUri; init => MapUri = value; }",
-      "reason": "Deprecated [Obsolete] alias or the unchanged server wire field name it maps to; removed when the server migrates the field."
+      "line": "    [JsonPropertyName(\"mapPackageUri\")]",
+      "reason": "Unchanged server wire field name; renamed when the server migrates the field."
     },
     {
       "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisResultPackage.cs",
       "rule": "map-envelope",
       "line": "    [JsonPropertyName(\"mapPackageId\")]",
-      "reason": "Deprecated [Obsolete] alias or the unchanged server wire field name it maps to; removed when the server migrates the field."
+      "reason": "Unchanged server wire field name; renamed when the server migrates the field."
     },
     {
       "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisResultPackage.cs",
       "rule": "app-envelope",
       "line": "    [JsonPropertyName(\"appPackageId\")]",
-      "reason": "Deprecated [Obsolete] alias or the unchanged server wire field name it maps to; removed when the server migrates the field."
+      "reason": "Unchanged server wire field name; renamed when the server migrates the field."
     },
     {
-      "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisResultPackage.cs",
+      "path": "tests/Honua.Sdk.Studio.Tests/RenamedVocabularyWireTests.cs",
       "rule": "map-envelope",
-      "line": "    public string? MapPackageId { get => MapId; init => MapId = value; }",
-      "reason": "Deprecated [Obsolete] alias or the unchanged server wire field name it maps to; removed when the server migrates the field."
+      "line": "        Assert.Contains(\"\\\"mapPackageId\\\":\\\"map-1\\\"\", json, StringComparison.Ordinal);",
+      "reason": "Test pinning the unchanged server wire field name."
     },
     {
-      "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisResultPackage.cs",
+      "path": "tests/Honua.Sdk.Studio.Tests/RenamedVocabularyWireTests.cs",
       "rule": "app-envelope",
-      "line": "    public string? AppPackageId { get => AppId; init => AppId = value; }",
-      "reason": "Deprecated [Obsolete] alias or the unchanged server wire field name it maps to; removed when the server migrates the field."
+      "line": "        Assert.Contains(\"\\\"appPackageId\\\":\\\"app-1\\\"\", json, StringComparison.Ordinal);",
+      "reason": "Test pinning the unchanged server wire field name."
     },
     {
-      "path": "src/Honua.Sdk.Studio/README.md",
+      "path": "tests/Honua.Sdk.Studio.Tests/RenamedVocabularyWireTests.cs",
       "rule": "map-envelope",
-      "line": "| `HonuaAnalysisResultPackage.MapPackageId` / `AppPackageId` | `MapId` / `AppId` |",
-      "reason": "Deprecated-names table for the [Obsolete] aliases."
-    },
-    {
-      "path": "src/Honua.Sdk.Studio/README.md",
-      "rule": "app-envelope",
-      "line": "| `HonuaAnalysisResultPackage.MapPackageId` / `AppPackageId` | `MapId` / `AppId` |",
-      "reason": "Deprecated-names table for the [Obsolete] aliases."
-    },
-    {
-      "path": "src/Honua.Sdk.Studio/README.md",
-      "rule": "map-envelope",
-      "line": "| `HonuaMapEmbedSection.MapPackageUri` | `HonuaMapEmbedSection.MapUri` |",
-      "reason": "Deprecated-names table for the [Obsolete] aliases."
-    },
-    {
-      "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",
-      "rule": "map-envelope",
-      "line": "            MapPackageId = \"map-1\",",
-      "reason": "Test pinning a deprecated alias and the unchanged server wire field name."
-    },
-    {
-      "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",
-      "rule": "app-envelope",
-      "line": "            AppPackageId = \"app-1\",",
-      "reason": "Test pinning a deprecated alias and the unchanged server wire field name."
-    },
-    {
-      "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",
-      "rule": "map-envelope",
-      "line": "        Assert.Single(json.Split(\"\\\"mapPackageId\\\":\\\"map-1\\\"\")[1..]);",
-      "reason": "Test pinning a deprecated alias and the unchanged server wire field name."
-    },
-    {
-      "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",
-      "rule": "app-envelope",
-      "line": "        Assert.Single(json.Split(\"\\\"appPackageId\\\":\\\"app-1\\\"\")[1..]);",
-      "reason": "Test pinning a deprecated alias and the unchanged server wire field name."
-    },
-    {
-      "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",
-      "rule": "map-envelope",
-      "line": "        var section = new HonuaMapEmbedSection { Caption = \"Parcels\", MapPackageUri = \"honua://map-packages/m1\" };",
-      "reason": "Test pinning a deprecated alias and the unchanged server wire field name."
-    },
-    {
-      "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",
-      "rule": "map-envelope",
-      "line": "        Assert.Single(json.Split(\"\\\"mapPackageUri\\\":\")[1..]);",
-      "reason": "Test pinning a deprecated alias and the unchanged server wire field name."
+      "line": "        Assert.Contains(\"\\\"mapPackageUri\\\":\\\"honua://maps/m1\\\"\", json, StringComparison.Ordinal);",
+      "reason": "Test pinning the unchanged server wire field name."
     }
   ]
 }

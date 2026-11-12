@@ -135,3 +135,9 @@ Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId.get -> string?
 Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId.init -> void
 Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri.get -> string!
 Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId.get -> string?
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId.get -> string?
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri.get -> string!
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri.init -> void

@@ -224,17 +224,7 @@ public sealed record HonuaMapEmbedSection : HonuaAnalysisReportSection
         "CA1056:URI-like properties should not be strings",
         Justification = "Mirrors the server string contract; carries an opaque MCP resource pointer (custom honua:// scheme) that must round-trip verbatim without Uri normalization on this read path.")]
     [JsonPropertyName("mapPackageUri")]
-    [JsonRequired]
-    public string MapUri { get; init; } = string.Empty;
-
-    /// <summary>Use <see cref="MapUri"/>.</summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Design",
-        "CA1056:URI-like properties should not be strings",
-        Justification = "Deprecated alias of MapUri, which mirrors the server string contract.")]
-    [Obsolete("Use MapUri. Removed in the next major release.")]
-    [JsonIgnore]
-    public string MapPackageUri { get => MapUri; init => MapUri = value; }
+    public required string MapUri { get; init; }
 }
 
 /// <summary>
