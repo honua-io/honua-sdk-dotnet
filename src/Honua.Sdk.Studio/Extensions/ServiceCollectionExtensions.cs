@@ -15,14 +15,7 @@ namespace Honua.Sdk.Studio.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>
-    /// Registers the Honua Console Studio clients: the analysis-report read
-    /// client, the capability-manifest client, and the Studio package-family
-    /// lifecycle client.
-    /// </summary>
-    /// <param name="services">The service collection to register with.</param>
-    /// <param name="configure">Configuration delegate for client options.</param>
-    /// <returns>The service collection for chaining.</returns>
+    /// <summary>Registers the Honua Console Studio clients: the analysis-report read client, the capability-manifest client, and the Studio content lifecycle client.</summary>
     public static IServiceCollection AddHonuaStudio(
         this IServiceCollection services,
         Action<HonuaStudioClientOptions> configure)

@@ -70,23 +70,23 @@
   ],
   "docPhrases": [
     {
-      "pattern": "\\bhosted (feature )?layers?\\b",
+      "pattern": "\\bhosted[ -](feature[ -])?layers?\\b",
       "replacement": "Layer"
     },
     {
-      "pattern": "\\bhosted maps?\\b",
+      "pattern": "\\bhosted[ -]maps?\\b",
       "replacement": "Map"
     },
     {
-      "pattern": "\\bportal items?\\b",
+      "pattern": "\\bportal[ -]items?\\b",
       "replacement": "the actual kind"
     },
     {
-      "pattern": "\\bweb ?maps?\\b",
+      "pattern": "\\bweb[ -]?maps?\\b",
       "replacement": "Map"
     },
     {
-      "pattern": "\\bserving targets?\\b",
+      "pattern": "\\bserving[ -]targets?\\b",
       "replacement": "Layer"
     },
     {
@@ -98,19 +98,19 @@
       "replacement": "feature-service or feature-layer"
     },
     {
-      "pattern": "\\bworkspace grouping\\b",
+      "pattern": "\\bworkspace[ -]grouping\\b",
       "replacement": "Folder"
     },
     {
-      "pattern": "\\bcontent items?\\b",
+      "pattern": "\\bcontent[ -]items?\\b",
       "replacement": "the actual kind, or Studio content"
     },
     {
-      "pattern": "\\bpackage famil(y|ies)\\b",
+      "pattern": "\\bpackage[ -]famil(y|ies)\\b",
       "replacement": "Studio content kind"
     },
     {
-      "pattern": "\\b(map|app) packages?\\b",
+      "pattern": "\\b(map|app)[ -]packages?\\b",
       "replacement": "Map or App"
     },
     {
@@ -129,7 +129,7 @@
   "allowedSymbols": [
     {
       "symbol": "Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Abstractions.Environments.HonuaEnvironmentProfile.TenantScope",
@@ -217,11 +217,11 @@
     },
     {
       "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.WorkspaceId",
@@ -229,23 +229,23 @@
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPackageFamiliesAsync",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioContentItemPointers",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioContentVersion.WorkspaceId",
@@ -253,19 +253,19 @@
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageBinding",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDependency",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft.WorkspaceId",
@@ -273,39 +273,39 @@
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageEnvelope",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamily",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageOperation",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageSupportLevel",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageValidationStatus",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest",
-      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.WorkspaceId",
@@ -367,6 +367,26 @@
       "path": "src/Honua.Sdk.Studio/Capabilities/IHonuaCapabilityManifestClient.cs",
       "line": "/// for the current tenant, workspace, environment, and caller policy scope.",
       "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/README.md",
+      "line": "Studio content listing (`/api/v1/studio/content-items`), with cancellation, cursor-cycle protection and a 100-page",
+      "reason": "Names the current server route /api/v1/studio/content-items; renamed only after the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Packages/StudioPackageModels.cs",
+      "line": "/// <summary>Binding kind, such as data-source, content-item, layer, field, route, or permission.</summary>",
+      "reason": "Lists the server's binding kind wire values (content-item); renamed only after the server migrates them."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Packages/StudioPackageModels.cs",
+      "line": "/// <summary>Dependency kind, such as content-item, content-version, service, job, or artifact.</summary>",
+      "reason": "Lists the server's dependency kind wire values (content-item); renamed only after the server migrates them."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisReportSection.cs",
+      "line": "/// <summary>Pointer to a related <c>honua://map-packages/{id}</c> resource.</summary>",
+      "reason": "Names the server MCP resource URI scheme honua://map-packages/{id}; renamed only after the server migrates it."
     }
   ]
 }

@@ -20,7 +20,7 @@ public sealed record StudioPackageEnvelope
     /// <summary>Schema version for the family envelope.</summary>
     public required string SchemaVersion { get; init; }
 
-    /// <summary>Family-specific package format advertised by package-family capabilities.</summary>
+    /// <summary>Kind-specific format advertised by the Studio content kind capabilities.</summary>
     public string? Format { get; init; }
 
     /// <summary>Data, service, content, field, CRS, unit, or permission bindings.</summary>

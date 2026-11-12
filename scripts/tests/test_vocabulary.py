@@ -4,15 +4,19 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 import re
+import tempfile
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
 POLICY_PATH = ROOT / "scripts" / "ci" / "vocabulary.v1.json"
+SHARED_ALLOWLIST_PATH = ROOT / "scripts" / "ci" / "retired-terms-allowlist.v1.json"
+REMOVED_PREFIX = "*REMOVED*"
 MEMBER_SUFFIXES = (".get", ".set", ".init")
 DOC_GLOBS = ("README.md", "INSTALL.md", "CONTRIBUTING.md", "docs/**/*.md", "src/**/README.md", "examples/**/*.md")
 SOURCE_GLOB = "src/**/*.cs"
-CUSTOMER_TEXT = re.compile(r"^\s*///|Exception\(")
+XML_DOC = re.compile(r"^\s*///")
+EXCEPTION_START = "Exception("
 
 
 @dataclass(frozen=True)
@@ -31,7 +35,7 @@ def load_policy() -> dict:
 
 def declared_symbol(line: str) -> str | None:
     line = line.strip()
-    if not line or line.startswith("#") or line.startswith("*REMOVED*"):
+    if not line or line.startswith("#") or line.startswith(REMOVED_PREFIX):
         return None
     words = line.lstrip("~").split("(", 1)[0].split(" -> ", 1)[0].split()
     symbol = next((word for word in words if "." in word), None)
@@ -55,23 +59,36 @@ def retired_prefixes(symbol: str, tokens: dict[str, str]) -> list[tuple[str, str
     return prefixes
 
 
-def removed_symbol(line: str) -> str | None:
-    line = line.strip()
-    return declared_symbol(line[len("*REMOVED*"):]) if line.startswith("*REMOVED*") else None
+def live_declarations(package: Path) -> dict[str, str]:
+    declarations: dict[str, str] = {}
+    removed: set[str] = set()
+    for name in ("PublicAPI.Shipped.txt", "PublicAPI.Unshipped.txt"):
+        path = package / name
+        if not path.exists():
+            continue
+        location = path.relative_to(ROOT).as_posix()
+        for line in (raw.strip() for raw in path.read_text(encoding="utf-8").splitlines()):
+            if line.startswith(REMOVED_PREFIX):
+                removed.add(line[len(REMOVED_PREFIX):])
+            elif line:
+                declarations.setdefault(line, location)
+    return {line: location for line, location in declarations.items() if line not in removed}
+
+
+def symbols_from(declarations: dict[str, str]) -> dict[str, str]:
+    symbols: dict[str, str] = {}
+    for line, location in sorted(declarations.items()):
+        symbol = declared_symbol(line)
+        if symbol is not None:
+            symbols.setdefault(symbol, location)
+    return symbols
 
 
 def public_api_symbols() -> dict[str, str]:
-    symbols: dict[str, str] = {}
-    removed: set[str] = set()
-    for path in sorted(ROOT.glob("src/*/PublicAPI.*.txt")):
-        for line in path.read_text(encoding="utf-8").splitlines():
-            gone = removed_symbol(line)
-            if gone is not None:
-                removed.add(gone)
-            symbol = declared_symbol(line)
-            if symbol is not None:
-                symbols.setdefault(symbol, path.relative_to(ROOT).as_posix())
-    return {symbol: location for symbol, location in symbols.items() if symbol not in removed}
+    declarations: dict[str, str] = {}
+    for package in sorted({path.parent for path in ROOT.glob("src/*/PublicAPI.*.txt")}):
+        declarations.update(live_declarations(package))
+    return symbols_from(declarations)
 
 
 def public_api_findings(policy: dict, symbols: dict[str, str]) -> list[Finding]:
@@ -91,10 +108,27 @@ def text_paths() -> list[Path]:
 
 
 def customer_lines(path: Path) -> list[tuple[int, str]]:
-    lines = enumerate(path.read_text(encoding="utf-8").splitlines(), start=1)
+    lines = list(enumerate(path.read_text(encoding="utf-8").splitlines(), start=1))
     if path.suffix != ".cs":
-        return list(lines)
-    return [(number, line) for number, line in lines if CUSTOMER_TEXT.search(line)]
+        return lines
+    return customer_code_lines(lines)
+
+
+def customer_code_lines(lines: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    """XML doc lines, plus every line of an exception construction until its parentheses close."""
+    selected: list[tuple[int, str]] = []
+    depth = 0
+    for number, line in lines:
+        if depth == 0 and EXCEPTION_START in line:
+            depth = line.count("(", line.index(EXCEPTION_START)) - line.count(")", line.index(EXCEPTION_START))
+            selected.append((number, line))
+        elif depth > 0:
+            depth += line.count("(") - line.count(")")
+            selected.append((number, line))
+        elif XML_DOC.search(line):
+            selected.append((number, line))
+        depth = max(depth, 0)
+    return selected
 
 
 def doc_findings(policy: dict) -> list[Finding]:
@@ -164,6 +198,15 @@ class VocabularyTests(unittest.TestCase):
                 lines = (ROOT / entry["path"]).read_text(encoding="utf-8").splitlines()
                 self.assertIn(entry["line"], [line.strip() for line in lines])
 
+    def test_shared_retired_terms_allowlist_names_existing_lines(self) -> None:
+        entries = json.loads(SHARED_ALLOWLIST_PATH.read_text(encoding="utf-8"))["entries"]
+        for entry in entries:
+            with self.subTest(path=entry["path"], line=entry["line"]):
+                self.assertTrue(entry["reason"].strip())
+                path = ROOT / entry["path"]
+                self.assertTrue(path.is_file())
+                self.assertIn(entry["line"], path.read_text(encoding="utf-8").replace("\r\n", "\n").split("\n"))
+
     def test_a_new_retired_symbol_is_reported(self) -> None:
         symbols = {
             "Honua.Sdk.Admin.Models.HostedLayerInfo.Name": "src/Honua.Sdk.Admin/PublicAPI.Unshipped.txt",
@@ -180,7 +223,8 @@ class VocabularyTests(unittest.TestCase):
 
     def test_retired_doc_phrases_are_recognised(self) -> None:
         patterns = [re.compile(rule["pattern"], re.IGNORECASE) for rule in self.policy["docPhrases"]]
-        for text in ("a Hosted Layer", "the portal item", "a web map", "map packages", "the tenant"):
+        for text in ("a Hosted Layer", "the portal item", "a web map", "map packages", "the tenant",
+                     "package-family capabilities", "a content-item", "map-package bodies"):
             with self.subTest(text=text):
                 self.assertTrue(any(pattern.search(text) for pattern in patterns))
         self.assertFalse(any(pattern.search("web mapping and NuGet packages") for pattern in patterns))
@@ -190,7 +234,23 @@ class VocabularyTests(unittest.TestCase):
         self.assertEqual("A.B.M", declared_symbol("static A.B.M(int x) -> bool"))
         self.assertIsNone(declared_symbol("#nullable enable"))
         self.assertIsNone(declared_symbol("*REMOVED*A.B.C.get -> int"))
-        self.assertEqual("A.B.C", removed_symbol("*REMOVED*A.B.C.get -> int"))
+
+    def test_removal_hides_only_the_exact_declaration(self) -> None:
+        with tempfile.TemporaryDirectory(dir=ROOT / "src") as directory:
+            package = Path(directory)
+            (package / "PublicAPI.Shipped.txt").write_text("A.B.M(int x) -> void\nA.B.P.get -> int\n", encoding="utf-8")
+            (package / "PublicAPI.Unshipped.txt").write_text(
+                "*REMOVED*A.B.M(int x) -> void\nA.B.M(long x) -> void\n*REMOVED*A.B.P.get -> int\n", encoding="utf-8")
+            self.assertEqual({"A.B.M"}, set(symbols_from(live_declarations(package))))
+
+    def test_multi_line_exception_messages_are_customer_text(self) -> None:
+        lines = list(enumerate([
+            "throw new ArgumentException(",
+            "    \"The content item is missing.\",",
+            "    nameof(itemId));",
+            "var other = \"content item\";",
+        ], start=1))
+        self.assertEqual([1, 2, 3], [number for number, _ in customer_code_lines(lines)])
 
 
 if __name__ == "__main__":

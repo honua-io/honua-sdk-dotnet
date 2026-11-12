@@ -63,26 +63,8 @@
     },
     {
       "path": "scripts/ci/vocabulary.v1.json",
-      "rule": "serving-target",
-      "line": "      \"pattern\": \"\\\\bserving targets?\\\\b\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
-    },
-    {
-      "path": "scripts/ci/vocabulary.v1.json",
       "rule": "api-key",
       "line": "      \"pattern\": \"HonuaApiToken\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
-    },
-    {
-      "path": "scripts/ci/vocabulary.v1.json",
-      "rule": "workspace-grouping",
-      "line": "      \"pattern\": \"\\\\bworkspace grouping\\\\b\",",
-      "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
-    },
-    {
-      "path": "scripts/ci/vocabulary.v1.json",
-      "rule": "content-item",
-      "line": "      \"pattern\": \"\\\\bcontent items?\\\\b\",",
       "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
@@ -118,7 +100,19 @@
     {
       "path": "scripts/tests/test_vocabulary.py",
       "rule": "hosted-layer",
-      "line": "        for text in (\"a Hosted Layer\", \"the portal item\", \"a web map\", \"map packages\", \"the tenant\"):",
+      "line": "        for text in (\"a Hosted Layer\", \"the portal item\", \"a web map\", \"map packages\", \"the tenant\",",
+      "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
+    },
+    {
+      "path": "scripts/tests/test_vocabulary.py",
+      "rule": "content-item",
+      "line": "            \"    \\\"The content item is missing.\\\",\",",
+      "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
+    },
+    {
+      "path": "scripts/tests/test_vocabulary.py",
+      "rule": "content-item",
+      "line": "            \"var other = \\\"content item\\\";\",",
       "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
     },
     {
