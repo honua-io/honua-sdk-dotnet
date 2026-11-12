@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Honua.Sdk.Abstractions.Routing;
 using Honua.Sdk.Abstractions.Scenes;
 using Honua.Sdk.Spec.Models;
@@ -15,16 +14,16 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
     public async Task SpecValidate_IsReachable()
     {
         using var timeout = _fixture.CreateTimeoutScope(TimeSpan.FromSeconds(90));
-        var document = CreateSpecDocument(_fixture.Options.SpecId!, _fixture.Options.ServiceName);
-
+        // Validate takes an authoring spec (the public DSL), not the plan/apply node document.
         var validation = await _fixture.SpecClient.ValidateAsync(
             new SpecValidateRequest
             {
-                Spec = JsonSerializer.SerializeToElement(document),
+                Text = AuthoringSpecText,
                 IncludeCanonicalJson = true
             },
             timeout.Token).ConfigureAwait(false);
         Assert.True(validation.IsValid, string.Join("; ", validation.Diagnostics.Select(diagnostic => diagnostic.Message)));
+        Assert.False(string.IsNullOrWhiteSpace(validation.CanonicalJson));
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Spec)]
@@ -57,7 +56,10 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
 
         Assert.NotEmpty(events);
         Assert.Contains(events, applyEvent => applyEvent.Kind == SpecApplyEventKind.ApplyStarted);
-        Assert.Equal(SpecApplyEventKind.ApplyCompleted, events[^1].Kind);
+        var failure = events.FirstOrDefault(applyEvent => applyEvent.Kind == SpecApplyEventKind.Failed);
+        Assert.True(
+            events[^1].Kind == SpecApplyEventKind.ApplyCompleted,
+            $"Apply ended with {events[^1].Kind}: {failure?.NodeId} {failure?.Diagnostic?.Code} {failure?.Diagnostic?.Message}");
     }
 
     [ProtocolIntegrationFact(false, ProtocolIntegrationRequiredFixture.Scene)]
@@ -180,6 +182,17 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
     public Task RealtimeTransport_SubscribeHeartbeatReconnectAndCursorResume_AreReachable()
         => Task.CompletedTask;
 
+    private const string AuthoringSpecText = """
+        grammar "v1.0"
+        source hospitals { type = "layer", ref = "catalog:layer:1" }
+        compute buffered {
+          op = buffer
+          inputs = { input = @hospitals }
+          params = { distance = 500.m, crs = "EPSG:3857" }
+        }
+        output result { expr = @buffered }
+        """;
+
     private static SpecDocumentRequest CreateSpecDocument(string specId, string serviceName) => new()
     {
         GrammarVersion = "honua.spec.v1",
@@ -187,10 +200,12 @@ public sealed class SpecSceneRoutingProtocolIntegrationTests(ProtocolIntegration
         SpecId = specId,
         Nodes =
         [
+            // Dataset, Service and App node kinds are reserved; the server fails them at apply.
             new SpecNodeRequest
             {
                 Id = "source",
-                Kind = SpecResourceKind.Dataset,
+                Kind = SpecResourceKind.Compute,
+                Op = "read",
                 SourcePins = new Dictionary<string, string>
                 {
                     ["service"] = serviceName

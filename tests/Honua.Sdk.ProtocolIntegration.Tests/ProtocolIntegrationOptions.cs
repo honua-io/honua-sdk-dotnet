@@ -56,6 +56,8 @@ public sealed record ProtocolIntegrationOptions
 
     public string? GeocodeText { get; init; }
 
+    public string? GeocodeLocatorName { get; init; }
+
     public double? ReverseGeocodeLatitude { get; init; }
 
     public double? ReverseGeocodeLongitude { get; init; }
@@ -128,6 +130,7 @@ public sealed record ProtocolIntegrationOptions
             RouteFacilityA = ReadLocation("HONUA_PROTOCOL_ROUTE_FACILITY_A"),
             RouteFacilityB = ReadLocation("HONUA_PROTOCOL_ROUTE_FACILITY_B"),
             GeocodeText = ReadString("HONUA_PROTOCOL_GEOCODE_TEXT"),
+            GeocodeLocatorName = ReadString("HONUA_PROTOCOL_GEOCODE_LOCATOR"),
             ReverseGeocodeLatitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE"),
             ReverseGeocodeLongitude = ReadDouble("HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE"),
             DestructiveEnabled = ReadBoolean("HONUA_PROTOCOL_DESTRUCTIVE"),
