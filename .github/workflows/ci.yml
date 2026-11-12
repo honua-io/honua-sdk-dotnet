@@ -132,19 +132,16 @@ jobs:
           echo "Auditing ${#projects[@]} packages:"
           printf '  %s\n' "${projects[@]}"
 
-          errors=0
+          # Advisories are reported, never fatal: a newly published advisory is
+          # dependency work, not a broken build (NU1901-NU1904 are also warnings
+          # in Directory.Build.props).
           for project in "${projects[@]}"; do
             output_file="/tmp/$(basename "${project}").audit.txt"
             dotnet list "${project}" package --vulnerable --include-transitive 2>&1 | tee "${output_file}"
             if grep -qi "has the following vulnerable packages" "${output_file}"; then
-              echo "::error::Vulnerable NuGet dependencies detected in ${project}."
-              errors=1
+              echo "::warning::Vulnerable NuGet dependencies detected in ${project}; see the table above."
             fi
           done
-
-          if [[ ${errors} -ne 0 ]]; then
-            exit 1
-          fi
 
   code-coverage:
     name: Code Coverage

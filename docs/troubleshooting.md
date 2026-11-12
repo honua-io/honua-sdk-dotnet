@@ -232,6 +232,9 @@ The SDK ships with `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` in
 warnings against generated/imported code. The clean fix is to suppress specific analyzer IDs in
 your own `.editorconfig` rather than relaxing the SDK build.
 
+NuGet audit advisories (NU1901-NU1904) are the one exception: they stay warnings under
+`TreatWarningsAsErrors`, so a newly published advisory never fails restore or build.
+
 ---
 
 ## Reporting an issue
