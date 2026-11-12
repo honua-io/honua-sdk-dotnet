@@ -53,6 +53,8 @@ Common fixture identifiers:
   geocoding tests
 - `HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE`
 - `HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE`
+- `HONUA_PROTOCOL_GEOCODE_LOCATOR`, optional locator name when the server's
+  `Geocoding:LocatorName` is not the SDK default `World`
 
 Destructive/write tests require:
 
