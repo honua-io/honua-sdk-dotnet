@@ -1,0 +1,276 @@
+{
+  "version": 1,
+  "glossary": "https://github.com/honua-io/honua-server/blob/trunk/docs/concepts/domain/README.md",
+  "sharedPolicy": "https://github.com/honua-io/honua-server/blob/trunk/scripts/ci/retired-terms.v1.json",
+  "symbolTokens": [
+    {
+      "token": "Workspace",
+      "replacement": "Folder or Environment"
+    },
+    {
+      "token": "Tenant",
+      "replacement": "Environment (single-tenant product)"
+    },
+    {
+      "token": "HonuaApiToken",
+      "replacement": "ApiKey"
+    },
+    {
+      "token": "HostedLayer",
+      "replacement": "Layer"
+    },
+    {
+      "token": "HostedMap",
+      "replacement": "Map"
+    },
+    {
+      "token": "PortalItem",
+      "replacement": "the actual kind"
+    },
+    {
+      "token": "WebMap",
+      "replacement": "Map"
+    },
+    {
+      "token": "ServingTarget",
+      "replacement": "Layer"
+    },
+    {
+      "token": "Slot",
+      "replacement": "Environment, Layer or Service"
+    },
+    {
+      "token": "EsriFeature",
+      "replacement": "FeatureService or FeatureLayer"
+    },
+    {
+      "token": "MapPackage",
+      "replacement": "Map"
+    },
+    {
+      "token": "AppPackage",
+      "replacement": "App"
+    },
+    {
+      "token": "StudioPackage",
+      "replacement": "the Studio content kind (Map, App, Dashboard and so on)"
+    },
+    {
+      "token": "PackageFamily",
+      "replacement": "Studio content kind"
+    },
+    {
+      "token": "ContentItem",
+      "replacement": "the actual kind, or Studio content"
+    }
+  ],
+  "docPhrases": [
+    {
+      "pattern": "\\bhosted (feature )?layers?\\b",
+      "replacement": "Layer"
+    },
+    {
+      "pattern": "\\bhosted maps?\\b",
+      "replacement": "Map"
+    },
+    {
+      "pattern": "\\bportal items?\\b",
+      "replacement": "the actual kind"
+    },
+    {
+      "pattern": "\\bweb ?maps?\\b",
+      "replacement": "Map"
+    },
+    {
+      "pattern": "\\bserving targets?\\b",
+      "replacement": "Layer"
+    },
+    {
+      "pattern": "HonuaApiToken",
+      "replacement": "API key"
+    },
+    {
+      "pattern": "esri-feature-(service|layer)",
+      "replacement": "feature-service or feature-layer"
+    },
+    {
+      "pattern": "\\bworkspace grouping\\b",
+      "replacement": "Folder"
+    },
+    {
+      "pattern": "\\bcontent items?\\b",
+      "replacement": "the actual kind, or Studio content"
+    },
+    {
+      "pattern": "\\bpackage famil(y|ies)\\b",
+      "replacement": "Studio content kind"
+    },
+    {
+      "pattern": "\\b(map|app) packages?\\b",
+      "replacement": "Map or App"
+    },
+    {
+      "pattern": "\\btenants?\\b",
+      "replacement": "Environment (single-tenant product)"
+    }
+  ],
+  "deprecatedAliases": {
+    "Honua.Sdk.Studio.Capabilities.CapabilityManifest.HasPackageFamily": "Honua.Sdk.Studio.Capabilities.CapabilityManifest.SupportsContentKind",
+    "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentPointersAsync",
+    "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentPointersAsync",
+    "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId",
+    "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppId",
+    "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri": "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri"
+  },
+  "allowedSymbols": [
+    {
+      "symbol": "Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaEnvironmentProfile.TenantScope",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaTenantScope",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaWorkspaceKind",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.IReadOnlyListHonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.WorkspaceRefs",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaNarrativeSection.SlotId",
+      "reason": "A narrative template placeholder identifier from the server report contract, not a server connection."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceKind",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Admin.Models.FolderMetadata.Tenant",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.TenantId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.TenantSource",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.WorkspaceAvailable",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.WorkspaceReasonCode",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioContentItemPointers",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioContentVersion.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageBinding",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDependency",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageEnvelope",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamily",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageOperation",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageSupportLevel",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageValidationStatus",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    }
+  ],
+  "allowedDocLines": []
+}

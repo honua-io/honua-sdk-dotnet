@@ -641,7 +641,7 @@ SDK implementation notes:
   and diagnostics. It does not render images, terrain, hillshade, map layers, or
   thematic styling.
 - Server execution, persistence, authorization, large-raster streaming, and
-  tenant catalog semantics remain blocked on the linked Honua Server issues.
+  scoped catalog semantics remain blocked on the linked Honua Server issues.
 
 ### P2.6 Non-UI plugin contracts
 
