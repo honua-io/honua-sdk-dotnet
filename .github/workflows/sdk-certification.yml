@@ -491,6 +491,9 @@ jobs:
             --base-url http://localhost:8080 --receipt artifacts/evidence/location-setup-receipt.json
           python3 .certification/location-source/scripts/certification/verify-sdk-protocol-fixture.py --client-env \
             | jq -er 'to_entries[] | "\(.key)=\(.value)"' >> "${GITHUB_ENV}"
+          # The fixture's offline geocoder serves one named locator; the SDK client must address it.
+          locator="$(jq -er '.["Geocoding__LocatorName"]' .certification/location-server-config.json)"
+          echo "HONUA_PROTOCOL_GEOCODE_LOCATOR=${locator}" >> "${GITHUB_ENV}"
 
       - name: Retain candidate entitlement observation
         env:
