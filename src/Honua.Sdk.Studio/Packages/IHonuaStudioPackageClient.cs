@@ -104,13 +104,23 @@ public interface IHonuaStudioPackageClient
         CreateStudioPublicationRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Reads exact current and published pointers for a visible content item.</summary>
-    /// <param name="itemId">The content item identifier.</param>
+    /// <summary>Reads exact current and released Version pointers for visible Studio content such as a Map or App.</summary>
+    /// <param name="itemId">The Studio content identifier.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The server-owned pointers, or null only when a complete visible listing does not contain the item.</returns>
-    /// <remarks>Reads at most 100 pages of 100 items; cycles, malformed pages and an incomplete scan fail instead of reporting absence.</remarks>
+    /// <returns>The server-owned pointers, or null only when a complete visible listing does not contain the content.</returns>
+    /// <remarks>Reads at most 100 pages of 100 entries; cycles, malformed pages and an incomplete scan fail instead of reporting absence.
+    /// The default implementation delegates to <see cref="GetContentItemPointersAsync"/> so existing implementations keep working.</remarks>
+    Task<StudioContentItemPointers?> GetContentPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
+#pragma warning disable CS0618 // Delegates to the deprecated member so existing implementations keep working.
+        => GetContentItemPointersAsync(itemId, cancellationToken);
+#pragma warning restore CS0618
+
+    /// <summary>Use <see cref="GetContentPointersAsync"/>.</summary>
+    /// <param name="itemId">The Studio content identifier.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    [Obsolete("Use GetContentPointersAsync. Removed in the next major release.")]
     Task<StudioContentItemPointers?> GetContentItemPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
-        => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support content-item pointer reads."));
+        => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support Studio content pointer reads."));
 
     /// <summary>Submits publication and distinguishes a persisted request from a pending approval operation.</summary>
     /// <param name="itemId">Content item identifier.</param>

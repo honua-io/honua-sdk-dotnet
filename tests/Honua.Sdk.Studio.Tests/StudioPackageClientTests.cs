@@ -543,7 +543,7 @@ public sealed class StudioPackageClientTests
     }
 
     [Fact]
-    public async Task GetContentItemPointersAsync_FollowsPagesAndReturnsExactServerPointers()
+    public async Task GetContentPointersAsync_FollowsPagesAndReturnsExactServerPointers()
     {
         var requests = new List<string>();
         using var http = CreateHttpClient(request =>
@@ -553,7 +553,7 @@ public sealed class StudioPackageClientTests
                 ? "{\"success\":true,\"data\":{\"total\":1,\"items\":[],\"nextCursor\":\"next+/=\"}}"
                 : PointerEnvelope());
         });
-        var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
+        var pointers = await new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId);
 
         Assert.NotNull(pointers);
         Assert.Equal(VersionId, pointers.CurrentVersionId);
@@ -562,21 +562,33 @@ public sealed class StudioPackageClientTests
         Assert.Equal("/api/v1/studio/content-items?limit=100&cursor=next%2B%2F%3D", requests[1]);
     }
 
+    [Fact]
+    public async Task GetContentItemPointersAsync_DeprecatedAlias_ReturnsSamePointers()
+    {
+        using var http = CreateHttpClient(_ => JsonResponse(PointerEnvelope()));
+        IHonuaStudioPackageClient client = new HonuaStudioPackageClient(http);
+#pragma warning disable CS0618 // Pins the deprecated alias to its replacement.
+        var pointers = await client.GetContentItemPointersAsync(ItemId);
+#pragma warning restore CS0618
+
+        Assert.Equal(VersionId, pointers?.CurrentVersionId);
+    }
+
     [Theory]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[]}}")]
     [InlineData("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":null}}")]
-    public async Task GetContentItemPointersAsync_CompleteEmptyListing_ReturnsNull(string json)
+    public async Task GetContentPointersAsync_CompleteEmptyListing_ReturnsNull(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        Assert.Null(await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId));
+        Assert.Null(await new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId));
     }
 
     [Fact]
-    public async Task GetContentItemPointersAsync_UnpublishedItem_PreservesNullPointer()
+    public async Task GetContentPointersAsync_UnpublishedItem_PreservesNullPointer()
     {
         using var http = CreateHttpClient(_ => JsonResponse(PointerEnvelope().Replace(
             $"\"publishedVersionId\":\"{DraftId}\"", "\"publishedVersionId\":null", StringComparison.Ordinal)));
-        var pointers = await new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId);
+        var pointers = await new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId);
         Assert.NotNull(pointers);
         Assert.Null(pointers.PublishedVersionId);
         Assert.Equal(VersionId, pointers.CurrentVersionId);
@@ -592,28 +604,28 @@ public sealed class StudioPackageClientTests
     [InlineData("{\"success\":true,\"data\":{\"total\":100,\"items\":[],\"nextCursor\":null}}")]
     [InlineData("{\"success\":true,\"data\":{\"total\":100,\"items\":[]}}")]
     [InlineData("{\"success\":true,\"data\":{\"items\":[]}}")]
-    public async Task GetContentItemPointersAsync_MalformedPage_DoesNotReportAbsence(string json)
+    public async Task GetContentPointersAsync_MalformedPage_DoesNotReportAbsence(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
         var client = new HonuaStudioPackageClient(http);
-        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentPointersAsync(ItemId));
     }
 
     [Fact]
-    public async Task GetContentItemPointersAsync_DuplicateItemIdentity_IsRejected()
+    public async Task GetContentPointersAsync_DuplicateItemIdentity_IsRejected()
     {
         var json = $$"""
             {"success":true,"data":{"total":2,"items":[{"itemId":"{{ItemId}}"},{"itemId":"{{ItemId}}"}]} }
             """;
         using var http = CreateHttpClient(_ => JsonResponse(json));
         var client = new HonuaStudioPackageClient(http);
-        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentPointersAsync(ItemId));
     }
 
     [Theory]
     [InlineData(true, 2)]
     [InlineData(false, 100)]
-    public async Task GetContentItemPointersAsync_CycleOrScanLimit_DoesNotReportAbsence(bool cycle, int expectedRequests)
+    public async Task GetContentPointersAsync_CycleOrScanLimit_DoesNotReportAbsence(bool cycle, int expectedRequests)
     {
         var calls = 0;
         using var http = CreateHttpClient(_ =>
@@ -623,17 +635,17 @@ public sealed class StudioPackageClientTests
             return JsonResponse("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":\"" + cursor + "\"}}");
         });
         var client = new HonuaStudioPackageClient(http);
-        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentItemPointersAsync(ItemId));
+        await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentPointersAsync(ItemId));
         Assert.Equal(expectedRequests, calls);
     }
 
     [Fact]
-    public async Task GetContentItemPointersAsync_Cancellation_ReachesTransport()
+    public async Task GetContentPointersAsync_Cancellation_ReachesTransport()
     {
         using var handler = new CancellationHandler();
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
         using var cancellation = new CancellationTokenSource();
-        var task = new HonuaStudioPackageClient(http).GetContentItemPointersAsync(ItemId, cancellation.Token);
+        var task = new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId, cancellation.Token);
         await handler.Started.Task;
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
@@ -643,11 +655,11 @@ public sealed class StudioPackageClientTests
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
     [InlineData(HttpStatusCode.Forbidden)]
-    public async Task GetContentItemPointersAsync_AuthorizationFailure_IsPreserved(HttpStatusCode status)
+    public async Task GetContentPointersAsync_AuthorizationFailure_IsPreserved(HttpStatusCode status)
     {
         using var http = CreateHttpClient(_ => JsonResponse("{}", status));
         var client = new HonuaStudioPackageClient(http);
-        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetContentItemPointersAsync(ItemId));
+        var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetContentPointersAsync(ItemId));
         Assert.Equal(status, error.StatusCode);
     }
 

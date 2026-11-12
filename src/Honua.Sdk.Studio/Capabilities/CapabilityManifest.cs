@@ -103,12 +103,12 @@ public sealed record CapabilityManifest
 
     /// <summary>
     /// Returns <see langword="true"/> when the server advertises a supported
-    /// package family with the given identifier (for example <c>map</c>).
+    /// Studio content kind with the given identifier (for example <c>map</c>).
     /// </summary>
-    /// <param name="familyId">Package family identifier.</param>
-    public bool HasPackageFamily(string familyId)
+    /// <param name="kind">Studio content kind identifier.</param>
+    public bool SupportsContentKind(string kind)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(familyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(kind);
         var families = Packages?.Families;
         if (families is null)
         {
@@ -118,7 +118,7 @@ public sealed record CapabilityManifest
         for (var i = 0; i < families.Count; i++)
         {
             if (families[i].Supported &&
-                string.Equals(families[i].Id, familyId, StringComparison.Ordinal))
+                string.Equals(families[i].Id, kind, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -126,6 +126,11 @@ public sealed record CapabilityManifest
 
         return false;
     }
+
+    /// <summary>Use <see cref="SupportsContentKind"/>.</summary>
+    /// <param name="familyId">Studio content kind identifier.</param>
+    [Obsolete("Use SupportsContentKind. Removed in the next major release.")]
+    public bool HasPackageFamily(string familyId) => SupportsContentKind(familyId);
 }
 
 /// <summary>Tenant, workspace, environment, and authentication scope of a capability manifest.</summary>

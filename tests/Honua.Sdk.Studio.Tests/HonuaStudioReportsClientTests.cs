@@ -44,7 +44,7 @@ public sealed class HonuaStudioReportsClientTests
         var chart = Assert.IsType<HonuaChartSection>(report.Sections.Single(s => s is HonuaChartSection));
         Assert.Equal(HonuaReportChartKind.Bar, chart.ChartKind);
         Assert.Equal([320d, 185d], chart.Series.Single().Values);
-        Assert.Contains(report.Sections, s => s is HonuaMapEmbedSection { MapPackageUri: "honua://map-packages/map-7f3c" });
+        Assert.Contains(report.Sections, s => s is HonuaMapEmbedSection { MapUri: "honua://map-packages/map-7f3c" });
         Assert.Contains(report.Sections, s => s is HonuaNarrativeSection { Mode: HonuaNarrativeMode.LlmAssisted });
         Assert.Contains(report.Sections, s => s is HonuaProvenanceFooterSection);
 

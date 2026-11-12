@@ -1,6 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Text.Json.Serialization;
+
 namespace Honua.Sdk.Abstractions.Studio;
 
 /// <summary>
@@ -42,11 +44,23 @@ public sealed record HonuaAnalysisResultPackage
     /// <summary>Workspace references used or created during the workflow.</summary>
     public IReadOnlyList<HonuaWorkspaceRef> WorkspaceRefs { get; init; } = [];
 
-    /// <summary>Reference to a separately materialized map package resource, when applicable.</summary>
-    public string? MapPackageId { get; init; }
+    /// <summary>Identifier of a separately saved Map, when applicable.</summary>
+    [JsonPropertyName("mapPackageId")]
+    public string? MapId { get; init; }
 
-    /// <summary>Reference to a separately materialized application package resource, when applicable.</summary>
-    public string? AppPackageId { get; init; }
+    /// <summary>Identifier of a separately saved App, when applicable.</summary>
+    [JsonPropertyName("appPackageId")]
+    public string? AppId { get; init; }
+
+    /// <summary>Use <see cref="MapId"/>.</summary>
+    [Obsolete("Use MapId. Removed in the next major release.")]
+    [JsonIgnore]
+    public string? MapPackageId { get => MapId; init => MapId = value; }
+
+    /// <summary>Use <see cref="AppId"/>.</summary>
+    [Obsolete("Use AppId. Removed in the next major release.")]
+    [JsonIgnore]
+    public string? AppPackageId { get => AppId; init => AppId = value; }
 
     /// <summary>Audit trail for this result.</summary>
     public required HonuaProvenanceRecord Provenance { get; init; }

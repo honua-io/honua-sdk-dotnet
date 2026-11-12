@@ -209,9 +209,8 @@ public enum HonuaReportChartKind
 }
 
 /// <summary>
-/// Pointer to a related map package on the MCP surface
-/// (<c>honua://map-packages/{id}</c>). The full map-package body is not exposed
-/// over HTTP today; only this reference appears in reports.
+/// Pointer to a related Map on the MCP surface. The full Map body is not
+/// exposed over HTTP today; only this reference appears in reports.
 /// </summary>
 public sealed record HonuaMapEmbedSection : HonuaAnalysisReportSection
 {
@@ -222,12 +221,23 @@ public sealed record HonuaMapEmbedSection : HonuaAnalysisReportSection
     /// <summary>Display caption for the embedded map.</summary>
     public required string Caption { get; init; }
 
-    /// <summary>Stable MCP resource URI of the underlying map package.</summary>
+    /// <summary>Stable MCP resource URI of the underlying Map.</summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Design",
         "CA1056:URI-like properties should not be strings",
         Justification = "Mirrors the server string contract; carries an opaque MCP resource pointer (custom honua:// scheme) that must round-trip verbatim without Uri normalization on this read path.")]
-    public required string MapPackageUri { get; init; }
+    [JsonPropertyName("mapPackageUri")]
+    [JsonRequired]
+    public string MapUri { get; init; } = string.Empty;
+
+    /// <summary>Use <see cref="MapUri"/>.</summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1056:URI-like properties should not be strings",
+        Justification = "Deprecated alias of MapUri, which mirrors the server string contract.")]
+    [Obsolete("Use MapUri. Removed in the next major release.")]
+    [JsonIgnore]
+    public string MapPackageUri { get => MapUri; init => MapUri = value; }
 }
 
 /// <summary>
