@@ -101,11 +101,7 @@ public sealed record CapabilityManifest
     /// <param name="id">Capability identifier.</param>
     public string? GetReasonCode(string id) => GetCapability(id)?.ReasonCode;
 
-    /// <summary>
-    /// Returns <see langword="true"/> when the server advertises a supported
-    /// Studio content kind with the given identifier (for example <c>map</c>).
-    /// </summary>
-    /// <param name="kind">Studio content kind identifier.</param>
+    /// <summary>Returns <see langword="true"/> when the server advertises a supported Studio content kind such as <c>map</c>.</summary>
     public bool SupportsContentKind(string kind)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(kind);
@@ -128,9 +124,12 @@ public sealed record CapabilityManifest
     }
 
     /// <summary>Use <see cref="SupportsContentKind"/>.</summary>
-    /// <param name="familyId">Studio content kind identifier.</param>
     [Obsolete("Use SupportsContentKind. Removed in the next major release.")]
-    public bool HasPackageFamily(string familyId) => SupportsContentKind(familyId);
+    public bool HasPackageFamily(string familyId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(familyId);
+        return SupportsContentKind(familyId);
+    }
 }
 
 /// <summary>Tenant, workspace, environment, and authentication scope of a capability manifest.</summary>

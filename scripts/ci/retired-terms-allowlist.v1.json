@@ -69,6 +69,18 @@
     },
     {
       "path": "scripts/tests/test_vocabulary.py",
+      "rule": "map-envelope",
+      "line": "            \"Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetMapPackageAsync\": \"src/Honua.Sdk.Studio/PublicAPI.Unshipped.txt\",",
+      "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
+    },
+    {
+      "path": "scripts/tests/test_vocabulary.py",
+      "rule": "map-envelope",
+      "line": "            [\"Honua.Sdk.Admin.Models.HostedLayerInfo\", \"Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetMapPackageAsync\"],",
+      "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
+    },
+    {
+      "path": "scripts/tests/test_vocabulary.py",
       "rule": "hosted-layer",
       "line": "        for text in (\"a Hosted Layer\", \"the portal item\", \"a web map\", \"map packages\", \"the tenant\"):",
       "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
@@ -113,19 +125,19 @@
       "path": "src/Honua.Sdk.Studio/README.md",
       "rule": "map-envelope",
       "line": "| `HonuaAnalysisResultPackage.MapPackageId` / `AppPackageId` | `MapId` / `AppId` |",
-      "reason": "Deprecated-names table for the one-release [Obsolete] aliases."
+      "reason": "Deprecated-names table for the [Obsolete] aliases."
     },
     {
       "path": "src/Honua.Sdk.Studio/README.md",
       "rule": "app-envelope",
       "line": "| `HonuaAnalysisResultPackage.MapPackageId` / `AppPackageId` | `MapId` / `AppId` |",
-      "reason": "Deprecated-names table for the one-release [Obsolete] aliases."
+      "reason": "Deprecated-names table for the [Obsolete] aliases."
     },
     {
       "path": "src/Honua.Sdk.Studio/README.md",
       "rule": "map-envelope",
       "line": "| `HonuaMapEmbedSection.MapPackageUri` | `HonuaMapEmbedSection.MapUri` |",
-      "reason": "Deprecated-names table for the one-release [Obsolete] aliases."
+      "reason": "Deprecated-names table for the [Obsolete] aliases."
     },
     {
       "path": "tests/Honua.Sdk.Studio.Tests/DeprecatedVocabularyAliasTests.cs",

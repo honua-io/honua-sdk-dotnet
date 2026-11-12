@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Honua.Sdk.Abstractions.Console.Share;
 
 /// <summary>
-/// Category of a Console content item, as evaluated for open-data publication.
+/// Category of Console content, as evaluated for open-data publication.
 /// Mirrors the server <c>consoleContentItemType</c> contract.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<HonuaConsoleContentItemType>))]
@@ -66,7 +66,7 @@ public enum HonuaConsoleShareAccessTier
 }
 
 /// <summary>
-/// STAC publication lifecycle status of a Console content item. Mirrors the
+/// STAC publication lifecycle status of Console content. Mirrors the
 /// server <c>consoleStacPublicationStatus</c> contract.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<HonuaConsoleStacPublicationStatus>))]
@@ -162,13 +162,13 @@ public sealed record HonuaOpenDataTemporalExtent
 }
 
 /// <summary>
-/// The server-owned open-data page projection for a content item. Maps to the
+/// The server-owned open-data page projection for Console content. Maps to the
 /// server <c>consoleOpenDataPage</c> contract; also returned (anonymous-safe)
 /// from the public open-data dataset read.
 /// </summary>
 public sealed record HonuaOpenDataPage
 {
-    /// <summary>Identifier of the content item the page describes.</summary>
+    /// <summary>Identifier of the Console content the page describes.</summary>
     [JsonPropertyName("itemId")]
     public required string ItemId { get; init; }
 
@@ -291,7 +291,7 @@ public sealed record HonuaUpdateOpenDataPageRequest
 /// </summary>
 public sealed record HonuaOpenDataEligibility
 {
-    /// <summary>Content item id.</summary>
+    /// <summary>Console content id.</summary>
     [JsonPropertyName("itemId")]
     public required string ItemId { get; init; }
 
@@ -358,12 +358,12 @@ public sealed record HonuaOpenDataValidationResult
 }
 
 /// <summary>
-/// STAC publication lifecycle state of a Console content item. Maps to the
+/// STAC publication lifecycle state of Console content. Maps to the
 /// server <c>consoleStacPublicationState</c> contract.
 /// </summary>
 public sealed record HonuaConsoleStacPublicationState
 {
-    /// <summary>Content item id.</summary>
+    /// <summary>Console content id.</summary>
     [JsonPropertyName("itemId")]
     public required string ItemId { get; init; }
 

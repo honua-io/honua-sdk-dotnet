@@ -104,20 +104,13 @@ public interface IHonuaStudioPackageClient
         CreateStudioPublicationRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Reads exact current and released Version pointers for visible Studio content such as a Map or App.</summary>
-    /// <param name="itemId">The Studio content identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The server-owned pointers, or null only when a complete visible listing does not contain the content.</returns>
-    /// <remarks>Reads at most 100 pages of 100 entries; cycles, malformed pages and an incomplete scan fail instead of reporting absence.
-    /// The default implementation delegates to <see cref="GetContentItemPointersAsync"/> so existing implementations keep working.</remarks>
+    /// <summary>Reads exact current and released Version pointers for visible Studio content, or null only when a complete visible listing omits it.</summary>
+#pragma warning disable CS0618 // The default delegates to the deprecated member so existing implementations keep working.
     Task<StudioContentItemPointers?> GetContentPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
-#pragma warning disable CS0618 // Delegates to the deprecated member so existing implementations keep working.
         => GetContentItemPointersAsync(itemId, cancellationToken);
 #pragma warning restore CS0618
 
     /// <summary>Use <see cref="GetContentPointersAsync"/>.</summary>
-    /// <param name="itemId">The Studio content identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
     [Obsolete("Use GetContentPointersAsync. Removed in the next major release.")]
     Task<StudioContentItemPointers?> GetContentItemPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
         => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support Studio content pointer reads."));

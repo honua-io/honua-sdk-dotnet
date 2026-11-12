@@ -20,6 +20,10 @@
       "replacement": "Layer"
     },
     {
+      "token": "HostedFeatureLayer",
+      "replacement": "Layer"
+    },
+    {
       "token": "HostedMap",
       "replacement": "Map"
     },
@@ -56,7 +60,7 @@
       "replacement": "the Studio content kind (Map, App, Dashboard and so on)"
     },
     {
-      "token": "PackageFamily",
+      "token": "PackageFamil",
       "replacement": "Studio content kind"
     },
     {
@@ -136,6 +140,18 @@
       "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
     },
     {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope.TenantId",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope.TenantName",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope.WorkspaceId",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
       "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaTenantScope",
       "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
     },
@@ -165,6 +181,10 @@
     },
     {
       "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceRef.WorkspaceId",
       "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
     },
     {
@@ -204,11 +224,23 @@
       "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
     },
     {
+      "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
       "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient",
       "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
     },
     {
+      "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPackageFamiliesAsync",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
       "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync",
       "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
     },
     {
@@ -234,6 +266,10 @@
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft",
       "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     },
     {
       "symbol": "Honua.Sdk.Studio.Packages.StudioPackageEnvelope",
@@ -270,7 +306,67 @@
     {
       "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest",
       "reason": "Deferred to the server Studio content migration: a shipped type or member that C# cannot alias without breaking callers; it mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     }
   ],
-  "allowedDocLines": []
+  "allowedDocLines": [
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Optional tenant or workspace scope associated with this environment.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Optional tenant, workspace, or audience hints used by authentication providers.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Stable tenant identifier.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Operator-facing tenant name.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Admin/Models/Folders.cs",
+      "line": "/// <summary>The owning tenant when the server supplies one.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// current tenant, workspace, environment, and caller policy scope.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>Tenant, workspace, environment, and authentication scope the manifest was generated for.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>Tenant, workspace, environment, and authentication scope of a capability manifest.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>Resolved tenant identifier, when known.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>How the tenant was resolved.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/IHonuaCapabilityManifestClient.cs",
+      "line": "/// for the current tenant, workspace, environment, and caller policy scope.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    }
+  ]
 }

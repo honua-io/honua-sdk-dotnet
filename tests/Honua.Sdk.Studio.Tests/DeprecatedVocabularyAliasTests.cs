@@ -4,6 +4,7 @@
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Studio;
 using Honua.Sdk.Studio.Capabilities;
+using Honua.Sdk.Studio.Packages;
 
 namespace Honua.Sdk.Studio.Tests;
 
@@ -60,6 +61,59 @@ public sealed class DeprecatedVocabularyAliasTests
 
         Assert.Throws<JsonException>(() => JsonSerializer.Deserialize(
             "{\"caption\":\"Parcels\"}", StudioJsonContext.Default.HonuaMapEmbedSection));
+    }
+    [Fact]
+    public async Task GetContentPointersAsync_DefaultDelegatesToAnImplementationOfTheDeprecatedMember()
+    {
+        var expected = new StudioContentItemPointers { ItemId = Guid.NewGuid() };
+        IHonuaStudioPackageClient client = new LegacyPointerClient(expected);
+
+        Assert.Same(expected, await client.GetContentPointersAsync(expected.ItemId));
+    }
+
+    [Fact]
+    public async Task GetContentPointersAsync_DefaultWithoutAnyImplementation_IsNotSupported()
+    {
+        IHonuaStudioPackageClient client = new MinimalClient();
+
+        await Assert.ThrowsAsync<NotSupportedException>(() => client.GetContentPointersAsync(Guid.NewGuid()));
+    }
+
+    private sealed class LegacyPointerClient(StudioContentItemPointers pointers) : MinimalClient, IHonuaStudioPackageClient
+    {
+        public Task<StudioContentItemPointers?> GetContentItemPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
+            => Task.FromResult<StudioContentItemPointers?>(pointers);
+    }
+
+    private class MinimalClient : IHonuaStudioPackageClient
+    {
+        public Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioPackageDraft> CreateDraftAsync(CreateStudioPackageDraftRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioPackageDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioPackageDraft> UpdateDraftAsync(Guid draftId, UpdateStudioPackageDraftRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task DeleteDraftAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioValidationSummary> ValidateDraftAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioPreviewPlan> PreviewPlanAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioContentVersion> CreateContentVersionAsync(Guid draftId, SaveStudioContentVersionRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioContentVersionList> ListVersionsAsync(Guid itemId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioContentVersion> GetVersionAsync(Guid itemId, Guid versionId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioVersionComparison> CompareVersionsAsync(Guid itemId, CompareStudioContentVersionsRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioPublicationRequest> CreatePublishRequestAsync(Guid itemId, Guid versionId, CreateStudioPublicationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioPackageDraft> ReopenVersionAsync(Guid itemId, Guid versionId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<StudioRollbackRequest> RollbackAsync(Guid itemId, CreateStudioRollbackRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }
 #pragma warning restore CS0618
