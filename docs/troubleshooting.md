@@ -6,6 +6,8 @@ tags: [troubleshooting, errors]
 ---
 # Troubleshooting
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Common issues and how to fix them when integrating the Honua .NET SDK.
 
 If you cannot find your issue here, open a [GitHub issue](https://github.com/honua-io/honua-sdk-dotnet/issues)

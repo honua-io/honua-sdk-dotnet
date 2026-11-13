@@ -7,6 +7,8 @@ tags: [compatibility, versioning, policy]
 ---
 # Compatibility Policy
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This SDK treats compatibility as two separate contracts: server compatibility
 for runtime behavior and package API compatibility for released .NET packages.
 

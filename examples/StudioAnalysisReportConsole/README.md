@@ -1,5 +1,7 @@
 # StudioAnalysisReportConsole
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Demonstrates the Console Studio analysis-report read client
 (`Honua.Sdk.Studio.IHonuaStudioReportsClient`): retrieving the structured report
 envelope and rendering it to Markdown for a completed geoprocessing job.

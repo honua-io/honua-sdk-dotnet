@@ -7,6 +7,8 @@ tags: [spec, workspace, contracts]
 ---
 # Spec Workspace Contracts
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 `Honua.Sdk.Spec` is the client-stable contract package for Honua spec
 workspace automation. It exists so admin UI, CLI, tests, and other clients use
 one typed surface for spec validation, planning, apply streaming, and

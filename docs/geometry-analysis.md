@@ -7,6 +7,8 @@ tags: [geometry, local, analysis]
 ---
 # Geometry analysis
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 `Honua.Sdk.Geometry` is the local, in-process geometry layer of the SDK.
 It wraps NetTopologySuite (NTS) for planar predicates, measurements, and
 constructive operations, and ProjNET for coordinate transforms. Reach for

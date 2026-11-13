@@ -1,5 +1,7 @@
 - name: Get started
   items:
+    - name: Native data paths
+      href: native-data-paths.md
     - name: Architecture overview
       href: architecture.md
     - name: Quickstart

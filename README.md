@@ -1,5 +1,7 @@
 # Honua .NET SDK
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 [![.NET SDK CI](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml)
 [![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)

@@ -7,6 +7,8 @@ tags: [plugins, extensibility]
 ---
 # Plugin contracts
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 `Honua.Sdk.Abstractions.Plugins` defines the host-neutral plugin contract
 surface shared by the Honua server, admin app, mobile shell, and web shell.
 The SDK owns the portable data model and validation rules. The contracts
