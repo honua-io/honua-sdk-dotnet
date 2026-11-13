@@ -7,6 +7,8 @@ tags: [migration, breaking-changes]
 ---
 # Planned 2.0 API cleanup
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This page records compatibility debt that remains public during the stable 1.x
 line. It is a planning document, not permission to remove these APIs from a 1.x
 release. Every breaking change still requires the major-release compatibility

@@ -1,5 +1,7 @@
 # Buffer and clip with OGC API Processes
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This sample runs `geometry.buffer` on a GeoJSON point near Honolulu, then feeds
 the returned polygon into `overlay.clip` to clip an inline example feature layer.
 Both stages call a real Honua Server. A missing server, unsupported process,

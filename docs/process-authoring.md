@@ -7,6 +7,8 @@ tags: [geoprocessing, authoring]
 ---
 # Process authoring and compiled GP tool migration
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This guide covers authoring Honua geoprocessing (GP) processes in C# with the
 `Honua.Sdk.Processes` authoring API, testing them locally with the in-process
 harness, mapping common compiled GP tool idioms onto Honua processes, and

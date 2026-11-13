@@ -1,5 +1,7 @@
 # Realtime Worker
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Runnable worker-style demo for the SDK realtime contracts. Honua Server
 realtime transport is still a server dependency, so the default mode uses
 deterministic `FeatureStreamEvent` envelopes and the SDK's
