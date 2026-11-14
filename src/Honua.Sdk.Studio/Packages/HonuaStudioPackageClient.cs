@@ -36,7 +36,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         var routeKey = route[0] == '/' ? route : "/" + route;
         var segments = routeKey[1..].Split('/');
         if (route.Contains('\\', StringComparison.Ordinal)
-            || (!route.StartsWith('/') && Uri.TryCreate(route, UriKind.Absolute, out _))
+            || (!route.AsSpan().StartsWith("/", StringComparison.Ordinal) && Uri.TryCreate(route, UriKind.Absolute, out _))
             || segments.Any(static segment => segment is "" or "." or ".."))
         {
             throw new ArgumentException("Supply a publication route key without traversal segments, not a URL.", nameof(route));
