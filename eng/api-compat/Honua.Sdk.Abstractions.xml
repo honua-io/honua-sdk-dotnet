@@ -43,4 +43,46 @@
     <Right>lib/net10.0/Honua.Sdk.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.get_AppPackageId</Target>
+    <Left>lib/net11.0/Honua.Sdk.Abstractions.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.get_MapPackageId</Target>
+    <Left>lib/net11.0/Honua.Sdk.Abstractions.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.set_AppPackageId(System.String)</Target>
+    <Left>lib/net11.0/Honua.Sdk.Abstractions.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.set_MapPackageId(System.String)</Target>
+    <Left>lib/net11.0/Honua.Sdk.Abstractions.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.get_MapPackageUri</Target>
+    <Left>lib/net11.0/Honua.Sdk.Abstractions.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.set_MapPackageUri(System.String)</Target>
+    <Left>lib/net11.0/Honua.Sdk.Abstractions.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
 </Suppressions>

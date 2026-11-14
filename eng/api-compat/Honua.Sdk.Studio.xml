@@ -22,4 +22,25 @@
     <Right>lib/net10.0/Honua.Sdk.Studio.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Studio.Capabilities.CapabilityManifest.HasPackageFamily(System.String)</Target>
+    <Left>lib/net11.0/Honua.Sdk.Studio.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Studio.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync(System.Guid,System.Threading.CancellationToken)</Target>
+    <Left>lib/net11.0/Honua.Sdk.Studio.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Studio.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync(System.Guid,System.Threading.CancellationToken)</Target>
+    <Left>lib/net11.0/Honua.Sdk.Studio.dll</Left>
+    <Right>lib/net11.0/Honua.Sdk.Studio.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
 </Suppressions>
