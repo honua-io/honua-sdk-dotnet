@@ -941,7 +941,7 @@ class SdkCertificationTests(unittest.TestCase):
             for cell in non_addressable
         ))
 
-    def test_overloads_have_distinct_ids_and_only_the_invoked_signature_is_exercised(self):
+    def test_overloads_have_distinct_ids_and_separate_executing_tests(self):
         document = MODULE.build_document()
         overloads = [
             cell for cell in document["operations"]
@@ -952,7 +952,8 @@ class SdkCertificationTests(unittest.TestCase):
         ordinary = next(cell for cell in overloads if "IWfsOutputFormatHandler" not in cell["signature"])
         handler = next(cell for cell in overloads if "IWfsOutputFormatHandler" in cell["signature"])
         self.assertEqual("exercised", ordinary["status"])
-        self.assertEqual("gap", handler["status"])
+        self.assertEqual("exercised", handler["status"])
+        self.assertTrue(set(ordinary["tests"]).isdisjoint(handler["tests"]))
 
     def test_async_enumerable_and_local_service_operations_are_cataloged(self):
         document = MODULE.build_document()
