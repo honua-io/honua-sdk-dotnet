@@ -5,56 +5,52 @@ using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.Studio.Packages;
 
-/// <summary>
-/// Studio package families supported by the shared package lifecycle. Mirrors the
-/// server <c>StudioPackageFamily</c> and the honua-sdk-js
-/// <c>HonuaStudioPackageFamily</c> discriminants.
-/// </summary>
+/// <summary>Studio content kinds supported by the shared Studio content lifecycle. Mirrors the server <c>StudioPackageFamily</c> wire discriminants.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StudioPackageFamily>))]
 public enum StudioPackageFamily
 {
-    /// <summary>Saved query package.</summary>
+    /// <summary>Saved Query.</summary>
     [JsonStringEnumMemberName("query")]
     Query,
 
-    /// <summary>Analysis package.</summary>
+    /// <summary>Analysis.</summary>
     [JsonStringEnumMemberName("analysis")]
     Analysis,
 
-    /// <summary>Map package.</summary>
+    /// <summary>Map.</summary>
     [JsonStringEnumMemberName("map")]
     Map,
 
-    /// <summary>Dashboard package.</summary>
+    /// <summary>Dashboard.</summary>
     [JsonStringEnumMemberName("dashboard")]
     Dashboard,
 
-    /// <summary>Report package.</summary>
+    /// <summary>Report.</summary>
     [JsonStringEnumMemberName("report")]
     Report,
 
-    /// <summary>Form package.</summary>
+    /// <summary>Form.</summary>
     [JsonStringEnumMemberName("form")]
     Form,
 
-    /// <summary>Generated application package.</summary>
+    /// <summary>App.</summary>
     [JsonStringEnumMemberName("app")]
     App,
 
-    /// <summary>Workflow package.</summary>
+    /// <summary>Workflow.</summary>
     [JsonStringEnumMemberName("workflow")]
     Workflow,
 
-    /// <summary>Geoprocessing package.</summary>
+    /// <summary>Geoprocessing (GP).</summary>
     [JsonStringEnumMemberName("gp")]
     Geoprocessing,
 
-    /// <summary>Extract-transform-load package.</summary>
+    /// <summary>Extract-transform-load (ETL).</summary>
     [JsonStringEnumMemberName("etl")]
     Etl,
 }
 
-/// <summary>Lifecycle operations that can be advertised per Studio package family.</summary>
+/// <summary>Lifecycle operations that can be advertised per Studio content kind.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StudioPackageOperation>))]
 public enum StudioPackageOperation
 {
@@ -70,7 +66,7 @@ public enum StudioPackageOperation
     [JsonStringEnumMemberName("draft.update")]
     DraftUpdate,
 
-    /// <summary>Validate package content.</summary>
+    /// <summary>Validate Draft content.</summary>
     [JsonStringEnumMemberName("validate")]
     Validate,
 
@@ -103,7 +99,7 @@ public enum StudioPackageOperation
     Rollback,
 }
 
-/// <summary>Advertised support level for a Studio package family.</summary>
+/// <summary>Advertised support level for a Studio content kind.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StudioPackageSupportLevel>))]
 public enum StudioPackageSupportLevel
 {
@@ -120,36 +116,36 @@ public enum StudioPackageSupportLevel
     Supported,
 }
 
-/// <summary>Persistence mode backing the Studio package lifecycle.</summary>
+/// <summary>Persistence mode backing the Studio content lifecycle.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StudioPackagePersistenceMode>))]
 public enum StudioPackagePersistenceMode
 {
-    /// <summary>Package data is persisted only in process memory.</summary>
+    /// <summary>Studio content is persisted only in process memory.</summary>
     [JsonStringEnumMemberName("in-memory")]
     InMemory,
 
-    /// <summary>Package data is persisted in durable storage.</summary>
+    /// <summary>Studio content is persisted in durable storage.</summary>
     [JsonStringEnumMemberName("durable")]
     Durable,
 }
 
-/// <summary>Validation status for package drafts and immutable content versions.</summary>
+/// <summary>Validation status for Studio content Drafts and immutable Versions.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StudioPackageValidationStatus>))]
 public enum StudioPackageValidationStatus
 {
-    /// <summary>The package has not been validated.</summary>
+    /// <summary>The content has not been validated.</summary>
     [JsonStringEnumMemberName("not-validated")]
     NotValidated,
 
-    /// <summary>The package is valid.</summary>
+    /// <summary>The content is valid.</summary>
     [JsonStringEnumMemberName("valid")]
     Valid,
 
-    /// <summary>The package is valid but includes warnings.</summary>
+    /// <summary>The content is valid but includes warnings.</summary>
     [JsonStringEnumMemberName("warning")]
     Warning,
 
-    /// <summary>The package is invalid.</summary>
+    /// <summary>The content is invalid.</summary>
     [JsonStringEnumMemberName("invalid")]
     Invalid,
 }

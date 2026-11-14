@@ -62,7 +62,7 @@ referenced with `PackageReference`.
 
 The generated protocol package is separate from `Honua.Sdk.*`: SDK packages may
 depend on `Geospatial.Grpc`, while admin/mobile/server repos should consume
-Honua SDK behavior through `Honua.Sdk.*` packages. Both package families use
+Honua SDK behavior through `Honua.Sdk.*` packages. Both sets of packages use
 `https://nuget.pkg.github.com/honua-io/index.json` for prerelease/private
 distribution.
 

@@ -14,13 +14,13 @@ namespace Honua.Sdk.Studio.Packages;
 /// </summary>
 public sealed record StudioPackageEnvelope
 {
-    /// <summary>Package family.</summary>
+    /// <summary>Studio content kind.</summary>
     public required StudioPackageFamily Family { get; init; }
 
     /// <summary>Schema version for the family envelope.</summary>
     public required string SchemaVersion { get; init; }
 
-    /// <summary>Family-specific package format advertised by package-family capabilities.</summary>
+    /// <summary>Kind-specific format advertised by the Studio content kind capabilities.</summary>
     public string? Format { get; init; }
 
     /// <summary>Data, service, content, field, CRS, unit, or permission bindings.</summary>
@@ -176,10 +176,10 @@ public sealed record StudioProvenanceRef
     public DateTimeOffset? Timestamp { get; init; }
 }
 
-/// <summary>Capability descriptor for one Studio package family.</summary>
+/// <summary>Capability descriptor for one Studio content kind.</summary>
 public sealed record StudioPackageFamilyDescriptor
 {
-    /// <summary>Package family.</summary>
+    /// <summary>Studio content kind.</summary>
     public required StudioPackageFamily Family { get; init; }
 
     /// <summary>Current schema version for the family.</summary>
@@ -210,7 +210,7 @@ public sealed record StudioPackageFamilyDescriptor
     public bool PublishSupported { get; init; }
 }
 
-/// <summary>Response payload for package family capability discovery.</summary>
+/// <summary>Response payload for Studio content kind capability discovery.</summary>
 public sealed record StudioPackageFamilyCapabilities
 {
     /// <summary>Persistence mode backing package lifecycle operations.</summary>
@@ -219,7 +219,7 @@ public sealed record StudioPackageFamilyCapabilities
     /// <summary>True when the backing store is durable.</summary>
     public required bool Durable { get; init; }
 
-    /// <summary>Package families, including unsupported or limited families.</summary>
+    /// <summary>Studio content kinds, including unsupported or limited kinds.</summary>
     public IReadOnlyList<StudioPackageFamilyDescriptor> Families { get; init; } = Array.Empty<StudioPackageFamilyDescriptor>();
 }
 
@@ -229,7 +229,7 @@ public sealed record StudioPackageDraft
     /// <summary>Draft identifier.</summary>
     public required Guid DraftId { get; init; }
 
-    /// <summary>Content item identifier owned by the Studio lifecycle.</summary>
+    /// <summary>Studio content identifier owned by the Studio lifecycle.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Machine-friendly package key.</summary>
@@ -241,7 +241,7 @@ public sealed record StudioPackageDraft
     /// <summary>Owner principal identifier.</summary>
     public string? OwnerId { get; init; }
 
-    /// <summary>Package family.</summary>
+    /// <summary>Studio content kind.</summary>
     public required StudioPackageFamily Family { get; init; }
 
     /// <summary>Package envelope.</summary>
@@ -272,7 +272,7 @@ public sealed record StudioPackageDraft
 /// <summary>Immutable Studio content version.</summary>
 public sealed record StudioContentVersion
 {
-    /// <summary>Content item identifier.</summary>
+    /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Machine-friendly package key captured when the version was created.</summary>
@@ -347,17 +347,17 @@ public sealed record StudioContentVersion
 /// <summary>Response body for listing immutable content versions.</summary>
 public sealed record StudioContentVersionList
 {
-    /// <summary>Content item identifier.</summary>
+    /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Immutable versions ordered by version number.</summary>
     public IReadOnlyList<StudioContentVersion> Versions { get; init; } = Array.Empty<StudioContentVersion>();
 }
 
-/// <summary>Current and published version pointers for a Studio content item.</summary>
+/// <summary>Current and released Version pointers for Studio content.</summary>
 public sealed record StudioContentItemPointers
 {
-    /// <summary>Content item identifier.</summary>
+    /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Current version identifier.</summary>
@@ -373,7 +373,7 @@ public sealed record StudioPublicationRequest
     /// <summary>Publication request identifier.</summary>
     public required Guid RequestId { get; init; }
 
-    /// <summary>Content item identifier.</summary>
+    /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Immutable version identifier requested for publication.</summary>
@@ -442,7 +442,7 @@ public sealed record StudioPreviewPlan
     /// <summary>Draft identifier.</summary>
     public required Guid DraftId { get; init; }
 
-    /// <summary>Package family.</summary>
+    /// <summary>Studio content kind.</summary>
     public required StudioPackageFamily Family { get; init; }
 
     /// <summary>True when preview can run synchronously.</summary>
@@ -464,7 +464,7 @@ public sealed record StudioRollbackRequest
     /// <summary>Rollback request identifier.</summary>
     public required Guid RequestId { get; init; }
 
-    /// <summary>Content item identifier.</summary>
+    /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
     /// <summary>Version identifier selected as the rollback target.</summary>

@@ -144,9 +144,9 @@ public sealed class CapabilityManifestClientTests
         Assert.Null(manifest.GetCapability("nope"));
         Assert.False(manifest.IsAvailable("nope"));
 
-        // Package-family gating.
-        Assert.True(manifest.HasPackageFamily("map"));
-        Assert.False(manifest.HasPackageFamily("etl"));
+        // Studio content-kind gating.
+        Assert.True(manifest.SupportsContentKind("map"));
+        Assert.False(manifest.SupportsContentKind("etl"));
 
         // A representative limit round-trips.
         Assert.Equal(2000, manifest.Limits?.Query?.MaxRecordCount);

@@ -225,16 +225,16 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
     }
 
     /// <inheritdoc />
-    public async Task<StudioContentItemPointers?> GetContentItemPointersAsync(
+    public async Task<StudioContentItemPointers?> GetContentPointersAsync(
         Guid itemId,
         CancellationToken cancellationToken = default)
     {
         if (itemId == Guid.Empty)
         {
-            throw new ArgumentException("A content item identifier is required.", nameof(itemId));
+            throw new ArgumentException("A Studio content identifier is required.", nameof(itemId));
         }
 
-        const string operation = "GetContentItemPointers";
+        const string operation = "GetContentPointers";
         var seenCursors = new HashSet<string>(StringComparer.Ordinal);
         var seenItems = new HashSet<Guid>();
         long largestTotal = 0;
@@ -257,7 +257,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
                 || items.Any(item => item is null || item.ItemId == Guid.Empty
                     || item.CurrentVersionId == Guid.Empty || item.PublishedVersionId == Guid.Empty))
             {
-                throw new HonuaStudioContractException("Content-item listing did not contain a valid pointer page.", operation);
+                throw new HonuaStudioContractException("Studio content listing did not contain a valid pointer page.", operation);
             }
 
             largestTotal = Math.Max(largestTotal, total);
@@ -265,7 +265,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             {
                 if (!seenItems.Add(item.ItemId))
                 {
-                    throw new HonuaStudioContractException("Content-item listing repeated an item identity.", operation);
+                    throw new HonuaStudioContractException("Studio content listing repeated an item identity.", operation);
                 }
             }
 
@@ -280,7 +280,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             {
                 if (seenItems.Count != largestTotal)
                 {
-                    throw new HonuaStudioContractException("Content-item listing ended before its advertised total was observed; item presence is unknown.", operation);
+                    throw new HonuaStudioContractException("Studio content listing ended before its advertised total was observed; item presence is unknown.", operation);
                 }
 
                 return null;
@@ -288,11 +288,11 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
 
             if (!seenCursors.Add(cursor))
             {
-                throw new HonuaStudioContractException("Content-item listing repeated a pagination cursor.", operation);
+                throw new HonuaStudioContractException("Studio content listing repeated a pagination cursor.", operation);
             }
         }
 
-        throw new HonuaStudioContractException("Content-item listing exceeded the 100-page scan limit; item presence is unknown.", operation);
+        throw new HonuaStudioContractException("Studio content listing exceeded the 100-page scan limit; item presence is unknown.", operation);
     }
 
     /// <inheritdoc />

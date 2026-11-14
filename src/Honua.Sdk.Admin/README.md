@@ -89,7 +89,7 @@ var movedETag = await folders.MoveServiceAsync(
 ```
 
 Omit the namespace for unscoped operations; supply it consistently for a
-Folder and its Services to select the server-resolved tenant. An omitted
+Folder and its Services to select the same server-resolved namespace. An omitted
 `UpdateFolderRequest.Title` preserves the title; `new OptionalString(null)`
 clears it. `MoveServiceRequest.FolderId = null` selects Root. On publishing,
 `PublishLayerRequest.FolderId` defaults to preserving membership,

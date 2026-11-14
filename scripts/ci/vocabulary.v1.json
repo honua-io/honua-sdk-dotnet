@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "glossary": "https://github.com/honua-io/honua-server/blob/trunk/docs/concepts/domain/README.md",
+  "sharedPolicy": "https://github.com/honua-io/honua-server/blob/trunk/scripts/ci/retired-terms.v1.json",
+  "symbolTokens": [
+    {
+      "token": "Workspace",
+      "replacement": "Folder or Environment"
+    },
+    {
+      "token": "Tenant",
+      "replacement": "Environment (single-tenant product)"
+    },
+    {
+      "token": "HonuaApiToken",
+      "replacement": "ApiKey"
+    },
+    {
+      "token": "HostedLayer",
+      "replacement": "Layer"
+    },
+    {
+      "token": "HostedFeatureLayer",
+      "replacement": "Layer"
+    },
+    {
+      "token": "HostedMap",
+      "replacement": "Map"
+    },
+    {
+      "token": "PortalItem",
+      "replacement": "the actual kind"
+    },
+    {
+      "token": "WebMap",
+      "replacement": "Map"
+    },
+    {
+      "token": "ServingTarget",
+      "replacement": "Layer"
+    },
+    {
+      "token": "Slot",
+      "replacement": "Environment, Layer or Service"
+    },
+    {
+      "token": "EsriFeature",
+      "replacement": "FeatureService or FeatureLayer"
+    },
+    {
+      "token": "MapPackage",
+      "replacement": "Map"
+    },
+    {
+      "token": "AppPackage",
+      "replacement": "App"
+    },
+    {
+      "token": "StudioPackage",
+      "replacement": "the Studio content kind (Map, App, Dashboard and so on)"
+    },
+    {
+      "token": "PackageFamil",
+      "replacement": "Studio content kind"
+    },
+    {
+      "token": "ContentItem",
+      "replacement": "the actual kind, or Studio content"
+    }
+  ],
+  "docPhrases": [
+    {
+      "pattern": "\\bhosted[ -](feature[ -])?layers?\\b",
+      "replacement": "Layer"
+    },
+    {
+      "pattern": "\\bhosted[ -]maps?\\b",
+      "replacement": "Map"
+    },
+    {
+      "pattern": "\\bportal[ -]items?\\b",
+      "replacement": "the actual kind"
+    },
+    {
+      "pattern": "\\bweb[ -]?maps?\\b",
+      "replacement": "Map"
+    },
+    {
+      "pattern": "\\bserving[ -]targets?\\b",
+      "replacement": "Layer"
+    },
+    {
+      "pattern": "HonuaApiToken",
+      "replacement": "API key"
+    },
+    {
+      "pattern": "esri-feature-(service|layer)",
+      "replacement": "feature-service or feature-layer"
+    },
+    {
+      "pattern": "\\bworkspace[ -]grouping\\b",
+      "replacement": "Folder"
+    },
+    {
+      "pattern": "\\bcontent[ -]items?\\b",
+      "replacement": "the actual kind, or Studio content"
+    },
+    {
+      "pattern": "\\bpackage[ -]famil(y|ies)\\b",
+      "replacement": "Studio content kind"
+    },
+    {
+      "pattern": "\\b(map|app)[ -]packages?\\b",
+      "replacement": "Map or App"
+    },
+    {
+      "pattern": "\\btenants?\\b",
+      "replacement": "Environment (single-tenant product)"
+    }
+  ],
+  "renamedSymbols": {
+    "Honua.Sdk.Studio.Capabilities.CapabilityManifest.HasPackageFamily": "Honua.Sdk.Studio.Capabilities.CapabilityManifest.SupportsContentKind",
+    "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentPointersAsync",
+    "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentPointersAsync",
+    "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId",
+    "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppId",
+    "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri": "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri"
+  },
+  "allowedSymbols": [
+    {
+      "symbol": "Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaEnvironmentProfile.TenantScope",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope.TenantId",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope.TenantName",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Environments.HonuaTenantScope.WorkspaceId",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaTenantScope",
+      "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaWorkspaceKind",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.HonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Serialization.HonuaAbstractionsJsonContext.IReadOnlyListHonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.WorkspaceRefs",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaNarrativeSection.SlotId",
+      "reason": "A narrative template placeholder identifier from the server report contract, not a server connection."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceKind",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceRef",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Abstractions.Studio.HonuaWorkspaceRef.WorkspaceId",
+      "reason": "Geoprocessing working-state container (scratch or result storage) from the server AnalysisResultPackage, not a grouping or tenancy word."
+    },
+    {
+      "symbol": "Honua.Sdk.Admin.Models.FolderMetadata.Tenant",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Processes.Models.HonuaProcessExecutionContext.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.TenantId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.TenantSource",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.WorkspaceAvailable",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityManifestScope.WorkspaceReasonCode",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPackageFamiliesAsync",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioContentItemPointers",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioContentVersion.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageBinding",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDependency",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageEnvelope",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamily",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageOperation",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageSupportLevel",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageValidationStatus",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest",
+      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
+    },
+    {
+      "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.WorkspaceId",
+      "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
+    }
+  ],
+  "allowedDocLines": [
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Optional tenant or workspace scope associated with this environment.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Optional tenant, workspace, or audience hints used by authentication providers.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Stable tenant identifier.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Environments/HonuaEnvironmentContracts.cs",
+      "line": "/// Operator-facing tenant name.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Admin/Models/Folders.cs",
+      "line": "/// <summary>The owning tenant when the server supplies one.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// current tenant, workspace, environment, and caller policy scope.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>Tenant, workspace, environment, and authentication scope the manifest was generated for.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>Tenant, workspace, environment, and authentication scope of a capability manifest.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>Resolved tenant identifier, when known.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/CapabilityManifest.cs",
+      "line": "/// <summary>How the tenant was resolved.</summary>",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Capabilities/IHonuaCapabilityManifestClient.cs",
+      "line": "/// for the current tenant, workspace, environment, and caller policy scope.",
+      "reason": "Describes a server wire field or identity-provider scope that keeps its name until the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/README.md",
+      "line": "Studio content listing (`/api/v1/studio/content-items`), with cancellation, cursor-cycle protection and a 100-page",
+      "reason": "Names the current server route /api/v1/studio/content-items; renamed only after the server migrates it."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Packages/StudioPackageModels.cs",
+      "line": "/// <summary>Binding kind, such as data-source, content-item, layer, field, route, or permission.</summary>",
+      "reason": "Lists the server's binding kind wire values (content-item); renamed only after the server migrates them."
+    },
+    {
+      "path": "src/Honua.Sdk.Studio/Packages/StudioPackageModels.cs",
+      "line": "/// <summary>Dependency kind, such as content-item, content-version, service, job, or artifact.</summary>",
+      "reason": "Lists the server's dependency kind wire values (content-item); renamed only after the server migrates them."
+    },
+    {
+      "path": "src/Honua.Sdk.Abstractions/Studio/HonuaAnalysisReportSection.cs",
+      "line": "/// <summary>Pointer to a related <c>honua://map-packages/{id}</c> resource.</summary>",
+      "reason": "Names the server MCP resource URI scheme honua://map-packages/{id}; renamed only after the server migrates it."
+    }
+  ]
+}

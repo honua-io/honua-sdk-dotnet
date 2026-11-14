@@ -382,7 +382,7 @@ Acceptance criteria:
 - Add filtering by service type, tags, owner/namespace, geometry type, and
   capability flags.
 - Add pagination and sorting.
-- Keep web-map/web-scene display documents out of scope unless they are treated
+- Keep third-party map and scene display documents out of scope unless they are treated
   strictly as metadata inputs for another renderer.
 
 ### P1.3 Geocode and place search parity
@@ -641,7 +641,7 @@ SDK implementation notes:
   and diagnostics. It does not render images, terrain, hillshade, map layers, or
   thematic styling.
 - Server execution, persistence, authorization, large-raster streaming, and
-  tenant catalog semantics remain blocked on the linked Honua Server issues.
+  scoped catalog semantics remain blocked on the linked Honua Server issues.
 
 ### P2.6 Non-UI plugin contracts
 

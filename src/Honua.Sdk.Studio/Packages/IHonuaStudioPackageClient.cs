@@ -3,14 +3,7 @@
 
 namespace Honua.Sdk.Studio.Packages;
 
-/// <summary>
-/// Typed client for the Console Studio package lifecycle
-/// (<c>/api/v1/studio/*</c>): family capability discovery, draft CRUD, validate,
-/// preview-plan, content-version, publish-request, reopen, and rollback across
-/// every in-scope package family (query, map, analysis, dashboard, report, form,
-/// app, workflow, gp, etl). The family discriminant travels on the package
-/// envelope, so one client serves every family.
-/// </summary>
+/// <summary>Typed client for the Console Studio content lifecycle (<c>/api/v1/studio/*</c>): per-kind capability discovery, Draft CRUD, validate, preview-plan, Version save, release request, reopen, and rollback across every in-scope Studio content kind (Query, Map, Analysis, Dashboard, Report, Form, App, Workflow, GP, ETL). The kind discriminant travels on the content envelope, so one client serves every kind.</summary>
 public interface IHonuaStudioPackageClient
 {
     /// <summary>Reads the active immutable artifact served by a governed publication route.</summary>
@@ -21,7 +14,7 @@ public interface IHonuaStudioPackageClient
     Task<StudioPublishedArtifact> GetPublishedArtifactAsync(string route, CancellationToken cancellationToken = default)
         => Task.FromException<StudioPublishedArtifact>(new NotSupportedException("This client does not support published artifact reads."));
 
-    /// <summary>Lists Studio package family capability descriptors for Console authoring.</summary>
+    /// <summary>Lists Studio content kind capability descriptors for Console authoring.</summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default);
 
@@ -70,54 +63,33 @@ public interface IHonuaStudioPackageClient
         SaveStudioContentVersionRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Lists immutable content versions for a content item.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <summary>Lists immutable Versions of Studio content.</summary>
     Task<StudioContentVersionList> ListVersionsAsync(Guid itemId, CancellationToken cancellationToken = default);
 
     /// <summary>Gets a single immutable content version.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="versionId">Version identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioContentVersion> GetVersionAsync(
         Guid itemId,
         Guid versionId,
         CancellationToken cancellationToken = default);
 
     /// <summary>Compares two immutable content versions.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="request">Comparison request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioVersionComparison> CompareVersionsAsync(
         Guid itemId,
         CompareStudioContentVersionsRequest request,
         CancellationToken cancellationToken = default);
 
     /// <summary>Creates a publication request for an immutable content version.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="versionId">Version identifier.</param>
-    /// <param name="request">Publication request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioPublicationRequest> CreatePublishRequestAsync(
         Guid itemId,
         Guid versionId,
         CreateStudioPublicationRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Reads exact current and published pointers for a visible content item.</summary>
-    /// <param name="itemId">The content item identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The server-owned pointers, or null only when a complete visible listing does not contain the item.</returns>
-    /// <remarks>Reads at most 100 pages of 100 items; cycles, malformed pages and an incomplete scan fail instead of reporting absence.</remarks>
-    Task<StudioContentItemPointers?> GetContentItemPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
-        => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support content-item pointer reads."));
+    /// <summary>Reads exact current and released Version pointers for visible Studio content, or null only when a complete visible listing omits it.</summary>
+    Task<StudioContentItemPointers?> GetContentPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
+        => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support Studio content pointer reads."));
 
     /// <summary>Submits publication and distinguishes a persisted request from a pending approval operation.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="versionId">Version identifier.</param>
-    /// <param name="request">Publication request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <remarks>The default implementation preserves existing client implementations; HTTP clients override it to support governed responses.</remarks>
     async Task<StudioPublicationSubmission> SubmitPublishRequestAsync(
         Guid itemId,
         Guid versionId,
@@ -127,18 +99,12 @@ public interface IHonuaStudioPackageClient
             await CreatePublishRequestAsync(itemId, versionId, request, cancellationToken).ConfigureAwait(false));
 
     /// <summary>Reopens an immutable content version as a new mutable draft.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="versionId">Version identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioPackageDraft> ReopenVersionAsync(
         Guid itemId,
         Guid versionId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Rolls a content item pointer back to an immutable version.</summary>
-    /// <param name="itemId">Content item identifier.</param>
-    /// <param name="request">Rollback request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <summary>Rolls a Studio content pointer back to an immutable Version.</summary>
     Task<StudioRollbackRequest> RollbackAsync(
         Guid itemId,
         CreateStudioRollbackRequest request,

@@ -101,14 +101,10 @@ public sealed record CapabilityManifest
     /// <param name="id">Capability identifier.</param>
     public string? GetReasonCode(string id) => GetCapability(id)?.ReasonCode;
 
-    /// <summary>
-    /// Returns <see langword="true"/> when the server advertises a supported
-    /// package family with the given identifier (for example <c>map</c>).
-    /// </summary>
-    /// <param name="familyId">Package family identifier.</param>
-    public bool HasPackageFamily(string familyId)
+    /// <summary>Returns <see langword="true"/> when the server advertises a supported Studio content kind such as <c>map</c>.</summary>
+    public bool SupportsContentKind(string kind)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(familyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(kind);
         var families = Packages?.Families;
         if (families is null)
         {
@@ -118,7 +114,7 @@ public sealed record CapabilityManifest
         for (var i = 0; i < families.Count; i++)
         {
             if (families[i].Supported &&
-                string.Equals(families[i].Id, familyId, StringComparison.Ordinal))
+                string.Equals(families[i].Id, kind, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -200,7 +196,7 @@ public sealed record CapabilityManifestPackages
     /// <summary>Supported package schema versions.</summary>
     public IReadOnlyList<string> SchemaVersions { get; init; } = Array.Empty<string>();
 
-    /// <summary>Package families, including unsupported families.</summary>
+    /// <summary>Studio content kinds, including unsupported kinds.</summary>
     public IReadOnlyList<CapabilityPackageFamily> Families { get; init; } = Array.Empty<CapabilityPackageFamily>();
 
     /// <summary>Families that can be persisted through the Studio lifecycle.</summary>
@@ -210,7 +206,7 @@ public sealed record CapabilityManifestPackages
     public IReadOnlyList<string> PublicationFamilies { get; init; } = Array.Empty<string>();
 }
 
-/// <summary>One package family advertised by a capability manifest.</summary>
+/// <summary>One Studio content kind advertised by a capability manifest.</summary>
 public sealed record CapabilityPackageFamily
 {
     /// <summary>Family identifier, for example <c>map</c>.</summary>

@@ -9105,11 +9105,11 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync(Guid,CancellationToken)",
+      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentPointersAsync(Guid,CancellationToken)",
       "surface": "studio",
       "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "GetContentItemPointersAsync",
-      "signature": "GetContentItemPointersAsync(Guid,CancellationToken)",
+      "operation": "GetContentPointersAsync",
+      "signature": "GetContentPointersAsync(Guid,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",

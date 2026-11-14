@@ -41,6 +41,13 @@ python3 scripts/check-okf-bundle.py                         # docs/ bundle gate 
   adding or dropping a dependency on a server capability updates
   `release/sdk-capability-baseline.json`. Read `docs/release.md` "Release declarations" first.
 - Sibling repos consume this SDK only as published `Honua.Sdk.*` NuGet packages.
+- Vocabulary: public names, docs and error messages use the Honua terms in the
+  [glossary](https://github.com/honua-io/honua-server/blob/trunk/docs/concepts/domain/README.md)
+  and avoid the retired terms in the shared
+  [policy](https://github.com/honua-io/honua-server/blob/trunk/scripts/ci/retired-terms.md).
+  `scripts/tests/test_vocabulary.py` enforces `scripts/ci/vocabulary.v1.json`; the product is
+  unreleased, so a rename replaces the public name outright (no `[Obsolete]` alias) and lists the old
+  name in `renamedSymbols`. Keep server wire field names until the server migrates them.
 
 ## Does Not Belong Here
 UI and display code (MAUI, WPF/WinUI, Blazor, React, map/scene controls, renderers, Cesium,

@@ -26,7 +26,7 @@ public sealed record EnrichmentDataCapabilities
     /// <summary>Whether demographic or business-analysis variables are available.</summary>
     public bool SupportsDemographicVariables { get; init; }
 
-    /// <summary>Whether custom or tenant-defined variables are available.</summary>
+    /// <summary>Whether custom or deployment-defined variables are available.</summary>
     public bool SupportsCustomVariables { get; init; }
 
     /// <summary>Native provider surface backing the implementation.</summary>
