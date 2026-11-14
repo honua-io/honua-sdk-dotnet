@@ -456,6 +456,7 @@ jobs:
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
             -e HONUA_ADMIN_PASSWORD="ci-protocol-api-key" \
+            -e Public__BaseUrl="http://localhost:8080" \
             -e Kestrel__Endpoints__Http__Url="http://+:8080" \
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \

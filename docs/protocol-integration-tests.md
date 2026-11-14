@@ -89,11 +89,11 @@ reason.
 | Geocoding | Forward, reverse, suggest, and batch when geocoder fixture values are configured |
 | Spec | Validate canonical spec JSON, plan, apply SSE stream |
 | gRPC | Bounded `QueryFeaturesAsync`, geometry omitted |
-| WFS | `GetCapabilities`, `DescribeFeatureType`, `GetFeatures`, hits/count |
+| WFS | `GetCapabilities`, `DescribeFeatureType`, typed and format-handler `GetFeatures`, hits/count, two-page async enumeration |
 | GeoServices FeatureServer | Service/layer info, bounded typed/raw queries, single object-ID lookup, count/IDs, extent, distinct offset pages, exact object-ID batches |
 | FeatureServer edits | Add/update/delete round-trip in destructive lane |
 | FeatureServer attachments | Planned destructive lane once fixture exposes attachment-enabled layer |
-| OGC API Features | Collections, collection, queryables, bounded items, item by id |
+| OGC API Features | Landing page, core conformance, collections, collection, queryables, bounded typed/raw GeoJSON items, item by id, two-page next-link traversal |
 | OGC edits | Planned destructive lane after fixture advertises writable OGC collection |
 | Scenes | List, metadata get, resolve 3D Tiles-capable scene |
 | Routing/NAServer | Metadata, directions, optional service area, optional closest facility |

@@ -286,6 +286,28 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertIn("ownerIssue", cell)
                 self.assertIn("disposition", cell)
 
+    def test_ogc_discovery_and_paging_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetLandingPageAsync": "OgcDiscovery_AdvertisesCollectionsAndCoreConformance",
+            "GetConformanceAsync": "OgcDiscovery_AdvertisesCollectionsAndCoreConformance",
+            "GetItemsRawAsync": "OgcRawItems_ReturnsBoundedGeoJson",
+            "GetItemsPagesAsync": "OgcPages_FollowsNextLinkWithoutRepeatingFeatures",
+            "GetFeaturesAsync": "WfsFormatHandler_ReturnsBoundedGeoJson",
+            "GetFeaturesAsyncEnumerable": "WfsEnumeration_AdvancesPastTheFirstPage",
+        }
+        operations = [cell for cell in document["operations"]
+                      if "OgcFeatures" in cell["client"] and cell["operation"] in expected
+                      and (cell["operation"] != "GetFeaturesAsync" or "<TResult>" in cell["id"])]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
     def test_featureserver_reads_and_paging_have_executing_protocol_mappings(self):
         document = MODULE.build_document()
         expected = {

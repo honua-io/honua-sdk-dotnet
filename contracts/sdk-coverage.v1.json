@@ -5,9 +5,9 @@
   "sourceRepository": "honua-io/honua-sdk-dotnet",
   "description": "Per-capability coverage snapshot for the cross-repo capability matrix (honua-io/honua-server#2892). Each entry maps a canonical capability key (consumed, never copied, from honua-server#2893's published capability-keys.v1.json) to what this SDK's source actually implements. Capabilities this SDK does not touch are absent from 'coverage' -- never padded.",
   "sdkAvailability": {
-    "status": "source-preview",
-    "publishedVersion": null,
-    "note": "Honua.Sdk.* ships as a source preview only; no NuGet package has published yet (see honua-site data/sdk-availability.v1.json, productArea \"sdk-dotnet\"). Every coverage entry's sinceVersion is the literal marker \"unreleased\" -- repo tags such as dotnet-sdk-v1.5.0 are pre-publish release-please source tags, not registry releases, and are never used here."
+    "status": "published",
+    "publishedVersion": "2.2.0",
+    "note": "Honua.Sdk 2.2.0 is published on nuget.org. This snapshot describes current source coverage, not installed-package certification. Per-capability first-published versions have not been verified; sinceVersion retains the schema marker \"unreleased\" without implying that the SDK package is unavailable."
   },
   "capabilityKeyList": {
     "canonicalUrl": "https://raw.githubusercontent.com/honua-io/honua-server/trunk/docs/gis/data/capability-keys.v1.json",
