@@ -535,6 +535,7 @@ jobs:
           protocol_code=0
           dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --framework net10.0 \
             --no-restore \
             --filter "${filter}" \
             --logger 'trx;LogFileName=protocol-integration.trx' \
@@ -542,6 +543,7 @@ jobs:
           conformance_code=0
           dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --framework net10.0 \
             --no-restore \
             --filter "${conformance_filter}" \
             --logger 'trx;LogFileName=live-conformance.trx' \
