@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import tempfile
 import unittest
 from argparse import Namespace
@@ -261,6 +262,19 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertNotEqual("pass", observed["result"])
             self.assertIsNone(observed["evidence_receipt"])
             self.assertIn("/issues/473", observed["skip_reason"])
+
+    def test_pr_workflow_selects_every_required_certification_test(self):
+        workflow = SCRIPT.parents[1] / ".github/workflows/sdk-certification.yml"
+        filters = re.findall(r"^\s*(?:conformance_)?filter='([^']+)'", workflow.read_text(), re.MULTILINE)
+        selectors = [term.removeprefix("FullyQualifiedName~")
+                     for expression in filters[:2] for term in expression.split("|")
+                     if term.startswith("FullyQualifiedName~")]
+        required = {test for operation in MODULE.build_document()["operations"]
+                    if operation["status"] == "exercised" and "pr" in operation["requiredTiers"]
+                    for test in operation["tests"]}
+        self.assertTrue(required)
+        missing = sorted(test for test in required if not any(selector in test for selector in selectors))
+        self.assertEqual([], missing, "PR certification requires results for every mapped test")
 
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
