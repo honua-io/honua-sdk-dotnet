@@ -40,7 +40,8 @@ def locked_packs(document: dict) -> dict[str, str]:
     return result
 
 
-def verify_evaluation(document: dict, sdk: str, expected: dict[str, str], framework: str = "net10.0") -> dict[str, str]:
+def verify_evaluation(document: dict, toolchain: tuple[str, str], expected: dict[str, str]) -> dict[str, str]:
+    sdk, framework = toolchain
     if document.get("Properties", {}).get("NETCoreSdkVersion") != sdk:
         raise ValueError("MSBuild selected a different SDK")
     selected = {}
@@ -111,7 +112,7 @@ def main() -> int:
                 raise ValueError("Resolved workload set differs from global.json")
             _, document = evaluate(probe)
             assert document is not None
-            selected = verify_evaluation(document, sdk, expected, framework)
+            selected = verify_evaluation(document, (sdk, framework), expected)
             # The preprocessor records the resolver's actual imported manifest
             # path, including when several versions coexist under one SDK root.
             command(probe, "msbuild", "probe.csproj", "-preprocess:imports.xml")

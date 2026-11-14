@@ -34,20 +34,20 @@ class DotnetToolchainTests(unittest.TestCase):
                 MODULE.pinned_sdk({"sdk": {**pinned, field: value}})
 
     def test_ambient_manifest_cannot_change_implicit_graph(self):
-        self.assertEqual(EXPECTED, MODULE.verify_evaluation(evaluation(), SDK, EXPECTED))
+        self.assertEqual(EXPECTED, MODULE.verify_evaluation(evaluation(), (SDK, "net10.0"), EXPECTED))
         for item, metadata in MODULE.PACK_METADATA.values():
             with self.subTest(item=item):
                 mixed = evaluation()
                 mixed["Items"][item][0][metadata] = "10.0.13"
                 with self.assertRaisesRegex(ValueError, "committed lock"):
-                    MODULE.verify_evaluation(mixed, SDK, EXPECTED)
+                    MODULE.verify_evaluation(mixed, (SDK, "net10.0"), EXPECTED)
         for mutation in (lambda x: x["Properties"].update(NETCoreSdkVersion="10.0.402"),
                          lambda x: x["Items"].pop("KnownWebAssemblySdkPack"),
                          lambda x: x["Items"]["KnownWebAssemblySdkPack"].append(x["Items"]["KnownWebAssemblySdkPack"][0])):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 mixed = evaluation()
                 mutation(mixed)
-                MODULE.verify_evaluation(mixed, SDK, EXPECTED)
+                MODULE.verify_evaluation(mixed, (SDK, "net10.0"), EXPECTED)
 
     def test_sdk11_verifies_net10_browser_packs(self):
         document = evaluation()
@@ -55,9 +55,9 @@ class DotnetToolchainTests(unittest.TestCase):
         document["Items"]["KnownILLinkPack"].append(
             {"TargetFramework": "net11.0", "ILLinkPackVersion": "11.0.0"})
         self.assertEqual(EXPECTED, MODULE.verify_evaluation(
-            document, "11.0.100", EXPECTED, "net10.0"))
+            document, ("11.0.100", "net10.0"), EXPECTED))
         with self.assertRaisesRegex(ValueError, "committed lock"):
-            MODULE.verify_evaluation(document, "11.0.100", EXPECTED, "net11.0")
+            MODULE.verify_evaluation(document, ("11.0.100", "net11.0"), EXPECTED)
 
     def test_bootstrap_uses_isolated_probe_and_refuses_unavailable_set(self):
         for unavailable in (False, True):
