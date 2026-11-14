@@ -294,6 +294,33 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
 
+    def test_featureserver_statistics_and_sql_have_executing_protocol_mappings(self):
+        expected = {
+            "QueryStatisticsAsync": "Statistics_CountMatchesFilteredFeatureCount",
+            "ValidateSqlAsync": "SqlValidation_DistinguishesValidAndMalformedExpressions",
+        }
+        operations = [cell for cell in MODULE.build_document()["operations"]
+                      if cell["client"].endswith("IHonuaFeatureServerClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(2, len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_sql_validation_request_evidence_targets_validate_sql(self):
+        operation = {
+            "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+            "surface": "geoservices", "operation": "ValidateSqlAsync",
+        }
+        identity = {"serviceId": "places", "layerId": "0", "collectionId": "0",
+                    "baseUrl": "https://candidate.test/"}
+        self.assertEqual("https://candidate.test/rest/services/places/FeatureServer/0/validateSQL",
+                         MODULE._certification_request_url(operation, identity))
+
     def test_fixture_dependent_operations_remain_individual_release_obligations(self):
         document = MODULE.build_document()
         names = {
