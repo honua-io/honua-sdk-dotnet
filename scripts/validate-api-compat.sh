@@ -80,7 +80,8 @@ for entry in "${projects[@]}"; do
   # transitive dependency (e.g. a NuGetAudit advisory published after that
   # commit landed) that we cannot go back and patch. Disable NuGetAudit for
   # this restore only so a new advisory against old code can't block the
-  # compatibility check; the candidate pack below keeps full audit enforcement.
+  # compatibility check (older baselines predate the NU1901-NU1904 warning
+  # exemption); the candidate pack below still reports advisories as warnings.
   echo "Packing ${package_id} baseline from ${BASE_REF}..."
   dotnet pack "${BASE_WORKTREE}/${project}" \
     --configuration "${CONFIGURATION}" \

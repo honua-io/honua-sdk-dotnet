@@ -7,6 +7,8 @@ tags: [metadata, catalog, parity]
 ---
 # Metadata And Catalog Reads
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This repo exposes stable, non-UI metadata/catalog reads through protocol-specific
 clients. The server-owned parity matrix is tracked in
 `honua-io/honua-server#955`; this SDK maps the stable read surfaces without

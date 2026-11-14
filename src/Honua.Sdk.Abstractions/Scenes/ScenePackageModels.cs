@@ -909,7 +909,7 @@ public static class HonuaScenePackageManifestValidator
     {
         if (string.IsNullOrWhiteSpace(path) ||
             path.Contains('\\', StringComparison.Ordinal) ||
-            path.StartsWith('/') ||
+            path[0] == '/' ||
             Uri.TryCreate(path, UriKind.Absolute, out _))
         {
             return false;

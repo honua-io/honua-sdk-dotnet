@@ -190,7 +190,7 @@ public sealed class LayerPublishingTests
     {
         var style = new
         {
-            mapLibreStyle = JsonDocument.Parse("{\"layers\":[]}").RootElement,
+            mapLibreStyle = JsonElement.Parse("{\"layers\":[]}"),
             drawingInfo = (JsonElement?)null
         };
 
@@ -210,7 +210,7 @@ public sealed class LayerPublishingTests
     {
         var style = new
         {
-            mapLibreStyle = JsonDocument.Parse("{\"layers\":[{\"id\":\"fill\"}]}").RootElement,
+            mapLibreStyle = JsonElement.Parse("{\"layers\":[{\"id\":\"fill\"}]}"),
             drawingInfo = (JsonElement?)null
         };
 
@@ -223,7 +223,7 @@ public sealed class LayerPublishingTests
 
         var result = await client.UpdateLayerStyleAsync(7, new LayerStyleUpdateRequest
         {
-            MapLibreStyle = JsonDocument.Parse("{\"layers\":[{\"id\":\"fill\"}]}").RootElement
+            MapLibreStyle = JsonElement.Parse("{\"layers\":[{\"id\":\"fill\"}]}")
         });
 
         Assert.NotNull(result);

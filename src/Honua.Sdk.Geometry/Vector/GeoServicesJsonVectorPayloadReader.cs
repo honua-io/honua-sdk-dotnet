@@ -247,7 +247,7 @@ public sealed class GeoServicesJsonVectorPayloadReader : IVectorPayloadReader
         }
 
         var trimmed = spatialReference.Trim();
-        var separator = trimmed.LastIndexOf(':');
+        var separator = trimmed.AsSpan().LastIndexOf(':');
         var code = separator >= 0 ? trimmed[(separator + 1)..] : trimmed;
         return int.TryParse(code, NumberStyles.Integer, CultureInfo.InvariantCulture, out srid) && srid > 0;
     }

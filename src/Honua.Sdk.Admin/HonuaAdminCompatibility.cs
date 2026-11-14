@@ -114,7 +114,7 @@ public static class HonuaAdminCompatibility
         }
 
         var normalized = path.Trim();
-        if (!normalized.StartsWith('/'))
+        if (!normalized.AsSpan().StartsWith("/", StringComparison.Ordinal))
         {
             normalized = "/" + normalized;
         }
@@ -151,7 +151,7 @@ public static class HonuaAdminCompatibility
             }
 
             var normalized = value.Trim();
-            if (normalized.StartsWith('v') || normalized.StartsWith('V'))
+            if (normalized.AsSpan().StartsWith("v", StringComparison.Ordinal) || normalized.AsSpan().StartsWith("V", StringComparison.Ordinal))
             {
                 normalized = normalized[1..];
             }

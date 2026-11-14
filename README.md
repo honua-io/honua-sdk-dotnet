@@ -1,5 +1,7 @@
 # Honua .NET SDK
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 [![.NET SDK CI](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/ci.yml)
 [![Docs](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml/badge.svg?branch=trunk)](https://github.com/honua-io/honua-sdk-dotnet/actions/workflows/docs.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/honua-io/honua-sdk-dotnet/badge)](https://scorecard.dev/viewer/?uri=github.com/honua-io/honua-sdk-dotnet)
@@ -26,7 +28,7 @@ sharing one options/auth/resilience pattern.
 | | |
 |---|---|
 | Current version | 2.2.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
-| Target framework | `net10.0` — requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) |
+| Target framework | `net10.0` and `net11.0` — use the matching [.NET SDK](https://dotnet.microsoft.com/download); building this repository requires the pinned .NET 11 SDK |
 | Package feed | Stable packages are publicly available on [nuget.org](https://www.nuget.org/packages/Honua.Sdk/) and install anonymously. GitHub Packages is the authenticated stable mirror and the only prerelease feed; see [Install](#install). |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |
 | License | [Apache 2.0](LICENSE) |

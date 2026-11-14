@@ -7,6 +7,8 @@ tags: [architecture, packages]
 ---
 # Architecture overview
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 A one-page map of how the Honua .NET SDK packages relate. Use this when
 you're choosing which package(s) to take a dependency on, or when you need
 to reason about how data flows through the SDK.

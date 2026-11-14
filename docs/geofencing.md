@@ -7,6 +7,8 @@ tags: [geofencing, geometry, alerts]
 ---
 # Geofencing
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 `Honua.Sdk.Geometry` includes a host-neutral geofence evaluator over
 NetTopologySuite geometries. The SDK owns the portable data model
 (boundary geometries, buffer/proximity distances, source-backed metadata)

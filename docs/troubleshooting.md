@@ -6,6 +6,8 @@ tags: [troubleshooting, errors]
 ---
 # Troubleshooting
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Common issues and how to fix them when integrating the Honua .NET SDK.
 
 If you cannot find your issue here, open a [GitHub issue](https://github.com/honua-io/honua-sdk-dotnet/issues)
@@ -231,6 +233,9 @@ The SDK ships with `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` in
 `Directory.Build.props`. If your downstream project enables analyzers we don't, you may see new
 warnings against generated/imported code. The clean fix is to suppress specific analyzer IDs in
 your own `.editorconfig` rather than relaxing the SDK build.
+
+NuGet audit advisories (NU1901-NU1904) are the one exception: they stay warnings under
+`TreatWarningsAsErrors`, so a newly published advisory never fails restore or build.
 
 ---
 

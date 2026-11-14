@@ -177,7 +177,7 @@ public sealed class ManifestTests
                 ApiVersion = "honua.io/v1alpha1",
                 Kind = "Layer",
                 Metadata = new ResourceMetadata { Name = "test", Namespace = "default" },
-                Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+                Spec = JsonElement.Parse("{\"type\":\"Feature\"}")
             }]
         });
 

@@ -16,19 +16,43 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+      - name: Cut the release of a merged release pull request
         id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          skip-github-pull-request: true
+
+  release-pr:
+    needs: release-please
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint release automation token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+
+      - name: Open or update the release pull request
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          skip-github-release: true
 
   # Do not use a shared job-concurrency group here: GitHub replaces an older
   # pending job even with cancel-in-progress disabled. Each run instead checks
   # the exact PR head before generation and before its normal fast-forward push.
   generate-release-pr-locks:
     name: Generate release PR NuGet locks without write access
-    needs: release-please
+    needs: release-pr
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -73,7 +97,9 @@ jobs:
         if: steps.release-pr.outputs.sha != ''
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: '10.0.403'
+          dotnet-version: |
+            10.0.403
+            11.0.100
 
       - name: Pin and verify SDK workload tuple
         if: steps.release-pr.outputs.sha != ''
@@ -101,7 +127,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$(dotnet --version)" != '10.0.403' ]] || [[ "$(git rev-parse HEAD)" != "${RELEASE_HEAD}" ]]; then
+          if [[ "$(dotnet --version)" != '11.0.100' ]] || [[ "$(git rev-parse HEAD)" != "${RELEASE_HEAD}" ]]; then
             echo '::error::Release toolchain or checked-out PR head changed.' >&2
             exit 1
           fi

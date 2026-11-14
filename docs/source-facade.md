@@ -7,6 +7,8 @@ tags: [source-facade, abstraction]
 ---
 # Source Facade
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 `Honua.Sdk.Abstractions` includes an additive source-oriented facade over the
 existing protocol clients. Native clients remain the implementation surface;
 `IHonuaSource` gives application code one place to query, drain pages, ask for
