@@ -2,6 +2,33 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [3.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v2.2.0...dotnet-sdk-v3.0.0) (2026-11-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **studio:** renamed public API with no aliases. Honua.Sdk.Studio: CapabilityManifest.HasPackageFamily -> SupportsContentKind, IHonuaStudioPackageClient.GetContentItemPointersAsync and HonuaStudioPackageClient.GetContentItemPointersAsync -> GetContentPointersAsync. Honua.Sdk.Abstractions: HonuaAnalysisResultPackage.MapPackageId -> MapId, HonuaAnalysisResultPackage.AppPackageId -> AppId, HonuaMapEmbedSection.MapPackageUri -> MapUri. JSON field names are unchanged.
+
+### Features
+
+* **admin:** expose API-key management contracts ([c5fe9d9](https://github.com/honua-io/honua-sdk-dotnet/commit/c5fe9d9e20852b336df76087ad7786371d79e8e6))
+* **admin:** expose API-key management contracts ([#530](https://github.com/honua-io/honua-sdk-dotnet/issues/530)) ([5b747f2](https://github.com/honua-io/honua-sdk-dotnet/commit/5b747f2271107d43c7fed368c8e3d816147816c9))
+* **studio:** adopt the Honua vocabulary and a retired-term guard ([#521](https://github.com/honua-io/honua-sdk-dotnet/issues/521)) ([7511d7b](https://github.com/honua-io/honua-sdk-dotnet/commit/7511d7b6fa54d1aa0a9b4faae8454345b5fa6bc8))
+* support .NET 10 and .NET 11 library targets ([#529](https://github.com/honua-io/honua-sdk-dotnet/issues/529)) ([9c2e000](https://github.com/honua-io/honua-sdk-dotnet/commit/9c2e000177c4bcb5fbb4f46a863a9f3ae7a245c7))
+
+
+### Bug Fixes
+
+* **build:** keep NuGet audit advisories as warnings, never restore errors ([#522](https://github.com/honua-io/honua-sdk-dotnet/issues/522)) ([54afed8](https://github.com/honua-io/honua-sdk-dotnet/commit/54afed880aca5cd4a54e876e61020cf811652b35))
+* **certification:** refresh API-key operation ledger ([#530](https://github.com/honua-io/honua-sdk-dotnet/issues/530)) ([d6e467a](https://github.com/honua-io/honua-sdk-dotnet/commit/d6e467afa073b316b1f051b55da228ddfa8a84d2))
+* **ci:** authenticate release PRs with the bot App ([#526](https://github.com/honua-io/honua-sdk-dotnet/issues/526)) ([c2cf645](https://github.com/honua-io/honua-sdk-dotnet/commit/c2cf6458ff71839616f945a4f44d9ffc9b27c20d))
+
+
+### Documentation
+
+* lead customer migrations with gRPC and cloud-native files ([#528](https://github.com/honua-io/honua-sdk-dotnet/issues/528)) ([364ba97](https://github.com/honua-io/honua-sdk-dotnet/commit/364ba97ea35d3253a6342aca99b49521add7df44))
+* refresh agent guidance and generated fleet rules ([#532](https://github.com/honua-io/honua-sdk-dotnet/issues/532)) ([d9a4437](https://github.com/honua-io/honua-sdk-dotnet/commit/d9a4437b2032450dbcf09963c1bb514884dbad56))
+
 ## [2.2.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v2.1.0...dotnet-sdk-v2.2.0) (2026-11-08)
 
 
