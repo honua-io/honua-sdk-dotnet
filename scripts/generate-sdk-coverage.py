@@ -81,13 +81,12 @@ CANONICAL_URL = (
 TRACKING_ISSUE = "#273"
 SOURCE_REPOSITORY = "honua-io/honua-sdk-dotnet"
 
-# This SDK ships as a source preview only: no NuGet package has published yet
-# (see honua-site data/sdk-availability.v1.json, productArea "sdk-dotnet",
-# availability "Source preview", publishedVersion null). Every coverage entry
-# below therefore carries the literal marker "unreleased" rather than a
-# fabricated version number -- repo tags such as dotnet-sdk-v1.5.0 are
-# pre-publish release-please source tags, not registry releases, and must not
-# be used here to imply availability that does not exist yet.
+# Package availability is independent of this source inventory's per-capability
+# release history. Verified on nuget.org; keep the last verified version rather
+# than inferring publication from the working tree's version or release tags.
+PUBLISHED_VERSION = "2.2.0"
+# This inventory has not established each capability's first published version.
+# Retain the existing schema marker until that history is verified individually.
 UNRELEASED = "unreleased"
 
 VALID_STATUSES = frozenset({"covered", "partial"})
@@ -761,15 +760,14 @@ def _build_document(canonical_keys: frozenset[str], key_list_source: str) -> dic
             "absent from 'coverage' -- never padded."
         ),
         "sdkAvailability": {
-            "status": "source-preview",
-            "publishedVersion": None,
+            "status": "published",
+            "publishedVersion": PUBLISHED_VERSION,
             "note": (
-                "Honua.Sdk.* ships as a source preview only; no NuGet package "
-                "has published yet (see honua-site data/sdk-availability.v1.json, "
-                "productArea \"sdk-dotnet\"). Every coverage entry's "
-                "sinceVersion is the literal marker \"unreleased\" -- repo tags "
-                "such as dotnet-sdk-v1.5.0 are pre-publish release-please "
-                "source tags, not registry releases, and are never used here."
+                f"Honua.Sdk {PUBLISHED_VERSION} is published on nuget.org. "
+                "This snapshot describes current source coverage, not installed-package "
+                "certification. Per-capability first-published versions have not been "
+                "verified; sinceVersion retains the schema marker \"unreleased\" "
+                "without implying that the SDK package is unavailable."
             ),
         },
         "capabilityKeyList": {
