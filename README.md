@@ -27,7 +27,7 @@ sharing one options/auth/resilience pattern.
 
 | | |
 |---|---|
-| Current version | 2.2.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
+| Current version | 3.0.0 (single version across all packages, managed by Release Please; see [CHANGELOG.md](CHANGELOG.md)) | <!-- x-release-please-version -->
 | Target framework | `net10.0` and `net11.0` — use the matching [.NET SDK](https://dotnet.microsoft.com/download); building this repository requires the pinned .NET 11 SDK |
 | Package feed | Stable packages are publicly available on [nuget.org](https://www.nuget.org/packages/Honua.Sdk/) and install anonymously. GitHub Packages is the authenticated stable mirror and the only prerelease feed; see [Install](#install). |
 | API stability | SemVer with a CI [public-API compatibility gate](docs/compatibility.md); breaking changes only in majors |

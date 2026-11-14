@@ -378,20 +378,20 @@
       "honua.sdk": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Admin": "[2.2.0, )",
-          "Honua.Sdk.Catalogs": "[2.2.0, )",
-          "Honua.Sdk.ConsoleShare": "[2.2.0, )",
-          "Honua.Sdk.Field": "[2.2.0, )",
-          "Honua.Sdk.GeoServices": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
-          "Honua.Sdk.Grpc": "[2.2.0, )",
-          "Honua.Sdk.Offline": "[2.2.0, )",
-          "Honua.Sdk.OgcFeatures": "[2.2.0, )",
-          "Honua.Sdk.Processes": "[2.2.0, )",
-          "Honua.Sdk.Scenes": "[2.2.0, )",
-          "Honua.Sdk.Spec": "[2.2.0, )",
-          "Honua.Sdk.Studio": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Admin": "[3.0.0, )",
+          "Honua.Sdk.Catalogs": "[3.0.0, )",
+          "Honua.Sdk.ConsoleShare": "[3.0.0, )",
+          "Honua.Sdk.Field": "[3.0.0, )",
+          "Honua.Sdk.GeoServices": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
+          "Honua.Sdk.Grpc": "[3.0.0, )",
+          "Honua.Sdk.Offline": "[3.0.0, )",
+          "Honua.Sdk.OgcFeatures": "[3.0.0, )",
+          "Honua.Sdk.Processes": "[3.0.0, )",
+          "Honua.Sdk.Scenes": "[3.0.0, )",
+          "Honua.Sdk.Spec": "[3.0.0, )",
+          "Honua.Sdk.Studio": "[3.0.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.7, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
         }
@@ -402,7 +402,7 @@
       "honua.sdk.admin": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -411,7 +411,7 @@
       "honua.sdk.catalogs": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -420,7 +420,7 @@
       "honua.sdk.consoleshare": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -429,14 +429,14 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )"
+          "Honua.Sdk.Abstractions": "[3.0.0, )"
         }
       },
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
           "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -445,8 +445,8 @@
       "honua.sdk.geoservices": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -458,24 +458,24 @@
           "Geospatial.Grpc": "[1.0.2, )",
           "Google.Protobuf": "[3.36.2, )",
           "Grpc.Net.Client": "[2.76.0, )",
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
-          "Honua.Sdk.Processes": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
+          "Honua.Sdk.Processes": "[3.0.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
         }
       },
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.7, )"
         }
       },
       "honua.sdk.ogcfeatures": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -484,7 +484,7 @@
       "honua.sdk.processes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -493,7 +493,7 @@
       "honua.sdk.scenes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -502,7 +502,7 @@
       "honua.sdk.spec": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -511,7 +511,7 @@
       "honua.sdk.studio": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )",
           "Microsoft.Extensions.Options": "[10.0.7, )"
@@ -921,20 +921,20 @@
       "honua.sdk": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Admin": "[2.2.0, )",
-          "Honua.Sdk.Catalogs": "[2.2.0, )",
-          "Honua.Sdk.ConsoleShare": "[2.2.0, )",
-          "Honua.Sdk.Field": "[2.2.0, )",
-          "Honua.Sdk.GeoServices": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
-          "Honua.Sdk.Grpc": "[2.2.0, )",
-          "Honua.Sdk.Offline": "[2.2.0, )",
-          "Honua.Sdk.OgcFeatures": "[2.2.0, )",
-          "Honua.Sdk.Processes": "[2.2.0, )",
-          "Honua.Sdk.Scenes": "[2.2.0, )",
-          "Honua.Sdk.Spec": "[2.2.0, )",
-          "Honua.Sdk.Studio": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Admin": "[3.0.0, )",
+          "Honua.Sdk.Catalogs": "[3.0.0, )",
+          "Honua.Sdk.ConsoleShare": "[3.0.0, )",
+          "Honua.Sdk.Field": "[3.0.0, )",
+          "Honua.Sdk.GeoServices": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
+          "Honua.Sdk.Grpc": "[3.0.0, )",
+          "Honua.Sdk.Offline": "[3.0.0, )",
+          "Honua.Sdk.OgcFeatures": "[3.0.0, )",
+          "Honua.Sdk.Processes": "[3.0.0, )",
+          "Honua.Sdk.Scenes": "[3.0.0, )",
+          "Honua.Sdk.Spec": "[3.0.0, )",
+          "Honua.Sdk.Studio": "[3.0.0, )",
           "Microsoft.Extensions.DependencyInjection": "[10.0.7, )"
         }
       },
@@ -944,7 +944,7 @@
       "honua.sdk.admin": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -952,7 +952,7 @@
       "honua.sdk.catalogs": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -960,7 +960,7 @@
       "honua.sdk.consoleshare": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -968,14 +968,14 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )"
+          "Honua.Sdk.Abstractions": "[3.0.0, )"
         }
       },
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
           "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -984,8 +984,8 @@
       "honua.sdk.geoservices": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -996,22 +996,22 @@
           "Geospatial.Grpc": "[1.0.2, )",
           "Google.Protobuf": "[3.36.2, )",
           "Grpc.Net.Client": "[2.76.0, )",
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
-          "Honua.Sdk.Processes": "[2.2.0, )"
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
+          "Honua.Sdk.Processes": "[3.0.0, )"
         }
       },
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )"
+          "Honua.Sdk.Abstractions": "[3.0.0, )"
         }
       },
       "honua.sdk.ogcfeatures": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
-          "Honua.Sdk.Geometry": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
+          "Honua.Sdk.Geometry": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -1019,7 +1019,7 @@
       "honua.sdk.processes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -1027,7 +1027,7 @@
       "honua.sdk.scenes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -1035,7 +1035,7 @@
       "honua.sdk.spec": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -1043,7 +1043,7 @@
       "honua.sdk.studio": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[2.2.0, )",
+          "Honua.Sdk.Abstractions": "[3.0.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
