@@ -49,6 +49,16 @@ class DotnetToolchainTests(unittest.TestCase):
                 mutation(mixed)
                 MODULE.verify_evaluation(mixed, SDK, EXPECTED)
 
+    def test_sdk11_verifies_net10_browser_packs(self):
+        document = evaluation()
+        document["Properties"]["NETCoreSdkVersion"] = "11.0.100"
+        document["Items"]["KnownILLinkPack"].append(
+            {"TargetFramework": "net11.0", "ILLinkPackVersion": "11.0.0"})
+        self.assertEqual(EXPECTED, MODULE.verify_evaluation(
+            document, "11.0.100", EXPECTED, "net10.0"))
+        with self.assertRaisesRegex(ValueError, "committed lock"):
+            MODULE.verify_evaluation(document, "11.0.100", EXPECTED, "net11.0")
+
     def test_bootstrap_uses_isolated_probe_and_refuses_unavailable_set(self):
         for unavailable in (False, True):
             with self.subTest(unavailable=unavailable), tempfile.TemporaryDirectory() as directory:
@@ -60,6 +70,8 @@ class DotnetToolchainTests(unittest.TestCase):
                 lock.parent.mkdir(parents=True)
                 lock.write_text(json.dumps({"dependencies": {"net10.0": {
                     name: {"resolved": version} for name, version in EXPECTED.items()}}}))
+                (lock.parent / "Honua.Sdk.BrowserSmoke.csproj").write_text(
+                    '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>')
                 manifest = Path(directory) / "sdk/microsoft.net.workload.mono.toolchain.current/10.0.112/WorkloadManifest.targets"
                 manifest.parent.mkdir(parents=True)
                 manifest.write_text("<Project />")

@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  DOTNET_VERSION: "10.0.403"
+  DOTNET_VERSION: "11.0.100"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
@@ -97,7 +97,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
 
       - name: Pin and verify SDK workload tuple
         shell: bash
@@ -161,7 +163,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
 
       - name: Pin and verify SDK workload tuple
         shell: bash
@@ -181,7 +185,7 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --settings ./coverlet.runsettings \
             --results-directory ./coverage \
-            --logger "trx;LogFileName=coverage-results.trx"
+            --logger "trx;LogFilePrefix=coverage-results"
 
       - name: Install ReportGenerator
         run: dotnet tool update --global dotnet-reportgenerator-globaltool
@@ -240,7 +244,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
 
       - name: Pin and verify SDK workload tuple
         shell: bash
@@ -356,7 +362,9 @@ jobs:
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -389,7 +397,9 @@ jobs:
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -425,7 +435,9 @@ jobs:
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
