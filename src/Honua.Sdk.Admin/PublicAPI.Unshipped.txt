@@ -999,3 +999,59 @@ static Honua.Sdk.Admin.Models.OptionalString.operator ==(Honua.Sdk.Admin.Models.
 ~override Honua.Sdk.Admin.Models.OptionalString.ToString() -> string
 Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.get -> string?
 Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.init -> void
+
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.CreateAdminApiKeyRequest() -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Name.get -> string!
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Name.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Permissions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Permissions.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.ExpiresAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.ExpiresAt.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedReferrers.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedReferrers.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedIpRanges.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedIpRanges.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AdminApiKeyResponse() -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Id.get -> System.Guid
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Id.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Name.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Name.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.KeyPrefix.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.KeyPrefix.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Permissions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Permissions.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Status.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Status.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.UpdatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.UpdatedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.ExpiresAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.ExpiresAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.LastUsedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.LastUsedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RotatedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RotatedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RevokedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RevokedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedBy.get -> string?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedBy.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedReferrers.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedReferrers.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedIpRanges.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedIpRanges.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.AdminApiKeySecretResponse() -> void
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.ApiKey.get -> Honua.Sdk.Admin.Models.AdminApiKeyResponse!
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.ApiKey.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.Key.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.Key.init -> void
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient
+Honua.Sdk.Admin.HonuaAdminClient.ListApiKeysAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!>!
+Honua.Sdk.Admin.HonuaAdminClient.CreateApiKeyAsync(Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeySecretResponse!>!
+Honua.Sdk.Admin.HonuaAdminClient.RevokeApiKeyAsync(System.Guid id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient.ListApiKeysAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!>!
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient.CreateApiKeyAsync(Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeySecretResponse!>!
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient.RevokeApiKeyAsync(System.Guid id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!

@@ -16,6 +16,10 @@ namespace Honua.Sdk.Admin;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(ApiResponse<AdminApiKeyResponse[]>))]
+[JsonSerializable(typeof(ApiResponse<AdminApiKeyResponse>))]
+[JsonSerializable(typeof(ApiResponse<AdminApiKeySecretResponse>))]
+[JsonSerializable(typeof(CreateAdminApiKeyRequest))]
 [JsonSerializable(typeof(ApiResponse<Folder[]>))]
 [JsonSerializable(typeof(ApiResponse<Folder>))]
 [JsonSerializable(typeof(CreateFolderRequest))]

@@ -18,7 +18,7 @@ namespace Honua.Sdk.Admin;
 /// <summary>
 /// HTTP client implementation for the Honua Admin REST API.
 /// </summary>
-public sealed partial class HonuaAdminClient : IHonuaAdminClient
+public sealed partial class HonuaAdminClient : IHonuaAdminClient, IHonuaAdminApiKeysClient
 {
     private const string ApiPrefix = "/api/v1/admin";
 

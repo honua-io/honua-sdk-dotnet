@@ -289,3 +289,21 @@ The server validates storage modes and capability combinations. Catalog discover
 uses service and FeatureServer routes by default; groups, saved source descriptors
 and metadata-only filters require the legacy metadata-resource API and propagate
 server errors when unsupported.
+
+### Managing API keys
+
+Use `IHonuaAdminApiKeysClient` (registered by `AddHonuaAdmin`) to list key metadata,
+create a key, or revoke it by ID. Creation accepts permission grants, an optional
+expiration, and optional referrer/IP restrictions. `CreateApiKeyAsync` returns
+`AdminApiKeySecretResponse.Key` once; store it securely and keep it out of logs.
+List and revoke responses contain metadata only.
+
+```csharp
+var created = await apiKeys.CreateApiKeyAsync(new CreateAdminApiKeyRequest
+{
+    Name = "map-reader",
+    Permissions = ["read:parcels/0"]
+}, cancellationToken);
+// Deliver created.Key through your application's secure secret handoff.
+await apiKeys.RevokeApiKeyAsync(created.ApiKey.Id, cancellationToken);
+```
