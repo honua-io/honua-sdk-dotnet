@@ -271,6 +271,10 @@ class RealInventoryTests(unittest.TestCase):
         # test is hermetic.
         document = module._build_document(canonical_keys, source)
         self.assertGreater(len(document["coverage"]), 0)
+        # Availability must not regress to the pre-publication claim, nor may
+        # package publication invent capability release boundaries below.
+        self.assertEqual(document["sdkAvailability"]["status"], "published")
+        self.assertEqual(document["sdkAvailability"]["publishedVersion"], "2.2.0")
 
         for entry in document["coverage"]:
             self.assertIn(entry["status"], {"covered", "partial"})

@@ -39,8 +39,8 @@ the readiness-assessment tool):
   "sourceRepository": "honua-io/honua-sdk-dotnet",
   "description": "...",
   "sdkAvailability": {
-    "status": "source-preview",       // this SDK has no published NuGet package yet
-    "publishedVersion": null,
+    "status": "published",
+    "publishedVersion": "2.2.0",       // last verified NuGet release
     "note": "..."
   },
   "capabilityKeyList": {
@@ -81,16 +81,18 @@ Field semantics:
   entry with an empty or missing note fails validation. A `covered` entry must
   **not** carry a `note` (if there's a caveat worth writing down, the entry is
   `partial` by definition).
-- **`sinceVersion`**: always the literal string `"unreleased"`. This SDK ships
-  as a **source preview** -- no `Honua.Sdk.*` NuGet package has published yet
-  (see honua-site's `data/sdk-availability.v1.json`, `productArea:
-  "sdk-dotnet"`, `availability: "Source preview"`, `publishedVersion: null`).
-  Repo tags such as `dotnet-sdk-v1.5.0` are pre-publish `release-please`
-  source tags, not registry releases, and must never be used as a
-  `sinceVersion` value -- that would imply a version boundary that does not
-  exist for anyone installing from a registry today. When a package first
-  publishes, real per-capability `sinceVersion` values become meaningful and
-  this doc (and the generator) should be updated together.
+- **`sdkAvailability`**: the SDK is published on
+  [nuget.org](https://www.nuget.org/packages/Honua.Sdk/2.2.0).
+  `publishedVersion` records the last verified package release, independently of
+  the current source inventory. It does not certify that every source entrypoint
+  is present or usable in that package; installed-package and candidate evidence
+  belongs to [SDK certification](sdk-certification.md).
+- **`sinceVersion`**: currently the literal string `"unreleased"`, retained as
+  the existing schema marker because this inventory has not verified each
+  capability's first published version. It does **not** mean the SDK package is
+  unavailable. Do not infer a capability's version boundary from a source tag,
+  the current project version, or the package's publication alone. Replace a
+  marker only after verifying that capability in the relevant published bytes.
 - **`entrypoints`**: fully-qualified public type and/or method names that
   provide the coverage -- always a real symbol in `src/`, never a paraphrase.
   This is machine-enforced, not just convention: the generator indexes every
