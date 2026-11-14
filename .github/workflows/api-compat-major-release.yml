@@ -15,7 +15,7 @@ on:
         required: true
 
 env:
-  DOTNET_VERSION: "10.0.403"
+  DOTNET_VERSION: "11.0.100"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
@@ -47,7 +47,9 @@ jobs:
       - name: Setup .NET + NuGet
         uses: ./.github/actions/setup-dotnet-and-nuget
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

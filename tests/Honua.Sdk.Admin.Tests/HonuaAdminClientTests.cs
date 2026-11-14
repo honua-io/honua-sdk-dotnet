@@ -381,7 +381,7 @@ public sealed class HonuaAdminClientTests
                 "Layer", "default", "test",
                 new Models.MetadataResource
                 {
-                    Spec = JsonDocument.Parse("{}").RootElement
+                    Spec = JsonElement.Parse("{}")
                 },
                 ifMatch: "\"old-etag\""));
 

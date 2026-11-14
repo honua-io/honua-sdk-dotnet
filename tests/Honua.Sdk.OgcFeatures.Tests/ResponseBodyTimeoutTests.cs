@@ -47,10 +47,7 @@ public sealed class ResponseBodyTimeoutTests
         var started = Stopwatch.StartNew();
 
         var send = http.GetAsync(new Uri("https://example.test/collections"));
-        var completed = await Task.WhenAny(send, Task.Delay(HangBound));
-
-        Assert.Same(send, completed);
-        var exception = await Record.ExceptionAsync(() => send);
+        var exception = await Record.ExceptionAsync(async () => await send.WaitAsync(HangBound));
         Assert.IsAssignableFrom<OperationCanceledException>(exception);
         Assert.InRange(started.Elapsed, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(2));
     }
@@ -69,10 +66,7 @@ public sealed class ResponseBodyTimeoutTests
 
         await using var stream = await response.Content.ReadAsStreamAsync();
         var read = stream.ReadAsync(new byte[16]).AsTask();
-        var completed = await Task.WhenAny(read, Task.Delay(HangBound));
-
-        Assert.Same(read, completed);
-        var exception = await Record.ExceptionAsync(() => read);
+        var exception = await Record.ExceptionAsync(async () => await read.WaitAsync(HangBound));
         Assert.IsAssignableFrom<OperationCanceledException>(exception);
         Assert.InRange(started.Elapsed, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(2));
     }
@@ -90,10 +84,7 @@ public sealed class ResponseBodyTimeoutTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var open = response.Content.ReadAsStreamAsync();
-        var completed = await Task.WhenAny(open, Task.Delay(HangBound));
-
-        Assert.Same(open, completed);
-        var exception = await Record.ExceptionAsync(() => open);
+        var exception = await Record.ExceptionAsync(async () => await open.WaitAsync(HangBound));
         Assert.IsAssignableFrom<OperationCanceledException>(exception);
         Assert.InRange(started.Elapsed, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(2));
     }

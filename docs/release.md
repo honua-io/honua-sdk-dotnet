@@ -56,8 +56,10 @@ credential. Account/package scope is finally proven by the first push.
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects, the tag commit must be contained in `origin/trunk`, and required
 staging integration must pass. The workflow fails before publishing if any of
-those bindings fail. Release build and publish jobs use the exact .NET SDK
-`10.0.403` so a rerun cannot silently select a newer feature-band SDK.
+those bindings fail. Library packages contain both `net10.0` and `net11.0` assets. CI runs the test
+projects on both runtimes; the CLI and browser sample retain `net10.0` consumer
+coverage. Release build and publish jobs use the exact .NET SDK
+`11.0.100` so a rerun cannot silently select a newer feature-band SDK.
 
 ## Version bumps
 

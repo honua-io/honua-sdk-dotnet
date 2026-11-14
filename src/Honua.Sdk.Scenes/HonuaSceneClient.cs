@@ -101,7 +101,7 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
             ? "/api/scenes"
             : _options.SceneApiPath;
 
-        var path = basePath.StartsWith('/') ? basePath : $"/{basePath}";
+        var path = basePath.AsSpan().StartsWith("/", StringComparison.Ordinal) ? basePath : $"/{basePath}";
         path = path.TrimEnd('/');
 
         foreach (var segment in segments.Where(segment => !string.IsNullOrWhiteSpace(segment)))

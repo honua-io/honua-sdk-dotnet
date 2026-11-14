@@ -76,7 +76,7 @@ on:
         type: string
 
 env:
-  DOTNET_VERSION: "10.0.403"
+  DOTNET_VERSION: "11.0.100"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # The server candidate and the published Honua.Sdk package are pinned in
@@ -340,7 +340,9 @@ jobs:
 
       - uses: ./.github/actions/setup-dotnet-and-nuget
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: |
+            10.0.403
+            ${{ env.DOTNET_VERSION }}
           github-actor: ${{ github.actor }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -533,6 +535,7 @@ jobs:
           protocol_code=0
           dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --framework net10.0 \
             --no-restore \
             --filter "${filter}" \
             --logger 'trx;LogFileName=protocol-integration.trx' \
@@ -540,6 +543,7 @@ jobs:
           conformance_code=0
           dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --framework net10.0 \
             --no-restore \
             --filter "${conformance_filter}" \
             --logger 'trx;LogFileName=live-conformance.trx' \

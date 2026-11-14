@@ -1484,7 +1484,7 @@ public sealed class HonuaFeatureServerClient :
         }
 
         var rootText = root.GetLeftPart(UriPartial.Path);
-        return new Uri(new Uri(rootText.EndsWith('/') ? rootText : rootText + "/", UriKind.Absolute), relativeUrl);
+        return new Uri(new Uri(rootText.AsSpan().EndsWith("/", StringComparison.Ordinal) ? rootText : rootText + "/", UriKind.Absolute), relativeUrl);
     }
 
     private static void EnsureSupportedFilterLanguage(FeatureFilterLanguage language)
@@ -1678,7 +1678,7 @@ public sealed class HonuaFeatureServerClient :
             return bareWkid;
         }
 
-        var separatorIndex = Math.Max(trimmed.LastIndexOf(':'), trimmed.LastIndexOf('/'));
+        var separatorIndex = Math.Max(trimmed.AsSpan().LastIndexOf(':'), trimmed.AsSpan().LastIndexOf('/'));
         if (separatorIndex < 0)
         {
             return null;
