@@ -272,6 +272,28 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertIn("ownerIssue", cell)
                 self.assertIn("disposition", cell)
 
+    def test_ogc_discovery_and_paging_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetLandingPageAsync": "OgcDiscovery_AdvertisesCollectionsAndCoreConformance",
+            "GetConformanceAsync": "OgcDiscovery_AdvertisesCollectionsAndCoreConformance",
+            "GetItemsRawAsync": "OgcRawItems_ReturnsBoundedGeoJson",
+            "GetItemsPagesAsync": "OgcPages_FollowsNextLinkWithoutRepeatingFeatures",
+            "GetFeaturesAsync": "WfsFormatHandler_ReturnsBoundedGeoJson",
+            "GetFeaturesAsyncEnumerable": "WfsEnumeration_AdvancesPastTheFirstPage",
+        }
+        operations = [cell for cell in document["operations"]
+                      if "OgcFeatures" in cell["client"] and cell["operation"] in expected
+                      and (cell["operation"] != "GetFeaturesAsync" or "<TResult>" in cell["id"])]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
     def test_fixture_dependent_operations_remain_individual_release_obligations(self):
         document = MODULE.build_document()
         names = {
@@ -884,7 +906,7 @@ class SdkCertificationTests(unittest.TestCase):
             for cell in non_addressable
         ))
 
-    def test_overloads_have_distinct_ids_and_only_the_invoked_signature_is_exercised(self):
+    def test_overloads_have_distinct_ids_and_separate_executing_tests(self):
         document = MODULE.build_document()
         overloads = [
             cell for cell in document["operations"]
@@ -895,7 +917,8 @@ class SdkCertificationTests(unittest.TestCase):
         ordinary = next(cell for cell in overloads if "IWfsOutputFormatHandler" not in cell["signature"])
         handler = next(cell for cell in overloads if "IWfsOutputFormatHandler" in cell["signature"])
         self.assertEqual("exercised", ordinary["status"])
-        self.assertEqual("gap", handler["status"])
+        self.assertEqual("exercised", handler["status"])
+        self.assertTrue(set(ordinary["tests"]).isdisjoint(handler["tests"]))
 
     def test_async_enumerable_and_local_service_operations_are_cataloged(self):
         document = MODULE.build_document()
