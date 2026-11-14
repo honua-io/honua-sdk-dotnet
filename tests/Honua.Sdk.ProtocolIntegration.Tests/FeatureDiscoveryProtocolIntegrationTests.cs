@@ -32,7 +32,7 @@ public sealed class FeatureDiscoveryProtocolIntegrationTests(ProtocolIntegration
             new OgcItemsParams { Limit = 2, Format = OgcFeaturesFormat.GeoJson },
             timeout.Token).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        Assert.Equal("application/geo+json", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token).ConfigureAwait(false));
         Assert.Equal("FeatureCollection", body.RootElement.GetProperty("type").GetString());
         var features = body.RootElement.GetProperty("features");
