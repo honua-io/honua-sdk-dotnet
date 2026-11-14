@@ -79,7 +79,7 @@ public sealed class HonuaGeoServicesClientOptions : Honua.Sdk.Abstractions.Honua
     /// <summary>
     /// Default GeoServices GeometryServer service id used by the geometry client.
     /// </summary>
-    public string GeometryServiceId { get; set; } = "Geometry";
+    public string GeometryServiceId { get; set; } = "Utilities/Geometry";
 
     internal static void ValidateBaseAddress(Uri? baseAddress)
         => Honua.Sdk.Abstractions.HonuaClientOptionsValidation.ValidateBaseAddress(baseAddress, "Honua GeoServices");
