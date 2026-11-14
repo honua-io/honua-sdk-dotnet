@@ -48,6 +48,7 @@ public static class ServiceCollectionExtensions
         })
         .AddHttpMessageHandler<HonuaAdminAuthHandler>();
         httpBuilder.AddTypedClient<IHonuaCatalogClient>(httpClient => new HonuaCatalogClient(httpClient));
+        httpBuilder.AddTypedClient<IHonuaAdminApiKeysClient>(httpClient => new HonuaAdminClient(httpClient));
 
         // Register each role-segregated sub-interface as a forwarding alias to
         // IHonuaAdminClient so consumers can inject the narrowest contract they
