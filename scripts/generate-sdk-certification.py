@@ -212,6 +212,7 @@ def _certification_request_url(
                 "UpdateFeaturesAsync": f"/{layer}/updateFeatures",
                 "DeleteFeaturesAsync": f"/{layer}/deleteFeatures",
                 "ApplyEditsAsync": f"/{layer}/applyEdits",
+                "ValidateSqlAsync": f"/{layer}/validateSQL",
             }.get(method, f"/{layer}/query")
             path = f"/rest/services/{service}/FeatureServer{action}"
     elif ".Wfs." in client:

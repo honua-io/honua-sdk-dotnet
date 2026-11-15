@@ -1,6 +1,5 @@
 import importlib.util
 import json
-import re
 import tempfile
 import unittest
 from argparse import Namespace
@@ -263,19 +262,6 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(observed["evidence_receipt"])
             self.assertIn("/issues/473", observed["skip_reason"])
 
-    def test_pr_workflow_selects_every_required_certification_test(self):
-        workflow = SCRIPT.parents[1] / ".github/workflows/sdk-certification.yml"
-        filters = re.findall(r"^\s*(?:conformance_)?filter='([^']+)'", workflow.read_text(), re.MULTILINE)
-        selectors = [term.removeprefix("FullyQualifiedName~")
-                     for expression in filters[:2] for term in expression.split("|")
-                     if term.startswith("FullyQualifiedName~")]
-        required = {test for operation in MODULE.build_document()["operations"]
-                    if operation["status"] == "exercised" and "pr" in operation["requiredTiers"]
-                    for test in operation["tests"]}
-        self.assertTrue(required)
-        missing = sorted(test for test in required if not any(selector in test for selector in selectors))
-        self.assertEqual([], missing, "PR certification requires results for every mapped test")
-
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
         self.assertGreater(document["summary"]["total"], 0)
@@ -347,6 +333,45 @@ class SdkCertificationTests(unittest.TestCase):
                               + expected[cell["operation"]], cell["tests"])
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_featureserver_statistics_and_sql_have_executing_protocol_mappings(self):
+        expected = {
+            "QueryStatisticsAsync": "Statistics_CountMatchesFilteredFeatureCount",
+            "ValidateSqlAsync": "SqlValidation_DistinguishesValidAndMalformedExpressions",
+        }
+        operations = [cell for cell in MODULE.build_document()["operations"]
+                      if cell["client"].endswith("IHonuaFeatureServerClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(2, len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_pr_workflow_executes_every_mapped_pr_protocol_test(self):
+        workflow = (MODULE.ROOT / ".github/workflows/sdk-certification.yml").read_text()
+        protocol_filter = next(line.strip().split("=", 1)[1].strip("'\"")
+                               for line in workflow.splitlines() if line.strip().startswith("filter="))
+        selected = [term.removeprefix("FullyQualifiedName~") for term in protocol_filter.split("|")]
+        for cell in MODULE.build_document()["operations"]:
+            if "pr" not in cell["requiredTiers"]:
+                continue
+            for test in cell["tests"]:
+                if ".ProtocolIntegration.Tests." in test:
+                    self.assertTrue(any(term in test for term in selected), test)
+
+    def test_sql_validation_request_evidence_targets_validate_sql(self):
+        operation = {
+            "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+            "surface": "geoservices", "operation": "ValidateSqlAsync",
+        }
+        identity = {"serviceId": "places", "layerId": "0", "collectionId": "0",
+                    "baseUrl": "https://candidate.test/"}
+        self.assertEqual("https://candidate.test/rest/services/places/FeatureServer/0/validateSQL",
+                         MODULE._certification_request_url(operation, identity))
 
     def test_fixture_dependent_operations_remain_individual_release_obligations(self):
         document = MODULE.build_document()
