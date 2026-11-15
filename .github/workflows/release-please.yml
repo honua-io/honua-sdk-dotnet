@@ -78,10 +78,14 @@ jobs:
             exit 0
           fi
           if [[ "${count}" != 1 ]] || ! jq -e --arg branch "${branch}" \
-            '.[0] | .headRefName == $branch and .baseRefName == "trunk" and .isCrossRepository == false and .isDraft == true and (.headRefOid | test("^[0-9a-f]{40}$"))' \
+            '.[0] | .headRefName == $branch and .baseRefName == "trunk" and .isCrossRepository == false and (.isDraft | type == "boolean") and (.headRefOid | test("^[0-9a-f]{40}$"))' \
             <<<"${prs}" >/dev/null; then
-            echo '::error::Release PR identity is missing, ambiguous, or not draft.' >&2
+            echo '::error::Release PR identity is missing, ambiguous, or invalid.' >&2
             exit 1
+          fi
+          if ! jq -e '.[0].isDraft == true' <<<"${prs}" >/dev/null; then
+            echo 'Release PR is ready for review; leaving its reviewed locks unchanged.'
+            exit 0
           fi
           echo "branch=${branch}" >>"${GITHUB_OUTPUT}"
           echo "sha=$(jq -r '.[0].headRefOid' <<<"${prs}")" >>"${GITHUB_OUTPUT}"
