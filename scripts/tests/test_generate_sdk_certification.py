@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import tempfile
 import unittest
 from argparse import Namespace
@@ -262,6 +263,19 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(observed["evidence_receipt"])
             self.assertIn("/issues/473", observed["skip_reason"])
 
+    def test_pr_workflow_selects_every_required_certification_test(self):
+        workflow = SCRIPT.parents[1] / ".github/workflows/sdk-certification.yml"
+        filters = re.findall(r"^\s*(?:conformance_)?filter='([^']+)'", workflow.read_text(), re.MULTILINE)
+        selectors = [term.removeprefix("FullyQualifiedName~")
+                     for expression in filters[:2] for term in expression.split("|")
+                     if term.startswith("FullyQualifiedName~")]
+        required = {test for operation in MODULE.build_document()["operations"]
+                    if operation["status"] == "exercised" and "pr" in operation["requiredTiers"]
+                    for test in operation["tests"]}
+        self.assertTrue(required)
+        missing = sorted(test for test in required if not any(selector in test for selector in selectors))
+        self.assertEqual([], missing, "PR certification requires results for every mapped test")
+
     def test_current_ledger_catalogs_every_operation_and_owns_every_gap(self):
         document = MODULE.build_document()
         self.assertGreater(document["summary"]["total"], 0)
@@ -309,6 +323,27 @@ class SdkCertificationTests(unittest.TestCase):
             with self.subTest(operation=cell["id"]):
                 self.assertEqual("exercised", cell["status"])
                 self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_featureserver_reads_and_paging_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetFeatureAsync": "SingleFeature_MatchesRequestedObjectId",
+            "QueryExtentAsync": "Extent_ContainsReturnedFeatureGeometry",
+            "QueryRawAsync": "RawQuery_ReturnsBoundedJsonWithoutGeometry",
+            "QueryPagesAsync": "OffsetPages_AdvanceWithoutRepeatingFeatures",
+            "QueryAllFeaturesByObjectIdBatchesAsync": "ObjectIdBatches_ReturnExactlyRequestedFeatures",
+        }
+        operations = [cell for cell in document["operations"]
+                      if cell["client"].endswith(".IHonuaFeatureServerClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests."
                               + expected[cell["operation"]], cell["tests"])
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
