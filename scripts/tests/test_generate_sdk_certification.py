@@ -311,6 +311,18 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
 
+    def test_pr_workflow_executes_every_mapped_pr_protocol_test(self):
+        workflow = (MODULE.ROOT / ".github/workflows/sdk-certification.yml").read_text()
+        protocol_filter = next(line.strip().split("=", 1)[1].strip("'\"")
+                               for line in workflow.splitlines() if line.strip().startswith("filter="))
+        selected = [term.removeprefix("FullyQualifiedName~") for term in protocol_filter.split("|")]
+        for cell in MODULE.build_document()["operations"]:
+            if "pr" not in cell["requiredTiers"]:
+                continue
+            for test in cell["tests"]:
+                if ".ProtocolIntegration.Tests." in test:
+                    self.assertTrue(any(term in test for term in selected), test)
+
     def test_sql_validation_request_evidence_targets_validate_sql(self):
         operation = {
             "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
