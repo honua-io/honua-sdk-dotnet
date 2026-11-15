@@ -131,6 +131,15 @@ def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str
         raise ValueError(f"no certification protocol context for surface {surface!r}") from error
 
 
+# The discovery tests request the built-in canonical process explicitly.
+_PROCESS_METADATA_PATHS = {
+    "GetLandingPageAsync": "/ogc/processes",
+    "GetConformanceAsync": "/ogc/processes/conformance",
+    "ListProcessesAsync": "/ogc/processes/processes",
+    "GetProcessAsync": "/ogc/processes/processes/honua-geoprocessing",
+}
+
+
 def _certification_request_url(
     operation: dict[str, Any], identity: dict[str, Any]
 ) -> str | None:
@@ -173,13 +182,7 @@ def _certification_request_url(
         elif method != "ListScenesAsync":
             return None
     elif client.endswith((".IHonuaProcessesClient", ".HonuaProcessesClient")):
-        # The discovery tests request the built-in canonical process explicitly.
-        path = {
-            "GetLandingPageAsync": "/ogc/processes",
-            "GetConformanceAsync": "/ogc/processes/conformance",
-            "ListProcessesAsync": "/ogc/processes/processes",
-            "GetProcessAsync": "/ogc/processes/processes/honua-geoprocessing",
-        }.get(method)
+        path = _PROCESS_METADATA_PATHS.get(method)
         if path is None:
             return None
     elif operation["surface"] == "abstractions":
