@@ -6,8 +6,8 @@
   "complete": false,
   "summary": {
     "total": 340,
-    "exercised": 54,
-    "gap": 268,
+    "exercised": 58,
+    "gap": 264,
     "non-addressable": 18
   },
   "releaseProfile": {
@@ -8464,7 +8464,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "GetConformanceAsync",
       "signature": "GetConformanceAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8472,19 +8472,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.Conformance_DeclaresProcessesCore"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.Conformance_DeclaresProcessesCore"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetJobAsync(string,CancellationToken)",
@@ -8548,7 +8547,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "GetLandingPageAsync",
       "signature": "GetLandingPageAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8556,19 +8555,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.LandingPage_LinksToDiscoveryResources"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.LandingPage_LinksToDiscoveryResources"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetProcessAsync(string,CancellationToken)",
@@ -8576,7 +8574,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "GetProcessAsync",
       "signature": "GetProcessAsync(string,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8584,19 +8582,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.ListJobsAsync(int?,CancellationToken)",
@@ -8632,7 +8629,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "ListProcessesAsync",
       "signature": "ListProcessesAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8640,19 +8637,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.SubmitJobAsync(string,HonuaProcessExecuteRequest,CancellationToken)",
