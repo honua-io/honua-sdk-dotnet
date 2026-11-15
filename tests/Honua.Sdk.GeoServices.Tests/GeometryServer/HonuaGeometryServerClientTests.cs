@@ -222,8 +222,49 @@ public sealed class HonuaGeometryServerClientTests
         });
 
         Assert.Equal(
-            "http://localhost:5000/rest/services/Utilities%2FGeometry/GeometryServer/project",
+            "http://localhost:5000/rest/services/Utilities/Geometry/GeometryServer/project",
             uri?.ToString());
+    }
+
+    [Theory]
+    [InlineData(null, "/rest/services/Utilities/Geometry/GeometryServer/project")]
+    [InlineData("Custom Folder/Geometry", "/rest/services/Custom%20Folder/Geometry/GeometryServer/project")]
+    public async Task ProjectAsync_UsesHonuaDefaultOrEscapesOverrideSegments(string? serviceId, string expectedPath)
+    {
+        Uri? uri = null;
+        var client = CreateClient((request, _) =>
+        {
+            uri = request.RequestUri;
+            return Task.FromResult(JsonResponse("""{ "geometries": [] }"""));
+        }, new HonuaGeoServicesClientOptions { BaseAddress = new Uri("http://localhost:5000") });
+
+        await client.ProjectAsync(new ProjectGeometriesRequest
+        {
+            ServiceId = serviceId,
+            GeometryType = "esriGeometryPoint",
+            InSpatialReference = 4326,
+            OutSpatialReference = 3857,
+            Geometries = [Point(0, 0)],
+        });
+
+        Assert.Equal(expectedPath, uri?.AbsolutePath);
+    }
+
+    [Theory]
+    [InlineData("../Geometry")]
+    [InlineData("Utilities/./Geometry")]
+    [InlineData("Utilities//Geometry")]
+    public async Task ProjectAsync_RejectsInvalidServiceSegments(string serviceId)
+    {
+        var client = CreateClient((_, _) => throw new InvalidOperationException("No request expected."));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.ProjectAsync(new ProjectGeometriesRequest
+        {
+            ServiceId = serviceId,
+            GeometryType = "esriGeometryPoint",
+            InSpatialReference = 4326,
+            OutSpatialReference = 3857,
+            Geometries = [Point(0, 0)],
+        }));
     }
 
     private static JsonElement Point(double x, double y)
