@@ -77,6 +77,7 @@ SDK will not silently treat degrees as metres.
 
 ```csharp
 using Honua.Sdk.Geometry;
+using NetTopologySuite;
 using NetTopologySuite.Geometries;
 
 // Build a fence in Web Mercator (SRID 3857) so buffer/proximity distances
@@ -102,7 +103,7 @@ var state = new HonuaGeofenceEvaluationState();
 
 var position = new HonuaGeofencePosition
 {
-    Location = factory.CreatePoint(new Coordinate(11, 5)),
+    Location = factory.CreatePoint(new Coordinate(13, 5)),
     TrackId = "truck-1",
     Timestamp = DateTimeOffset.UtcNow,
 };
@@ -121,6 +122,7 @@ geometries amortise the cost of repeated `Covers` calls.
 
 ```csharp
 using Honua.Sdk.Geometry;
+using NetTopologySuite;
 using NetTopologySuite.Geometries;
 
 var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

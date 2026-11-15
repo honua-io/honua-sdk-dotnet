@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Honua.Sdk.GeoServices.FeatureServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -178,7 +179,16 @@ public sealed class HonuaGeometryServerClient
             throw new InvalidOperationException("Honua GeoServices GeometryServer service id must be configured.");
         }
 
-        var path = $"/rest/services/{Uri.EscapeDataString(resolved)}/GeometryServer/{operation}";
+        var segments = resolved.Split('/');
+        if (!HonuaFeatureServerClient.AreValidServiceIdSegments(segments))
+        {
+            throw new ArgumentException(
+                "A service id must be one or more non-empty folder/name segments without '.' or '..'.",
+                nameof(serviceId));
+        }
+
+        var escapedServiceId = string.Join('/', segments.Select(Uri.EscapeDataString));
+        var path = $"/rest/services/{escapedServiceId}/GeometryServer/{operation}";
         return GeoServicesHttp.PostFormAsync(_http, path, form, cancellationToken);
     }
 

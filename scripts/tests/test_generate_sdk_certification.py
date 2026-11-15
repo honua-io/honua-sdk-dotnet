@@ -308,6 +308,25 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
 
+    def test_geometry_operations_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "ProjectAsync": "Project_TransformsPointToWebMercator",
+            "BufferAsync": "Buffer_ReturnsPolygonAroundPoint",
+            "LengthsAsync": "Lengths_ReturnsPlanarDistance",
+            "AreasAndLengthsAsync": "AreasAndLengths_ReturnsPlanarSquareMeasurements",
+        }
+        operations = [cell for cell in document["operations"]
+                      if ".GeometryServer." in cell["client"]]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
     def test_featureserver_reads_and_paging_have_executing_protocol_mappings(self):
         document = MODULE.build_document()
         expected = {

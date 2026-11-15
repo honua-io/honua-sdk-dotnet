@@ -6,8 +6,8 @@
   "complete": false,
   "summary": {
     "total": 340,
-    "exercised": 50,
-    "gap": 272,
+    "exercised": 54,
+    "gap": 268,
     "non-addressable": 18
   },
   "releaseProfile": {
@@ -6784,7 +6784,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "AreasAndLengthsAsync",
       "signature": "AreasAndLengthsAsync(AreasAndLengthsRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6792,19 +6792,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.AreasAndLengths_ReturnsPlanarSquareMeasurements"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.AreasAndLengths_ReturnsPlanarSquareMeasurements"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.BufferAsync(BufferGeometriesRequest,CancellationToken)",
@@ -6812,7 +6811,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "BufferAsync",
       "signature": "BufferAsync(BufferGeometriesRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6820,19 +6819,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Buffer_ReturnsPolygonAroundPoint"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Buffer_ReturnsPolygonAroundPoint"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.LengthsAsync(LengthsRequest,CancellationToken)",
@@ -6840,7 +6838,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "LengthsAsync",
       "signature": "LengthsAsync(LengthsRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6848,19 +6846,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Lengths_ReturnsPlanarDistance"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Lengths_ReturnsPlanarDistance"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.ProjectAsync(ProjectGeometriesRequest,CancellationToken)",
@@ -6868,7 +6865,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "ProjectAsync",
       "signature": "ProjectAsync(ProjectGeometriesRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6876,19 +6873,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Project_TransformsPointToWebMercator"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Project_TransformsPointToWebMercator"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ComputeStatisticsHistogramsAsync(string,IEnumerable<(stringKey,string?Value)>,CancellationToken)",
