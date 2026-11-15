@@ -36,16 +36,16 @@ that consumes SDK data contracts.
 
 ## Cross-Repo Harmonization
 
-Local sibling repositories already cover adjacent product surfaces:
+Sibling repositories already cover adjacent product surfaces:
 
-- `/home/makani/honua-mobile` currently contains both mobile runtime work and
+- The `honua-io/honua-mobile` repository currently contains both mobile runtime work and
   reusable SDK code: transport clients, field collection rules, offline
   GeoPackage sync, MAUI integration, background sync, routing, scene metadata,
   and an `@honua/embed` web component surface. Reusable service clients and
   contracts should graduate into this SDK; mobile should consume them.
-- `/home/makani/honua-mobile-sdk` appears to be an older MAUI/native-map SDK
+- A legacy `honua-mobile-sdk` checkout appears to be an older MAUI/native-map SDK
   line with `Honua.Mobile.Core`, `Honua.Mobile`, and a field collection example.
-- `/home/makani/honua-server-admin` is the Blazor WebAssembly operator UI for
+- The archived `honua-server-admin` repository is the Blazor WebAssembly operator UI for
   Honua Server. It owns dashboards, connections, publishing, service settings,
   deploy control, observability, identity, license, spatial SQL, annotations,
   print/export, and other operator workspaces. It also contains in-repo

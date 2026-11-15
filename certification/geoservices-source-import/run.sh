@@ -184,7 +184,8 @@ consumer="$here/consumer"
 nuget_config="$consumer/NuGet.config"
 if [ -n "${LOCAL_PACKAGE_DIR:-}" ]; then
   log "restore Honua.Sdk.GeoServices $SDK_PACKAGE_VERSION from local packages $LOCAL_PACKAGE_DIR (NOT published bytes)"
-  package_source="local:$LOCAL_PACKAGE_DIR"
+  # Record only the directory name: receipts are committed to a public repository.
+  package_source="local:$(basename "$LOCAL_PACKAGE_DIR")"
   published_hash="$(openssl dgst -sha512 -binary "$LOCAL_PACKAGE_DIR/Honua.Sdk.GeoServices.$SDK_PACKAGE_VERSION.nupkg" | base64 -w0)"
   nuget_config="$WORK_DIR/NuGet.local.config"
   cat > "$nuget_config" <<EOF
