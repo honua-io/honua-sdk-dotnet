@@ -2,6 +2,22 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [3.0.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v3.0.0...dotnet-sdk-v3.0.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **docs:** report published .NET SDK availability ([#536](https://github.com/honua-io/honua-sdk-dotnet/issues/536)) ([6630054](https://github.com/honua-io/honua-sdk-dotnet/commit/6630054f356b14afbfabb5ec59672610d02ee03c))
+* **geoservices:** route and certify geometry operations ([#473](https://github.com/honua-io/honua-sdk-dotnet/issues/473)) ([#541](https://github.com/honua-io/honua-sdk-dotnet/issues/541)) ([8c9abc1](https://github.com/honua-io/honua-sdk-dotnet/commit/8c9abc18e80b71065f7ec66472b3df46b5a04406))
+
+
+### Documentation
+
+* align authentication retry guidance with transport policies ([#539](https://github.com/honua-io/honua-sdk-dotnet/issues/539)) ([ac4cd6f](https://github.com/honua-io/honua-sdk-dotnet/commit/ac4cd6fc085c57f74cc4bc5f7bc5b9b70792c59d))
+* correct standalone geofencing examples ([#542](https://github.com/honua-io/honua-sdk-dotnet/issues/542)) ([45487b2](https://github.com/honua-io/honua-sdk-dotnet/commit/45487b2218a598d73ba14c0113ba1b90c8a05e45))
+* repair browser support link in SDK sequencing guide ([#533](https://github.com/honua-io/honua-sdk-dotnet/issues/533)) ([25d3573](https://github.com/honua-io/honua-sdk-dotnet/commit/25d357388591569614a98b21612691afc10dd66f))
+* repair hosted API reference links ([#535](https://github.com/honua-io/honua-sdk-dotnet/issues/535)) ([b5df735](https://github.com/honua-io/honua-sdk-dotnet/commit/b5df735229c1a1cde365e6b6ff02ec74c60ee786))
+
 ## [3.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v2.2.0...dotnet-sdk-v3.0.0) (2026-11-14)
 
 

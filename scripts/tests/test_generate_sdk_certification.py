@@ -313,6 +313,27 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
 
+    def test_featureserver_reads_and_paging_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetFeatureAsync": "SingleFeature_MatchesRequestedObjectId",
+            "QueryExtentAsync": "Extent_ContainsReturnedFeatureGeometry",
+            "QueryRawAsync": "RawQuery_ReturnsBoundedJsonWithoutGeometry",
+            "QueryPagesAsync": "OffsetPages_AdvanceWithoutRepeatingFeatures",
+            "QueryAllFeaturesByObjectIdBatchesAsync": "ObjectIdBatches_ReturnExactlyRequestedFeatures",
+        }
+        operations = [cell for cell in document["operations"]
+                      if cell["client"].endswith(".IHonuaFeatureServerClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
     def test_featureserver_statistics_and_sql_have_executing_protocol_mappings(self):
         expected = {
             "QueryStatisticsAsync": "Statistics_CountMatchesFilteredFeatureCount",
