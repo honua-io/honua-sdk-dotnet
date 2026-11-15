@@ -313,6 +313,26 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertEqual("included", cell["releaseDenominator"])
                 self.assertIn("nightly", cell["requiredTiers"])
 
+    def test_process_metadata_has_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetLandingPageAsync": "LandingPage_LinksToDiscoveryResources",
+            "GetConformanceAsync": "Conformance_DeclaresProcessesCore",
+            "ListProcessesAsync": "ProcessCatalog_DescribesCanonicalPlanInput",
+            "GetProcessAsync": "ProcessCatalog_DescribesCanonicalPlanInput",
+        }
+        operations = [cell for cell in document["operations"]
+                      if cell["client"].endswith(".IHonuaProcessesClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertEqual(["nightly", "release"], cell["requiredTiers"])
+
     def test_featureserver_reads_and_paging_have_executing_protocol_mappings(self):
         document = MODULE.build_document()
         expected = {
@@ -776,6 +796,22 @@ class SdkCertificationTests(unittest.TestCase):
                     self.assertEqual(f"https://candidate.test/v1/spec/{action}",
                                      MODULE._certification_request_url(
                                          {"surface": surface, "client": client, "operation": method}, identity))
+            self.assertIsNone(MODULE._certification_request_url(
+                {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
+
+    def test_process_metadata_request_urls_match_exercised_endpoints(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "places", "layerId": "0", "collectionId": "0"}
+        for surface, client in [("processes", "Honua.Sdk.Processes.HonuaProcessesClient"),
+                                ("abstractions", "Honua.Sdk.Abstractions.Processes.IHonuaProcessesClient")]:
+            paths = {"GetLandingPageAsync": "/ogc/processes",
+                     "GetConformanceAsync": "/ogc/processes/conformance",
+                     "ListProcessesAsync": "/ogc/processes/processes",
+                     "GetProcessAsync": "/ogc/processes/processes/honua-geoprocessing"}
+            for method, path in paths.items():
+                with self.subTest(surface=surface, method=method):
+                    self.assertEqual("https://candidate.test" + path, MODULE._certification_request_url(
+                        {"surface": surface, "client": client, "operation": method}, identity))
             self.assertIsNone(MODULE._certification_request_url(
                 {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
 
