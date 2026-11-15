@@ -8,6 +8,7 @@ using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.GeometryServer;
 using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.OgcFeatures;
@@ -52,6 +53,8 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
     public IHonuaFeatureServerClient FeatureServerClient => Services.GetRequiredService<IHonuaFeatureServerClient>();
 
     public HonuaFeatureServerClient SourceMetadataClient => (HonuaFeatureServerClient)FeatureServerClient;
+
+    public HonuaGeometryServerClient GeometryServerClient => Services.GetRequiredService<HonuaGeometryServerClient>();
 
     public IHonuaFeatureServerEditClient FeatureServerEditClient => Services.GetRequiredService<IHonuaFeatureServerEditClient>();
 
@@ -154,6 +157,12 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
             options.RoutingRouteLayerName = Options.RouteLayerName ?? "Route";
             options.RoutingServiceAreaLayerName = Options.ServiceAreaLayerName ?? "ServiceArea";
             options.RoutingClosestFacilityLayerName = Options.ClosestFacilityLayerName ?? "ClosestFacility";
+        });
+        services.AddHonuaGeometryServer(options =>
+        {
+            options.BaseAddress = baseUri;
+            options.ApiKey = Options.ApiKey;
+            options.BearerToken = Options.BearerToken;
         });
         services.AddHonuaRouting(options =>
         {
