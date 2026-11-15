@@ -172,6 +172,16 @@ def _certification_request_url(
                 path += "/resolve"
         elif method != "ListScenesAsync":
             return None
+    elif client.endswith((".IHonuaProcessesClient", ".HonuaProcessesClient")):
+        # The discovery tests request the built-in canonical process explicitly.
+        path = {
+            "GetLandingPageAsync": "/ogc/processes",
+            "GetConformanceAsync": "/ogc/processes/conformance",
+            "ListProcessesAsync": "/ogc/processes/processes",
+            "GetProcessAsync": "/ogc/processes/processes/honua-geoprocessing",
+        }.get(method)
+        if path is None:
+            return None
     elif operation["surface"] == "abstractions":
         # A facade can fan out to several protocols. Record one representative endpoint
         # that its proving integration test actually exercises; leave unproved families unset.

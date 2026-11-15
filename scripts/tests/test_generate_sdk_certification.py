@@ -774,6 +774,22 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(MODULE._certification_request_url(
                 {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
 
+    def test_process_metadata_request_urls_match_exercised_endpoints(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "places", "layerId": "0", "collectionId": "0"}
+        for surface, client in [("processes", "Honua.Sdk.Processes.HonuaProcessesClient"),
+                                ("abstractions", "Honua.Sdk.Abstractions.Processes.IHonuaProcessesClient")]:
+            paths = {"GetLandingPageAsync": "/ogc/processes",
+                     "GetConformanceAsync": "/ogc/processes/conformance",
+                     "ListProcessesAsync": "/ogc/processes/processes",
+                     "GetProcessAsync": "/ogc/processes/processes/honua-geoprocessing"}
+            for method, path in paths.items():
+                with self.subTest(surface=surface, method=method):
+                    self.assertEqual("https://candidate.test" + path, MODULE._certification_request_url(
+                        {"surface": surface, "client": client, "operation": method}, identity))
+            self.assertIsNone(MODULE._certification_request_url(
+                {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
+
     def test_ogc_tiles_request_urls_name_the_tiles_surface(self):
         identity = {
             "baseUrl": "https://candidate.test/",
