@@ -59,6 +59,28 @@ public sealed class XlsFormConverterTests
         Assert.Contains(result.Diagnostics, d => d.Sheet == "survey" && d.RowNumber == 7 && d.Column == column);
     }
 
+    [Theory]
+    [InlineData("relevant")]
+    [InlineData("constraint")]
+    [InlineData("calculation")]
+    public void Import_RejectsExpressionsWhoseEvaluationTreeExceedsRuntimeDepth(string column)
+    {
+        var result = XlsFormConverter.Import(Workbook(Row(2,
+            ("type", column == "calculation" ? "calculate" : "text"), ("name", "answer"),
+            (column, string.Join(" and ", Enumerable.Repeat("true", 70))))));
+        Assert.Null(result.Value);
+        Assert.Contains(result.Diagnostics, d => d.RowNumber == 2 && d.Column == column && d.Message.Contains("deep", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Import_ValidatesGeneratedIntegerConstraintLength()
+    {
+        var result = XlsFormConverter.Import(Workbook(Row(2, ("type", "integer"), ("name", "answer"),
+            ("constraint", "true" + new string(' ', 7996)))));
+        Assert.Null(result.Value);
+        Assert.Contains(result.Diagnostics, d => d.RowNumber == 2 && d.Column == "constraint" && d.Message.Contains("length", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void Export_RejectsProviderBindingsInsteadOfDroppingThem()
     {

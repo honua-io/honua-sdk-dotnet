@@ -27,9 +27,9 @@ internal static class XlsFormCells
     public static bool IsName(string value) => value.Length > 0 && (char.IsAsciiLetter(value[0]) || value[0] == '_')
         && value.All(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '-' or '.');
 
-    public static void CheckExpression(this List<XlsFormDiagnostic> errors, XlsFormRow row, string column)
+    public static void CheckExpression(this List<XlsFormDiagnostic> errors, XlsFormRow row, string column, string? generatedExpression = null)
     {
-        var expression = row.Optional(column);
+        var expression = generatedExpression ?? row.Optional(column);
         if (expression is null)
         {
             return;
@@ -53,7 +53,11 @@ internal static class XlsFormCells
             }
 
             var parser = new Parser(tokens, ValidateFunction);
-            parser.ParseExpression();
+            var tree = parser.ParseExpression();
+            if (tree.TreeDepth > ExpressionEvaluator.MaxDepth)
+            {
+                throw new ExpressionEvaluationException("Expression evaluation tree is too deep.");
+            }
             parser.ExpectEnd();
         }
         catch (ExpressionEvaluationException ex)

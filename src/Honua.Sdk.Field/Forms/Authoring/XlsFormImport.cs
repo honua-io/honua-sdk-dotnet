@@ -118,7 +118,7 @@ internal sealed class XlsFormImport(XlsFormWorkbook workbook)
         _errors.CheckColumns(("survey", row), "type", "name", "label", "hint", "required", "relevant", "constraint", "constraint_message", "calculation");
         CheckName(row);
         _errors.CheckExpression(row, "relevant");
-        _errors.CheckExpression(row, "constraint");
+        _errors.CheckExpression(row, "constraint", type == "integer" ? IntegerConstraint(row) : null);
         _errors.CheckExpression(row, "calculation");
         var fieldType = ResolveType(row);
         var required = ReadRequired(row);

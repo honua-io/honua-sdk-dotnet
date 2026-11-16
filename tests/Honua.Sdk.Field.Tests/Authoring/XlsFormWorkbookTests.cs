@@ -5,13 +5,17 @@ namespace Honua.Sdk.Field.Tests.Authoring;
 
 public sealed class XlsFormWorkbookTests
 {
-    [Fact]
-    public void WriteRead_PreservesUnicodeAndFormulaLikeTextWithoutExecutingIt()
+    [Theory]
+    [InlineData("=SUM(1,2) & <名前>")]
+    [InlineData("a\r\nb\rc")]
+    [InlineData("_x000D_ _x005F_ _x005F_x000D_")]
+    [InlineData("\u0001\t\n😀")]
+    public void WriteRead_PreservesLiteralText(string label)
     {
         var workbook = new XlsFormWorkbook
         {
             Survey = [new XlsFormRow { RowNumber = 2, Cells = new Dictionary<string, string>
-            { ["type"] = "text", ["name"] = "name", ["label"] = "=SUM(1,2) & <名前>" } }],
+            { ["type"] = "text", ["name"] = "name", ["label"] = label } }],
             Settings = [new XlsFormRow { RowNumber = 2, Cells = new Dictionary<string, string>
             { ["form_id"] = "test", ["form_title"] = "A form" } }]
         };
@@ -23,6 +27,19 @@ public sealed class XlsFormWorkbookTests
         var actual = Assert.IsType<XlsFormWorkbook>(result.Value);
         Assert.Empty(result.Diagnostics);
         Assert.Equal(workbook.Survey[0].Cells["label"], actual.Survey[0].Cells["label"]);
+    }
+
+    [Theory]
+    [InlineData("inlineStr", "<is><t>_x000D_</t></is>", "\r")]
+    [InlineData("inlineStr", "<is><t>_x005F_x000D_</t></is>", "_x000D_")]
+    [InlineData("inlineStr", "<is><r><t>_x005F_</t></r><r><t>x000D_</t></r></is>", "_x000D_")]
+    [InlineData("str", "<v>_x005F_x000D_</v>", "_x000D_")]
+    public void Read_DecodesExcelStringEscapesOnce(string type, string content, string expected)
+    {
+        using var stream = WorkbookWithSurvey($"<row r=\"2\"><c r=\"A2\" t=\"{type}\">{content}</c></row>");
+        var result = XlsFormWorkbookIO.Read(stream);
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal(expected, Assert.IsType<XlsFormWorkbook>(result.Value).Survey[0].Cells["type"]);
     }
 
     [Fact]

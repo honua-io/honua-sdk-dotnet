@@ -102,7 +102,7 @@ internal static class XlsFormWorkbookWriter
     private static XElement Row(int number, IEnumerable<string> values)
         => new(S + "row", new XAttribute("r", number), values.Select((value, column) =>
             new XElement(S + "c", new XAttribute("r", XlsFormXml.Reference(column, number)), new XAttribute("t", "inlineStr"),
-                new XElement(S + "is", new XElement(S + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), value)))));
+                new XElement(S + "is", new XElement(S + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), XlsFormString.Encode(value))))));
 
     private static void WriteManifest(ZipArchive zip)
     {

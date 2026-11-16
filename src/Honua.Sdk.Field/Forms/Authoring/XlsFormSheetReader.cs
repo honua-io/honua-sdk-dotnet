@@ -88,7 +88,8 @@ internal sealed class XlsFormSheetReader(string sheet, string[] strings, List<Xl
         {
             "inlineStr" => XlsFormXml.RichText(cell.Element(S + "is")),
             "s" => SharedString(value),
-            null or "n" or "b" or "str" => value,
+            "str" => XlsFormString.Decode(value),
+            null or "n" or "b" => value,
             _ => throw new InvalidDataException("Unsupported cell value type.")
         };
     }
