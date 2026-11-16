@@ -328,13 +328,15 @@ jobs:
           for project in "${projects[@]}"; do
             pkg_id="$(basename "$(dirname "${project}")")"
             dotnet CycloneDX "${project}" \
+              --include-project-references \
               --set-name "${pkg_id}" \
               --set-version "${PACKAGE_VERSION}" \
               --json \
               --output "./sboms/${pkg_id}" \
               --filename "${pkg_id}.cdx.json"
             python3 scripts/check-sbom.py "./sboms/${pkg_id}/${pkg_id}.cdx.json" \
-              --package-id "${pkg_id}" --version "${PACKAGE_VERSION}"
+              --package-id "${pkg_id}" --version "${PACKAGE_VERSION}" \
+              --package "./nupkgs/${pkg_id}.${PACKAGE_VERSION}.nupkg"
           done
 
       - name: Upload SBOM artifacts
@@ -1033,6 +1035,12 @@ jobs:
       - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Download immutable package inputs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ github.event.repository.name }}-publish-dotnet-sdk-${{ github.run_id }}-packages-input-unsigned
+          path: ./nupkgs
+
       - name: Download SBOM artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -1054,7 +1062,8 @@ jobs:
             exit 1
           fi
           python3 scripts/check-sbom.py "${found[0]}" \
-            --package-id "${PACKAGE_ID}" --version "${PACKAGE_VERSION}"
+            --package-id "${PACKAGE_ID}" --version "${PACKAGE_VERSION}" \
+            --package "./nupkgs/${PACKAGE_ID}.${PACKAGE_VERSION}.nupkg"
           echo "SBOM_PATH=${found[0]}" >> "${GITHUB_ENV}"
 
       - name: Attest the SBOM
