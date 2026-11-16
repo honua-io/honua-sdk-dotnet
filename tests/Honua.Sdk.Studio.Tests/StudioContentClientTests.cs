@@ -7,13 +7,13 @@ using System.Text.Json;
 using Honua.Sdk.Abstractions.Operations;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Extensions;
-using Honua.Sdk.Studio.Packages;
+using Honua.Sdk.Studio.Content;
 using Honua.Sdk.Studio.Tests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Honua.Sdk.Studio.Tests;
 
-public sealed class StudioPackageClientTests
+public sealed class StudioContentClientTests
 {
     private static readonly Guid DraftId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid ItemId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -40,7 +40,7 @@ public sealed class StudioPackageClientTests
             Assert.Equal("/api/v1/studio/published/approved-map", request.RequestUri!.PathAndQuery);
             return JsonResponse(PublishedEnvelope);
         });
-        IHonuaStudioPackageClient client = new HonuaStudioPackageClient(http);
+        IHonuaStudioContentClient client = new HonuaStudioContentClient(http);
         var artifact = await client.GetPublishedArtifactAsync("approved-map");
         Assert.Equal("/approved-map", artifact.Route);
         Assert.Equal("public", artifact.Visibility);
@@ -49,7 +49,7 @@ public sealed class StudioPackageClientTests
         Assert.Equal(VersionId, artifact.VersionId);
         Assert.Equal(2, artifact.VersionNumber);
         Assert.Equal("my-map", artifact.PackageKey);
-        Assert.Equal(StudioPackageFamily.Map, artifact.Family);
+        Assert.Equal(StudioContentKind.Map, artifact.Family);
         Assert.Equal("sha256:approved-content", artifact.ContentHash);
         Assert.Null(artifact.ContentHashInput);
         Assert.Null(artifact.VerifyContentHash());
@@ -72,7 +72,7 @@ public sealed class StudioPackageClientTests
             .Replace("sha256:approved-content", hash, StringComparison.Ordinal)
             .Replace("\"publishedAt\":", $"\"contentHashInput\":{JsonSerializer.Serialize(contentHashInput)},\"publishedAt\":", StringComparison.Ordinal);
         using var http = CreateHttpClient(_ => JsonResponse(response));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var artifact = await client.GetPublishedArtifactAsync("approved-map");
 
@@ -91,7 +91,7 @@ public sealed class StudioPackageClientTests
             Assert.Equal("/api/v1/studio/published/maps/approved%20map", request.RequestUri!.AbsolutePath);
             return JsonResponse(PublishedEnvelope.Replace("/approved-map", "/maps/approved map", StringComparison.Ordinal));
         });
-        var artifact = await new HonuaStudioPackageClient(http).GetPublishedArtifactAsync(route);
+        var artifact = await new HonuaStudioContentClient(http).GetPublishedArtifactAsync(route);
         Assert.Equal("/maps/approved map", artifact.Route);
     }
 
@@ -101,7 +101,7 @@ public sealed class StudioPackageClientTests
         using var handler = new CancellationHandler();
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
         using var cancellation = new CancellationTokenSource();
-        var task = new HonuaStudioPackageClient(http).GetPublishedArtifactAsync("approved-map", cancellation.Token);
+        var task = new HonuaStudioContentClient(http).GetPublishedArtifactAsync("approved-map", cancellation.Token);
         await handler.Started.Task;
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
@@ -117,7 +117,7 @@ public sealed class StudioPackageClientTests
     public async Task GetPublishedArtifactAsync_RejectsUrlsAndPathsBeforeSending(string route)
     {
         using var http = CreateHttpClient(_ => throw new InvalidOperationException("Unexpected request"));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<ArgumentException>(() => client.GetPublishedArtifactAsync(route));
     }
 
@@ -129,7 +129,7 @@ public sealed class StudioPackageClientTests
     public async Task GetPublishedArtifactAsync_PropagatesHttpFailure(HttpStatusCode status)
     {
         using var http = CreateHttpClient(_ => JsonResponse("{}", status));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetPublishedArtifactAsync("approved-map"));
         Assert.Equal(status, error.StatusCode);
     }
@@ -142,7 +142,7 @@ public sealed class StudioPackageClientTests
     public async Task GetPublishedArtifactAsync_RejectsMalformedPublication(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetPublishedArtifactAsync("approved-map"));
     }
 
@@ -158,12 +158,12 @@ public sealed class StudioPackageClientTests
     public async Task GetPublishedArtifactAsync_RejectsInvalidIdentity(string original, string replacement)
     {
         using var http = CreateHttpClient(_ => JsonResponse(PublishedEnvelope.Replace(original, replacement, StringComparison.Ordinal)));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetPublishedArtifactAsync("approved-map"));
     }
 
     [Fact]
-    public async Task GetPackageFamiliesAsync_UnwrapsEnvelopeData()
+    public async Task GetContentKindsAsync_UnwrapsEnvelopeData()
     {
         const string json = """
             {
@@ -194,16 +194,16 @@ public sealed class StudioPackageClientTests
             captured = request;
             return JsonResponse(json);
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
-        var capabilities = await client.GetPackageFamiliesAsync();
+        var capabilities = await client.GetContentKindsAsync();
 
         Assert.Equal("/api/v1/studio/package-families", captured?.RequestUri?.PathAndQuery);
-        Assert.Equal(StudioPackagePersistenceMode.Durable, capabilities.PersistenceMode);
+        Assert.Equal(StudioContentPersistenceMode.Durable, capabilities.PersistenceMode);
         var family = Assert.Single(capabilities.Families);
-        Assert.Equal(StudioPackageFamily.Map, family.Family);
-        Assert.Equal(StudioPackageSupportLevel.Supported, family.SupportLevel);
-        Assert.Contains(StudioPackageOperation.PreviewPlan, family.SupportedOperations);
+        Assert.Equal(StudioContentKind.Map, family.Family);
+        Assert.Equal(StudioContentSupportLevel.Supported, family.SupportLevel);
+        Assert.Contains(StudioContentOperation.PreviewPlan, family.SupportedOperations);
     }
 
     [Fact]
@@ -215,14 +215,14 @@ public sealed class StudioPackageClientTests
             sentBody = await request.Content!.ReadAsStringAsync();
             return await JsonResponse(DraftEnvelope());
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
-        var request = new CreateStudioPackageDraftRequest
+        var request = new CreateStudioContentDraftRequest
         {
             PackageKey = "my-map",
-            Envelope = new StudioPackageEnvelope
+            Envelope = new StudioContentEnvelope
             {
-                Family = StudioPackageFamily.Map,
+                Family = StudioContentKind.Map,
                 SchemaVersion = "honua_map_package.v1",
             },
         };
@@ -237,7 +237,7 @@ public sealed class StudioPackageClientTests
         Assert.Contains("\"provenance\":[]", sentBody, StringComparison.Ordinal);
         Assert.Contains("\"family\":\"map\"", sentBody, StringComparison.Ordinal);
         Assert.Equal(DraftId, draft.DraftId);
-        Assert.Equal(StudioPackageFamily.Map, draft.Family);
+        Assert.Equal(StudioContentKind.Map, draft.Family);
     }
 
     [Fact]
@@ -261,14 +261,14 @@ public sealed class StudioPackageClientTests
             captured = request;
             return JsonResponse(json);
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var summary = await client.ValidateDraftAsync(DraftId);
 
         Assert.Equal(HttpMethod.Post, captured?.Method);
         Assert.Equal($"/api/v1/studio/package-drafts/{DraftId}/validate", captured?.RequestUri?.PathAndQuery);
-        Assert.Equal(StudioPackageValidationStatus.Warning, summary.Status);
-        Assert.Equal(StudioPackageDiagnosticSeverity.Warning, summary.Diagnostics.Single().Severity);
+        Assert.Equal(StudioContentValidationStatus.Warning, summary.Status);
+        Assert.Equal(StudioContentDiagnosticSeverity.Warning, summary.Diagnostics.Single().Severity);
     }
 
     [Fact]
@@ -289,13 +289,13 @@ public sealed class StudioPackageClientTests
             }
             """;
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var plan = await client.PreviewPlanAsync(DraftId);
 
         Assert.True(plan.Synchronous);
         Assert.Equal(2, plan.Steps.Count);
-        Assert.Equal(StudioPackageValidationStatus.Valid, plan.Validation.Status);
+        Assert.Equal(StudioContentValidationStatus.Valid, plan.Validation.Status);
     }
 
     [Fact]
@@ -321,7 +321,7 @@ public sealed class StudioPackageClientTests
             captured = request;
             return JsonResponse(json, HttpStatusCode.Created);
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var publication = await client.CreatePublishRequestAsync(
             ItemId,
@@ -342,7 +342,7 @@ public sealed class StudioPackageClientTests
         string wireStatus, StudioPublicationRequestStatus expectedStatus)
     {
         using var http = CreateHttpClient(_ => JsonResponse(PublicationEnvelope(wireStatus), HttpStatusCode.Created));
-        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+        var result = await new HonuaStudioContentClient(http).SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest());
 
         Assert.False(result.RequiresApproval);
@@ -370,7 +370,7 @@ public sealed class StudioPackageClientTests
                 : ApprovalEnvelope();
             return await JsonResponse(json, HttpStatusCode.Accepted);
         });
-        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+        var result = await new HonuaStudioContentClient(http).SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest { WarningAcknowledgement = "reviewed" });
 
         Assert.Equal($"/api/v1/studio/content-items/{ItemId}/versions/{VersionId}/publish-requests", path);
@@ -407,7 +407,7 @@ public sealed class StudioPackageClientTests
     {
         using var http = CreateHttpClient(_ => JsonResponse(
             ApprovalEnvelope().Replace(from, to, StringComparison.Ordinal), HttpStatusCode.Accepted));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var error = await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
@@ -424,7 +424,7 @@ public sealed class StudioPackageClientTests
             $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
             omitResources ? "\"unmodeled\":true" : "\"resourceIds\":{}", StringComparison.Ordinal);
         using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
-        var result = await new HonuaStudioPackageClient(http).SubmitPublishRequestAsync(
+        var result = await new HonuaStudioContentClient(http).SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest());
         Assert.True(result.RequiresApproval);
         Assert.Empty(result.Operation!.ResourceIds);
@@ -439,7 +439,7 @@ public sealed class StudioPackageClientTests
             $"\"resourceIds\":{{\"itemId\":\"{ItemId}\",\"versionId\":\"{VersionId}\"}}",
             $"\"resourceIds\":{resources}", StringComparison.Ordinal);
         using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Accepted));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
     }
@@ -451,7 +451,7 @@ public sealed class StudioPackageClientTests
     public async Task SubmitPublishRequestAsync_MissingApproval_ThrowsContractException(string json, HttpStatusCode status)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json, status));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
     }
@@ -469,7 +469,7 @@ public sealed class StudioPackageClientTests
         }
 
         using var http = CreateHttpClient(_ => JsonResponse(json, status));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
     }
@@ -482,7 +482,7 @@ public sealed class StudioPackageClientTests
         var json = PublicationEnvelope("accepted").Replace(
             "\"status\":\"accepted\"", $"\"status\":\"accepted\",{extraIdentity}", StringComparison.Ordinal);
         using var http = CreateHttpClient(_ => JsonResponse(json, HttpStatusCode.Created));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
     }
@@ -498,7 +498,7 @@ public sealed class StudioPackageClientTests
             calls++;
             return JsonResponse("{\"title\":\"Denied\",\"detail\":\"Authorization required\"}", status);
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.SubmitPublishRequestAsync(
             ItemId, VersionId, new CreateStudioPublicationRequest()));
         Assert.Equal(status, error.StatusCode);
@@ -512,7 +512,7 @@ public sealed class StudioPackageClientTests
     {
         using var content = new TrackingJsonContent(malformed ? "{}" : ApprovalEnvelope());
         using var http = CreateHttpClient(async _ => await ResponseWithContent(content));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         if (malformed)
         {
             await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.SubmitPublishRequestAsync(
@@ -533,7 +533,7 @@ public sealed class StudioPackageClientTests
         using var handler = new CancellationHandler();
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
         using var cancellation = new CancellationTokenSource();
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         var submission = client.SubmitPublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest(), cancellation.Token);
         await handler.Started.Task;
         cancellation.Cancel();
@@ -553,7 +553,7 @@ public sealed class StudioPackageClientTests
                 ? "{\"success\":true,\"data\":{\"total\":1,\"items\":[],\"nextCursor\":\"next+/=\"}}"
                 : PointerEnvelope());
         });
-        var pointers = await new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId);
+        var pointers = await new HonuaStudioContentClient(http).GetContentPointersAsync(ItemId);
 
         Assert.NotNull(pointers);
         Assert.Equal(VersionId, pointers.CurrentVersionId);
@@ -568,7 +568,7 @@ public sealed class StudioPackageClientTests
     public async Task GetContentPointersAsync_CompleteEmptyListing_ReturnsNull(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        Assert.Null(await new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId));
+        Assert.Null(await new HonuaStudioContentClient(http).GetContentPointersAsync(ItemId));
     }
 
     [Fact]
@@ -576,7 +576,7 @@ public sealed class StudioPackageClientTests
     {
         using var http = CreateHttpClient(_ => JsonResponse(PointerEnvelope().Replace(
             $"\"publishedVersionId\":\"{DraftId}\"", "\"publishedVersionId\":null", StringComparison.Ordinal)));
-        var pointers = await new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId);
+        var pointers = await new HonuaStudioContentClient(http).GetContentPointersAsync(ItemId);
         Assert.NotNull(pointers);
         Assert.Null(pointers.PublishedVersionId);
         Assert.Equal(VersionId, pointers.CurrentVersionId);
@@ -595,7 +595,7 @@ public sealed class StudioPackageClientTests
     public async Task GetContentPointersAsync_MalformedPage_DoesNotReportAbsence(string json)
     {
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentPointersAsync(ItemId));
     }
 
@@ -606,7 +606,7 @@ public sealed class StudioPackageClientTests
             {"success":true,"data":{"total":2,"items":[{"itemId":"{{ItemId}}"},{"itemId":"{{ItemId}}"}]} }
             """;
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentPointersAsync(ItemId));
     }
 
@@ -622,7 +622,7 @@ public sealed class StudioPackageClientTests
             var cursor = cycle ? "cycle" : calls.ToString(System.Globalization.CultureInfo.InvariantCulture);
             return JsonResponse("{\"success\":true,\"data\":{\"total\":0,\"items\":[],\"nextCursor\":\"" + cursor + "\"}}");
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.GetContentPointersAsync(ItemId));
         Assert.Equal(expectedRequests, calls);
     }
@@ -633,7 +633,7 @@ public sealed class StudioPackageClientTests
         using var handler = new CancellationHandler();
         using var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.example") };
         using var cancellation = new CancellationTokenSource();
-        var task = new HonuaStudioPackageClient(http).GetContentPointersAsync(ItemId, cancellation.Token);
+        var task = new HonuaStudioContentClient(http).GetContentPointersAsync(ItemId, cancellation.Token);
         await handler.Started.Task;
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
@@ -646,7 +646,7 @@ public sealed class StudioPackageClientTests
     public async Task GetContentPointersAsync_AuthorizationFailure_IsPreserved(HttpStatusCode status)
     {
         using var http = CreateHttpClient(_ => JsonResponse("{}", status));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
         var error = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.GetContentPointersAsync(ItemId));
         Assert.Equal(status, error.StatusCode);
     }
@@ -727,7 +727,7 @@ public sealed class StudioPackageClientTests
                 }
                 """, HttpStatusCode.Created);
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var rollback = await client.RollbackAsync(
             ItemId,
@@ -744,7 +744,7 @@ public sealed class StudioPackageClientTests
         using var http = CreateHttpClient(_ => JsonResponse(
             """{ "title": "Conflict", "status": 409, "detail": "Draft is locked." }""",
             HttpStatusCode.Conflict));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var ex = await Assert.ThrowsAsync<HonuaStudioApiException>(() => client.DeleteDraftAsync(DraftId));
 
@@ -756,7 +756,7 @@ public sealed class StudioPackageClientTests
     public async Task ListVersionsAsync_MissingDataPayload_ThrowsContractException()
     {
         using var http = CreateHttpClient(_ => JsonResponse("""{ "success": true, "timestamp": "2026-07-01T12:00:00Z" }"""));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var ex = await Assert.ThrowsAsync<HonuaStudioContractException>(() => client.ListVersionsAsync(ItemId));
 
@@ -775,7 +775,7 @@ public sealed class StudioPackageClientTests
 
         using var provider = services.BuildServiceProvider();
 
-        Assert.IsType<HonuaStudioPackageClient>(provider.GetRequiredService<IHonuaStudioPackageClient>());
+        Assert.IsType<HonuaStudioContentClient>(provider.GetRequiredService<IHonuaStudioContentClient>());
     }
 
     private static string DraftEnvelope() => """

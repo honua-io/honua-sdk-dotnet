@@ -38,8 +38,8 @@ public sealed record CapabilityManifest
     /// <summary>Environment (metadata snapshot) availability state.</summary>
     public CapabilityManifestEnvironment? Environment { get; init; }
 
-    /// <summary>Package schema versions and family support state.</summary>
-    public CapabilityManifestPackages? Packages { get; init; }
+    /// <summary>Studio content schema versions and kind support state.</summary>
+    public CapabilityManifestContent? Packages { get; init; }
 
     /// <summary>Advertised capability entries.</summary>
     public IReadOnlyList<CapabilityEntry> Capabilities { get; init; } = Array.Empty<CapabilityEntry>();
@@ -190,14 +190,14 @@ public sealed record CapabilityManifestEnvironment
     public DateTimeOffset? LoadedAt { get; init; }
 }
 
-/// <summary>Package schema versions and family support state for a capability manifest.</summary>
-public sealed record CapabilityManifestPackages
+/// <summary>Studio content schema versions and kind support state for a capability manifest.</summary>
+public sealed record CapabilityManifestContent
 {
-    /// <summary>Supported package schema versions.</summary>
+    /// <summary>Supported Studio content schema versions.</summary>
     public IReadOnlyList<string> SchemaVersions { get; init; } = Array.Empty<string>();
 
     /// <summary>Studio content kinds, including unsupported kinds.</summary>
-    public IReadOnlyList<CapabilityPackageFamily> Families { get; init; } = Array.Empty<CapabilityPackageFamily>();
+    public IReadOnlyList<CapabilityContentKind> Families { get; init; } = Array.Empty<CapabilityContentKind>();
 
     /// <summary>Families that can be persisted through the Studio lifecycle.</summary>
     public IReadOnlyList<string> StorageFamilies { get; init; } = Array.Empty<string>();
@@ -207,7 +207,7 @@ public sealed record CapabilityManifestPackages
 }
 
 /// <summary>One Studio content kind advertised by a capability manifest.</summary>
-public sealed record CapabilityPackageFamily
+public sealed record CapabilityContentKind
 {
     /// <summary>Family identifier, for example <c>map</c>.</summary>
     public string Id { get; init; } = string.Empty;
@@ -215,10 +215,10 @@ public sealed record CapabilityPackageFamily
     /// <summary>Family kind classifier.</summary>
     public string? Kind { get; init; }
 
-    /// <summary>Current schema version for the family.</summary>
+    /// <summary>Current schema version for the content kind.</summary>
     public string? SchemaVersion { get; init; }
 
-    /// <summary>Whether the family is supported in this deployment.</summary>
+    /// <summary>Whether the content kind is supported in this deployment.</summary>
     public bool Supported { get; init; }
 }
 

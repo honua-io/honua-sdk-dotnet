@@ -1,13 +1,9 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
-/// <summary>
-/// Generic success envelope returned by the Console Studio lifecycle endpoints.
-/// Mirrors the server <c>ApiResponse&lt;T&gt;</c> wrapper.
-/// </summary>
-/// <typeparam name="T">Type of the response data payload.</typeparam>
+/// <summary>Generic success envelope returned by the Console Studio lifecycle endpoints. Mirrors the server <c>ApiResponse&lt;T&gt;</c> wrapper.</summary>
 public sealed record StudioApiResponse<T>
     where T : class
 {

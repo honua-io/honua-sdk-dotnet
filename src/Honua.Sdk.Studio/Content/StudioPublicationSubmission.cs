@@ -3,7 +3,7 @@
 
 using Honua.Sdk.Abstractions.Operations;
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
 /// <summary>A completed publication request or an operation awaiting separate approval.</summary>
 public sealed class StudioPublicationSubmission
@@ -24,7 +24,6 @@ public sealed class StudioPublicationSubmission
     public bool RequiresApproval => Operation is not null;
 
     /// <summary>Creates an outcome from a persisted publication request.</summary>
-    /// <param name="publication">The server publication request.</param>
     public static StudioPublicationSubmission FromPublication(StudioPublicationRequest publication)
     {
         ArgumentNullException.ThrowIfNull(publication);
@@ -32,7 +31,6 @@ public sealed class StudioPublicationSubmission
     }
 
     /// <summary>Creates an outcome from an operation awaiting approval, without fabricating a publication.</summary>
-    /// <param name="operation">The server operation with stable invocation, correlation and proposal identities.</param>
     public static StudioPublicationSubmission AwaitingApproval(HonuaOperationHandle operation)
     {
         ArgumentNullException.ThrowIfNull(operation);

@@ -82,19 +82,19 @@
     {
       "path": "scripts/ci/vocabulary.v1.json",
       "rule": "map-envelope",
-      "line": "    \"Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri\": \"Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri\"",
+      "line": "    \"Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri\": \"Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri\",",
       "reason": "Repository vocabulary guard policy: names the retired terms and renamed symbols it enforces."
     },
     {
       "path": "scripts/tests/test_vocabulary.py",
       "rule": "map-envelope",
-      "line": "            \"Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetMapPackageAsync\": \"src/Honua.Sdk.Studio/PublicAPI.Unshipped.txt\",",
+      "line": "            \"Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetMapPackageAsync\": \"src/Honua.Sdk.Studio/PublicAPI.Unshipped.txt\",",
       "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
     },
     {
       "path": "scripts/tests/test_vocabulary.py",
       "rule": "map-envelope",
-      "line": "            [\"Honua.Sdk.Admin.Models.HostedLayerInfo\", \"Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetMapPackageAsync\"],",
+      "line": "            [\"Honua.Sdk.Admin.Models.HostedLayerInfo\", \"Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetMapPackageAsync\"],",
       "reason": "Vocabulary guard test fixture proving the retired phrase is detected."
     },
     {

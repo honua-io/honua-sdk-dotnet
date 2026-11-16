@@ -8,7 +8,7 @@ clients registered by a single `AddHonuaStudio` call:
 - `IHonuaCapabilityManifestClient` — fetch the server capability manifest
   (`GET /api/v1/capabilities/manifest`, schema `honua.capability_manifest.v1`) to
   gate authoring UI and tool exposure on what the connected server supports.
-- `IHonuaStudioPackageClient` — the Studio content lifecycle
+- `IHonuaStudioContentClient` — the Studio content lifecycle
   (`/api/v1/studio/*`): per-kind capabilities, Draft CRUD, validate, preview-plan,
   Version save, release request, reopen, and rollback across every in-scope
   Studio content kind (Query, Map, Analysis, Dashboard, Report, Form, App,
@@ -133,28 +133,36 @@ scope, server/environment info, transports, limits, and entitlement policy.
 
 ## Studio content lifecycle
 
-`IHonuaStudioPackageClient` covers the lifecycle shared by every Studio content
-kind; the kind discriminant travels on `StudioPackageEnvelope.Family` (wire
+The lifecycle types live in `Honua.Sdk.Studio.Content`. Update imports and use
+`IHonuaStudioContentClient`, `StudioContentKind`, and `GetContentKindsAsync`
+when migrating callers. The capability model uses `CapabilityManifestContent`
+and `CapabilityContentKind`; Console sharing uses `HonuaConsoleContentKind`.
+The server routes, schema identifiers, and JSON field names retain their existing values.
+
+`IHonuaStudioContentClient` covers the lifecycle shared by every Studio content
+kind; the kind discriminant travels on `StudioContentEnvelope.Family` (wire
 field `family`). The envelope's `Bindings`,
 `Dependencies`, and `Provenance` collections always serialize as arrays (the
 server rejects null for any of them).
 
 ```csharp
-var draft = await packages.CreateDraftAsync(new CreateStudioPackageDraftRequest
+using Honua.Sdk.Studio.Content;
+
+var draft = await content.CreateDraftAsync(new CreateStudioContentDraftRequest
 {
     PackageKey = "my-map",
-    Envelope = new StudioPackageEnvelope
+    Envelope = new StudioContentEnvelope
     {
-        Family = StudioPackageFamily.Map,
+        Family = StudioContentKind.Map,
         SchemaVersion = "honua_map_package.v1",
     },
 }, ct);
 
-var validation = await packages.ValidateDraftAsync(draft.DraftId, ct);
-var plan = await packages.PreviewPlanAsync(draft.DraftId, ct);
-var version = await packages.CreateContentVersionAsync(
+var validation = await content.ValidateDraftAsync(draft.DraftId, ct);
+var plan = await content.PreviewPlanAsync(draft.DraftId, ct);
+var version = await content.CreateContentVersionAsync(
     draft.DraftId, new SaveStudioContentVersionRequest { ChangeNote = "v1" }, ct);
-var submission = await packages.SubmitPublishRequestAsync(
+var submission = await content.SubmitPublishRequestAsync(
     version.ItemId, version.VersionId, new CreateStudioPublicationRequest(), ct);
 if (submission.RequiresApproval)
 {
@@ -198,7 +206,7 @@ root-relative published-route URL serving the Active version; it is `null` while
 pending, on a rejected request, and from servers that predate the field.
 
 ```csharp
-var saved = await packages.GetVersionAsync(itemId, versionId, ct);
+var saved = await content.GetVersionAsync(itemId, versionId, ct);
 if (saved.VerifyContentHash() == false)
 {
     throw new InvalidOperationException("Content hash does not match its canonical input.");
@@ -222,7 +230,7 @@ AI-specific result shapes and are tracked separately.
 Read the governed route to inspect the publication that viewers receive:
 
 ```csharp
-var artifact = await packages.GetPublishedArtifactAsync("approved-map", cancellationToken);
+var artifact = await content.GetPublishedArtifactAsync("approved-map", cancellationToken);
 Console.WriteLine($"{artifact.PublicationId}: {artifact.VersionId} {artifact.ContentHash}");
 var envelope = artifact.Envelope;
 ```

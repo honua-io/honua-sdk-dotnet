@@ -8,21 +8,16 @@ using System.Text.Json.Serialization.Metadata;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Internal;
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
-/// <summary>
-/// HTTP client for the Console Studio package lifecycle endpoints.
-/// </summary>
-public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
+/// <summary>HTTP client for the Console Studio content lifecycle endpoints.</summary>
+public sealed class HonuaStudioContentClient : IHonuaStudioContentClient
 {
     private const string BasePath = "/api/v1/studio";
     private readonly HttpClient _http;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HonuaStudioPackageClient"/> class.
-    /// </summary>
-    /// <param name="httpClient">HTTP client configured with base address and auth handlers.</param>
-    public HonuaStudioPackageClient(HttpClient httpClient)
+    /// <summary>Initializes a new instance of the <see cref="HonuaStudioContentClient"/> class.</summary>
+    public HonuaStudioContentClient(HttpClient httpClient)
     {
         _http = httpClient;
     }
@@ -46,7 +41,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         using var response = await _http.GetAsync(
             new Uri(path, UriKind.Relative), cancellationToken).ConfigureAwait(false);
         var envelope = await StudioHttpResponseReader.ReadAsync(
-            response, StudioPackageJsonContext.Default.StudioApiResponseStudioPublishedArtifact,
+            response, StudioContentJsonContext.Default.StudioApiResponseStudioPublishedArtifact,
             "GetPublishedArtifact", cancellationToken).ConfigureAwait(false);
         if (!envelope.Success || envelope.Data is null)
         {
@@ -68,52 +63,52 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
     }
 
     /// <inheritdoc />
-    public Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default)
+    public Task<StudioContentKindCapabilities> GetContentKindsAsync(CancellationToken cancellationToken = default)
         => SendAsync(
             HttpMethod.Get,
             $"{BasePath}/package-families",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPackageFamilyCapabilities,
-            "GetPackageFamilies",
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentKindCapabilities,
+            "GetContentKinds",
             cancellationToken);
 
     /// <inheritdoc />
-    public Task<StudioPackageDraft> CreateDraftAsync(
-        CreateStudioPackageDraftRequest request,
+    public Task<StudioContentDraft> CreateDraftAsync(
+        CreateStudioContentDraftRequest request,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         return SendAsync(
             HttpMethod.Post,
             $"{BasePath}/package-drafts",
-            JsonBody(request, StudioPackageJsonContext.Default.CreateStudioPackageDraftRequest),
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPackageDraft,
+            JsonBody(request, StudioContentJsonContext.Default.CreateStudioContentDraftRequest),
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentDraft,
             "CreateDraft",
             cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<StudioPackageDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default)
+    public Task<StudioContentDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default)
         => SendAsync(
             HttpMethod.Get,
             $"{BasePath}/package-drafts/{draftId}",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPackageDraft,
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentDraft,
             "GetDraft",
             cancellationToken);
 
     /// <inheritdoc />
-    public Task<StudioPackageDraft> UpdateDraftAsync(
+    public Task<StudioContentDraft> UpdateDraftAsync(
         Guid draftId,
-        UpdateStudioPackageDraftRequest request,
+        UpdateStudioContentDraftRequest request,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         return SendAsync(
             HttpMethod.Put,
             $"{BasePath}/package-drafts/{draftId}",
-            JsonBody(request, StudioPackageJsonContext.Default.UpdateStudioPackageDraftRequest),
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPackageDraft,
+            JsonBody(request, StudioContentJsonContext.Default.UpdateStudioContentDraftRequest),
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentDraft,
             "UpdateDraft",
             cancellationToken);
     }
@@ -138,7 +133,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             HttpMethod.Post,
             $"{BasePath}/package-drafts/{draftId}/validate",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioValidationSummary,
+            StudioContentJsonContext.Default.StudioApiResponseStudioValidationSummary,
             "ValidateDraft",
             cancellationToken);
 
@@ -148,7 +143,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             HttpMethod.Post,
             $"{BasePath}/package-drafts/{draftId}/preview-plan",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPreviewPlan,
+            StudioContentJsonContext.Default.StudioApiResponseStudioPreviewPlan,
             "PreviewPlan",
             cancellationToken);
 
@@ -162,8 +157,8 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         return SendAsync(
             HttpMethod.Post,
             $"{BasePath}/package-drafts/{draftId}/content-versions",
-            JsonBody(request, StudioPackageJsonContext.Default.SaveStudioContentVersionRequest),
-            StudioPackageJsonContext.Default.StudioApiResponseStudioContentVersion,
+            JsonBody(request, StudioContentJsonContext.Default.SaveStudioContentVersionRequest),
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentVersion,
             "CreateContentVersion",
             cancellationToken);
     }
@@ -174,7 +169,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             HttpMethod.Get,
             $"{BasePath}/content-items/{itemId}/versions",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioContentVersionList,
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentVersionList,
             "ListVersions",
             cancellationToken);
 
@@ -187,7 +182,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             HttpMethod.Get,
             $"{BasePath}/content-items/{itemId}/versions/{versionId}",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioContentVersion,
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentVersion,
             "GetVersion",
             cancellationToken);
 
@@ -201,8 +196,8 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         return SendAsync(
             HttpMethod.Post,
             $"{BasePath}/content-items/{itemId}/version-comparisons",
-            JsonBody(request, StudioPackageJsonContext.Default.CompareStudioContentVersionsRequest),
-            StudioPackageJsonContext.Default.StudioApiResponseStudioVersionComparison,
+            JsonBody(request, StudioContentJsonContext.Default.CompareStudioContentVersionsRequest),
+            StudioContentJsonContext.Default.StudioApiResponseStudioVersionComparison,
             "CompareVersions",
             cancellationToken);
     }
@@ -218,14 +213,14 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         return SendAsync(
             HttpMethod.Post,
             $"{BasePath}/content-items/{itemId}/versions/{versionId}/publish-requests",
-            JsonBody(request, StudioPackageJsonContext.Default.CreateStudioPublicationRequest),
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPublicationRequest,
+            JsonBody(request, StudioContentJsonContext.Default.CreateStudioPublicationRequest),
+            StudioContentJsonContext.Default.StudioApiResponseStudioPublicationRequest,
             "CreatePublishRequest",
             cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<StudioContentItemPointers?> GetContentPointersAsync(
+    public async Task<StudioContentPointers?> GetContentPointersAsync(
         Guid itemId,
         CancellationToken cancellationToken = default)
     {
@@ -251,7 +246,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             using var message = new HttpRequestMessage(HttpMethod.Get, path);
             using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
             var envelope = await StudioHttpResponseReader.ReadAsync(response,
-                StudioPackageJsonContext.Default.StudioContentPointerEnvelope, operation, cancellationToken).ConfigureAwait(false);
+                StudioContentJsonContext.Default.StudioContentPointerEnvelope, operation, cancellationToken).ConfigureAwait(false);
             if (response.StatusCode != HttpStatusCode.OK || !envelope.Success || envelope.Data?.Items is not { } items
                 || envelope.Data.Total is not { } total || total < 0 || items.Count > total
                 || items.Any(item => item is null || item.ItemId == Guid.Empty
@@ -307,11 +302,11 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         using var message = new HttpRequestMessage(HttpMethod.Post,
             $"{BasePath}/content-items/{itemId}/versions/{versionId}/publish-requests")
         {
-            Content = JsonBody(request, StudioPackageJsonContext.Default.CreateStudioPublicationRequest)
+            Content = JsonBody(request, StudioContentJsonContext.Default.CreateStudioPublicationRequest)
         };
         using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
         var envelope = await StudioHttpResponseReader.ReadAsync(response,
-            StudioPackageJsonContext.Default.StudioPublicationSubmissionEnvelope, operation, cancellationToken).ConfigureAwait(false);
+            StudioContentJsonContext.Default.StudioPublicationSubmissionEnvelope, operation, cancellationToken).ConfigureAwait(false);
         var data = envelope.Data;
         if (!envelope.Success || data.ValueKind != JsonValueKind.Object)
         {
@@ -333,7 +328,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
                     throw new HonuaStudioContractException("Approval response resource identities must be an object when supplied.", operation);
                 }
 
-                var pending = data.Deserialize(StudioPackageJsonContext.Default.HonuaOperationHandle)
+                var pending = data.Deserialize(StudioContentJsonContext.Default.HonuaOperationHandle)
                     ?? throw new HonuaStudioContractException("Approval response has no operation.", operation);
                 if (!string.Equals(pending.OperationId, "studio.content.create-publication-request", StringComparison.Ordinal)
                     || !MatchesResource(pending.ResourceIds, "itemId", itemId)
@@ -352,7 +347,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
                 throw new HonuaStudioContractException("Publication submission returned an unexpected status or ambiguous payload.", operation);
             }
 
-            var publication = data.Deserialize(StudioPackageJsonContext.Default.StudioPublicationRequest)
+            var publication = data.Deserialize(StudioContentJsonContext.Default.StudioPublicationRequest)
                 ?? throw new HonuaStudioContractException("Publication response has no publication request.", operation);
             if (publication.RequestId == Guid.Empty || publication.ItemId != itemId || publication.VersionId != versionId
                 || !Enum.IsDefined(publication.Status))
@@ -379,7 +374,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             || (Guid.TryParse(value, out var actual) && actual == expected);
 
     /// <inheritdoc />
-    public Task<StudioPackageDraft> ReopenVersionAsync(
+    public Task<StudioContentDraft> ReopenVersionAsync(
         Guid itemId,
         Guid versionId,
         CancellationToken cancellationToken = default)
@@ -387,7 +382,7 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
             HttpMethod.Post,
             $"{BasePath}/content-items/{itemId}/versions/{versionId}/reopen",
             content: null,
-            StudioPackageJsonContext.Default.StudioApiResponseStudioPackageDraft,
+            StudioContentJsonContext.Default.StudioApiResponseStudioContentDraft,
             "ReopenVersion",
             cancellationToken);
 
@@ -401,8 +396,8 @@ public sealed class HonuaStudioPackageClient : IHonuaStudioPackageClient
         return SendAsync(
             HttpMethod.Post,
             $"{BasePath}/content-items/{itemId}/rollback-requests",
-            JsonBody(request, StudioPackageJsonContext.Default.CreateStudioRollbackRequest),
-            StudioPackageJsonContext.Default.StudioApiResponseStudioRollbackRequest,
+            JsonBody(request, StudioContentJsonContext.Default.CreateStudioRollbackRequest),
+            StudioContentJsonContext.Default.StudioApiResponseStudioRollbackRequest,
             "Rollback",
             cancellationToken);
     }

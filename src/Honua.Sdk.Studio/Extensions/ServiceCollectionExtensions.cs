@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Honua.Sdk.Internal.Http;
 using Honua.Sdk.Studio.Capabilities;
-using Honua.Sdk.Studio.Packages;
+using Honua.Sdk.Studio.Content;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -33,7 +33,7 @@ public static class ServiceCollectionExtensions
 
         RegisterClient<IHonuaStudioReportsClient, HonuaStudioReportsClient>(services, snapshot);
         RegisterClient<IHonuaCapabilityManifestClient, HonuaCapabilityManifestClient>(services, snapshot);
-        RegisterClient<IHonuaStudioPackageClient, HonuaStudioPackageClient>(services, snapshot);
+        RegisterClient<IHonuaStudioContentClient, HonuaStudioContentClient>(services, snapshot);
 
         return services;
     }

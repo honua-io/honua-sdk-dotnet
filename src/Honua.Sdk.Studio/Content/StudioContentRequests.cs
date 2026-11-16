@@ -1,15 +1,15 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
-/// <summary>Request body for creating a mutable Studio package draft.</summary>
-public sealed record CreateStudioPackageDraftRequest
+/// <summary>Request body for creating a mutable Studio content draft.</summary>
+public sealed record CreateStudioContentDraftRequest
 {
     /// <summary>Optional existing Studio content id; omit to create new content.</summary>
     public Guid? ItemId { get; init; }
 
-    /// <summary>Machine-friendly package key.</summary>
+    /// <summary>Machine-friendly content key.</summary>
     public required string PackageKey { get; init; }
 
     /// <summary>Workspace identifier.</summary>
@@ -18,14 +18,14 @@ public sealed record CreateStudioPackageDraftRequest
     /// <summary>Owner principal identifier.</summary>
     public string? OwnerId { get; init; }
 
-    /// <summary>Package envelope.</summary>
-    public required StudioPackageEnvelope Envelope { get; init; }
+    /// <summary>Content envelope.</summary>
+    public required StudioContentEnvelope Envelope { get; init; }
 }
 
-/// <summary>Request body for updating a mutable Studio package draft.</summary>
-public sealed record UpdateStudioPackageDraftRequest
+/// <summary>Request body for updating a mutable Studio content draft.</summary>
+public sealed record UpdateStudioContentDraftRequest
 {
-    /// <summary>Machine-friendly package key.</summary>
+    /// <summary>Machine-friendly content key.</summary>
     public required string PackageKey { get; init; }
 
     /// <summary>Workspace identifier.</summary>
@@ -34,8 +34,8 @@ public sealed record UpdateStudioPackageDraftRequest
     /// <summary>Owner principal identifier.</summary>
     public string? OwnerId { get; init; }
 
-    /// <summary>Package envelope.</summary>
-    public required StudioPackageEnvelope Envelope { get; init; }
+    /// <summary>Content envelope.</summary>
+    public required StudioContentEnvelope Envelope { get; init; }
 
     /// <summary>Expected draft generation for optimistic concurrency.</summary>
     public long? Generation { get; init; }

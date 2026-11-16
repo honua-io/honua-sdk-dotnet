@@ -3,11 +3,11 @@
 
 using System.Text.Json.Serialization;
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
-/// <summary>Studio content kinds supported by the shared Studio content lifecycle. Mirrors the server <c>StudioPackageFamily</c> wire discriminants.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<StudioPackageFamily>))]
-public enum StudioPackageFamily
+/// <summary>Studio content kinds supported by the shared Studio content lifecycle.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StudioContentKind>))]
+public enum StudioContentKind
 {
     /// <summary>Saved Query.</summary>
     [JsonStringEnumMemberName("query")]
@@ -51,8 +51,8 @@ public enum StudioPackageFamily
 }
 
 /// <summary>Lifecycle operations that can be advertised per Studio content kind.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<StudioPackageOperation>))]
-public enum StudioPackageOperation
+[JsonConverter(typeof(JsonStringEnumConverter<StudioContentOperation>))]
+public enum StudioContentOperation
 {
     /// <summary>Create a mutable draft.</summary>
     [JsonStringEnumMemberName("draft.create")]
@@ -100,10 +100,10 @@ public enum StudioPackageOperation
 }
 
 /// <summary>Advertised support level for a Studio content kind.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<StudioPackageSupportLevel>))]
-public enum StudioPackageSupportLevel
+[JsonConverter(typeof(JsonStringEnumConverter<StudioContentSupportLevel>))]
+public enum StudioContentSupportLevel
 {
-    /// <summary>The family is unavailable in this deployment context.</summary>
+    /// <summary>The content kind is unavailable in this deployment context.</summary>
     [JsonStringEnumMemberName("unsupported")]
     Unsupported,
 
@@ -111,14 +111,14 @@ public enum StudioPackageSupportLevel
     [JsonStringEnumMemberName("limited")]
     Limited,
 
-    /// <summary>The lifecycle and family-specific validation are available.</summary>
+    /// <summary>The lifecycle and kind-specific validation are available.</summary>
     [JsonStringEnumMemberName("supported")]
     Supported,
 }
 
 /// <summary>Persistence mode backing the Studio content lifecycle.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<StudioPackagePersistenceMode>))]
-public enum StudioPackagePersistenceMode
+[JsonConverter(typeof(JsonStringEnumConverter<StudioContentPersistenceMode>))]
+public enum StudioContentPersistenceMode
 {
     /// <summary>Studio content is persisted only in process memory.</summary>
     [JsonStringEnumMemberName("in-memory")]
@@ -130,8 +130,8 @@ public enum StudioPackagePersistenceMode
 }
 
 /// <summary>Validation status for Studio content Drafts and immutable Versions.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<StudioPackageValidationStatus>))]
-public enum StudioPackageValidationStatus
+[JsonConverter(typeof(JsonStringEnumConverter<StudioContentValidationStatus>))]
+public enum StudioContentValidationStatus
 {
     /// <summary>The content has not been validated.</summary>
     [JsonStringEnumMemberName("not-validated")]
@@ -151,8 +151,8 @@ public enum StudioPackageValidationStatus
 }
 
 /// <summary>Severity for one Studio validation diagnostic.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<StudioPackageDiagnosticSeverity>))]
-public enum StudioPackageDiagnosticSeverity
+[JsonConverter(typeof(JsonStringEnumConverter<StudioContentDiagnosticSeverity>))]
+public enum StudioContentDiagnosticSeverity
 {
     /// <summary>Informational diagnostic.</summary>
     [JsonStringEnumMemberName("info")]
