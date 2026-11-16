@@ -304,6 +304,15 @@ class ApiCompatibilityBaselineToolchainTests(unittest.TestCase):
         self.assertNotEqual(comparison[5], comparison[comparison.index("--baseline-package") + 1])
         self.assertEqual("10.0.401", json.loads((self.baseline / "global.json").read_text())["sdk"]["version"])
 
+    def test_net11_baseline_keeps_framework_package_pruning(self) -> None:
+        (self.baseline / "src/Library.csproj").write_text(
+            "<Project><PropertyGroup><TargetFrameworks>net11.0</TargetFrameworks></PropertyGroup></Project>")
+        result = self.run_validation()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        packs = [json.loads(line) for line in self.log.read_text().splitlines()
+                 if json.loads(line)["args"][0] == "pack"]
+        self.assertNotIn("/p:RestoreEnablePackagePruning=false", packs[0]["args"])
+
     def test_comparison_failure_still_blocks_after_toolchain_alignment(self) -> None:
         result = self.run_validation(comparison_exit=17)
         self.assertEqual(17, result.returncode, result.stdout + result.stderr)
