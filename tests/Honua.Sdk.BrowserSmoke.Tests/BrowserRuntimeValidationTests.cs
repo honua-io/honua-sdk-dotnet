@@ -211,16 +211,7 @@ public sealed class BrowserRuntimeValidationTests
         builder.WebHost.UseUrls(appUri.ToString());
         if (string.IsNullOrWhiteSpace(publishedWebRoot))
         {
-            var assetManifest = Path.Join(
-                repoRoot,
-                "tests",
-                "Honua.Sdk.BrowserSmoke",
-                "bin",
-                "Release",
-                "net11.0",
-                "Honua.Sdk.BrowserSmoke.staticwebassets.runtime.json");
-            builder.WebHost.UseSetting(WebHostDefaults.StaticWebAssetsKey, assetManifest);
-            builder.WebHost.UseStaticWebAssets();
+            LoadBrowserSmokeBuildAssets(builder.WebHost, repoRoot);
         }
 
         var app = builder.Build();
@@ -238,6 +229,20 @@ public sealed class BrowserRuntimeValidationTests
 
         await app.StartAsync().ConfigureAwait(false);
         return app;
+    }
+
+    private static void LoadBrowserSmokeBuildAssets(IWebHostBuilder builder, string repoRoot)
+    {
+        var assetManifest = Path.Join(
+            repoRoot,
+            "tests",
+            "Honua.Sdk.BrowserSmoke",
+            "bin",
+            "Release",
+            "net11.0",
+            "Honua.Sdk.BrowserSmoke.staticwebassets.runtime.json");
+        builder.UseSetting(WebHostDefaults.StaticWebAssetsKey, assetManifest);
+        builder.UseStaticWebAssets();
     }
 
     private static async Task<WebApplication> StartFakeHonuaApiAsync(
