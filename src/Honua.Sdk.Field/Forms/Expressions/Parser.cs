@@ -12,8 +12,13 @@ internal sealed class Parser
     private readonly IReadOnlyList<Token> _tokens;
     private int _position;
     private int _depth;
+    private readonly Action<string, int>? _validateFunction;
 
-    public Parser(IReadOnlyList<Token> tokens) => _tokens = tokens;
+    public Parser(IReadOnlyList<Token> tokens, Action<string, int>? validateFunction = null)
+    {
+        _tokens = tokens;
+        _validateFunction = validateFunction;
+    }
 
     public ExpressionNode ParseExpression() => ParseBinary(0);
 
@@ -151,6 +156,7 @@ internal sealed class Parser
             Advance(); // '('
             var args = ParseArguments();
             Expect(TokenType.RightParen, ")");
+            _validateFunction?.Invoke(name, args.Count);
             return new FunctionNode(name, args);
         }
 

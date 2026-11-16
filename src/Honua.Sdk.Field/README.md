@@ -92,6 +92,66 @@ if (!validation.IsValid)
 }
 ```
 
+## XLSForm workbooks
+
+`Honua.Sdk.Field.Forms.Authoring` reads and writes `.xlsx` files and converts
+between worksheet rows and `FormDefinition`. Conversion returns a complete
+value only when there are no diagnostics. Each diagnostic identifies a sheet,
+one-based row and column so an author can correct the workbook.
+
+```csharp
+using Honua.Sdk.Field.Forms.Authoring;
+
+using var input = File.OpenRead("inspection.xlsx");
+var workbook = XlsFormWorkbookIO.Read(input);
+if (workbook.Value is null)
+{
+    throw new InvalidDataException(workbook.Diagnostics[0].Message);
+}
+
+var imported = XlsFormConverter.Import(workbook.Value);
+if (imported.Value is null)
+{
+    foreach (var issue in imported.Diagnostics)
+    {
+        Console.WriteLine($"{issue.Sheet}:{issue.RowNumber}:{issue.Column}: {issue.Message}");
+    }
+}
+else
+{
+    var exported = XlsFormConverter.Export(imported.Value);
+    if (exported.Value is not null)
+    {
+        using var output = File.Create("inspection-export.xlsx");
+        XlsFormWorkbookIO.Write(output, exported.Value);
+    }
+}
+```
+
+The settings sheet requires `form_id` and `form_title`; `version` is optional.
+Supported survey types are text, integer, decimal, date, time, dateTime,
+select_one, select_multiple, geopoint, geotrace, geoshape, image, audio, video,
+barcode and calculate. Flat groups and repeats become form sections. Static
+required values, labels, hints, choice lists, relevance, constraints and
+calculations are preserved. Expressions use the field expression syntax,
+including `${field_name}` references and the `concat`, `if` and `floor`
+functions. Integer questions retain an integer constraint when exported as
+decimal questions.
+
+Unsupported nonempty columns, dynamic required expressions, nested groups or
+repeats, cross-repeat or unknown references and unsupported expression functions produce
+diagnostics. Export also reports SDK behavior that has no supported XLSForm
+representation, such as provider field bindings, media policies and hierarchical
+choices. Service and layer targets are deployment bindings managed by the
+caller, separately from the workbook.
+
+Workbook IO treats cell text literally and rejects Excel formulas, external
+workbook relationships, duplicate cells and invalid row references. Reads are
+bounded to 8 MiB compressed, 32 MiB uncompressed, 128 archive entries, 10,000
+rows per sheet, 64 columns and 100,000 cells per sheet. Invalid workbooks return
+a workbook diagnostic; stream IO failures propagate to the caller. Writes
+validate and buffer the workbook before writing to the caller's stream.
+
 ## Documentation
 
 - [Quickstart](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/quickstart.md)
@@ -102,3 +162,5 @@ if (!validation.IsValid)
 ## License
 
 [Apache 2.0](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/LICENSE)
+
+Calculated fields may depend on earlier calculated fields in the same scope; forward and cyclic calculated dependencies are rejected.
