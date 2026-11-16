@@ -82,13 +82,17 @@ for entry in "${projects[@]}"; do
   # this restore only so a new advisory against old code can't block the
   # compatibility check (older baselines predate the NU1901-NU1904 warning
   # exemption); the candidate pack below still reports advisories as warnings.
+  # Compare APIs on the supported framework; retiring older framework assets
+  # is an intentional major-version change, separate from API regressions.
   echo "Packing ${package_id} baseline from ${BASE_REF}..."
   dotnet pack "${BASE_WORKTREE}/${project}" \
     --configuration "${CONFIGURATION}" \
     -o "${baseline_output}" \
     /p:TreatWarningsAsErrors=true \
     /p:ContinuousIntegrationBuild=true \
-    /p:NuGetAudit=false
+    /p:NuGetAudit=false \
+    /p:TargetFramework=net11.0 \
+    /p:TargetFrameworks=net11.0
 
   echo "Packing ${package_id} from current checkout..."
   dotnet pack "${ROOT}/${project}" \

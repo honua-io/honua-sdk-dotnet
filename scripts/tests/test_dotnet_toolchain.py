@@ -13,14 +13,14 @@ ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("dotnet_toolchain", ROOT / "scripts/ci/prepare-dotnet-toolchain.py")
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
-SDK = "10.0.401"
-EXPECTED = {"Microsoft.NET.Sdk.WebAssembly.Pack": "10.0.12", "Microsoft.NET.ILLink.Tasks": "10.0.12"}
+SDK = "11.0.100"
+EXPECTED = {"Microsoft.NET.Sdk.WebAssembly.Pack": "11.0.0", "Microsoft.NET.ILLink.Tasks": "11.0.0"}
 
 
 def evaluation():
     return {"Properties": {"NETCoreSdkVersion": SDK}, "Items": {
-        "KnownWebAssemblySdkPack": [{"TargetFramework": "net10.0", "WebAssemblySdkPackVersion": "10.0.12"}],
-        "KnownILLinkPack": [{"TargetFramework": "net10.0", "ILLinkPackVersion": "10.0.12"}],
+        "KnownWebAssemblySdkPack": [{"TargetFramework": "net11.0", "WebAssemblySdkPackVersion": "11.0.0"}],
+        "KnownILLinkPack": [{"TargetFramework": "net11.0", "ILLinkPackVersion": "11.0.0"}],
     }}
 
 
@@ -28,36 +28,35 @@ class DotnetToolchainTests(unittest.TestCase):
     def test_global_pin_refuses_missing_cross_version_or_roll_forward(self):
         pinned = {"version": SDK, "rollForward": "disable", "workloadVersion": SDK}
         self.assertEqual(SDK, MODULE.pinned_sdk({"sdk": pinned}))
-        for field, value in (("version", "10.0.x"), ("workloadVersion", None),
-                             ("workloadVersion", "10.0.402"), ("rollForward", "patch")):
+        for field, value in (("version", "11.0.x"), ("workloadVersion", None),
+                             ("workloadVersion", "11.0.101"), ("rollForward", "patch")):
             with self.subTest(field=field, value=value), self.assertRaises(ValueError):
                 MODULE.pinned_sdk({"sdk": {**pinned, field: value}})
 
     def test_ambient_manifest_cannot_change_implicit_graph(self):
-        self.assertEqual(EXPECTED, MODULE.verify_evaluation(evaluation(), (SDK, "net10.0"), EXPECTED))
+        self.assertEqual(EXPECTED, MODULE.verify_evaluation(evaluation(), (SDK, "net11.0"), EXPECTED))
         for item, metadata in MODULE.PACK_METADATA.values():
             with self.subTest(item=item):
                 mixed = evaluation()
-                mixed["Items"][item][0][metadata] = "10.0.13"
+                mixed["Items"][item][0][metadata] = "11.0.1"
                 with self.assertRaisesRegex(ValueError, "committed lock"):
-                    MODULE.verify_evaluation(mixed, (SDK, "net10.0"), EXPECTED)
-        for mutation in (lambda x: x["Properties"].update(NETCoreSdkVersion="10.0.402"),
+                    MODULE.verify_evaluation(mixed, (SDK, "net11.0"), EXPECTED)
+        for mutation in (lambda x: x["Properties"].update(NETCoreSdkVersion="11.0.101"),
                          lambda x: x["Items"].pop("KnownWebAssemblySdkPack"),
                          lambda x: x["Items"]["KnownWebAssemblySdkPack"].append(x["Items"]["KnownWebAssemblySdkPack"][0])):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 mixed = evaluation()
                 mutation(mixed)
-                MODULE.verify_evaluation(mixed, (SDK, "net10.0"), EXPECTED)
+                MODULE.verify_evaluation(mixed, (SDK, "net11.0"), EXPECTED)
 
-    def test_sdk11_verifies_net10_browser_packs(self):
+    def test_sdk11_verifies_only_selected_browser_framework(self):
         document = evaluation()
-        document["Properties"]["NETCoreSdkVersion"] = "11.0.100"
         document["Items"]["KnownILLinkPack"].append(
-            {"TargetFramework": "net11.0", "ILLinkPackVersion": "11.0.0"})
+            {"TargetFramework": "net12.0", "ILLinkPackVersion": "12.0.0"})
         self.assertEqual(EXPECTED, MODULE.verify_evaluation(
-            document, ("11.0.100", "net10.0"), EXPECTED))
+            document, (SDK, "net11.0"), EXPECTED))
         with self.assertRaisesRegex(ValueError, "committed lock"):
-            MODULE.verify_evaluation(document, ("11.0.100", "net11.0"), EXPECTED)
+            MODULE.verify_evaluation(document, (SDK, "net12.0"), EXPECTED)
 
     def test_bootstrap_uses_isolated_probe_and_refuses_unavailable_set(self):
         for unavailable in (False, True):
@@ -68,11 +67,11 @@ class DotnetToolchainTests(unittest.TestCase):
                     "version": SDK, "rollForward": "disable", "workloadVersion": SDK}}))
                 lock = root / "tests/Honua.Sdk.BrowserSmoke/packages.lock.json"
                 lock.parent.mkdir(parents=True)
-                lock.write_text(json.dumps({"dependencies": {"net10.0": {
+                lock.write_text(json.dumps({"dependencies": {"net11.0": {
                     name: {"resolved": version} for name, version in EXPECTED.items()}}}))
                 (lock.parent / "Honua.Sdk.BrowserSmoke.csproj").write_text(
-                    '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>')
-                manifest = Path(directory) / "sdk/microsoft.net.workload.mono.toolchain.current/10.0.112/WorkloadManifest.targets"
+                    '<Project><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup></Project>')
+                manifest = Path(directory) / "sdk/microsoft.net.workload.mono.toolchain.current/11.0.100/WorkloadManifest.targets"
                 manifest.parent.mkdir(parents=True)
                 manifest.write_text("<Project />")
                 calls = []
@@ -101,6 +100,21 @@ class DotnetToolchainTests(unittest.TestCase):
                     self.assertEqual(1 if unavailable else 0, MODULE.main())
                 self.assertEqual(not unavailable, '"stage": "verified"' in output.getvalue())
                 self.assertTrue(any(args[:2] == ("workload", "restore") for _, args in calls))
+
+    def test_browser_framework_must_match_net11_policy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "global.json").write_text(json.dumps({"sdk": {
+                "version": SDK, "rollForward": "disable", "workloadVersion": SDK}}))
+            browser = root / "tests/Honua.Sdk.BrowserSmoke"
+            browser.mkdir(parents=True)
+            (browser / "Honua.Sdk.BrowserSmoke.csproj").write_text(
+                '<Project><PropertyGroup><TargetFramework>net12.0</TargetFramework></PropertyGroup></Project>')
+            output = io.StringIO()
+            with patch.object(MODULE, "ROOT", root), patch.object(MODULE, "command") as command, contextlib.redirect_stderr(output):
+                self.assertEqual(1, MODULE.main())
+            command.assert_not_called()
+            self.assertIn("must target net11.0 only", output.getvalue())
 
     def test_every_sdk_entrypoint_bootstraps_same_tuple(self):
         sources = list((ROOT / ".github/workflows").glob("*.yml"))

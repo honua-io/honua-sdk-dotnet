@@ -192,7 +192,7 @@ public sealed class BrowserRuntimeValidationTests
                 "Honua.Sdk.BrowserSmoke",
                 "bin",
                 "Release",
-                "net10.0",
+                "net11.0",
                 "wwwroot",
                 "_framework")
             : Path.Join(webRoot, "_framework");

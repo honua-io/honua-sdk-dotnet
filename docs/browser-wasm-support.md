@@ -121,7 +121,7 @@ Example local automated browser run:
 
 ```bash
 dotnet build tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release
-pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net10.0/playwright.ps1 install chromium
+pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net11.0/playwright.ps1 install chromium
 HONUA_BROWSER_RUNTIME_SMOKE=true dotnet test tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release --no-build
 ```
 

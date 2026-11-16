@@ -300,7 +300,7 @@ internal static class HonuaCli
             outputWritten = true,
             envelopeCount,
             capabilityProbe = capabilityProbe ? "attempted" : "not-configured",
-            runtime = new { framework = RuntimeInformation.FrameworkDescription, target = "net10.0", os = RuntimeInformation.OSDescription },
+            runtime = new { framework = RuntimeInformation.FrameworkDescription, target = "net11.0", os = RuntimeInformation.OSDescription },
             sdk = new { package = "Honua.Sdk.Cli", version },
             schema = DiagnosticSchema.CanonicalUrl,
             schemaSha256 = DiagnosticSchema.Sha256,

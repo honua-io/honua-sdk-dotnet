@@ -56,9 +56,10 @@ credential. Account/package scope is finally proven by the first push.
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects, the tag commit must be contained in `origin/trunk`, and required
 staging integration must pass. The workflow fails before publishing if any of
-those bindings fail. Library packages contain both `net10.0` and `net11.0` assets. CI runs the test
-projects on both runtimes; the CLI and browser sample retain `net10.0` consumer
-coverage. Release build and publish jobs use the exact .NET SDK
+those bindings fail. Library packages, tools, examples and tests target `net11.0` only. Removing
+earlier framework assets is an intentional breaking change for the next major
+SDK release. API compatibility compares the current and baseline source on
+`net11.0`; historical certification receipts retain their original framework. Release build and publish jobs use the exact .NET SDK
 `11.0.100` so a rerun cannot silently select a newer feature-band SDK.
 
 ## Version bumps

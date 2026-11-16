@@ -201,7 +201,7 @@ class ApiCompatibilityBaselineToolchainTests(unittest.TestCase):
         self.directory = Path(temporary.name)
         self.candidate = self.directory / "candidate"
         self.baseline = self.directory / "historical-source"
-        for checkout, version in ((self.candidate, "10.0.403"), (self.baseline, "10.0.401")):
+        for checkout, version in ((self.candidate, "11.0.100"), (self.baseline, "10.0.401")):
             (checkout / "src").mkdir(parents=True)
             (checkout / "global.json").write_text(json.dumps({"sdk": {
                 "version": version, "workloadVersion": version, "rollForward": "disable"}}))
@@ -290,6 +290,8 @@ class ApiCompatibilityBaselineToolchainTests(unittest.TestCase):
                 self.assertEqual((checkout / name).read_text(), contents)
             self.assertIn("/p:TreatWarningsAsErrors=true", call["args"])
             self.assertIn("/p:ContinuousIntegrationBuild=true", call["args"])
+        self.assertIn("/p:TargetFramework=net11.0", packs[0]["args"])
+        self.assertIn("/p:TargetFrameworks=net11.0", packs[0]["args"])
         self.assertIn("/p:NuGetAudit=false", packs[0]["args"])
         self.assertNotIn("/p:NuGetAudit=false", packs[1]["args"])
         comparison = calls[-1]["args"]

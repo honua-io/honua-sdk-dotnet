@@ -76,8 +76,8 @@ def main() -> int:
         sdk = pinned_sdk(global_json)
         browser = ROOT / "tests/Honua.Sdk.BrowserSmoke"
         framework = ET.parse(browser / "Honua.Sdk.BrowserSmoke.csproj").findtext(".//TargetFramework")
-        if framework is None or not re.fullmatch(r"net\d+\.\d+", framework):
-            raise ValueError("Browser smoke must declare one concrete target framework")
+        if framework != "net11.0":
+            raise ValueError("Browser smoke must target net11.0 only")
         lock = browser / "packages.lock.json"
         expected = locked_packs(json.loads(lock.read_text()))
         if command(ROOT, "--version").stdout.strip() != sdk:

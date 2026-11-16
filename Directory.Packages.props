@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup Label="ASP.NET Core (browser smoke)">
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup Label="gRPC + Protobuf">
