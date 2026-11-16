@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,20 +23,36 @@ class SbomIdentityTests(unittest.TestCase):
         self.sbom.parent.mkdir(parents=True)
         self.document = {
             "bomFormat": "CycloneDX",
-            "metadata": {"component": {"name": "Honua.Sdk", "version": "5.0.0"}},
-            "components": [{"name": "Dependency", "version": "1.0.0"}],
+            "metadata": {"component": {"name": "Honua.Sdk", "version": "5.0.0",
+                                        "bom-ref": "root"}},
+            "components": [{"name": "Honua.Sdk.Abstractions", "version": "5.0.0",
+                            "bom-ref": "dependency"}],
+            "dependencies": [{"ref": "root", "dependsOn": ["dependency"]},
+                             {"ref": "dependency", "dependsOn": []}],
         }
+
+    def write_package(self, version="5.0.0"):
+        package = self.root / f"nupkgs/Honua.Sdk.{version}.nupkg"
+        package.parent.mkdir(exist_ok=True)
+        with zipfile.ZipFile(package, "w") as archive:
+            archive.writestr("Honua.Sdk.nuspec", f"""<package><metadata>
+                <id>Honua.Sdk</id><version>{version}</version><dependencies>
+                <group targetFramework="net11.0"><dependency
+                id="Honua.Sdk.Abstractions" version="{version}" /></group>
+                </dependencies></metadata></package>""")
+        return package
 
     def run_check(self, version="5.0.0"):
         self.sbom.write_text(json.dumps(self.document))
         return subprocess.run(
             ["python3", str(SCRIPT), str(self.sbom), "--package-id", "Honua.Sdk",
-             "--version", version], capture_output=True, text=True)
+             "--version", version, "--package", str(self.write_package(version))], capture_output=True, text=True)
 
     def test_valid_stable_and_prerelease(self):
         for version in ("5.0.0", "5.0.1-rc.2"):
             with self.subTest(version=version):
                 self.document["metadata"]["component"]["version"] = version
+                self.document["components"][0]["version"] = version
                 result = self.run_check(version)
                 self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -63,7 +80,60 @@ class SbomIdentityTests(unittest.TestCase):
                 self.assertNotEqual(self.run_check().returncode, 0)
                 self.document[field] = original
 
+    def test_missing_project_dependency_is_rejected(self):
+        self.document["components"] = [{"name": "Unrelated", "version": "1.0.0",
+                                        "bom-ref": "dependency"}]
+        self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_wrong_project_dependency_version_is_rejected(self):
+        self.document["components"][0]["version"] = "0.0.0"
+        self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_missing_root_edge_is_rejected(self):
+        self.document["dependencies"][0]["dependsOn"] = []
+        self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_unresolved_dependency_edge_is_rejected(self):
+        self.document["dependencies"][1]["dependsOn"] = ["missing"]
+        self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_missing_dependency_graph_is_rejected(self):
+        del self.document["dependencies"]
+        self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_attestation_rejects_missing_project_before_export(self):
+        self.document["components"][0]["name"] = "Unrelated"
+        result, environment = self.run_attestation()
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertFalse(environment.exists())
+
+    def test_malformed_graphs_are_rejected(self):
+        for graph in ({}, [{"ref": "missing", "dependsOn": []}],
+                      [{"ref": "root", "dependsOn": "dependency"}],
+                      [{"ref": "root", "dependsOn": [None]}],
+                      [{"ref": "root"}, {"ref": "root"}]):
+            with self.subTest(graph=graph):
+                self.document["dependencies"] = graph
+                self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_duplicate_or_missing_component_reference_is_rejected(self):
+        for reference in (None, "root"):
+            with self.subTest(reference=reference):
+                self.document["components"][0]["bom-ref"] = reference
+                self.assertNotEqual(self.run_check().returncode, 0)
+
+    def test_packed_identity_must_match_sbom(self):
+        self.document["metadata"]["component"]["name"] = "Honua.Sdk.Admin"
+        self.sbom.write_text(json.dumps(self.document))
+        result = subprocess.run(
+            ["python3", str(SCRIPT), str(self.sbom), "--package-id", "Honua.Sdk.Admin",
+             "--version", "5.0.0", "--package", str(self.write_package())],
+            capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("nuspec", result.stderr)
+
     def run_attestation(self):
+        self.write_package()
         workflow = WORKFLOW.read_text()
         step = workflow.split("- name: Select and check this package's SBOM", 1)[1]
         shell = step.split("        run: |\n", 1)[1].split("\n      - name:", 1)[0]
@@ -96,9 +166,13 @@ class SbomIdentityTests(unittest.TestCase):
         self.assertRegex(generation, r'--set-name "\$\{pkg_id\}"')
         self.assertRegex(generation, r'--set-version "\$\{PACKAGE_VERSION\}"')
         self.assertIn("python3 scripts/check-sbom.py", generation)
+        self.assertIn("--include-project-references", generation)
+        self.assertIn('--package "./nupkgs/${pkg_id}.${PACKAGE_VERSION}.nupkg"', generation)
         attestation = workflow.split("  attest-dotnet-sbom:", 1)[1]
         self.assertIn("${{ needs.release-smoke.outputs.package-version }}", attestation)
         self.assertIn("      - release-smoke", attestation)
+        self.assertIn("-packages-input-unsigned", attestation)
+        self.assertIn('--package "./nupkgs/${PACKAGE_ID}.${PACKAGE_VERSION}.nupkg"', attestation)
         self.assertLess(attestation.index("uses: actions/checkout@"),
                         attestation.index("python3 scripts/check-sbom.py"))
 
