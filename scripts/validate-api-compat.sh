@@ -84,8 +84,12 @@ for entry in "${projects[@]}"; do
   # exemption); the candidate pack below still reports advisories as warnings.
   # The .NET 11 major release retires older framework assets. Compare the
   # historical public API on the supported framework without waiving API errors.
-  # Preserve historical explicit dependencies even when the new framework
-  # provides them; candidate restores retain normal package pruning.
+  # Retargeted historical dependencies need preservation; native net11 baselines
+  # retain framework pruning so retired package dependencies are not restored.
+  baseline_restore_args=()
+  if ! grep -Eq '<TargetFrameworks?>net11\.0</TargetFrameworks?>' "${BASE_WORKTREE}/${project}"; then
+    baseline_restore_args+=(/p:RestoreEnablePackagePruning=false)
+  fi
   echo "Packing ${package_id} baseline from ${BASE_REF}..."
   dotnet pack "${BASE_WORKTREE}/${project}" \
     --configuration "${CONFIGURATION}" \
@@ -93,7 +97,7 @@ for entry in "${projects[@]}"; do
     /p:TreatWarningsAsErrors=true \
     /p:ContinuousIntegrationBuild=true \
     /p:NuGetAudit=false \
-    /p:RestoreEnablePackagePruning=false \
+    "${baseline_restore_args[@]}" \
     /p:TargetFramework=net11.0 \
     /p:TargetFrameworks=net11.0
 
