@@ -114,11 +114,34 @@ public sealed class XlsFormWorkbookTests
         Assert.Equal(0, stream.Length);
     }
 
-    private static MemoryStream WorkbookWithSurvey(string rows)
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void Read_ExcludesPhoneticAnnotations(bool shared, bool rich)
+    {
+        var text = rich ? "<r><t>東</t></r><r><t>京</t></r>" : "<t>東京</t>";
+        var content = text + "<rPh sb=\"0\" eb=\"2\"><t>とうきょう</t></rPh>";
+        var cell = shared ? "<v>0</v>" : "<is>" + content + "</is>";
+        using var stream = WorkbookWithSurvey(
+            "<row r=\"2\"><c r=\"A2\" t=\"" + (shared ? "s" : "inlineStr") + "\">" + cell + "</c></row>",
+            shared ? "<si>" + content + "</si>" : null);
+        var result = XlsFormWorkbookIO.Read(stream);
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal("東京", result.Value!.Survey[0].Cells["type"]);
+    }
+
+    private static MemoryStream WorkbookWithSurvey(string rows, string? sharedStrings = null)
     {
         var stream = new MemoryStream();
         using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
         {
+            if (sharedStrings is not null)
+            {
+                Add(zip, "xl/sharedStrings.xml", "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">" + sharedStrings + "</sst>");
+            }
+
             Add(zip, "xl/workbook.xml", "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><sheets><sheet name=\"survey\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
             Add(zip, "xl/_rels/workbook.xml.rels", "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/></Relationships>");
             Add(zip, "xl/worksheets/sheet1.xml", "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData><row r=\"1\"><c r=\"A1\" t=\"inlineStr\"><is><t>type</t></is></c></row>" + rows + "</sheetData></worksheet>");

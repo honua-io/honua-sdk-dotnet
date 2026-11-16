@@ -74,7 +74,9 @@ internal static class XlsFormXml
 
     public static string RichText(XElement? element)
     {
-        var text = string.Concat(element?.Descendants(Spreadsheet + "t").Select(t => XlsFormString.Decode(t.Value)) ?? []);
+        var text = string.Concat(element?.Elements().SelectMany(child => child.Name == Spreadsheet + "t"
+            ? [child] : child.Name == Spreadsheet + "r" ? child.Elements(Spreadsheet + "t") : [])
+            .Select(t => XlsFormString.Decode(t.Value)) ?? []);
         if (text.Length > MaxCellLength)
         {
             throw new InvalidDataException("Cell text exceeds 32,767 characters.");

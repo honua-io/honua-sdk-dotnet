@@ -1,6 +1,7 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Buffers;
 using System.Globalization;
 using System.Text;
 
@@ -8,6 +9,8 @@ namespace Honua.Sdk.Field.Forms.Authoring;
 
 internal static class XlsFormString
 {
+    private static readonly SearchValues<char> HexDigits = SearchValues.Create("0123456789abcdefABCDEF");
+
     public static string Decode(string text)
     {
         var result = new StringBuilder(text.Length);
@@ -49,5 +52,5 @@ internal static class XlsFormString
 
     private static bool IsEscape(string text, int offset)
         => offset + 6 < text.Length && text[offset] == '_' && text[offset + 1] == 'x' && text[offset + 6] == '_'
-            && text.AsSpan(offset + 2, 4).IndexOfAnyExcept("0123456789abcdefABCDEF") < 0;
+            && text.AsSpan(offset + 2, 4).IndexOfAnyExcept(HexDigits) < 0;
 }
