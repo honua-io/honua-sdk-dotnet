@@ -80,7 +80,7 @@ internal static class XlsFormCells
                 .Where(t => t.Type == TokenType.FieldRef)
                 .Where(t => t.Text == "." ? context.Column != "constraint" : !context.Fields.Contains(t.Text)))
             {
-                errors.Error(("survey", row, context.Column), "Expression references an unknown field, crosses a repeat boundary, uses a calculated field before it is evaluated or uses '.' outside a constraint.");
+                errors.Error(("survey", row, context.Column), $"Expression reference '{token.Text}' names an unknown field, crosses a repeat boundary, uses a calculated field before it is evaluated or uses '.' outside a constraint.");
             }
         }
         catch (ExpressionEvaluationException)
