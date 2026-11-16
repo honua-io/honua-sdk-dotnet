@@ -6,8 +6,8 @@ using System.Text.Json.Serialization;
 namespace Honua.Sdk.Abstractions.Console.Share;
 
 /// <summary>Category of Console content, as evaluated for open-data publication. Mirrors the server <c>consoleContentItemType</c> contract.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<HonuaConsoleContentItemType>))]
-public enum HonuaConsoleContentItemType
+[JsonConverter(typeof(JsonStringEnumConverter<HonuaConsoleContentKind>))]
+public enum HonuaConsoleContentKind
 {
     /// <summary>A published service (Map/Feature/Tile/etc.).</summary>
     [JsonStringEnumMemberName("service")]
@@ -287,7 +287,7 @@ public sealed record HonuaOpenDataEligibility
 
     /// <summary>Item category.</summary>
     [JsonPropertyName("itemType")]
-    public HonuaConsoleContentItemType ItemType { get; init; }
+    public HonuaConsoleContentKind ItemType { get; init; }
 
     /// <summary>True when the item may be published as open data.</summary>
     [JsonPropertyName("eligible")]

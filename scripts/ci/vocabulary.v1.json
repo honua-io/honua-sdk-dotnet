@@ -120,17 +120,55 @@
   ],
   "renamedSymbols": {
     "Honua.Sdk.Studio.Capabilities.CapabilityManifest.HasPackageFamily": "Honua.Sdk.Studio.Capabilities.CapabilityManifest.SupportsContentKind",
-    "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentPointersAsync",
-    "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentPointersAsync",
+    "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetContentPointersAsync",
+    "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentItemPointersAsync": "Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetContentPointersAsync",
     "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId",
     "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId": "Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppId",
-    "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri": "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri"
+    "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri": "Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri",
+    "Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType": "Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind",
+    "Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily": "Honua.Sdk.Studio.Capabilities.CapabilityContentKind",
+    "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest": "Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest",
+    "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": "Honua.Sdk.Studio.Content.HonuaStudioContentClient",
+    "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPackageFamiliesAsync": "Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetContentKindsAsync",
+    "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+    "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetContentKindsAsync",
+    "Honua.Sdk.Studio.Packages.StudioContentItemPointers": "Honua.Sdk.Studio.Content.StudioContentPointers",
+    "Honua.Sdk.Studio.Packages.StudioPackageBinding": "Honua.Sdk.Studio.Content.StudioContentBinding",
+    "Honua.Sdk.Studio.Packages.StudioPackageDependency": "Honua.Sdk.Studio.Content.StudioContentDependency",
+    "Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity": "Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity",
+    "Honua.Sdk.Studio.Packages.StudioPackageDraft": "Honua.Sdk.Studio.Content.StudioContentDraft",
+    "Honua.Sdk.Studio.Packages.StudioPackageEnvelope": "Honua.Sdk.Studio.Content.StudioContentEnvelope",
+    "Honua.Sdk.Studio.Packages.StudioPackageFamily": "Honua.Sdk.Studio.Content.StudioContentKind",
+    "Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities": "Honua.Sdk.Studio.Content.StudioContentKindCapabilities",
+    "Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor": "Honua.Sdk.Studio.Content.StudioContentKindDescriptor",
+    "Honua.Sdk.Studio.Packages.StudioPackageOperation": "Honua.Sdk.Studio.Content.StudioContentOperation",
+    "Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode": "Honua.Sdk.Studio.Content.StudioContentPersistenceMode",
+    "Honua.Sdk.Studio.Packages.StudioPackageSupportLevel": "Honua.Sdk.Studio.Content.StudioContentSupportLevel",
+    "Honua.Sdk.Studio.Packages.StudioPackageValidationStatus": "Honua.Sdk.Studio.Content.StudioContentValidationStatus",
+    "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest": "Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest",
+    "Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages": "Honua.Sdk.Studio.Capabilities.CapabilityManifestContent",
+    "Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest": "Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest",
+    "Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest": "Honua.Sdk.Studio.Content.CreateStudioPublicationRequest",
+    "Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest": "Honua.Sdk.Studio.Content.CreateStudioRollbackRequest",
+    "Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest": "Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest",
+    "Honua.Sdk.Studio.Packages.StudioApiResponse<T>": "Honua.Sdk.Studio.Content.StudioApiResponse<T>",
+    "Honua.Sdk.Studio.Packages.StudioContentVersion": "Honua.Sdk.Studio.Content.StudioContentVersion",
+    "Honua.Sdk.Studio.Packages.StudioContentVersionList": "Honua.Sdk.Studio.Content.StudioContentVersionList",
+    "Honua.Sdk.Studio.Packages.StudioPreviewPlan": "Honua.Sdk.Studio.Content.StudioPreviewPlan",
+    "Honua.Sdk.Studio.Packages.StudioProvenanceRef": "Honua.Sdk.Studio.Content.StudioProvenanceRef",
+    "Honua.Sdk.Studio.Packages.StudioPublicationIntent": "Honua.Sdk.Studio.Content.StudioPublicationIntent",
+    "Honua.Sdk.Studio.Packages.StudioPublicationRequest": "Honua.Sdk.Studio.Content.StudioPublicationRequest",
+    "Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus": "Honua.Sdk.Studio.Content.StudioPublicationRequestStatus",
+    "Honua.Sdk.Studio.Packages.StudioRollbackPointer": "Honua.Sdk.Studio.Content.StudioRollbackPointer",
+    "Honua.Sdk.Studio.Packages.StudioRollbackRequest": "Honua.Sdk.Studio.Content.StudioRollbackRequest",
+    "Honua.Sdk.Studio.Packages.StudioValidationDiagnostic": "Honua.Sdk.Studio.Content.StudioValidationDiagnostic",
+    "Honua.Sdk.Studio.Packages.StudioValidationSummary": "Honua.Sdk.Studio.Content.StudioValidationSummary",
+    "Honua.Sdk.Studio.Packages.StudioVersionComparison": "Honua.Sdk.Studio.Content.StudioVersionComparison",
+    "Honua.Sdk.Studio.Packages.StudioPublicationSubmission": "Honua.Sdk.Studio.Content.StudioPublicationSubmission",
+    "Honua.Sdk.Studio.Packages.StudioPublishedArtifact": "Honua.Sdk.Studio.Content.StudioPublishedArtifact",
+    "Honua.Sdk.Studio.Packages.StudioContentHash": "Honua.Sdk.Studio.Content.StudioContentHash"
   },
   "allowedSymbols": [
-    {
-      "symbol": "Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
     {
       "symbol": "Honua.Sdk.Abstractions.Environments.HonuaEnvironmentProfile.TenantScope",
       "reason": "Identity-provider tenant and audience hints for authentication, not a product tenancy surface."
@@ -216,99 +254,19 @@
       "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     },
     {
-      "symbol": "Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.WorkspaceId",
+      "symbol": "Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.WorkspaceId",
       "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     },
     {
-      "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPackageFamiliesAsync",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioContentItemPointers",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioContentVersion.WorkspaceId",
+      "symbol": "Honua.Sdk.Studio.Content.StudioContentVersion.WorkspaceId",
       "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     },
     {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageBinding",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDependency",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageDraft.WorkspaceId",
+      "symbol": "Honua.Sdk.Studio.Content.StudioContentDraft.WorkspaceId",
       "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     },
     {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageEnvelope",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamily",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageOperation",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageSupportLevel",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.StudioPackageValidationStatus",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest",
-      "reason": "Deferred until the server Studio content migration (honua-server #7116 2.1b); mirrors the server's current Studio lifecycle contract."
-    },
-    {
-      "symbol": "Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.WorkspaceId",
+      "symbol": "Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.WorkspaceId",
       "reason": "Mirrors a current server wire field; renamed only after the server migrates the field."
     }
   ],
@@ -374,12 +332,12 @@
       "reason": "Names the current server route /api/v1/studio/content-items; renamed only after the server migrates it."
     },
     {
-      "path": "src/Honua.Sdk.Studio/Packages/StudioPackageModels.cs",
+      "path": "src/Honua.Sdk.Studio/Content/StudioContentModels.cs",
       "line": "/// <summary>Binding kind, such as data-source, content-item, layer, field, route, or permission.</summary>",
       "reason": "Lists the server's binding kind wire values (content-item); renamed only after the server migrates them."
     },
     {
-      "path": "src/Honua.Sdk.Studio/Packages/StudioPackageModels.cs",
+      "path": "src/Honua.Sdk.Studio/Content/StudioContentModels.cs",
       "line": "/// <summary>Dependency kind, such as content-item, content-version, service, job, or artifact.</summary>",
       "reason": "Lists the server's dependency kind wire values (content-item); renamed only after the server migrates them."
     },

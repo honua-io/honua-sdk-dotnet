@@ -3,33 +3,27 @@
 
 using System.Text.Json;
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
-/// <summary>
-/// Shared package envelope for every Studio-authored artifact family. Mirrors the
-/// server <c>StudioPackageEnvelope</c>. The <see cref="Bindings"/>,
-/// <see cref="Dependencies"/>, and <see cref="Provenance"/> collections are
-/// always serialized as arrays (never <see langword="null"/>) — the server
-/// rejects a null for any of them.
-/// </summary>
-public sealed record StudioPackageEnvelope
+/// <summary>Shared Studio content envelope with bindings, dependencies, and provenance serialized as non-null arrays.</summary>
+public sealed record StudioContentEnvelope
 {
     /// <summary>Studio content kind.</summary>
-    public required StudioPackageFamily Family { get; init; }
+    public required StudioContentKind Family { get; init; }
 
-    /// <summary>Schema version for the family envelope.</summary>
+    /// <summary>Schema version for the content kind envelope.</summary>
     public required string SchemaVersion { get; init; }
 
     /// <summary>Kind-specific format advertised by the Studio content kind capabilities.</summary>
     public string? Format { get; init; }
 
     /// <summary>Data, service, content, field, CRS, unit, or permission bindings.</summary>
-    public IReadOnlyList<StudioPackageBinding> Bindings { get; init; } = Array.Empty<StudioPackageBinding>();
+    public IReadOnlyList<StudioContentBinding> Bindings { get; init; } = Array.Empty<StudioContentBinding>();
 
     /// <summary>Lineage, runtime, item, version, job, or artifact dependencies.</summary>
-    public IReadOnlyList<StudioPackageDependency> Dependencies { get; init; } = Array.Empty<StudioPackageDependency>();
+    public IReadOnlyList<StudioContentDependency> Dependencies { get; init; } = Array.Empty<StudioContentDependency>();
 
-    /// <summary>Last validation summary known for the package envelope.</summary>
+    /// <summary>Last validation summary known for the content envelope.</summary>
     public StudioValidationSummary Validation { get; init; } = StudioValidationSummary.NotValidated;
 
     /// <summary>Publication route, visibility, embed, service, schedule, or job intent.</summary>
@@ -38,14 +32,14 @@ public sealed record StudioPackageEnvelope
     /// <summary>Prompt, tool, source, audit, or generated-artifact provenance references.</summary>
     public IReadOnlyList<StudioProvenanceRef> Provenance { get; init; } = Array.Empty<StudioProvenanceRef>();
 
-    /// <summary>Family-specific JSON payload.</summary>
+    /// <summary>Kind-specific JSON payload.</summary>
     public JsonElement? Body { get; init; }
 }
 
-/// <summary>One binding declared by a Studio package.</summary>
-public sealed record StudioPackageBinding
+/// <summary>One binding declared by Studio content.</summary>
+public sealed record StudioContentBinding
 {
-    /// <summary>Stable binding key within the package.</summary>
+    /// <summary>Stable binding key within the content.</summary>
     public required string Key { get; init; }
 
     /// <summary>Binding kind, such as data-source, content-item, layer, field, route, or permission.</summary>
@@ -70,8 +64,8 @@ public sealed record StudioPackageBinding
     public JsonElement? Metadata { get; init; }
 }
 
-/// <summary>One dependency declared by a Studio package.</summary>
-public sealed record StudioPackageDependency
+/// <summary>One dependency declared by Studio content.</summary>
+public sealed record StudioContentDependency
 {
     /// <summary>Referenced dependency identifier.</summary>
     public required string Ref { get; init; }
@@ -89,41 +83,37 @@ public sealed record StudioPackageDependency
     public JsonElement? Metadata { get; init; }
 }
 
-/// <summary>
-/// Validation summary attached to drafts, versions, and publication requests.
-/// The .NET analogue of the honua-sdk-js <c>StudioPackageValidationResponse</c>
-/// envelope.
-/// </summary>
+/// <summary>Validation summary attached to drafts, versions, and publication requests.</summary>
 public sealed record StudioValidationSummary
 {
     /// <summary>Shared not-validated summary.</summary>
     public static StudioValidationSummary NotValidated { get; } = new()
     {
-        Status = StudioPackageValidationStatus.NotValidated,
+        Status = StudioContentValidationStatus.NotValidated,
         GeneratedAt = null,
     };
 
     /// <summary>Validation status.</summary>
-    public required StudioPackageValidationStatus Status { get; init; }
+    public required StudioContentValidationStatus Status { get; init; }
 
     /// <summary>Validation diagnostics.</summary>
     public IReadOnlyList<StudioValidationDiagnostic> Diagnostics { get; init; } = Array.Empty<StudioValidationDiagnostic>();
 
-    /// <summary>Capabilities that are unsupported or limited for the package.</summary>
+    /// <summary>Capabilities that are unsupported or limited for the content.</summary>
     public IReadOnlyList<string> UnsupportedCapabilities { get; init; } = Array.Empty<string>();
 
     /// <summary>Timestamp when the summary was generated.</summary>
     public DateTimeOffset? GeneratedAt { get; init; }
 }
 
-/// <summary>One validation diagnostic produced for a package envelope.</summary>
+/// <summary>One validation diagnostic produced for a content envelope.</summary>
 public sealed record StudioValidationDiagnostic
 {
     /// <summary>Machine-friendly diagnostic code.</summary>
     public required string Code { get; init; }
 
     /// <summary>Diagnostic severity.</summary>
-    public required StudioPackageDiagnosticSeverity Severity { get; init; }
+    public required StudioContentDiagnosticSeverity Severity { get; init; }
 
     /// <summary>JSON pointer or field path associated with the diagnostic.</summary>
     public string? Path { get; init; }
@@ -132,7 +122,7 @@ public sealed record StudioValidationDiagnostic
     public required string Message { get; init; }
 }
 
-/// <summary>Publication intent declared by a Studio package.</summary>
+/// <summary>Publication intent declared by Studio content.</summary>
 public sealed record StudioPublicationIntent
 {
     /// <summary>Optional target route key.</summary>
@@ -141,7 +131,7 @@ public sealed record StudioPublicationIntent
     /// <summary>Optional visibility target.</summary>
     public string? Visibility { get; init; }
 
-    /// <summary>True when embedding should be enabled for the published package.</summary>
+    /// <summary>True when embedding should be enabled for the published content.</summary>
     public bool? Embed { get; init; }
 
     /// <summary>Optional service publication hint.</summary>
@@ -157,7 +147,7 @@ public sealed record StudioPublicationIntent
     public JsonElement? Metadata { get; init; }
 }
 
-/// <summary>Provenance reference attached to a Studio package.</summary>
+/// <summary>Provenance reference attached to Studio content.</summary>
 public sealed record StudioProvenanceRef
 {
     /// <summary>Provenance kind, such as prompt, tool, source, audit, or generated-by.</summary>
@@ -166,7 +156,7 @@ public sealed record StudioProvenanceRef
     /// <summary>Referenced provenance identifier.</summary>
     public required string Ref { get; init; }
 
-    /// <summary>Relationship to the package.</summary>
+    /// <summary>Relationship to the content.</summary>
     public required string Rel { get; init; }
 
     /// <summary>Actor associated with the provenance reference.</summary>
@@ -177,30 +167,30 @@ public sealed record StudioProvenanceRef
 }
 
 /// <summary>Capability descriptor for one Studio content kind.</summary>
-public sealed record StudioPackageFamilyDescriptor
+public sealed record StudioContentKindDescriptor
 {
     /// <summary>Studio content kind.</summary>
-    public required StudioPackageFamily Family { get; init; }
+    public required StudioContentKind Family { get; init; }
 
-    /// <summary>Current schema version for the family.</summary>
+    /// <summary>Current schema version for the content kind.</summary>
     public required string CurrentSchemaVersion { get; init; }
 
-    /// <summary>Canonical family-specific format identifier.</summary>
+    /// <summary>Canonical kind-specific format identifier.</summary>
     public required string Format { get; init; }
 
     /// <summary>Support level in the current deployment context.</summary>
-    public required StudioPackageSupportLevel SupportLevel { get; init; }
+    public required StudioContentSupportLevel SupportLevel { get; init; }
 
-    /// <summary>Operations supported by this family.</summary>
-    public IReadOnlyList<StudioPackageOperation> SupportedOperations { get; init; } = Array.Empty<StudioPackageOperation>();
+    /// <summary>Operations supported by this content kind.</summary>
+    public IReadOnlyList<StudioContentOperation> SupportedOperations { get; init; } = Array.Empty<StudioContentOperation>();
 
-    /// <summary>Validation depth advertised for this family.</summary>
+    /// <summary>Validation depth advertised for this content kind.</summary>
     public required string ValidationDepth { get; init; }
 
     /// <summary>Limitations that clients should surface as disabled or limited states.</summary>
     public IReadOnlyList<string> Limitations { get; init; } = Array.Empty<string>();
 
-    /// <summary>Maximum serialized package size in bytes.</summary>
+    /// <summary>Maximum serialized content size in bytes.</summary>
     public int MaxPackageBytes { get; init; }
 
     /// <summary>True when preview planning is available.</summary>
@@ -211,20 +201,20 @@ public sealed record StudioPackageFamilyDescriptor
 }
 
 /// <summary>Response payload for Studio content kind capability discovery.</summary>
-public sealed record StudioPackageFamilyCapabilities
+public sealed record StudioContentKindCapabilities
 {
-    /// <summary>Persistence mode backing package lifecycle operations.</summary>
-    public required StudioPackagePersistenceMode PersistenceMode { get; init; }
+    /// <summary>Persistence mode backing content lifecycle operations.</summary>
+    public required StudioContentPersistenceMode PersistenceMode { get; init; }
 
     /// <summary>True when the backing store is durable.</summary>
     public required bool Durable { get; init; }
 
     /// <summary>Studio content kinds, including unsupported or limited kinds.</summary>
-    public IReadOnlyList<StudioPackageFamilyDescriptor> Families { get; init; } = Array.Empty<StudioPackageFamilyDescriptor>();
+    public IReadOnlyList<StudioContentKindDescriptor> Families { get; init; } = Array.Empty<StudioContentKindDescriptor>();
 }
 
-/// <summary>Mutable Studio package draft.</summary>
-public sealed record StudioPackageDraft
+/// <summary>Mutable Studio content draft.</summary>
+public sealed record StudioContentDraft
 {
     /// <summary>Draft identifier.</summary>
     public required Guid DraftId { get; init; }
@@ -232,7 +222,7 @@ public sealed record StudioPackageDraft
     /// <summary>Studio content identifier owned by the Studio lifecycle.</summary>
     public required Guid ItemId { get; init; }
 
-    /// <summary>Machine-friendly package key.</summary>
+    /// <summary>Machine-friendly content key.</summary>
     public required string PackageKey { get; init; }
 
     /// <summary>Workspace identifier.</summary>
@@ -242,10 +232,10 @@ public sealed record StudioPackageDraft
     public string? OwnerId { get; init; }
 
     /// <summary>Studio content kind.</summary>
-    public required StudioPackageFamily Family { get; init; }
+    public required StudioContentKind Family { get; init; }
 
-    /// <summary>Package envelope.</summary>
-    public required StudioPackageEnvelope Envelope { get; init; }
+    /// <summary>Content envelope.</summary>
+    public required StudioContentEnvelope Envelope { get; init; }
 
     /// <summary>Last validation summary known for the draft.</summary>
     public StudioValidationSummary Validation { get; init; } = StudioValidationSummary.NotValidated;
@@ -275,7 +265,7 @@ public sealed record StudioContentVersion
     /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
 
-    /// <summary>Machine-friendly package key captured when the version was created.</summary>
+    /// <summary>Machine-friendly content key captured when the version was created.</summary>
     public required string PackageKey { get; init; }
 
     /// <summary>Workspace identifier captured when the version was created.</summary>
@@ -290,31 +280,22 @@ public sealed record StudioContentVersion
     /// <summary>Monotonic version number within an item.</summary>
     public required int VersionNumber { get; init; }
 
-    /// <summary>SHA-256 hash of the immutable package envelope with volatile validation timestamps excluded.</summary>
+    /// <summary>SHA-256 hash of the immutable content envelope with volatile validation timestamps excluded.</summary>
     public required string ContentHash { get; init; }
 
-    /// <summary>
-    /// Canonical content-hash input (honua-server#5449): base64 (RFC 4648, standard alphabet,
-    /// padded) of the exact UTF-8 bytes the server hashed, so that <see cref="ContentHash"/> is the
-    /// lower-case hexadecimal SHA-256 of the decoded bytes. Lets a client recompute the digest
-    /// without reproducing the server's envelope serialization; see <see cref="VerifyContentHash"/>.
-    /// Returned by the single-version read and the save-version response; omitted from version
-    /// enumerations, by servers that predate it, and when the server cannot supply bytes that hash
-    /// to <see cref="ContentHash"/> (bridged Form/Analysis versions, or a legacy version whose
-    /// stored envelope no longer reproduces it).
-    /// </summary>
+    /// <summary>Base64-encoded canonical content-hash bytes supplied by the server.</summary>
     public string? ContentHashInput { get; init; }
 
-    /// <summary>Immutable package envelope.</summary>
-    public required StudioPackageEnvelope Envelope { get; init; }
+    /// <summary>Immutable content envelope.</summary>
+    public required StudioContentEnvelope Envelope { get; init; }
 
     /// <summary>Validation summary captured at version creation.</summary>
     public required StudioValidationSummary Validation { get; init; }
 
-    /// <summary>Dependency sidecars captured from the immutable package envelope.</summary>
-    public IReadOnlyList<StudioPackageDependency> Dependencies { get; init; } = Array.Empty<StudioPackageDependency>();
+    /// <summary>Dependency sidecars captured from the immutable content envelope.</summary>
+    public IReadOnlyList<StudioContentDependency> Dependencies { get; init; } = Array.Empty<StudioContentDependency>();
 
-    /// <summary>Provenance captured from the immutable package envelope.</summary>
+    /// <summary>Provenance captured from the immutable content envelope.</summary>
     public IReadOnlyList<StudioProvenanceRef> Provenance { get; init; } = Array.Empty<StudioProvenanceRef>();
 
     /// <summary>Source draft identifier.</summary>
@@ -332,15 +313,7 @@ public sealed record StudioContentVersion
     /// <summary>Timestamp when the immutable version was created.</summary>
     public required DateTimeOffset CreatedAt { get; init; }
 
-    /// <summary>
-    /// Recomputes <see cref="ContentHash"/> from <see cref="ContentHashInput"/>: the lower-case
-    /// hexadecimal SHA-256 of the base64-decoded input bytes.
-    /// </summary>
-    /// <returns>
-    /// <see langword="null"/> when the server supplied no <see cref="ContentHashInput"/> (nothing to
-    /// verify); <see langword="true"/> when the recomputed digest equals <see cref="ContentHash"/>;
-    /// <see langword="false"/> when it differs or the input is not valid base64.
-    /// </returns>
+    /// <summary>Recomputes <see cref="ContentHash"/> from <see cref="ContentHashInput"/>: the lower-case hexadecimal SHA-256 of the base64-decoded input bytes.</summary>
     public bool? VerifyContentHash() => StudioContentHash.Verify(ContentHashInput, ContentHash);
 }
 
@@ -355,7 +328,7 @@ public sealed record StudioContentVersionList
 }
 
 /// <summary>Current and released Version pointers for Studio content.</summary>
-public sealed record StudioContentItemPointers
+public sealed record StudioContentPointers
 {
     /// <summary>Studio content identifier.</summary>
     public required Guid ItemId { get; init; }
@@ -397,13 +370,7 @@ public sealed record StudioPublicationRequest
     /// <summary>Timestamp when the request was created.</summary>
     public required DateTimeOffset CreatedAt { get; init; }
 
-    /// <summary>
-    /// Final publication URL (honua-server#5788): the root-relative published-route URL that
-    /// serves the item's Active version, the same value as the <c>activeUrl</c> the publication
-    /// operation handle reports. Present only when <see cref="Status"/> is
-    /// <see cref="StudioPublicationRequestStatus.Accepted"/> and the intent names a route; absent
-    /// while pending, on a rejected request, and from servers that predate it.
-    /// </summary>
+    /// <summary>Root-relative URL serving the active published version when publication is accepted.</summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Design",
         "CA1056:URI-like properties should not be strings",
@@ -436,14 +403,14 @@ public sealed record StudioVersionComparison
     public IReadOnlyList<string> Changes { get; init; } = Array.Empty<string>();
 }
 
-/// <summary>Stable preview plan for a mutable Studio package draft.</summary>
+/// <summary>Stable preview plan for a mutable Studio content draft.</summary>
 public sealed record StudioPreviewPlan
 {
     /// <summary>Draft identifier.</summary>
     public required Guid DraftId { get; init; }
 
     /// <summary>Studio content kind.</summary>
-    public required StudioPackageFamily Family { get; init; }
+    public required StudioContentKind Family { get; init; }
 
     /// <summary>True when preview can run synchronously.</summary>
     public required bool Synchronous { get; init; }
@@ -475,7 +442,7 @@ public sealed record StudioRollbackRequest
     public required StudioRollbackPointer Target { get; init; }
 
     /// <summary>Resulting current/published pointers.</summary>
-    public required StudioContentItemPointers Pointers { get; init; }
+    public required StudioContentPointers Pointers { get; init; }
 
     /// <summary>Identifier of the actor that requested rollback.</summary>
     public string? RequestedBy { get; init; }

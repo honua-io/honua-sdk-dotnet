@@ -4,53 +4,1283 @@ Honua.Sdk.Studio.Capabilities.CapabilityEntry.Lifecycle.init -> void
 Honua.Sdk.Studio.Capabilities.CapabilityEntry.OptInRequired.get -> bool
 Honua.Sdk.Studio.Capabilities.CapabilityEntry.OptInRequired.init -> void
 
-Honua.Sdk.Studio.Packages.StudioPublicationSubmission
-static Honua.Sdk.Studio.Packages.StudioPublicationSubmission.AwaitingApproval(Honua.Sdk.Abstractions.Operations.HonuaOperationHandle! operation) -> Honua.Sdk.Studio.Packages.StudioPublicationSubmission!
-static Honua.Sdk.Studio.Packages.StudioPublicationSubmission.FromPublication(Honua.Sdk.Studio.Packages.StudioPublicationRequest! publication) -> Honua.Sdk.Studio.Packages.StudioPublicationSubmission!
-Honua.Sdk.Studio.Packages.StudioPublicationSubmission.Operation.get -> Honua.Sdk.Abstractions.Operations.HonuaOperationHandle?
-Honua.Sdk.Studio.Packages.StudioPublicationSubmission.Publication.get -> Honua.Sdk.Studio.Packages.StudioPublicationRequest?
-Honua.Sdk.Studio.Packages.StudioPublicationSubmission.RequiresApproval.get -> bool
-Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.SubmitPublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublicationSubmission!>!
-Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.SubmitPublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublicationSubmission!>!
+Honua.Sdk.Studio.Content.StudioPublicationSubmission
+static Honua.Sdk.Studio.Content.StudioPublicationSubmission.AwaitingApproval(Honua.Sdk.Abstractions.Operations.HonuaOperationHandle! operation) -> Honua.Sdk.Studio.Content.StudioPublicationSubmission!
+static Honua.Sdk.Studio.Content.StudioPublicationSubmission.FromPublication(Honua.Sdk.Studio.Content.StudioPublicationRequest! publication) -> Honua.Sdk.Studio.Content.StudioPublicationSubmission!
+Honua.Sdk.Studio.Content.StudioPublicationSubmission.Operation.get -> Honua.Sdk.Abstractions.Operations.HonuaOperationHandle?
+Honua.Sdk.Studio.Content.StudioPublicationSubmission.Publication.get -> Honua.Sdk.Studio.Content.StudioPublicationRequest?
+Honua.Sdk.Studio.Content.StudioPublicationSubmission.RequiresApproval.get -> bool
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.SubmitPublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Content.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPublicationSubmission!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.SubmitPublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Content.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPublicationSubmission!>!
 
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.StudioPublishedArtifact() -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Route.get -> string!
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Route.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Visibility.get -> string?
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Visibility.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PublicationId.get -> System.Guid
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PublicationId.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ItemId.get -> System.Guid
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ItemId.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.VersionId.get -> System.Guid
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.VersionId.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.VersionNumber.get -> int
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.VersionNumber.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PackageKey.get -> string!
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PackageKey.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Family.get -> Honua.Sdk.Studio.Packages.StudioPackageFamily
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Family.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHash.get -> string!
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHash.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHashInput.get -> string?
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.ContentHashInput.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.VerifyContentHash() -> bool?
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PublishedAt.get -> System.DateTimeOffset
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.PublishedAt.init -> void
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Envelope.get -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!
-Honua.Sdk.Studio.Packages.StudioPublishedArtifact.Envelope.init -> void
-Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPublishedArtifactAsync(string! route, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublishedArtifact!>!
-Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPublishedArtifactAsync(string! route, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublishedArtifact!>!
-Honua.Sdk.Studio.Packages.StudioContentHash
-static Honua.Sdk.Studio.Packages.StudioContentHash.Compute(System.ReadOnlySpan<byte> input) -> string!
-static Honua.Sdk.Studio.Packages.StudioContentHash.Verify(string? contentHashInput, string? contentHash) -> bool?
-Honua.Sdk.Studio.Packages.StudioContentVersion.ContentHashInput.get -> string?
-Honua.Sdk.Studio.Packages.StudioContentVersion.ContentHashInput.init -> void
-Honua.Sdk.Studio.Packages.StudioContentVersion.VerifyContentHash() -> bool?
-Honua.Sdk.Studio.Packages.StudioPublicationRequest.PublicationUrl.get -> string?
-Honua.Sdk.Studio.Packages.StudioPublicationRequest.PublicationUrl.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.StudioPublishedArtifact() -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Route.get -> string!
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Route.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Visibility.get -> string?
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Visibility.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.PublicationId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.PublicationId.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.VersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.VersionId.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.VersionNumber.get -> int
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.VersionNumber.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.PackageKey.get -> string!
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.PackageKey.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Family.get -> Honua.Sdk.Studio.Content.StudioContentKind
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Family.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.ContentHash.get -> string!
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.ContentHash.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.ContentHashInput.get -> string?
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.ContentHashInput.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.VerifyContentHash() -> bool?
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.PublishedAt.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.PublishedAt.init -> void
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Envelope.get -> Honua.Sdk.Studio.Content.StudioContentEnvelope!
+Honua.Sdk.Studio.Content.StudioPublishedArtifact.Envelope.init -> void
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetPublishedArtifactAsync(string! route, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPublishedArtifact!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetPublishedArtifactAsync(string! route, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPublishedArtifact!>!
+Honua.Sdk.Studio.Content.StudioContentHash
+static Honua.Sdk.Studio.Content.StudioContentHash.Compute(System.ReadOnlySpan<byte> input) -> string!
+static Honua.Sdk.Studio.Content.StudioContentHash.Verify(string? contentHashInput, string? contentHash) -> bool?
+Honua.Sdk.Studio.Content.StudioContentVersion.ContentHashInput.get -> string?
+Honua.Sdk.Studio.Content.StudioContentVersion.ContentHashInput.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.VerifyContentHash() -> bool?
+Honua.Sdk.Studio.Content.StudioPublicationRequest.PublicationUrl.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationRequest.PublicationUrl.init -> void
 Honua.Sdk.Studio.Capabilities.CapabilityManifest.SupportsContentKind(string! kind) -> bool
-Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetContentPointersAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentItemPointers?>!
-Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentPointersAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentItemPointers?>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetContentPointersAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentPointers?>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetContentPointersAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentPointers?>!
 *REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifest.HasPackageFamily(string! familyId) -> bool
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifest.Packages.get -> Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages?
+Honua.Sdk.Studio.Capabilities.CapabilityManifest.Packages.get -> Honua.Sdk.Studio.Capabilities.CapabilityManifestContent?
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.<Clone>$() -> Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages!
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.<Clone>$() -> Honua.Sdk.Studio.Capabilities.CapabilityManifestContent!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.CapabilityManifestPackages() -> void
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.CapabilityManifestContent() -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.Equals(Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages? other) -> bool
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.Equals(Honua.Sdk.Studio.Capabilities.CapabilityManifestContent? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.Families.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily!>!
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.Families.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Capabilities.CapabilityContentKind!>!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.Families.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.Families.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.PublicationFamilies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.PublicationFamilies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.PublicationFamilies.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.PublicationFamilies.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.SchemaVersions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.SchemaVersions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.SchemaVersions.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.SchemaVersions.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.StorageFamilies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.StorageFamilies.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.StorageFamilies.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.StorageFamilies.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.<Clone>$() -> Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily!
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.<Clone>$() -> Honua.Sdk.Studio.Capabilities.CapabilityContentKind!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.CapabilityPackageFamily() -> void
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.CapabilityContentKind() -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Equals(Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily? other) -> bool
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Equals(Honua.Sdk.Studio.Capabilities.CapabilityContentKind? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Id.get -> string!
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Id.get -> string!
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Id.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Id.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Kind.get -> string?
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Kind.get -> string?
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Kind.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Kind.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.SchemaVersion.get -> string?
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.SchemaVersion.get -> string?
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.SchemaVersion.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.SchemaVersion.init -> void
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Supported.get -> bool
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Supported.get -> bool
+*REMOVED*Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Supported.init -> void
+Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Supported.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest!
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.<Clone>$() -> Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.CompareStudioContentVersionsRequest() -> void
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.CompareStudioContentVersionsRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.Equals(Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest? other) -> bool
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.Equals(Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.LeftVersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.LeftVersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.LeftVersionId.init -> void
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.LeftVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.RightVersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.RightVersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.RightVersionId.init -> void
+Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.RightVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest!
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.<Clone>$() -> Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.CreateStudioPackageDraftRequest() -> void
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.CreateStudioContentDraftRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.Envelope.get -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.Envelope.get -> Honua.Sdk.Studio.Content.StudioContentEnvelope!
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.Envelope.init -> void
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.Envelope.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.Equals(Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest? other) -> bool
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.Equals(Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.ItemId.get -> System.Guid?
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.ItemId.get -> System.Guid?
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.ItemId.init -> void
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.OwnerId.get -> string?
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.OwnerId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.OwnerId.init -> void
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.OwnerId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.PackageKey.get -> string!
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.PackageKey.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.PackageKey.init -> void
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.PackageKey.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.WorkspaceId.get -> string?
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.WorkspaceId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.WorkspaceId.init -> void
+Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.WorkspaceId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest!
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.<Clone>$() -> Honua.Sdk.Studio.Content.CreateStudioPublicationRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.CreateStudioPublicationRequest() -> void
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.CreateStudioPublicationRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.Equals(Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest? other) -> bool
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.Equals(Honua.Sdk.Studio.Content.CreateStudioPublicationRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.Intent.get -> Honua.Sdk.Studio.Packages.StudioPublicationIntent?
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.Intent.get -> Honua.Sdk.Studio.Content.StudioPublicationIntent?
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.Intent.init -> void
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.Intent.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.WarningAcknowledgement.get -> string?
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.WarningAcknowledgement.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.WarningAcknowledgement.init -> void
+Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.WarningAcknowledgement.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest!
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.<Clone>$() -> Honua.Sdk.Studio.Content.CreateStudioRollbackRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.CreateStudioRollbackRequest() -> void
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.CreateStudioRollbackRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.Equals(Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest? other) -> bool
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.Equals(Honua.Sdk.Studio.Content.CreateStudioRollbackRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.Reason.get -> string?
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.Reason.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.Reason.init -> void
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.Reason.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.Target.get -> Honua.Sdk.Studio.Packages.StudioRollbackPointer
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.Target.get -> Honua.Sdk.Studio.Content.StudioRollbackPointer
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.Target.init -> void
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.Target.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.TargetVersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.TargetVersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.TargetVersionId.init -> void
+Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.TargetVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient
+Honua.Sdk.Studio.Content.HonuaStudioContentClient
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.CompareVersionsAsync(System.Guid itemId, Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioVersionComparison!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.CompareVersionsAsync(System.Guid itemId, Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioVersionComparison!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.CreateContentVersionAsync(System.Guid draftId, Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentVersion!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.CreateContentVersionAsync(System.Guid draftId, Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentVersion!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.CreateDraftAsync(Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.CreateDraftAsync(Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.CreatePublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublicationRequest!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.CreatePublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Content.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPublicationRequest!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.DeleteDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.DeleteDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetPackageFamiliesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetContentKindsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentKindCapabilities!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.GetVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentVersion!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.GetVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentVersion!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.HonuaStudioPackageClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.HonuaStudioContentClient(System.Net.Http.HttpClient! httpClient) -> void
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.ListVersionsAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentVersionList!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.ListVersionsAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentVersionList!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.PreviewPlanAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPreviewPlan!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.PreviewPlanAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPreviewPlan!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.ReopenVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.ReopenVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.RollbackAsync(System.Guid itemId, Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioRollbackRequest!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.RollbackAsync(System.Guid itemId, Honua.Sdk.Studio.Content.CreateStudioRollbackRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioRollbackRequest!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.UpdateDraftAsync(System.Guid draftId, Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.UpdateDraftAsync(System.Guid draftId, Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.HonuaStudioPackageClient.ValidateDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioValidationSummary!>!
+Honua.Sdk.Studio.Content.HonuaStudioContentClient.ValidateDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioValidationSummary!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CompareVersionsAsync(System.Guid itemId, Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioVersionComparison!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CompareVersionsAsync(System.Guid itemId, Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioVersionComparison!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreateContentVersionAsync(System.Guid draftId, Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentVersion!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CreateContentVersionAsync(System.Guid draftId, Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentVersion!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreateDraftAsync(Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CreateDraftAsync(Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreatePublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPublicationRequest!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CreatePublishRequestAsync(System.Guid itemId, System.Guid versionId, Honua.Sdk.Studio.Content.CreateStudioPublicationRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPublicationRequest!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.DeleteDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.DeleteDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetContentKindsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentKindCapabilities!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentVersion!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentVersion!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ListVersionsAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioContentVersionList!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.ListVersionsAsync(System.Guid itemId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentVersionList!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.PreviewPlanAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPreviewPlan!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.PreviewPlanAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioPreviewPlan!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ReopenVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.ReopenVersionAsync(System.Guid itemId, System.Guid versionId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.RollbackAsync(System.Guid itemId, Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioRollbackRequest!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.RollbackAsync(System.Guid itemId, Honua.Sdk.Studio.Content.CreateStudioRollbackRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioRollbackRequest!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.UpdateDraftAsync(System.Guid draftId, Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioPackageDraft!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.UpdateDraftAsync(System.Guid draftId, Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioContentDraft!>!
+*REMOVED*Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ValidateDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Packages.StudioValidationSummary!>!
+Honua.Sdk.Studio.Content.IHonuaStudioContentClient.ValidateDraftAsync(System.Guid draftId, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Studio.Content.StudioValidationSummary!>!
+*REMOVED*Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest
+Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest
+*REMOVED*Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest!
+Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.<Clone>$() -> Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.ChangeNote.get -> string?
+Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.ChangeNote.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.ChangeNote.init -> void
+Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.ChangeNote.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.Equals(Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest? other) -> bool
+Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.Equals(Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.SaveStudioContentVersionRequest() -> void
+Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.SaveStudioContentVersionRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>
+Honua.Sdk.Studio.Content.StudioApiResponse<T>
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Data.get -> T?
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Data.get -> T?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Data.init -> void
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Data.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Message.get -> string?
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Message.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Message.init -> void
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Message.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.StudioApiResponse() -> void
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.StudioApiResponse() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Success.get -> bool
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Success.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Success.init -> void
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Success.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Timestamp.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Timestamp.get -> System.DateTimeOffset
+*REMOVED*Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Timestamp.init -> void
+Honua.Sdk.Studio.Content.StudioApiResponse<T>.Timestamp.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers
+Honua.Sdk.Studio.Content.StudioContentPointers
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioContentItemPointers!
+Honua.Sdk.Studio.Content.StudioContentPointers.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentPointers!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.CurrentVersionId.get -> System.Guid?
+Honua.Sdk.Studio.Content.StudioContentPointers.CurrentVersionId.get -> System.Guid?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.CurrentVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioContentPointers.CurrentVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.Equals(Honua.Sdk.Studio.Packages.StudioContentItemPointers? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentPointers.Equals(Honua.Sdk.Studio.Content.StudioContentPointers? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioContentPointers.ItemId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioContentPointers.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.PublishedVersionId.get -> System.Guid?
+Honua.Sdk.Studio.Content.StudioContentPointers.PublishedVersionId.get -> System.Guid?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.PublishedVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioContentPointers.PublishedVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentItemPointers.StudioContentItemPointers() -> void
+Honua.Sdk.Studio.Content.StudioContentPointers.StudioContentPointers() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion
+Honua.Sdk.Studio.Content.StudioContentVersion
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioContentVersion!
+Honua.Sdk.Studio.Content.StudioContentVersion.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentVersion!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.BaseVersionId.get -> System.Guid?
+Honua.Sdk.Studio.Content.StudioContentVersion.BaseVersionId.get -> System.Guid?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.BaseVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.BaseVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.ChangeNote.get -> string?
+Honua.Sdk.Studio.Content.StudioContentVersion.ChangeNote.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.ChangeNote.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.ChangeNote.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.ContentHash.get -> string!
+Honua.Sdk.Studio.Content.StudioContentVersion.ContentHash.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.ContentHash.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.ContentHash.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioContentVersion.CreatedAt.get -> System.DateTimeOffset
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.CreatedAt.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.CreatedAt.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.CreatedBy.get -> string?
+Honua.Sdk.Studio.Content.StudioContentVersion.CreatedBy.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.CreatedBy.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.CreatedBy.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Dependencies.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioPackageDependency!>!
+Honua.Sdk.Studio.Content.StudioContentVersion.Dependencies.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioContentDependency!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Dependencies.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.Dependencies.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Envelope.get -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!
+Honua.Sdk.Studio.Content.StudioContentVersion.Envelope.get -> Honua.Sdk.Studio.Content.StudioContentEnvelope!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Envelope.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.Envelope.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Equals(Honua.Sdk.Studio.Packages.StudioContentVersion? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentVersion.Equals(Honua.Sdk.Studio.Content.StudioContentVersion? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioContentVersion.ItemId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.OwnerId.get -> string?
+Honua.Sdk.Studio.Content.StudioContentVersion.OwnerId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.OwnerId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.OwnerId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.PackageKey.get -> string!
+Honua.Sdk.Studio.Content.StudioContentVersion.PackageKey.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.PackageKey.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.PackageKey.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Provenance.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioProvenanceRef!>!
+Honua.Sdk.Studio.Content.StudioContentVersion.Provenance.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioProvenanceRef!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Provenance.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.Provenance.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.SourceDraftId.get -> System.Guid?
+Honua.Sdk.Studio.Content.StudioContentVersion.SourceDraftId.get -> System.Guid?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.SourceDraftId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.SourceDraftId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.StudioContentVersion() -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.StudioContentVersion() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Validation.get -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+Honua.Sdk.Studio.Content.StudioContentVersion.Validation.get -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.Validation.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.Validation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.VersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioContentVersion.VersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.VersionId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.VersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.VersionNumber.get -> int
+Honua.Sdk.Studio.Content.StudioContentVersion.VersionNumber.get -> int
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.VersionNumber.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.VersionNumber.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.WorkspaceId.get -> string?
+Honua.Sdk.Studio.Content.StudioContentVersion.WorkspaceId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersion.WorkspaceId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersion.WorkspaceId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList
+Honua.Sdk.Studio.Content.StudioContentVersionList
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioContentVersionList!
+Honua.Sdk.Studio.Content.StudioContentVersionList.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentVersionList!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.Equals(Honua.Sdk.Studio.Packages.StudioContentVersionList? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentVersionList.Equals(Honua.Sdk.Studio.Content.StudioContentVersionList? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioContentVersionList.ItemId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersionList.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.StudioContentVersionList() -> void
+Honua.Sdk.Studio.Content.StudioContentVersionList.StudioContentVersionList() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.Versions.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioContentVersion!>!
+Honua.Sdk.Studio.Content.StudioContentVersionList.Versions.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioContentVersion!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioContentVersionList.Versions.init -> void
+Honua.Sdk.Studio.Content.StudioContentVersionList.Versions.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding
+Honua.Sdk.Studio.Content.StudioContentBinding
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPackageBinding!
+Honua.Sdk.Studio.Content.StudioContentBinding.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentBinding!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Crs.get -> string?
+Honua.Sdk.Studio.Content.StudioContentBinding.Crs.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Crs.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Crs.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Equals(Honua.Sdk.Studio.Packages.StudioPackageBinding? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentBinding.Equals(Honua.Sdk.Studio.Content.StudioContentBinding? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Key.get -> string!
+Honua.Sdk.Studio.Content.StudioContentBinding.Key.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Key.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Key.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Kind.get -> string!
+Honua.Sdk.Studio.Content.StudioContentBinding.Kind.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Kind.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Kind.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Metadata.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Studio.Content.StudioContentBinding.Metadata.get -> System.Text.Json.JsonElement?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Metadata.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Metadata.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Ref.get -> string!
+Honua.Sdk.Studio.Content.StudioContentBinding.Ref.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Ref.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Ref.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.RequiredPermissions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Content.StudioContentBinding.RequiredPermissions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.RequiredPermissions.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.RequiredPermissions.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Srid.get -> int?
+Honua.Sdk.Studio.Content.StudioContentBinding.Srid.get -> int?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Srid.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Srid.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.StudioPackageBinding() -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.StudioContentBinding() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Units.get -> string?
+Honua.Sdk.Studio.Content.StudioContentBinding.Units.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageBinding.Units.init -> void
+Honua.Sdk.Studio.Content.StudioContentBinding.Units.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency
+Honua.Sdk.Studio.Content.StudioContentDependency
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPackageDependency!
+Honua.Sdk.Studio.Content.StudioContentDependency.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentDependency!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Equals(Honua.Sdk.Studio.Packages.StudioPackageDependency? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentDependency.Equals(Honua.Sdk.Studio.Content.StudioContentDependency? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Kind.get -> string!
+Honua.Sdk.Studio.Content.StudioContentDependency.Kind.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Kind.init -> void
+Honua.Sdk.Studio.Content.StudioContentDependency.Kind.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Metadata.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Studio.Content.StudioContentDependency.Metadata.get -> System.Text.Json.JsonElement?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Metadata.init -> void
+Honua.Sdk.Studio.Content.StudioContentDependency.Metadata.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Ref.get -> string!
+Honua.Sdk.Studio.Content.StudioContentDependency.Ref.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Ref.init -> void
+Honua.Sdk.Studio.Content.StudioContentDependency.Ref.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Required.get -> bool
+Honua.Sdk.Studio.Content.StudioContentDependency.Required.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.Required.init -> void
+Honua.Sdk.Studio.Content.StudioContentDependency.Required.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.StudioPackageDependency() -> void
+Honua.Sdk.Studio.Content.StudioContentDependency.StudioContentDependency() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.VersionId.get -> string?
+Honua.Sdk.Studio.Content.StudioContentDependency.VersionId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDependency.VersionId.init -> void
+Honua.Sdk.Studio.Content.StudioContentDependency.VersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity
+Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity.Blocker = 3 -> Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity
+Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity.Blocker = 3 -> Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity.Error = 2 -> Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity
+Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity.Error = 2 -> Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity.Info = 0 -> Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity
+Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity.Info = 0 -> Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity.Warning = 1 -> Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity
+Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity.Warning = 1 -> Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft
+Honua.Sdk.Studio.Content.StudioContentDraft
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPackageDraft!
+Honua.Sdk.Studio.Content.StudioContentDraft.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentDraft!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.BaseVersionId.get -> System.Guid?
+Honua.Sdk.Studio.Content.StudioContentDraft.BaseVersionId.get -> System.Guid?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.BaseVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.BaseVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioContentDraft.CreatedAt.get -> System.DateTimeOffset
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.CreatedAt.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.CreatedAt.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.CreatedBy.get -> string?
+Honua.Sdk.Studio.Content.StudioContentDraft.CreatedBy.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.CreatedBy.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.CreatedBy.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.DraftId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioContentDraft.DraftId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.DraftId.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.DraftId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Envelope.get -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!
+Honua.Sdk.Studio.Content.StudioContentDraft.Envelope.get -> Honua.Sdk.Studio.Content.StudioContentEnvelope!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Envelope.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.Envelope.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Equals(Honua.Sdk.Studio.Packages.StudioPackageDraft? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentDraft.Equals(Honua.Sdk.Studio.Content.StudioContentDraft? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Family.get -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentDraft.Family.get -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Family.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.Family.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Generation.get -> long
+Honua.Sdk.Studio.Content.StudioContentDraft.Generation.get -> long
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Generation.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.Generation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioContentDraft.ItemId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.OwnerId.get -> string?
+Honua.Sdk.Studio.Content.StudioContentDraft.OwnerId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.OwnerId.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.OwnerId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.PackageKey.get -> string!
+Honua.Sdk.Studio.Content.StudioContentDraft.PackageKey.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.PackageKey.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.PackageKey.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.StudioPackageDraft() -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.StudioContentDraft() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.UpdatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioContentDraft.UpdatedAt.get -> System.DateTimeOffset
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.UpdatedAt.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.UpdatedAt.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.UpdatedBy.get -> string?
+Honua.Sdk.Studio.Content.StudioContentDraft.UpdatedBy.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.UpdatedBy.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.UpdatedBy.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Validation.get -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+Honua.Sdk.Studio.Content.StudioContentDraft.Validation.get -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.Validation.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.Validation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.WorkspaceId.get -> string?
+Honua.Sdk.Studio.Content.StudioContentDraft.WorkspaceId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageDraft.WorkspaceId.init -> void
+Honua.Sdk.Studio.Content.StudioContentDraft.WorkspaceId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope
+Honua.Sdk.Studio.Content.StudioContentEnvelope
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!
+Honua.Sdk.Studio.Content.StudioContentEnvelope.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentEnvelope!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Bindings.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioPackageBinding!>!
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Bindings.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioContentBinding!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Bindings.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Bindings.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Body.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Body.get -> System.Text.Json.JsonElement?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Body.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Body.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Dependencies.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioPackageDependency!>!
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Dependencies.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioContentDependency!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Dependencies.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Dependencies.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Equals(Honua.Sdk.Studio.Packages.StudioPackageEnvelope? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Equals(Honua.Sdk.Studio.Content.StudioContentEnvelope? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Family.get -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Family.get -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Family.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Family.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Format.get -> string?
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Format.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Format.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Format.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Provenance.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioProvenanceRef!>!
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Provenance.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioProvenanceRef!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Provenance.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Provenance.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.PublicationIntent.get -> Honua.Sdk.Studio.Packages.StudioPublicationIntent?
+Honua.Sdk.Studio.Content.StudioContentEnvelope.PublicationIntent.get -> Honua.Sdk.Studio.Content.StudioPublicationIntent?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.PublicationIntent.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.PublicationIntent.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.SchemaVersion.get -> string!
+Honua.Sdk.Studio.Content.StudioContentEnvelope.SchemaVersion.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.SchemaVersion.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.SchemaVersion.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.StudioPackageEnvelope() -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.StudioContentEnvelope() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Validation.get -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Validation.get -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Validation.init -> void
+Honua.Sdk.Studio.Content.StudioContentEnvelope.Validation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Analysis = 1 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Analysis = 1 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.App = 6 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.App = 6 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Dashboard = 3 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Dashboard = 3 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Etl = 9 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Etl = 9 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Form = 5 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Form = 5 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Geoprocessing = 8 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Geoprocessing = 8 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Map = 2 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Map = 2 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Query = 0 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Query = 0 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Report = 4 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Report = 4 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamily.Workflow = 7 -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKind.Workflow = 7 -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities!
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentKindCapabilities!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.Durable.get -> bool
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.Durable.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.Durable.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.Durable.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.Equals(Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.Equals(Honua.Sdk.Studio.Content.StudioContentKindCapabilities? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.Families.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor!>!
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.Families.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioContentKindDescriptor!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.Families.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.Families.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.PersistenceMode.get -> Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.PersistenceMode.get -> Honua.Sdk.Studio.Content.StudioContentPersistenceMode
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.PersistenceMode.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.PersistenceMode.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.StudioPackageFamilyCapabilities() -> void
+Honua.Sdk.Studio.Content.StudioContentKindCapabilities.StudioContentKindCapabilities() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor!
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.<Clone>$() -> Honua.Sdk.Studio.Content.StudioContentKindDescriptor!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.CurrentSchemaVersion.get -> string!
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.CurrentSchemaVersion.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.CurrentSchemaVersion.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.CurrentSchemaVersion.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Equals(Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor? other) -> bool
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Equals(Honua.Sdk.Studio.Content.StudioContentKindDescriptor? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Family.get -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Family.get -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Family.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Family.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Format.get -> string!
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Format.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Format.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Format.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Limitations.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Limitations.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Limitations.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Limitations.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.MaxPackageBytes.get -> int
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.MaxPackageBytes.get -> int
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.MaxPackageBytes.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.MaxPackageBytes.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.PreviewSupported.get -> bool
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.PreviewSupported.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.PreviewSupported.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.PreviewSupported.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.PublishSupported.get -> bool
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.PublishSupported.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.PublishSupported.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.PublishSupported.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.StudioPackageFamilyDescriptor() -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.StudioContentKindDescriptor() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.SupportedOperations.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioPackageOperation>!
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.SupportedOperations.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioContentOperation>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.SupportedOperations.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.SupportedOperations.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.SupportLevel.get -> Honua.Sdk.Studio.Packages.StudioPackageSupportLevel
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.SupportLevel.get -> Honua.Sdk.Studio.Content.StudioContentSupportLevel
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.SupportLevel.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.SupportLevel.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.ValidationDepth.get -> string!
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.ValidationDepth.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.ValidationDepth.init -> void
+Honua.Sdk.Studio.Content.StudioContentKindDescriptor.ValidationDepth.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.ContentVersionCompare = 7 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.ContentVersionCompare = 7 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.ContentVersionCreate = 5 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.ContentVersionCreate = 5 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.ContentVersionRead = 6 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.ContentVersionRead = 6 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.DraftCreate = 0 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.DraftCreate = 0 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.DraftRead = 1 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.DraftRead = 1 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.DraftUpdate = 2 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.DraftUpdate = 2 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.PreviewPlan = 4 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.PreviewPlan = 4 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.PublishRequestCreate = 8 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.PublishRequestCreate = 8 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.Reopen = 9 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.Reopen = 9 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.Rollback = 10 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.Rollback = 10 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageOperation.Validate = 3 -> Honua.Sdk.Studio.Packages.StudioPackageOperation
+Honua.Sdk.Studio.Content.StudioContentOperation.Validate = 3 -> Honua.Sdk.Studio.Content.StudioContentOperation
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode
+Honua.Sdk.Studio.Content.StudioContentPersistenceMode
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode.Durable = 1 -> Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode
+Honua.Sdk.Studio.Content.StudioContentPersistenceMode.Durable = 1 -> Honua.Sdk.Studio.Content.StudioContentPersistenceMode
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode.InMemory = 0 -> Honua.Sdk.Studio.Packages.StudioPackagePersistenceMode
+Honua.Sdk.Studio.Content.StudioContentPersistenceMode.InMemory = 0 -> Honua.Sdk.Studio.Content.StudioContentPersistenceMode
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageSupportLevel
+Honua.Sdk.Studio.Content.StudioContentSupportLevel
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageSupportLevel.Limited = 1 -> Honua.Sdk.Studio.Packages.StudioPackageSupportLevel
+Honua.Sdk.Studio.Content.StudioContentSupportLevel.Limited = 1 -> Honua.Sdk.Studio.Content.StudioContentSupportLevel
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageSupportLevel.Supported = 2 -> Honua.Sdk.Studio.Packages.StudioPackageSupportLevel
+Honua.Sdk.Studio.Content.StudioContentSupportLevel.Supported = 2 -> Honua.Sdk.Studio.Content.StudioContentSupportLevel
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageSupportLevel.Unsupported = 0 -> Honua.Sdk.Studio.Packages.StudioPackageSupportLevel
+Honua.Sdk.Studio.Content.StudioContentSupportLevel.Unsupported = 0 -> Honua.Sdk.Studio.Content.StudioContentSupportLevel
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageValidationStatus
+Honua.Sdk.Studio.Content.StudioContentValidationStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageValidationStatus.Invalid = 3 -> Honua.Sdk.Studio.Packages.StudioPackageValidationStatus
+Honua.Sdk.Studio.Content.StudioContentValidationStatus.Invalid = 3 -> Honua.Sdk.Studio.Content.StudioContentValidationStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageValidationStatus.NotValidated = 0 -> Honua.Sdk.Studio.Packages.StudioPackageValidationStatus
+Honua.Sdk.Studio.Content.StudioContentValidationStatus.NotValidated = 0 -> Honua.Sdk.Studio.Content.StudioContentValidationStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageValidationStatus.Valid = 1 -> Honua.Sdk.Studio.Packages.StudioPackageValidationStatus
+Honua.Sdk.Studio.Content.StudioContentValidationStatus.Valid = 1 -> Honua.Sdk.Studio.Content.StudioContentValidationStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPackageValidationStatus.Warning = 2 -> Honua.Sdk.Studio.Packages.StudioPackageValidationStatus
+Honua.Sdk.Studio.Content.StudioContentValidationStatus.Warning = 2 -> Honua.Sdk.Studio.Content.StudioContentValidationStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan
+Honua.Sdk.Studio.Content.StudioPreviewPlan
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPreviewPlan!
+Honua.Sdk.Studio.Content.StudioPreviewPlan.<Clone>$() -> Honua.Sdk.Studio.Content.StudioPreviewPlan!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.DraftId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPreviewPlan.DraftId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.DraftId.init -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.DraftId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Equals(Honua.Sdk.Studio.Packages.StudioPreviewPlan? other) -> bool
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Equals(Honua.Sdk.Studio.Content.StudioPreviewPlan? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Family.get -> Honua.Sdk.Studio.Packages.StudioPackageFamily
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Family.get -> Honua.Sdk.Studio.Content.StudioContentKind
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Family.init -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Family.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.RequiresJob.get -> bool
+Honua.Sdk.Studio.Content.StudioPreviewPlan.RequiresJob.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.RequiresJob.init -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.RequiresJob.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Steps.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Steps.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Steps.init -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Steps.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.StudioPreviewPlan() -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.StudioPreviewPlan() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Synchronous.get -> bool
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Synchronous.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Synchronous.init -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Synchronous.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Validation.get -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Validation.get -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPreviewPlan.Validation.init -> void
+Honua.Sdk.Studio.Content.StudioPreviewPlan.Validation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef
+Honua.Sdk.Studio.Content.StudioProvenanceRef
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioProvenanceRef!
+Honua.Sdk.Studio.Content.StudioProvenanceRef.<Clone>$() -> Honua.Sdk.Studio.Content.StudioProvenanceRef!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.ActorId.get -> string?
+Honua.Sdk.Studio.Content.StudioProvenanceRef.ActorId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.ActorId.init -> void
+Honua.Sdk.Studio.Content.StudioProvenanceRef.ActorId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Equals(Honua.Sdk.Studio.Packages.StudioProvenanceRef? other) -> bool
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Equals(Honua.Sdk.Studio.Content.StudioProvenanceRef? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Kind.get -> string!
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Kind.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Kind.init -> void
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Kind.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Ref.get -> string!
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Ref.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Ref.init -> void
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Ref.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Rel.get -> string!
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Rel.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Rel.init -> void
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Rel.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.StudioProvenanceRef() -> void
+Honua.Sdk.Studio.Content.StudioProvenanceRef.StudioProvenanceRef() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Timestamp.get -> System.DateTimeOffset?
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Timestamp.get -> System.DateTimeOffset?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioProvenanceRef.Timestamp.init -> void
+Honua.Sdk.Studio.Content.StudioProvenanceRef.Timestamp.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent
+Honua.Sdk.Studio.Content.StudioPublicationIntent
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPublicationIntent!
+Honua.Sdk.Studio.Content.StudioPublicationIntent.<Clone>$() -> Honua.Sdk.Studio.Content.StudioPublicationIntent!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Embed.get -> bool?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Embed.get -> bool?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Embed.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Embed.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Equals(Honua.Sdk.Studio.Packages.StudioPublicationIntent? other) -> bool
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Equals(Honua.Sdk.Studio.Content.StudioPublicationIntent? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Job.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Job.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Job.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Job.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Metadata.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Metadata.get -> System.Text.Json.JsonElement?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Metadata.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Metadata.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Route.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Route.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Route.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Route.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Schedule.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Schedule.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Schedule.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Schedule.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Service.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Service.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Service.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Service.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.StudioPublicationIntent() -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.StudioPublicationIntent() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Visibility.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Visibility.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationIntent.Visibility.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationIntent.Visibility.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest
+Honua.Sdk.Studio.Content.StudioPublicationRequest
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioPublicationRequest!
+Honua.Sdk.Studio.Content.StudioPublicationRequest.<Clone>$() -> Honua.Sdk.Studio.Content.StudioPublicationRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioPublicationRequest.CreatedAt.get -> System.DateTimeOffset
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.CreatedAt.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.CreatedAt.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Equals(Honua.Sdk.Studio.Packages.StudioPublicationRequest? other) -> bool
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Equals(Honua.Sdk.Studio.Content.StudioPublicationRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Intent.get -> Honua.Sdk.Studio.Packages.StudioPublicationIntent?
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Intent.get -> Honua.Sdk.Studio.Content.StudioPublicationIntent?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Intent.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Intent.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPublicationRequest.ItemId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.RequestedBy.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationRequest.RequestedBy.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.RequestedBy.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.RequestedBy.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.RequestId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPublicationRequest.RequestId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.RequestId.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.RequestId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Status.get -> Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Status.get -> Honua.Sdk.Studio.Content.StudioPublicationRequestStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Status.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Status.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.StudioPublicationRequest() -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.StudioPublicationRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Validation.get -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Validation.get -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.Validation.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.Validation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.VersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioPublicationRequest.VersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.VersionId.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.VersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.WarningAcknowledgement.get -> string?
+Honua.Sdk.Studio.Content.StudioPublicationRequest.WarningAcknowledgement.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequest.WarningAcknowledgement.init -> void
+Honua.Sdk.Studio.Content.StudioPublicationRequest.WarningAcknowledgement.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus
+Honua.Sdk.Studio.Content.StudioPublicationRequestStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus.Accepted = 0 -> Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus
+Honua.Sdk.Studio.Content.StudioPublicationRequestStatus.Accepted = 0 -> Honua.Sdk.Studio.Content.StudioPublicationRequestStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus.Pending = 1 -> Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus
+Honua.Sdk.Studio.Content.StudioPublicationRequestStatus.Pending = 1 -> Honua.Sdk.Studio.Content.StudioPublicationRequestStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus.Rejected = 2 -> Honua.Sdk.Studio.Packages.StudioPublicationRequestStatus
+Honua.Sdk.Studio.Content.StudioPublicationRequestStatus.Rejected = 2 -> Honua.Sdk.Studio.Content.StudioPublicationRequestStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackPointer
+Honua.Sdk.Studio.Content.StudioRollbackPointer
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackPointer.Both = 2 -> Honua.Sdk.Studio.Packages.StudioRollbackPointer
+Honua.Sdk.Studio.Content.StudioRollbackPointer.Both = 2 -> Honua.Sdk.Studio.Content.StudioRollbackPointer
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackPointer.Current = 0 -> Honua.Sdk.Studio.Packages.StudioRollbackPointer
+Honua.Sdk.Studio.Content.StudioRollbackPointer.Current = 0 -> Honua.Sdk.Studio.Content.StudioRollbackPointer
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackPointer.Published = 1 -> Honua.Sdk.Studio.Packages.StudioRollbackPointer
+Honua.Sdk.Studio.Content.StudioRollbackPointer.Published = 1 -> Honua.Sdk.Studio.Content.StudioRollbackPointer
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest
+Honua.Sdk.Studio.Content.StudioRollbackRequest
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioRollbackRequest!
+Honua.Sdk.Studio.Content.StudioRollbackRequest.<Clone>$() -> Honua.Sdk.Studio.Content.StudioRollbackRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Studio.Content.StudioRollbackRequest.CreatedAt.get -> System.DateTimeOffset
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.CreatedAt.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.CreatedAt.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Equals(Honua.Sdk.Studio.Packages.StudioRollbackRequest? other) -> bool
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Equals(Honua.Sdk.Studio.Content.StudioRollbackRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.ItemId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioRollbackRequest.ItemId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.ItemId.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.ItemId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Pointers.get -> Honua.Sdk.Studio.Packages.StudioContentItemPointers!
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Pointers.get -> Honua.Sdk.Studio.Content.StudioContentPointers!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Pointers.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Pointers.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Reason.get -> string?
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Reason.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Reason.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Reason.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.RequestedBy.get -> string?
+Honua.Sdk.Studio.Content.StudioRollbackRequest.RequestedBy.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.RequestedBy.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.RequestedBy.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.RequestId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioRollbackRequest.RequestId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.RequestId.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.RequestId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.StudioRollbackRequest() -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.StudioRollbackRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Target.get -> Honua.Sdk.Studio.Packages.StudioRollbackPointer
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Target.get -> Honua.Sdk.Studio.Content.StudioRollbackPointer
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.Target.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.Target.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.TargetVersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioRollbackRequest.TargetVersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioRollbackRequest.TargetVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioRollbackRequest.TargetVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioValidationDiagnostic!
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.<Clone>$() -> Honua.Sdk.Studio.Content.StudioValidationDiagnostic!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Code.get -> string!
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Code.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Code.init -> void
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Code.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Equals(Honua.Sdk.Studio.Packages.StudioValidationDiagnostic? other) -> bool
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Equals(Honua.Sdk.Studio.Content.StudioValidationDiagnostic? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Message.get -> string!
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Message.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Message.init -> void
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Message.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Path.get -> string?
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Path.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Path.init -> void
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Path.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Severity.get -> Honua.Sdk.Studio.Packages.StudioPackageDiagnosticSeverity
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Severity.get -> Honua.Sdk.Studio.Content.StudioContentDiagnosticSeverity
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Severity.init -> void
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Severity.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.StudioValidationDiagnostic() -> void
+Honua.Sdk.Studio.Content.StudioValidationDiagnostic.StudioValidationDiagnostic() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary
+Honua.Sdk.Studio.Content.StudioValidationSummary
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+Honua.Sdk.Studio.Content.StudioValidationSummary.<Clone>$() -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Packages.StudioValidationDiagnostic!>!
+Honua.Sdk.Studio.Content.StudioValidationSummary.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Studio.Content.StudioValidationDiagnostic!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.Diagnostics.init -> void
+Honua.Sdk.Studio.Content.StudioValidationSummary.Diagnostics.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.Equals(Honua.Sdk.Studio.Packages.StudioValidationSummary? other) -> bool
+Honua.Sdk.Studio.Content.StudioValidationSummary.Equals(Honua.Sdk.Studio.Content.StudioValidationSummary? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.GeneratedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Studio.Content.StudioValidationSummary.GeneratedAt.get -> System.DateTimeOffset?
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.GeneratedAt.init -> void
+Honua.Sdk.Studio.Content.StudioValidationSummary.GeneratedAt.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.Status.get -> Honua.Sdk.Studio.Packages.StudioPackageValidationStatus
+Honua.Sdk.Studio.Content.StudioValidationSummary.Status.get -> Honua.Sdk.Studio.Content.StudioContentValidationStatus
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.Status.init -> void
+Honua.Sdk.Studio.Content.StudioValidationSummary.Status.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.StudioValidationSummary() -> void
+Honua.Sdk.Studio.Content.StudioValidationSummary.StudioValidationSummary() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.UnsupportedCapabilities.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Content.StudioValidationSummary.UnsupportedCapabilities.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioValidationSummary.UnsupportedCapabilities.init -> void
+Honua.Sdk.Studio.Content.StudioValidationSummary.UnsupportedCapabilities.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison
+Honua.Sdk.Studio.Content.StudioVersionComparison
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioVersionComparison!
+Honua.Sdk.Studio.Content.StudioVersionComparison.<Clone>$() -> Honua.Sdk.Studio.Content.StudioVersionComparison!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.Changes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Studio.Content.StudioVersionComparison.Changes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.Changes.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.Changes.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.ContentEqual.get -> bool
+Honua.Sdk.Studio.Content.StudioVersionComparison.ContentEqual.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.ContentEqual.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.ContentEqual.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.DependenciesEqual.get -> bool
+Honua.Sdk.Studio.Content.StudioVersionComparison.DependenciesEqual.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.DependenciesEqual.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.DependenciesEqual.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.Equals(Honua.Sdk.Studio.Packages.StudioVersionComparison? other) -> bool
+Honua.Sdk.Studio.Content.StudioVersionComparison.Equals(Honua.Sdk.Studio.Content.StudioVersionComparison? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.LeftVersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioVersionComparison.LeftVersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.LeftVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.LeftVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.ProvenanceEqual.get -> bool
+Honua.Sdk.Studio.Content.StudioVersionComparison.ProvenanceEqual.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.ProvenanceEqual.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.ProvenanceEqual.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.RightVersionId.get -> System.Guid
+Honua.Sdk.Studio.Content.StudioVersionComparison.RightVersionId.get -> System.Guid
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.RightVersionId.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.RightVersionId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.StudioVersionComparison() -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.StudioVersionComparison() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.ValidationEqual.get -> bool
+Honua.Sdk.Studio.Content.StudioVersionComparison.ValidationEqual.get -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.StudioVersionComparison.ValidationEqual.init -> void
+Honua.Sdk.Studio.Content.StudioVersionComparison.ValidationEqual.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.<Clone>$() -> Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest!
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.<Clone>$() -> Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest!
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.Envelope.get -> Honua.Sdk.Studio.Packages.StudioPackageEnvelope!
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.Envelope.get -> Honua.Sdk.Studio.Content.StudioContentEnvelope!
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.Envelope.init -> void
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.Envelope.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.Equals(Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest? other) -> bool
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.Equals(Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest? other) -> bool
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.Generation.get -> long?
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.Generation.get -> long?
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.Generation.init -> void
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.Generation.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.OwnerId.get -> string?
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.OwnerId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.OwnerId.init -> void
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.OwnerId.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.PackageKey.get -> string!
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.PackageKey.get -> string!
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.PackageKey.init -> void
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.PackageKey.init -> void
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.UpdateStudioPackageDraftRequest() -> void
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.UpdateStudioContentDraftRequest() -> void
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.WorkspaceId.get -> string?
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.WorkspaceId.get -> string?
+*REMOVED*Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.WorkspaceId.init -> void
+Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.WorkspaceId.init -> void
+*REMOVED*override Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.GetHashCode() -> int
+override Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.ToString() -> string!
+override Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Capabilities.CapabilityContentKind.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.GetHashCode() -> int
+override Honua.Sdk.Studio.Capabilities.CapabilityContentKind.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.ToString() -> string!
+override Honua.Sdk.Studio.Capabilities.CapabilityContentKind.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioApiResponse<T>.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioApiResponse<T>.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioApiResponse<T>.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioApiResponse<T>.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioApiResponse<T>.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentItemPointers.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentPointers.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentItemPointers.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentPointers.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentItemPointers.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentPointers.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentVersion.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentVersion.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentVersion.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentVersion.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentVersion.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentVersion.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentVersionList.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentVersionList.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentVersionList.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentVersionList.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioContentVersionList.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentVersionList.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageBinding.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentBinding.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageBinding.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentBinding.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageBinding.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentBinding.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageDependency.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentDependency.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageDependency.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentDependency.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageDependency.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentDependency.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageDraft.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentDraft.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageDraft.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentDraft.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageDraft.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentDraft.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageEnvelope.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentEnvelope.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageEnvelope.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentEnvelope.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageEnvelope.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentEnvelope.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentKindCapabilities.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentKindCapabilities.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentKindCapabilities.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioContentKindDescriptor.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioContentKindDescriptor.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioContentKindDescriptor.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPreviewPlan.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioPreviewPlan.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPreviewPlan.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioPreviewPlan.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPreviewPlan.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioPreviewPlan.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioProvenanceRef.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioProvenanceRef.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioProvenanceRef.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioProvenanceRef.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioProvenanceRef.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioProvenanceRef.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPublicationIntent.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioPublicationIntent.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPublicationIntent.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioPublicationIntent.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPublicationIntent.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioPublicationIntent.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPublicationRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioPublicationRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPublicationRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioPublicationRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioPublicationRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioPublicationRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioRollbackRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioRollbackRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioRollbackRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioRollbackRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioRollbackRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioRollbackRequest.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioValidationDiagnostic.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioValidationDiagnostic.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioValidationDiagnostic.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioValidationSummary.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioValidationSummary.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioValidationSummary.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioValidationSummary.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioValidationSummary.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioValidationSummary.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioVersionComparison.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.StudioVersionComparison.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioVersionComparison.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.StudioVersionComparison.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.StudioVersionComparison.ToString() -> string!
+override Honua.Sdk.Studio.Content.StudioVersionComparison.ToString() -> string!
+*REMOVED*override Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.Equals(object? obj) -> bool
+override Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.Equals(object? obj) -> bool
+*REMOVED*override Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.GetHashCode() -> int
+override Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.GetHashCode() -> int
+*REMOVED*override Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.ToString() -> string!
+override Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.ToString() -> string!
+*REMOVED*static Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.operator !=(Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages? left, Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages? right) -> bool
+static Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.operator !=(Honua.Sdk.Studio.Capabilities.CapabilityManifestContent? left, Honua.Sdk.Studio.Capabilities.CapabilityManifestContent? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages.operator ==(Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages? left, Honua.Sdk.Studio.Capabilities.CapabilityManifestPackages? right) -> bool
+static Honua.Sdk.Studio.Capabilities.CapabilityManifestContent.operator ==(Honua.Sdk.Studio.Capabilities.CapabilityManifestContent? left, Honua.Sdk.Studio.Capabilities.CapabilityManifestContent? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.operator !=(Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily? left, Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily? right) -> bool
+static Honua.Sdk.Studio.Capabilities.CapabilityContentKind.operator !=(Honua.Sdk.Studio.Capabilities.CapabilityContentKind? left, Honua.Sdk.Studio.Capabilities.CapabilityContentKind? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily.operator ==(Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily? left, Honua.Sdk.Studio.Capabilities.CapabilityPackageFamily? right) -> bool
+static Honua.Sdk.Studio.Capabilities.CapabilityContentKind.operator ==(Honua.Sdk.Studio.Capabilities.CapabilityContentKind? left, Honua.Sdk.Studio.Capabilities.CapabilityContentKind? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.operator !=(Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest? left, Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.operator !=(Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest? left, Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest.operator ==(Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest? left, Honua.Sdk.Studio.Packages.CompareStudioContentVersionsRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest.operator ==(Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest? left, Honua.Sdk.Studio.Content.CompareStudioContentVersionsRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.operator !=(Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest? left, Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.operator !=(Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest? left, Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest.operator ==(Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest? left, Honua.Sdk.Studio.Packages.CreateStudioPackageDraftRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest.operator ==(Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest? left, Honua.Sdk.Studio.Content.CreateStudioContentDraftRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.operator !=(Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest? left, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.operator !=(Honua.Sdk.Studio.Content.CreateStudioPublicationRequest? left, Honua.Sdk.Studio.Content.CreateStudioPublicationRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest.operator ==(Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest? left, Honua.Sdk.Studio.Packages.CreateStudioPublicationRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CreateStudioPublicationRequest.operator ==(Honua.Sdk.Studio.Content.CreateStudioPublicationRequest? left, Honua.Sdk.Studio.Content.CreateStudioPublicationRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.operator !=(Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest? left, Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.operator !=(Honua.Sdk.Studio.Content.CreateStudioRollbackRequest? left, Honua.Sdk.Studio.Content.CreateStudioRollbackRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest.operator ==(Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest? left, Honua.Sdk.Studio.Packages.CreateStudioRollbackRequest? right) -> bool
+static Honua.Sdk.Studio.Content.CreateStudioRollbackRequest.operator ==(Honua.Sdk.Studio.Content.CreateStudioRollbackRequest? left, Honua.Sdk.Studio.Content.CreateStudioRollbackRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.operator !=(Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest? left, Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest? right) -> bool
+static Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.operator !=(Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest? left, Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest.operator ==(Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest? left, Honua.Sdk.Studio.Packages.SaveStudioContentVersionRequest? right) -> bool
+static Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest.operator ==(Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest? left, Honua.Sdk.Studio.Content.SaveStudioContentVersionRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioContentItemPointers.operator !=(Honua.Sdk.Studio.Packages.StudioContentItemPointers? left, Honua.Sdk.Studio.Packages.StudioContentItemPointers? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentPointers.operator !=(Honua.Sdk.Studio.Content.StudioContentPointers? left, Honua.Sdk.Studio.Content.StudioContentPointers? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioContentItemPointers.operator ==(Honua.Sdk.Studio.Packages.StudioContentItemPointers? left, Honua.Sdk.Studio.Packages.StudioContentItemPointers? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentPointers.operator ==(Honua.Sdk.Studio.Content.StudioContentPointers? left, Honua.Sdk.Studio.Content.StudioContentPointers? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioContentVersion.operator !=(Honua.Sdk.Studio.Packages.StudioContentVersion? left, Honua.Sdk.Studio.Packages.StudioContentVersion? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentVersion.operator !=(Honua.Sdk.Studio.Content.StudioContentVersion? left, Honua.Sdk.Studio.Content.StudioContentVersion? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioContentVersion.operator ==(Honua.Sdk.Studio.Packages.StudioContentVersion? left, Honua.Sdk.Studio.Packages.StudioContentVersion? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentVersion.operator ==(Honua.Sdk.Studio.Content.StudioContentVersion? left, Honua.Sdk.Studio.Content.StudioContentVersion? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioContentVersionList.operator !=(Honua.Sdk.Studio.Packages.StudioContentVersionList? left, Honua.Sdk.Studio.Packages.StudioContentVersionList? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentVersionList.operator !=(Honua.Sdk.Studio.Content.StudioContentVersionList? left, Honua.Sdk.Studio.Content.StudioContentVersionList? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioContentVersionList.operator ==(Honua.Sdk.Studio.Packages.StudioContentVersionList? left, Honua.Sdk.Studio.Packages.StudioContentVersionList? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentVersionList.operator ==(Honua.Sdk.Studio.Content.StudioContentVersionList? left, Honua.Sdk.Studio.Content.StudioContentVersionList? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageBinding.operator !=(Honua.Sdk.Studio.Packages.StudioPackageBinding? left, Honua.Sdk.Studio.Packages.StudioPackageBinding? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentBinding.operator !=(Honua.Sdk.Studio.Content.StudioContentBinding? left, Honua.Sdk.Studio.Content.StudioContentBinding? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageBinding.operator ==(Honua.Sdk.Studio.Packages.StudioPackageBinding? left, Honua.Sdk.Studio.Packages.StudioPackageBinding? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentBinding.operator ==(Honua.Sdk.Studio.Content.StudioContentBinding? left, Honua.Sdk.Studio.Content.StudioContentBinding? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageDependency.operator !=(Honua.Sdk.Studio.Packages.StudioPackageDependency? left, Honua.Sdk.Studio.Packages.StudioPackageDependency? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentDependency.operator !=(Honua.Sdk.Studio.Content.StudioContentDependency? left, Honua.Sdk.Studio.Content.StudioContentDependency? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageDependency.operator ==(Honua.Sdk.Studio.Packages.StudioPackageDependency? left, Honua.Sdk.Studio.Packages.StudioPackageDependency? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentDependency.operator ==(Honua.Sdk.Studio.Content.StudioContentDependency? left, Honua.Sdk.Studio.Content.StudioContentDependency? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageDraft.operator !=(Honua.Sdk.Studio.Packages.StudioPackageDraft? left, Honua.Sdk.Studio.Packages.StudioPackageDraft? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentDraft.operator !=(Honua.Sdk.Studio.Content.StudioContentDraft? left, Honua.Sdk.Studio.Content.StudioContentDraft? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageDraft.operator ==(Honua.Sdk.Studio.Packages.StudioPackageDraft? left, Honua.Sdk.Studio.Packages.StudioPackageDraft? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentDraft.operator ==(Honua.Sdk.Studio.Content.StudioContentDraft? left, Honua.Sdk.Studio.Content.StudioContentDraft? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageEnvelope.operator !=(Honua.Sdk.Studio.Packages.StudioPackageEnvelope? left, Honua.Sdk.Studio.Packages.StudioPackageEnvelope? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentEnvelope.operator !=(Honua.Sdk.Studio.Content.StudioContentEnvelope? left, Honua.Sdk.Studio.Content.StudioContentEnvelope? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageEnvelope.operator ==(Honua.Sdk.Studio.Packages.StudioPackageEnvelope? left, Honua.Sdk.Studio.Packages.StudioPackageEnvelope? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentEnvelope.operator ==(Honua.Sdk.Studio.Content.StudioContentEnvelope? left, Honua.Sdk.Studio.Content.StudioContentEnvelope? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.operator !=(Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities? left, Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentKindCapabilities.operator !=(Honua.Sdk.Studio.Content.StudioContentKindCapabilities? left, Honua.Sdk.Studio.Content.StudioContentKindCapabilities? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities.operator ==(Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities? left, Honua.Sdk.Studio.Packages.StudioPackageFamilyCapabilities? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentKindCapabilities.operator ==(Honua.Sdk.Studio.Content.StudioContentKindCapabilities? left, Honua.Sdk.Studio.Content.StudioContentKindCapabilities? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.operator !=(Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor? left, Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentKindDescriptor.operator !=(Honua.Sdk.Studio.Content.StudioContentKindDescriptor? left, Honua.Sdk.Studio.Content.StudioContentKindDescriptor? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor.operator ==(Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor? left, Honua.Sdk.Studio.Packages.StudioPackageFamilyDescriptor? right) -> bool
+static Honua.Sdk.Studio.Content.StudioContentKindDescriptor.operator ==(Honua.Sdk.Studio.Content.StudioContentKindDescriptor? left, Honua.Sdk.Studio.Content.StudioContentKindDescriptor? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPreviewPlan.operator !=(Honua.Sdk.Studio.Packages.StudioPreviewPlan? left, Honua.Sdk.Studio.Packages.StudioPreviewPlan? right) -> bool
+static Honua.Sdk.Studio.Content.StudioPreviewPlan.operator !=(Honua.Sdk.Studio.Content.StudioPreviewPlan? left, Honua.Sdk.Studio.Content.StudioPreviewPlan? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPreviewPlan.operator ==(Honua.Sdk.Studio.Packages.StudioPreviewPlan? left, Honua.Sdk.Studio.Packages.StudioPreviewPlan? right) -> bool
+static Honua.Sdk.Studio.Content.StudioPreviewPlan.operator ==(Honua.Sdk.Studio.Content.StudioPreviewPlan? left, Honua.Sdk.Studio.Content.StudioPreviewPlan? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioProvenanceRef.operator !=(Honua.Sdk.Studio.Packages.StudioProvenanceRef? left, Honua.Sdk.Studio.Packages.StudioProvenanceRef? right) -> bool
+static Honua.Sdk.Studio.Content.StudioProvenanceRef.operator !=(Honua.Sdk.Studio.Content.StudioProvenanceRef? left, Honua.Sdk.Studio.Content.StudioProvenanceRef? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioProvenanceRef.operator ==(Honua.Sdk.Studio.Packages.StudioProvenanceRef? left, Honua.Sdk.Studio.Packages.StudioProvenanceRef? right) -> bool
+static Honua.Sdk.Studio.Content.StudioProvenanceRef.operator ==(Honua.Sdk.Studio.Content.StudioProvenanceRef? left, Honua.Sdk.Studio.Content.StudioProvenanceRef? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPublicationIntent.operator !=(Honua.Sdk.Studio.Packages.StudioPublicationIntent? left, Honua.Sdk.Studio.Packages.StudioPublicationIntent? right) -> bool
+static Honua.Sdk.Studio.Content.StudioPublicationIntent.operator !=(Honua.Sdk.Studio.Content.StudioPublicationIntent? left, Honua.Sdk.Studio.Content.StudioPublicationIntent? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPublicationIntent.operator ==(Honua.Sdk.Studio.Packages.StudioPublicationIntent? left, Honua.Sdk.Studio.Packages.StudioPublicationIntent? right) -> bool
+static Honua.Sdk.Studio.Content.StudioPublicationIntent.operator ==(Honua.Sdk.Studio.Content.StudioPublicationIntent? left, Honua.Sdk.Studio.Content.StudioPublicationIntent? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPublicationRequest.operator !=(Honua.Sdk.Studio.Packages.StudioPublicationRequest? left, Honua.Sdk.Studio.Packages.StudioPublicationRequest? right) -> bool
+static Honua.Sdk.Studio.Content.StudioPublicationRequest.operator !=(Honua.Sdk.Studio.Content.StudioPublicationRequest? left, Honua.Sdk.Studio.Content.StudioPublicationRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioPublicationRequest.operator ==(Honua.Sdk.Studio.Packages.StudioPublicationRequest? left, Honua.Sdk.Studio.Packages.StudioPublicationRequest? right) -> bool
+static Honua.Sdk.Studio.Content.StudioPublicationRequest.operator ==(Honua.Sdk.Studio.Content.StudioPublicationRequest? left, Honua.Sdk.Studio.Content.StudioPublicationRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioRollbackRequest.operator !=(Honua.Sdk.Studio.Packages.StudioRollbackRequest? left, Honua.Sdk.Studio.Packages.StudioRollbackRequest? right) -> bool
+static Honua.Sdk.Studio.Content.StudioRollbackRequest.operator !=(Honua.Sdk.Studio.Content.StudioRollbackRequest? left, Honua.Sdk.Studio.Content.StudioRollbackRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioRollbackRequest.operator ==(Honua.Sdk.Studio.Packages.StudioRollbackRequest? left, Honua.Sdk.Studio.Packages.StudioRollbackRequest? right) -> bool
+static Honua.Sdk.Studio.Content.StudioRollbackRequest.operator ==(Honua.Sdk.Studio.Content.StudioRollbackRequest? left, Honua.Sdk.Studio.Content.StudioRollbackRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.operator !=(Honua.Sdk.Studio.Packages.StudioValidationDiagnostic? left, Honua.Sdk.Studio.Packages.StudioValidationDiagnostic? right) -> bool
+static Honua.Sdk.Studio.Content.StudioValidationDiagnostic.operator !=(Honua.Sdk.Studio.Content.StudioValidationDiagnostic? left, Honua.Sdk.Studio.Content.StudioValidationDiagnostic? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioValidationDiagnostic.operator ==(Honua.Sdk.Studio.Packages.StudioValidationDiagnostic? left, Honua.Sdk.Studio.Packages.StudioValidationDiagnostic? right) -> bool
+static Honua.Sdk.Studio.Content.StudioValidationDiagnostic.operator ==(Honua.Sdk.Studio.Content.StudioValidationDiagnostic? left, Honua.Sdk.Studio.Content.StudioValidationDiagnostic? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioValidationSummary.NotValidated.get -> Honua.Sdk.Studio.Packages.StudioValidationSummary!
+static Honua.Sdk.Studio.Content.StudioValidationSummary.NotValidated.get -> Honua.Sdk.Studio.Content.StudioValidationSummary!
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioValidationSummary.operator !=(Honua.Sdk.Studio.Packages.StudioValidationSummary? left, Honua.Sdk.Studio.Packages.StudioValidationSummary? right) -> bool
+static Honua.Sdk.Studio.Content.StudioValidationSummary.operator !=(Honua.Sdk.Studio.Content.StudioValidationSummary? left, Honua.Sdk.Studio.Content.StudioValidationSummary? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioValidationSummary.operator ==(Honua.Sdk.Studio.Packages.StudioValidationSummary? left, Honua.Sdk.Studio.Packages.StudioValidationSummary? right) -> bool
+static Honua.Sdk.Studio.Content.StudioValidationSummary.operator ==(Honua.Sdk.Studio.Content.StudioValidationSummary? left, Honua.Sdk.Studio.Content.StudioValidationSummary? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioVersionComparison.operator !=(Honua.Sdk.Studio.Packages.StudioVersionComparison? left, Honua.Sdk.Studio.Packages.StudioVersionComparison? right) -> bool
+static Honua.Sdk.Studio.Content.StudioVersionComparison.operator !=(Honua.Sdk.Studio.Content.StudioVersionComparison? left, Honua.Sdk.Studio.Content.StudioVersionComparison? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.StudioVersionComparison.operator ==(Honua.Sdk.Studio.Packages.StudioVersionComparison? left, Honua.Sdk.Studio.Packages.StudioVersionComparison? right) -> bool
+static Honua.Sdk.Studio.Content.StudioVersionComparison.operator ==(Honua.Sdk.Studio.Content.StudioVersionComparison? left, Honua.Sdk.Studio.Content.StudioVersionComparison? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.operator !=(Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest? left, Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest? right) -> bool
+static Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.operator !=(Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest? left, Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest? right) -> bool
+*REMOVED*static Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest.operator ==(Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest? left, Honua.Sdk.Studio.Packages.UpdateStudioPackageDraftRequest? right) -> bool
+static Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest.operator ==(Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest? left, Honua.Sdk.Studio.Content.UpdateStudioContentDraftRequest? right) -> bool
+*REMOVED*~Honua.Sdk.Studio.Packages.StudioApiResponse<T>.<Clone>$() -> Honua.Sdk.Studio.Packages.StudioApiResponse<T>!
+~Honua.Sdk.Studio.Content.StudioApiResponse<T>.<Clone>$() -> Honua.Sdk.Studio.Content.StudioApiResponse<T>!
+*REMOVED*~Honua.Sdk.Studio.Packages.StudioApiResponse<T>.Equals(Honua.Sdk.Studio.Packages.StudioApiResponse<T>? other) -> bool
+~Honua.Sdk.Studio.Content.StudioApiResponse<T>.Equals(Honua.Sdk.Studio.Content.StudioApiResponse<T>? other) -> bool
+*REMOVED*~static Honua.Sdk.Studio.Packages.StudioApiResponse<T>.operator !=(Honua.Sdk.Studio.Packages.StudioApiResponse<T>? left, Honua.Sdk.Studio.Packages.StudioApiResponse<T>? right) -> bool
+~static Honua.Sdk.Studio.Content.StudioApiResponse<T>.operator !=(Honua.Sdk.Studio.Content.StudioApiResponse<T>? left, Honua.Sdk.Studio.Content.StudioApiResponse<T>? right) -> bool
+*REMOVED*~static Honua.Sdk.Studio.Packages.StudioApiResponse<T>.operator ==(Honua.Sdk.Studio.Packages.StudioApiResponse<T>? left, Honua.Sdk.Studio.Packages.StudioApiResponse<T>? right) -> bool
+~static Honua.Sdk.Studio.Content.StudioApiResponse<T>.operator ==(Honua.Sdk.Studio.Content.StudioApiResponse<T>? left, Honua.Sdk.Studio.Content.StudioApiResponse<T>? right) -> bool

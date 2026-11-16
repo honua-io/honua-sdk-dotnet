@@ -183,7 +183,9 @@ class VocabularyTests(unittest.TestCase):
         for old, replacement in self.policy["renamedSymbols"].items():
             with self.subTest(old=old):
                 self.assertNotIn(old, self.symbols)
-                self.assertEqual([], source_mentions(old.rsplit(".", 1)[-1]))
+                old_namespace, old_name = old.rsplit(".", 1)
+                source_name = old_namespace if old_name == replacement.rsplit(".", 1)[-1] else old_name
+                self.assertEqual([], source_mentions(source_name))
                 self.assertIn(replacement, self.symbols)
                 self.assertFalse(retired_prefixes(replacement.rsplit(".", 1)[-1], tokens))
 
@@ -210,15 +212,15 @@ class VocabularyTests(unittest.TestCase):
     def test_a_new_retired_symbol_is_reported(self) -> None:
         symbols = {
             "Honua.Sdk.Admin.Models.HostedLayerInfo.Name": "src/Honua.Sdk.Admin/PublicAPI.Unshipped.txt",
-            "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetMapPackageAsync": "src/Honua.Sdk.Studio/PublicAPI.Unshipped.txt",
+            "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetMapPackageAsync": "src/Honua.Sdk.Studio/PublicAPI.Unshipped.txt",
         }
         findings = public_api_findings(self.policy, symbols)
         self.assertEqual(
-            ["Honua.Sdk.Admin.Models.HostedLayerInfo", "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetMapPackageAsync"],
+            ["Honua.Sdk.Admin.Models.HostedLayerInfo", "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetMapPackageAsync"],
             sorted(finding.name for finding in findings))
 
     def test_constructors_of_allowlisted_types_are_not_reported(self) -> None:
-        symbols = {"Honua.Sdk.Studio.Packages.StudioPackageDraft.StudioPackageDraft": "src/Honua.Sdk.Studio/PublicAPI.Shipped.txt"}
+        symbols = {"Honua.Sdk.Abstractions.Environments.HonuaTenantScope.HonuaTenantScope": "src/Honua.Sdk.Abstractions/PublicAPI.Shipped.txt"}
         self.assertEqual([], public_api_findings(self.policy, symbols))
 
     def test_retired_doc_phrases_are_recognised(self) -> None:

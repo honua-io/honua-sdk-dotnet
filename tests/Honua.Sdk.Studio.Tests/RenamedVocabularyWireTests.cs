@@ -4,7 +4,7 @@
 using System.Text.Json;
 using Honua.Sdk.Abstractions.Studio;
 using Honua.Sdk.Studio.Capabilities;
-using Honua.Sdk.Studio.Packages;
+using Honua.Sdk.Studio.Content;
 
 namespace Honua.Sdk.Studio.Tests;
 
@@ -15,9 +15,9 @@ public sealed class RenamedVocabularyWireTests
     {
         var manifest = new CapabilityManifest
         {
-            Packages = new CapabilityManifestPackages
+            Packages = new CapabilityManifestContent
             {
-                Families = [new CapabilityPackageFamily { Id = "map", Supported = true }],
+                Families = [new CapabilityContentKind { Id = "map", Supported = true }],
             },
         };
 
@@ -61,20 +61,20 @@ public sealed class RenamedVocabularyWireTests
     [Fact]
     public async Task GetContentPointersAsync_DefaultWithoutAnImplementation_IsNotSupported()
     {
-        IHonuaStudioPackageClient client = new MinimalClient();
+        IHonuaStudioContentClient client = new MinimalClient();
 
         await Assert.ThrowsAsync<NotSupportedException>(() => client.GetContentPointersAsync(Guid.NewGuid()));
     }
 
-    private sealed class MinimalClient : IHonuaStudioPackageClient
+    private sealed class MinimalClient : IHonuaStudioContentClient
     {
-        public Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<StudioContentKindCapabilities> GetContentKindsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-        public Task<StudioPackageDraft> CreateDraftAsync(CreateStudioPackageDraftRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<StudioContentDraft> CreateDraftAsync(CreateStudioContentDraftRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-        public Task<StudioPackageDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<StudioContentDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-        public Task<StudioPackageDraft> UpdateDraftAsync(Guid draftId, UpdateStudioPackageDraftRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<StudioContentDraft> UpdateDraftAsync(Guid draftId, UpdateStudioContentDraftRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
         public Task DeleteDraftAsync(Guid draftId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
@@ -92,7 +92,7 @@ public sealed class RenamedVocabularyWireTests
 
         public Task<StudioPublicationRequest> CreatePublishRequestAsync(Guid itemId, Guid versionId, CreateStudioPublicationRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-        public Task<StudioPackageDraft> ReopenVersionAsync(Guid itemId, Guid versionId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<StudioContentDraft> ReopenVersionAsync(Guid itemId, Guid versionId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
         public Task<StudioRollbackRequest> RollbackAsync(Guid itemId, CreateStudioRollbackRequest request, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }

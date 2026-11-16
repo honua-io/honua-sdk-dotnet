@@ -4,7 +4,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using Honua.Sdk.Studio.Packages;
+using Honua.Sdk.Studio.Content;
 using Honua.Sdk.Studio.Tests.Fixtures;
 
 namespace Honua.Sdk.Studio.Tests;
@@ -91,7 +91,7 @@ public sealed class StudioContentHashInputTests
             captured = request;
             return JsonResponse(VersionEnvelope(CanonicalHash, CanonicalInputBase64));
         });
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var version = await client.GetVersionAsync(ItemId, VersionId);
 
@@ -105,7 +105,7 @@ public sealed class StudioContentHashInputTests
     public async Task GetVersionAsync_WithoutContentHashInput_IsBackwardCompatible()
     {
         using var http = CreateHttpClient(_ => JsonResponse(VersionEnvelope(CanonicalHash, contentHashInput: null)));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var version = await client.GetVersionAsync(ItemId, VersionId);
 
@@ -118,7 +118,7 @@ public sealed class StudioContentHashInputTests
     public async Task GetVersionAsync_InputNotMatchingDigest_FailsVerification()
     {
         using var http = CreateHttpClient(_ => JsonResponse(VersionEnvelope(new string('a', 64), CanonicalInputBase64)));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var version = await client.GetVersionAsync(ItemId, VersionId);
 
@@ -130,7 +130,7 @@ public sealed class StudioContentHashInputTests
     public async Task CreateContentVersionAsync_SaveResponseCarriesContentHashInput()
     {
         using var http = CreateHttpClient(_ => JsonResponse(VersionEnvelope(CanonicalHash, CanonicalInputBase64), HttpStatusCode.Created));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var version = await client.CreateContentVersionAsync(DraftId, new SaveStudioContentVersionRequest());
 
@@ -149,7 +149,7 @@ public sealed class StudioContentHashInputTests
             }
             """;
         using var http = CreateHttpClient(_ => JsonResponse(json));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var list = await client.ListVersionsAsync(ItemId);
 
@@ -162,7 +162,7 @@ public sealed class StudioContentHashInputTests
     public async Task CreatePublishRequestAsync_AcceptedWithPublicationUrl_Deserializes()
     {
         using var http = CreateHttpClient(_ => JsonResponse(PublicationEnvelope("accepted", "/api/v1/studio/published/maps/parcels"), HttpStatusCode.Created));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var publication = await client.CreatePublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest());
 
@@ -177,7 +177,7 @@ public sealed class StudioContentHashInputTests
     public async Task CreatePublishRequestAsync_WithoutPublicationUrl_IsBackwardCompatible(string status)
     {
         using var http = CreateHttpClient(_ => JsonResponse(PublicationEnvelope(status, publicationUrl: null), HttpStatusCode.Created));
-        var client = new HonuaStudioPackageClient(http);
+        var client = new HonuaStudioContentClient(http);
 
         var publication = await client.CreatePublishRequestAsync(ItemId, VersionId, new CreateStudioPublicationRequest());
 

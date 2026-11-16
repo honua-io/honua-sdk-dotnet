@@ -1,63 +1,42 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
-namespace Honua.Sdk.Studio.Packages;
+namespace Honua.Sdk.Studio.Content;
 
-/// <summary>Typed client for the Console Studio content lifecycle (<c>/api/v1/studio/*</c>): per-kind capability discovery, Draft CRUD, validate, preview-plan, Version save, release request, reopen, and rollback across every in-scope Studio content kind (Query, Map, Analysis, Dashboard, Report, Form, App, Workflow, GP, ETL). The kind discriminant travels on the content envelope, so one client serves every kind.</summary>
-public interface IHonuaStudioPackageClient
+/// <summary>Manages Studio content capabilities, drafts, versions, and publications across content kinds.</summary>
+public interface IHonuaStudioContentClient
 {
     /// <summary>Reads the active immutable artifact served by a governed publication route.</summary>
-    /// <param name="route">A governed route, with optional leading slash and multiple path segments; not a publication URL.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The publication identity, content hash and sealed package envelope.</returns>
-    /// <remarks>HTTP errors, including inaccessible or missing publications, are propagated.</remarks>
     Task<StudioPublishedArtifact> GetPublishedArtifactAsync(string route, CancellationToken cancellationToken = default)
         => Task.FromException<StudioPublishedArtifact>(new NotSupportedException("This client does not support published artifact reads."));
 
     /// <summary>Lists Studio content kind capability descriptors for Console authoring.</summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    Task<StudioPackageFamilyCapabilities> GetPackageFamiliesAsync(CancellationToken cancellationToken = default);
+    Task<StudioContentKindCapabilities> GetContentKindsAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Creates a mutable Studio package draft.</summary>
-    /// <param name="request">Draft creation request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    Task<StudioPackageDraft> CreateDraftAsync(
-        CreateStudioPackageDraftRequest request,
+    /// <summary>Creates a mutable Studio content draft.</summary>
+    Task<StudioContentDraft> CreateDraftAsync(
+        CreateStudioContentDraftRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Gets a mutable Studio package draft.</summary>
-    /// <param name="draftId">Draft identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    Task<StudioPackageDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default);
+    /// <summary>Gets a mutable Studio content draft.</summary>
+    Task<StudioContentDraft> GetDraftAsync(Guid draftId, CancellationToken cancellationToken = default);
 
-    /// <summary>Replaces a mutable Studio package draft using optimistic generation checks.</summary>
-    /// <param name="draftId">Draft identifier.</param>
-    /// <param name="request">Draft update request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    Task<StudioPackageDraft> UpdateDraftAsync(
+    /// <summary>Replaces a mutable Studio content draft using optimistic generation checks.</summary>
+    Task<StudioContentDraft> UpdateDraftAsync(
         Guid draftId,
-        UpdateStudioPackageDraftRequest request,
+        UpdateStudioContentDraftRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Deletes a mutable Studio package draft.</summary>
-    /// <param name="draftId">Draft identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <summary>Deletes a mutable Studio content draft.</summary>
     Task DeleteDraftAsync(Guid draftId, CancellationToken cancellationToken = default);
 
-    /// <summary>Validates a mutable Studio package draft.</summary>
-    /// <param name="draftId">Draft identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <summary>Validates a mutable Studio content draft.</summary>
     Task<StudioValidationSummary> ValidateDraftAsync(Guid draftId, CancellationToken cancellationToken = default);
 
-    /// <summary>Creates a preview plan for a mutable Studio package draft.</summary>
-    /// <param name="draftId">Draft identifier.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <summary>Creates a preview plan for a mutable Studio content draft.</summary>
     Task<StudioPreviewPlan> PreviewPlanAsync(Guid draftId, CancellationToken cancellationToken = default);
 
     /// <summary>Saves a draft as an immutable content version.</summary>
-    /// <param name="draftId">Draft identifier.</param>
-    /// <param name="request">Content-version save request.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task<StudioContentVersion> CreateContentVersionAsync(
         Guid draftId,
         SaveStudioContentVersionRequest request,
@@ -86,8 +65,8 @@ public interface IHonuaStudioPackageClient
         CancellationToken cancellationToken = default);
 
     /// <summary>Reads exact current and released Version pointers for visible Studio content, or null only when a complete visible listing omits it.</summary>
-    Task<StudioContentItemPointers?> GetContentPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
-        => Task.FromException<StudioContentItemPointers?>(new NotSupportedException("This client does not support Studio content pointer reads."));
+    Task<StudioContentPointers?> GetContentPointersAsync(Guid itemId, CancellationToken cancellationToken = default)
+        => Task.FromException<StudioContentPointers?>(new NotSupportedException("This client does not support Studio content pointer reads."));
 
     /// <summary>Submits publication and distinguishes a persisted request from a pending approval operation.</summary>
     async Task<StudioPublicationSubmission> SubmitPublishRequestAsync(
@@ -99,7 +78,7 @@ public interface IHonuaStudioPackageClient
             await CreatePublishRequestAsync(itemId, versionId, request, cancellationToken).ConfigureAwait(false));
 
     /// <summary>Reopens an immutable content version as a new mutable draft.</summary>
-    Task<StudioPackageDraft> ReopenVersionAsync(
+    Task<StudioContentDraft> ReopenVersionAsync(
         Guid itemId,
         Guid versionId,
         CancellationToken cancellationToken = default);
