@@ -115,13 +115,20 @@ public sealed class XlsFormWorkbookTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public void Read_ExcludesPhoneticAnnotations(bool shared, bool rich)
+    [InlineData("InlinePlain")]
+    [InlineData("InlineRich")]
+    [InlineData("SharedPlain")]
+    [InlineData("SharedRich")]
+    public void Read_ExcludesPhoneticAnnotations(string representation)
     {
-        var text = rich ? "<r><t>東</t></r><r><t>京</t></r>" : "<t>東京</t>";
+        var (shared, text) = representation switch
+        {
+            "InlinePlain" => (false, "<t>東京</t>"),
+            "InlineRich" => (false, "<r><t>東</t></r><r><t>京</t></r>"),
+            "SharedPlain" => (true, "<t>東京</t>"),
+            "SharedRich" => (true, "<r><t>東</t></r><r><t>京</t></r>"),
+            _ => throw new ArgumentException("Unknown string representation.", nameof(representation))
+        };
         var content = text + "<rPh sb=\"0\" eb=\"2\"><t>とうきょう</t></rPh>";
         var cell = shared ? "<v>0</v>" : "<is>" + content + "</is>";
         using var stream = WorkbookWithSurvey(
