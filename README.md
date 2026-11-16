@@ -371,8 +371,11 @@ Hosted product docs live at [honua.gitbook.io/honuaio](https://honua.gitbook.io/
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, house rules, the public-API
-approval workflow, and the pull-request checklist. The build is strict
+This repository does not accept outside code contributions. Bug reports, feature
+requests, and interoperability reports are welcome through GitHub Issues. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the policy and security-reporting guidance.
+The same guide documents maintainer setup, house rules, public-API approval, and
+the pull-request checklist. The build is strict
 (warnings as errors, XML docs required on public members), commits follow
 Conventional Commits, and the default branch is `trunk`.
 
