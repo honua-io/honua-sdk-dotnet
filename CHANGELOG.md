@@ -2,6 +2,22 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [5.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v4.0.0...dotnet-sdk-v5.0.0) (2026-11-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* finish Studio content vocabulary migration ([#506](https://github.com/honua-io/honua-sdk-dotnet/issues/506)) (#558)
+
+### Features
+
+* **field:** add shared XLSForm workbook conversion ([#556](https://github.com/honua-io/honua-sdk-dotnet/issues/556)) ([b0603aa](https://github.com/honua-io/honua-sdk-dotnet/commit/b0603aa40e96cdec17a66169f01826b0bec45b96))
+
+
+### Bug Fixes
+
+* finish Studio content vocabulary migration ([#506](https://github.com/honua-io/honua-sdk-dotnet/issues/506)) ([#558](https://github.com/honua-io/honua-sdk-dotnet/issues/558)) ([0c5329b](https://github.com/honua-io/honua-sdk-dotnet/commit/0c5329b5f9e22fbbc295b14abcfac9073afb2a8e))
+
 ## [4.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v3.0.1...dotnet-sdk-v4.0.0) (2026-11-16)
 
 
