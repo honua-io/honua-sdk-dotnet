@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Xunit;
@@ -210,15 +209,25 @@ public sealed class BrowserRuntimeValidationTests
         });
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls(appUri.ToString());
+        if (string.IsNullOrWhiteSpace(publishedWebRoot))
+        {
+            var assetManifest = Path.Join(
+                repoRoot,
+                "tests",
+                "Honua.Sdk.BrowserSmoke",
+                "bin",
+                "Release",
+                "net11.0",
+                "Honua.Sdk.BrowserSmoke.staticwebassets.runtime.json");
+            builder.WebHost.UseSetting(WebHostDefaults.StaticWebAssetsKey, assetManifest);
+            builder.WebHost.UseStaticWebAssets();
+        }
 
         var app = builder.Build();
         app.UseDefaultFiles();
-        app.UseStaticFiles();
         app.UseStaticFiles(new StaticFileOptions
         {
             ContentTypeProvider = CreateContentTypeProvider(),
-            FileProvider = new PhysicalFileProvider(frameworkRoot),
-            RequestPath = "/_framework",
         });
         app.MapFallback(async context =>
         {
