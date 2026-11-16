@@ -44,7 +44,7 @@ def package_bytes(
             f'<repository type="{repository_type}" url="{repository_url}" commit="{repository_commit}" />'
             "</metadata></package>",
         )
-        archive.writestr("lib/net10.0/Honua.Sdk.dll", payload)
+        archive.writestr("lib/net11.0/Honua.Sdk.dll", payload)
         content_types = (
             '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
             '<Default Extension="dll" ContentType="application/octet-stream" />'
@@ -94,7 +94,7 @@ def symbol_package_bytes(
             f'<repository type="git" url="https://github.com/honua-io/honua-sdk-dotnet" commit="{repository_commit}" />'
             "</metadata></package>",
         )
-        archive.writestr("lib/net10.0/Honua.Sdk.pdb", pdb)
+        archive.writestr("lib/net11.0/Honua.Sdk.pdb", pdb)
         if signature is not None:
             archive.writestr(".signature.p7s", signature)
     return target.getvalue()

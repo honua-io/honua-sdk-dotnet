@@ -23,28 +23,28 @@ public static class RoutingGeofenceDemo
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(routingClient);
 
-        await output.WriteLineAsync($"Mode: {mode}");
-        await output.WriteLineAsync($"Routing provider: {routingClient.ProviderName}");
-        await output.WriteLineAsync();
+        await output.WriteLineAsync($"Mode: {mode}", cancellationToken);
+        await output.WriteLineAsync($"Routing provider: {routingClient.ProviderName}", cancellationToken);
+        await output.WriteLineAsync(string.Empty, cancellationToken);
 
         var route = await routingClient.GetDirectionsAsync(CreateDirectionsRequest(serviceId, routeLayerName), cancellationToken);
         var routeSummary = route.Routes.Count > 0 ? route.Routes[0] : null;
-        await output.WriteLineAsync("Route:");
+        await output.WriteLineAsync("Route:", cancellationToken);
         await output.WriteLineAsync(
-            $"  {routeSummary?.Name ?? "route"} distance={FormatDouble(routeSummary?.TotalDistance)}m time={FormatTime(routeSummary?.TotalTime)} steps={route.Directions.Count}");
+            $"  {routeSummary?.Name ?? "route"} distance={FormatDouble(routeSummary?.TotalDistance)}m time={FormatTime(routeSummary?.TotalTime)} steps={route.Directions.Count}", cancellationToken);
         foreach (var step in route.Directions.Select((value, index) => new { Step = value, Index = index + 1 }))
         {
-            await output.WriteLineAsync($"  {step.Index}. {step.Step.Text} ({FormatDouble(step.Step.Distance)}m)");
+            await output.WriteLineAsync($"  {step.Index}. {step.Step.Text} ({FormatDouble(step.Step.Distance)}m)", cancellationToken);
         }
 
         var evaluations = RunGeofenceFixture();
-        await output.WriteLineAsync();
-        await output.WriteLineAsync("Geofence:");
+        await output.WriteLineAsync(string.Empty, cancellationToken);
+        await output.WriteLineAsync("Geofence:", cancellationToken);
         foreach (var evaluation in evaluations)
         {
             var timestamp = evaluation.Position.Timestamp?.ToString("HH:mm:ss", CultureInfo.InvariantCulture) ?? "--:--:--";
             await output.WriteLineAsync(
-                $"  {timestamp} {evaluation.Position.TrackId} {evaluation.Status} {evaluation.Transition} distance={FormatDouble(evaluation.Distance)}m");
+                $"  {timestamp} {evaluation.Position.TrackId} {evaluation.Status} {evaluation.Transition} distance={FormatDouble(evaluation.Distance)}m", cancellationToken);
         }
 
         return new RoutingGeofenceRunSummary(

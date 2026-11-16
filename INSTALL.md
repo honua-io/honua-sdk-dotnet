@@ -25,7 +25,7 @@
 
 ## Prerequisites
 
-- .NET 10.0 SDK or later
+- .NET 11.0 SDK or later
 - A running Honua Server instance
 - For the runnable samples below: a project to add the packages to (`dotnet new console`), a
   published feature layer, and an admin API key. The samples read them from the environment

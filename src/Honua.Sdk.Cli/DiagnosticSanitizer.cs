@@ -293,8 +293,8 @@ internal static partial class DiagnosticSanitizer
     {
         string trimmed = decoded.TrimStart();
         return mediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) == true
-            || trimmed.StartsWith('{')
-            || trimmed.StartsWith('[');
+            || trimmed.StartsWith('{', StringComparison.Ordinal)
+            || trimmed.StartsWith('[', StringComparison.Ordinal);
     }
 
     private static string DecodeForRedaction(string input)

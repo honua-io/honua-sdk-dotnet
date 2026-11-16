@@ -8,7 +8,7 @@ The repo boundary, what belongs here, and what doesn't, is documented in
 
 ## Quick start for contributors
 
-1. Install [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later.
+1. Install [.NET 11.0 SDK](https://dotnet.microsoft.com/download) or later.
 2. Clone the repo and configure the GitHub Packages source — see
    [INSTALL.md](INSTALL.md#prereleases-and-the-github-packages-mirror).
 3. Build the solution:

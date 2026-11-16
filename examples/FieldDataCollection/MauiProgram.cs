@@ -19,7 +19,6 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-            // .UseMauiCommunityToolkit()  // Not available for .NET 10 yet
             .UseMauiMaps()
             .ConfigureFonts(fonts =>
             {

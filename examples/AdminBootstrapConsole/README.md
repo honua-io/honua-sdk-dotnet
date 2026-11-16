@@ -53,7 +53,7 @@ The sample performs one end-to-end operator flow:
 
 ## Prerequisites
 
-- .NET 10 SDK
+- .NET 11 SDK
 - `psql`
 - A local `honua-server` checkout, referenced below as `HONUA_SERVER_ROOT`
 
