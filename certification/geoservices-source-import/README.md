@@ -78,7 +78,7 @@ The defaults are the published 1.10.0 package and the manifest-pinned nightly
 `SERVER_SOURCE_SHA` to certify against a newer manifest pin. The default private subnet is `172.30.241.0/24`;
 set `SUBNET_PREFIX`, `PORT_PREFIX` and `PREFIX` if those resources are occupied.
 
-Requirements are Docker, the .NET 10 SDK, `jq`, `openssl` and network access to
+Requirements are Docker, the .NET 11 SDK, `jq`, `openssl` and network access to
 ghcr.io and nuget.org. `WORK_DIR` must be on a disk Docker can bind-mount.
 
 To check unpublished SDK source before a release, pack the packages into a

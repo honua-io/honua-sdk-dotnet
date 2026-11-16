@@ -138,7 +138,7 @@ internal static partial class DiagnosticReplay
     private static string GetReplayPath(string normalizedPath)
     {
         if (normalizedPath.Length > 2048
-            || !normalizedPath.StartsWith('/')
+            || !normalizedPath.StartsWith('/', StringComparison.Ordinal)
             || normalizedPath.StartsWith("//", StringComparison.Ordinal)
             || normalizedPath.Contains('\\', StringComparison.Ordinal)
             || normalizedPath.Any(character => character is <= '\u001f' or '\u007f'))

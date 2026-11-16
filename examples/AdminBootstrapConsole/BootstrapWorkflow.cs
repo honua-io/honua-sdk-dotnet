@@ -24,14 +24,14 @@ public sealed class BootstrapWorkflow(
 
         var compatibility = await _adminClient.CheckCompatibilityAsync(cancellationToken);
         await output.WriteLineAsync(
-            $"Server: {_options.ServerUri} | Version: {compatibility.ServerVersion} | Release channel: {compatibility.ReleaseChannel}");
+            $"Server: {_options.ServerUri} | Version: {compatibility.ServerVersion} | Release channel: {compatibility.ReleaseChannel}", cancellationToken);
 
         if (!compatibility.IsSupported)
         {
             throw new BootstrapCompatibilityException(compatibility);
         }
 
-        await output.WriteLineAsync("Compatibility check passed.");
+        await output.WriteLineAsync("Compatibility check passed.", cancellationToken);
 
         var connection = await EnsureConnectionAsync(output, cancellationToken);
         var table = await DiscoverTableAsync(output, connection.Connection.ConnectionId.ToString("D"), cancellationToken);
@@ -42,16 +42,16 @@ public sealed class BootstrapWorkflow(
 
         await WriteStepHeaderAsync(output, "Summary");
         await output.WriteLineAsync(
-            $"Connection: {connection.Connection.Name} ({(connection.Created ? "created" : "reused")})");
+            $"Connection: {connection.Connection.Name} ({(connection.Created ? "created" : "reused")})", cancellationToken);
         await output.WriteLineAsync(
             $"Layer: {configuration.Layer.LayerName} on service '{configuration.Layer.ServiceName}' " +
-            $"({(layer.Published ? "published" : "reused")})");
+            $"({(layer.Published ? "published" : "reused")})", cancellationToken);
         await output.WriteLineAsync(
-            $"Protocols: {string.Join(", ", configuration.ServiceSettings.EnabledProtocols)}");
+            $"Protocols: {string.Join(", ", configuration.ServiceSettings.EnabledProtocols)}", cancellationToken);
         await output.WriteLineAsync(
             verification.Features.Count == 0
                 ? "Verification: query succeeded with 0 rows."
-                : $"Verification: query succeeded with {verification.Features.Count} row(s).");
+                : $"Verification: query succeeded with {verification.Features.Count} row(s).", cancellationToken);
 
         return new BootstrapRunSummary(
             compatibility,
@@ -81,7 +81,7 @@ public sealed class BootstrapWorkflow(
         }
 
         await output.WriteLineAsync(
-            $"Draft connection test passed for '{_options.ConnectionName}' targeting {_options.DbHost}:{_options.DbPort}/{_options.DbName}.");
+            $"Draft connection test passed for '{_options.ConnectionName}' targeting {_options.DbHost}:{_options.DbPort}/{_options.DbName}.", cancellationToken);
 
         var existing = (await _adminClient.ListConnectionsAsync(cancellationToken))
             .FirstOrDefault(connection => string.Equals(connection.Name, _options.ConnectionName, StringComparison.OrdinalIgnoreCase));
@@ -90,7 +90,7 @@ public sealed class BootstrapWorkflow(
         {
             var created = await _adminClient.CreateConnectionAsync(request, cancellationToken);
             await output.WriteLineAsync(
-                $"Created connection '{created.Name}' ({created.ConnectionId:D}).");
+                $"Created connection '{created.Name}' ({created.ConnectionId:D}).", cancellationToken);
             return new ConnectionOutcome(created, Created: true);
         }
 
@@ -113,7 +113,7 @@ public sealed class BootstrapWorkflow(
         }
 
         await output.WriteLineAsync(
-            $"Reused connection '{existing.Name}' ({existing.ConnectionId:D}).");
+            $"Reused connection '{existing.Name}' ({existing.ConnectionId:D}).", cancellationToken);
         return new ConnectionOutcome(existing, Created: false);
     }
 
@@ -154,7 +154,7 @@ public sealed class BootstrapWorkflow(
 
         await output.WriteLineAsync(
             $"Found table '{table.Schema}.{table.Table}' with geometry column '{table.GeometryColumn}', " +
-            $"geometry type '{table.GeometryType}', SRID {table.Srid}, estimated rows {table.EstimatedRows?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
+            $"geometry type '{table.GeometryType}', SRID {table.Srid}, estimated rows {table.EstimatedRows?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.", cancellationToken);
 
         return table;
     }
@@ -191,7 +191,7 @@ public sealed class BootstrapWorkflow(
         {
             await output.WriteLineAsync(
                 $"Reused published layer '{sameSourceLayer.LayerName}' (layerId={sameSourceLayer.LayerId}) " +
-                $"for '{sameSourceLayer.Schema}.{sameSourceLayer.Table}'.");
+                $"for '{sameSourceLayer.Schema}.{sameSourceLayer.Table}'.", cancellationToken);
             return new LayerOutcome(sameSourceLayer, Published: false);
         }
 
@@ -210,7 +210,7 @@ public sealed class BootstrapWorkflow(
 
         var published = await _adminClient.PublishLayerAsync(connectionId, publishRequest, cancellationToken);
         await output.WriteLineAsync(
-            $"Published layer '{published.LayerName}' (layerId={published.LayerId}) to service '{published.ServiceName}'.");
+            $"Published layer '{published.LayerName}' (layerId={published.LayerId}) to service '{published.ServiceName}'.", cancellationToken);
         return new LayerOutcome(published, Published: true);
     }
 
@@ -224,7 +224,7 @@ public sealed class BootstrapWorkflow(
 
         var configuredLayer = await _adminClient.SetLayerEnabledAsync(connectionId, layer.LayerId, true, layer.ServiceName, cancellationToken);
         await output.WriteLineAsync(
-            $"Enabled layer '{configuredLayer.LayerName}' (layerId={configuredLayer.LayerId}) on service '{configuredLayer.ServiceName}'.");
+            $"Enabled layer '{configuredLayer.LayerName}' (layerId={configuredLayer.LayerId}) on service '{configuredLayer.ServiceName}'.", cancellationToken);
 
         var serviceSettings = await _adminClient.GetServiceSettingsAsync(configuredLayer.ServiceName, cancellationToken);
         var protocolsUpdated = false;
@@ -239,12 +239,12 @@ public sealed class BootstrapWorkflow(
             serviceSettings = await _adminClient.UpdateProtocolsAsync(configuredLayer.ServiceName, mergedProtocols, cancellationToken);
             protocolsUpdated = true;
             await output.WriteLineAsync(
-                $"Enabled Grpc for service '{configuredLayer.ServiceName}'.");
+                $"Enabled Grpc for service '{configuredLayer.ServiceName}'.", cancellationToken);
         }
         else
         {
             await output.WriteLineAsync(
-                $"Grpc already enabled for service '{configuredLayer.ServiceName}'.");
+                $"Grpc already enabled for service '{configuredLayer.ServiceName}'.", cancellationToken);
         }
 
         return new ConfigurationOutcome(configuredLayer, serviceSettings, protocolsUpdated);
@@ -259,7 +259,7 @@ public sealed class BootstrapWorkflow(
         await WriteStepHeaderAsync(output, "Verify");
 
         await output.WriteLineAsync(
-            $"Querying service '{layer.ServiceName}', layerId={layer.LayerId}, fields: {string.Join(", ", verificationFields)}.");
+            $"Querying service '{layer.ServiceName}', layerId={layer.LayerId}, fields: {string.Join(", ", verificationFields)}.", cancellationToken);
 
         var response = await _grpcClient.QueryFeaturesAsync(new QueryFeaturesRequest
         {
@@ -275,17 +275,17 @@ public sealed class BootstrapWorkflow(
         if (response.Features.Count == 0)
         {
             await output.WriteLineAsync(
-                "Bounded gRPC query succeeded. The layer is queryable but currently has no rows.");
+                "Bounded gRPC query succeeded. The layer is queryable but currently has no rows.", cancellationToken);
             return response;
         }
 
         await output.WriteLineAsync(
-            $"Bounded gRPC query returned {response.Features.Count} row(s).");
+            $"Bounded gRPC query returned {response.Features.Count} row(s).", cancellationToken);
 
         foreach (var feature in response.Features)
         {
             await output.WriteLineAsync(
-                $"  [{feature.Id}] {FormatAttributes(feature.Attributes, verificationFields)}");
+                $"  [{feature.Id}] {FormatAttributes(feature.Attributes, verificationFields)}", cancellationToken);
         }
 
         return response;

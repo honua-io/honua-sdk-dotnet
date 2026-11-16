@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 using Xunit;
@@ -192,7 +191,7 @@ public sealed class BrowserRuntimeValidationTests
                 "Honua.Sdk.BrowserSmoke",
                 "bin",
                 "Release",
-                "net10.0",
+                "net11.0",
                 "wwwroot",
                 "_framework")
             : Path.Join(webRoot, "_framework");
@@ -210,15 +209,16 @@ public sealed class BrowserRuntimeValidationTests
         });
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls(appUri.ToString());
+        if (string.IsNullOrWhiteSpace(publishedWebRoot))
+        {
+            LoadBrowserSmokeBuildAssets(builder.WebHost, repoRoot);
+        }
 
         var app = builder.Build();
         app.UseDefaultFiles();
-        app.UseStaticFiles();
         app.UseStaticFiles(new StaticFileOptions
         {
             ContentTypeProvider = CreateContentTypeProvider(),
-            FileProvider = new PhysicalFileProvider(frameworkRoot),
-            RequestPath = "/_framework",
         });
         app.MapFallback(async context =>
         {
@@ -229,6 +229,20 @@ public sealed class BrowserRuntimeValidationTests
 
         await app.StartAsync().ConfigureAwait(false);
         return app;
+    }
+
+    private static void LoadBrowserSmokeBuildAssets(IWebHostBuilder builder, string repoRoot)
+    {
+        var assetManifest = Path.Join(
+            repoRoot,
+            "tests",
+            "Honua.Sdk.BrowserSmoke",
+            "bin",
+            "Release",
+            "net11.0",
+            "Honua.Sdk.BrowserSmoke.staticwebassets.runtime.json");
+        builder.UseSetting(WebHostDefaults.StaticWebAssetsKey, assetManifest);
+        builder.UseStaticWebAssets();
     }
 
     private static async Task<WebApplication> StartFakeHonuaApiAsync(

@@ -30,10 +30,10 @@ public static class OfflineConflictDemo
     {
         ArgumentNullException.ThrowIfNull(output);
 
-        await output.WriteLineAsync("Honua offline conflict workflow (deterministic, in-memory stores)");
+        await output.WriteLineAsync("Honua offline conflict workflow (deterministic, in-memory stores)", cancellationToken);
         await output.WriteLineAsync(
-            $"Package: {PackageId} source={SourceId} operation=update objectId=42");
-        await output.WriteLineAsync();
+            $"Package: {PackageId} source={SourceId} operation=update objectId=42", cancellationToken);
+        await output.WriteLineAsync(string.Empty, cancellationToken);
 
         // 1. The server always rejects the optimistic update with a 409, but accepts a
         //    forced write. This is what produces the conflict envelope on the first push.
@@ -62,17 +62,17 @@ public static class OfflineConflictDemo
                     ],
                 };
 
-        await output.WriteLineAsync("== Path 1: ManualReview (detect + record conflict envelope) ==");
+        await output.WriteLineAsync("== Path 1: ManualReview (detect + record conflict envelope) ==", cancellationToken);
         var manual = await RunPathAsync(output, OfflineConflictStrategy.ManualReview, Responder, cancellationToken)
             .ConfigureAwait(false);
 
-        await output.WriteLineAsync();
-        await output.WriteLineAsync("== Path 2: ServerWins (keep server version, drop local edit) ==");
+        await output.WriteLineAsync(string.Empty, cancellationToken);
+        await output.WriteLineAsync("== Path 2: ServerWins (keep server version, drop local edit) ==", cancellationToken);
         var serverWins = await RunPathAsync(output, OfflineConflictStrategy.ServerWins, Responder, cancellationToken)
             .ConfigureAwait(false);
 
-        await output.WriteLineAsync();
-        await output.WriteLineAsync("== Path 3: ClientWins (force-write local edit over server) ==");
+        await output.WriteLineAsync(string.Empty, cancellationToken);
+        await output.WriteLineAsync("== Path 3: ClientWins (force-write local edit over server) ==", cancellationToken);
         var clientWins = await RunPathAsync(output, OfflineConflictStrategy.ClientWins, Responder, cancellationToken)
             .ConfigureAwait(false);
 
@@ -104,9 +104,9 @@ public static class OfflineConflictDemo
 
         await output.WriteLineAsync(
             $"  push: loaded={push.Loaded} succeeded={push.Succeeded} conflicts={push.Conflicts} " +
-            $"retryable={push.RetryableFailures} fatal={push.FatalFailures}");
+            $"retryable={push.RetryableFailures} fatal={push.FatalFailures}", cancellationToken);
         await output.WriteLineAsync($"  edit-requests sent to provider: {editClient.Requests.Count} " +
-            $"(forceWrite flags: {string.Join(",", editClient.Requests.Select(r => r.ForceWrite))})");
+            $"(forceWrite flags: {string.Join(",", editClient.Requests.Select(r => r.ForceWrite))})", cancellationToken);
 
         // Detection: surface any conflict envelope the engine handed to the conflict store.
         var open = await conflictStore.ListConflictsAsync(PackageId, cancellationToken).ConfigureAwait(false);
@@ -117,19 +117,19 @@ public static class OfflineConflictDemo
             var conflict = open[0];
             await output.WriteLineAsync(
                 $"  conflict detected: op={conflict.OperationId} reason=\"{conflict.Reason}\" " +
-                $"errorCode={conflict.Error?.Code?.ToString() ?? "none"}");
+                $"errorCode={conflict.Error?.Code?.ToString() ?? "none"}", cancellationToken);
             await output.WriteLineAsync(
                 $"    local edit: kind={conflict.LocalOperation.OperationKind} " +
-                $"name={ReadLocalAttribute(conflict.LocalOperation, "name")}");
+                $"name={ReadLocalAttribute(conflict.LocalOperation, "name")}", cancellationToken);
 
             // Resolve path: a host reviewer accepts the local edit and clears the envelope.
             await conflictStore.ResolveConflictAsync(conflict.OperationId, cancellationToken).ConfigureAwait(false);
             var remaining = await conflictStore.ListConflictsAsync(PackageId, cancellationToken).ConfigureAwait(false);
-            await output.WriteLineAsync($"  resolved by reviewer: open conflicts now {remaining.Count}");
+            await output.WriteLineAsync($"  resolved by reviewer: open conflicts now {remaining.Count}", cancellationToken);
         }
         else
         {
-            await output.WriteLineAsync("  no conflict envelope (resolved automatically by strategy)");
+            await output.WriteLineAsync("  no conflict envelope (resolved automatically by strategy)", cancellationToken);
         }
 
         return new OfflineConflictPathResult(
