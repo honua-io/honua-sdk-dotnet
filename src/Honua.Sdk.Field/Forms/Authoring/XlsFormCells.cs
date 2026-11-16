@@ -76,12 +76,11 @@ internal static class XlsFormCells
 
         try
         {
-            foreach (var token in Tokenizer.Tokenize(expression).Where(t => t.Type == TokenType.FieldRef))
+            foreach (var token in Tokenizer.Tokenize(expression)
+                .Where(t => t.Type == TokenType.FieldRef)
+                .Where(t => t.Text == "." ? context.Column != "constraint" : !context.Fields.Contains(t.Text)))
             {
-                if (token.Text == "." ? context.Column != "constraint" : !context.Fields.Contains(token.Text))
-                {
-                    errors.Error(("survey", row, context.Column), "Expression references an unknown field, crosses a repeat boundary, uses a calculated field before it is evaluated or uses '.' outside a constraint.");
-                }
+                errors.Error(("survey", row, context.Column), "Expression references an unknown field, crosses a repeat boundary, uses a calculated field before it is evaluated or uses '.' outside a constraint.");
             }
         }
         catch (ExpressionEvaluationException)

@@ -34,7 +34,7 @@ internal sealed class XlsFormWorkbookReader(ZipArchive zip)
             sheets.Add(name, new XlsFormSheetReader(name, strings, _errors).Read(XlsFormXml.Load(zip, target)));
         }
 
-        if (!sheets.ContainsKey("survey"))
+        if (!sheets.TryGetValue("survey", out var survey))
         {
             throw new InvalidDataException("The survey worksheet is missing.");
         }
@@ -44,7 +44,7 @@ internal sealed class XlsFormWorkbookReader(ZipArchive zip)
             Diagnostics = _errors,
             Value = _errors.Count > 0 ? null : new XlsFormWorkbook
             {
-                Survey = sheets["survey"], Choices = sheets.GetValueOrDefault("choices") ?? [],
+                Survey = survey, Choices = sheets.GetValueOrDefault("choices") ?? [],
                 Settings = sheets.GetValueOrDefault("settings") ?? []
             }
         };

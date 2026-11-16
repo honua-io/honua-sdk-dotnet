@@ -273,7 +273,7 @@ internal sealed class XlsFormImport(XlsFormWorkbook workbook)
     {
         var tokens = row.Text("type").Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var type = tokens.Length == 0 ? string.Empty : tokens[0];
-        var result = type switch
+        FormFieldType? result = type switch
         {
             "text" => FormFieldType.Text, "integer" or "decimal" => FormFieldType.Numeric,
             "date" => FormFieldType.Date, "time" => FormFieldType.Time, "dateTime" => FormFieldType.DateTime,
@@ -281,7 +281,7 @@ internal sealed class XlsFormImport(XlsFormWorkbook workbook)
             "geopoint" => FormFieldType.Location, "geotrace" => FormFieldType.GeoTrace, "geoshape" => FormFieldType.GeoShape,
             "image" => FormFieldType.Photo, "audio" => FormFieldType.Audio, "video" => FormFieldType.Video,
             "barcode" => FormFieldType.Barcode, "calculate" => FormFieldType.Calculated,
-            _ => (FormFieldType?)null
+            _ => null
         };
         if (result is null)
         {
