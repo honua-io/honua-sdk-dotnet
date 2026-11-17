@@ -1055,3 +1055,5 @@ Honua.Sdk.Admin.HonuaAdminClient.RevokeApiKeyAsync(System.Guid id, System.Thread
 Honua.Sdk.Admin.IHonuaAdminApiKeysClient.ListApiKeysAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!>!
 Honua.Sdk.Admin.IHonuaAdminApiKeysClient.CreateApiKeyAsync(Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeySecretResponse!>!
 Honua.Sdk.Admin.IHonuaAdminApiKeysClient.RevokeApiKeyAsync(System.Guid id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!
+Honua.Sdk.Admin.Models.PublishedLayerSummary.StorageLayerId.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerSummary.StorageLayerId.init -> void

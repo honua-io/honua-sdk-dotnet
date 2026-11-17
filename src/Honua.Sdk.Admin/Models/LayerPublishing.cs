@@ -110,10 +110,21 @@ public sealed record PublishLayerRequest
 public sealed class PublishedLayerSummary
 {
     /// <summary>
-    /// Layer identifier.
+    /// Layer identifier. Servers before 2026.1-rc.2 send it as <c>layerId</c>.
     /// </summary>
     [JsonPropertyName("layerId")]
     public int LayerId { get; init; }
+
+    /// <summary>
+    /// The same layer identifier under the server's current wire name, <c>storageLayerId</c>.
+    /// Reading either name sets both properties; servers send only one of the two names.
+    /// </summary>
+    [JsonPropertyName("storageLayerId")]
+    public int StorageLayerId
+    {
+        get => LayerId;
+        init => LayerId = value;
+    }
 
     /// <summary>
     /// Layer display name.

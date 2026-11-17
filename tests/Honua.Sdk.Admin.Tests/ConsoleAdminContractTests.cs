@@ -175,6 +175,7 @@ public sealed class ConsoleAdminContractTests
         Assert.Equal("parcels", tables?.Tables.Single().Table);
         Assert.Equal("Parcels", publishRequest?.LayerName);
         Assert.Equal("parcels", publishedLayer?.Data?.ServiceName);
+        Assert.Equal(12, publishedLayer?.Data?.LayerId);
         Assert.Equal("sha256:console-publish-fixture", manifest?.Data?.ManifestHash);
         Assert.True(applyRequest?.DryRun);
 
