@@ -115,6 +115,14 @@ public sealed class PublishedLayerSummary
     [JsonPropertyName("layerId")]
     public int LayerId { get; init; }
 
+    /// <summary>The layer identifier under the server's current wire name; reading either name sets both.</summary>
+    [JsonPropertyName("storageLayerId")]
+    public int StorageLayerId
+    {
+        get => LayerId;
+        init => LayerId = value;
+    }
+
     /// <summary>
     /// Layer display name.
     /// </summary>
