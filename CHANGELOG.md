@@ -2,6 +2,14 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [5.0.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v5.0.0...dotnet-sdk-v5.0.1) (2026-11-16)
+
+
+### Bug Fixes
+
+* **release:** bind SBOM identity to package version ([#559](https://github.com/honua-io/honua-sdk-dotnet/issues/559)) ([#560](https://github.com/honua-io/honua-sdk-dotnet/issues/560)) ([118e3fa](https://github.com/honua-io/honua-sdk-dotnet/commit/118e3fa89b663b000537f6dabefb37e07d56f293))
+* **release:** validate SBOM graphs against packed dependencies ([#562](https://github.com/honua-io/honua-sdk-dotnet/issues/562)) ([#563](https://github.com/honua-io/honua-sdk-dotnet/issues/563)) ([497ab7a](https://github.com/honua-io/honua-sdk-dotnet/commit/497ab7a3ea51671026f98a7b104331c9ba4a724a))
+
 ## [5.0.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v4.0.0...dotnet-sdk-v5.0.0) (2026-11-16)
 
 
