@@ -3,10 +3,8 @@
 
 namespace Honua.Sdk.Cli;
 
-/// <summary>Bounded reads and atomic writes for files the forms commands handle.</summary>
 internal static class CliFiles
 {
-    /// <summary>The workbook size the server and the SDK converter accept.</summary>
     internal const int MaxWorkbookBytes = 8 * 1024 * 1024;
 
     internal static async Task<byte[]> ReadBoundedAsync(string path, int maxBytes, CancellationToken cancellationToken)
@@ -30,7 +28,6 @@ internal static class CliFiles
         return buffer.ToArray();
     }
 
-    /// <summary>Writes through a temporary sibling file and returns the full destination path.</summary>
     internal static string WriteAtomically(string path, ReadOnlySpan<byte> content)
     {
         string destination = Path.GetFullPath(path);
@@ -55,7 +52,6 @@ internal static class CliFiles
         }
     }
 
-    /// <summary>A file name for a form id with characters that are invalid in file names replaced.</summary>
     internal static string DefaultWorkbookName(string formId)
     {
         char[] invalid = Path.GetInvalidFileNameChars();

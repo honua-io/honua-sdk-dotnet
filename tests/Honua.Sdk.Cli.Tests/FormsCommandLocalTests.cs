@@ -8,7 +8,11 @@ public sealed class FormsCommandLocalTests : IDisposable
     private readonly TemporaryDirectory _temporary = new();
     private readonly StubHandler _handler = new(_ => throw new InvalidOperationException("--local must not call a server."));
 
-    public void Dispose() => _temporary.Dispose();
+    public void Dispose()
+    {
+        _handler.Dispose();
+        _temporary.Dispose();
+    }
 
     [Fact]
     public async Task LocalImportThenExport_RoundTripsTheWorkbook()

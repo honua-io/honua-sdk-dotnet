@@ -8,10 +8,8 @@ using System.Text.Json;
 
 namespace Honua.Sdk.Cli;
 
-/// <summary>The layer an imported workbook's questions bind to.</summary>
 internal sealed record FormsImportTarget(string ServiceId, int LayerId);
 
-/// <summary>Calls the server's admin form package XLSForm routes.</summary>
 internal sealed class FormsServer
 {
     internal const string WorkbookContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -39,7 +37,7 @@ internal sealed class FormsServer
             ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL")
             ?? throw new CliArgumentException("honua forms requires --base-url or HONUA_BASE_URL (or --local).");
         Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
-        if (!baseUri.AbsolutePath.EndsWith('/'))
+        if (!baseUri.AbsolutePath.EndsWith('/', StringComparison.Ordinal))
             baseUri = new Uri(baseUri.AbsoluteUri + "/");
 
         int timeoutMs = 60_000;
@@ -52,20 +50,22 @@ internal sealed class FormsServer
         }
 
         string? apiKey = Environment.GetEnvironmentVariable(ApiKeyVariable);
+        if (apiKey is not null && apiKey.Any(char.IsControl))
+            throw new CliArgumentException("HONUA_API_KEY contains a control character.");
         return new FormsServer(baseUri, string.IsNullOrWhiteSpace(apiKey) ? null : apiKey, client, TimeSpan.FromMilliseconds(timeoutMs));
     }
 
     internal async Task<FormsResult> ImportAsync(string workbookPath, FormsImportTarget target, CancellationToken cancellationToken)
     {
         byte[] workbook = await CliFiles.ReadBoundedAsync(workbookPath, CliFiles.MaxWorkbookBytes, cancellationToken).ConfigureAwait(false);
-        ByteArrayContent file = new(workbook);
+        using ByteArrayContent file = new(workbook);
         file.Headers.ContentType = new MediaTypeHeaderValue(WorkbookContentType);
         using MultipartFormDataContent content = new() { { file, "file", Path.GetFileName(workbookPath) } };
 
         string query = string.Create(
             CultureInfo.InvariantCulture,
             $"import?serviceId={Uri.EscapeDataString(target.ServiceId)}&layerId={target.LayerId}");
-        using HttpRequestMessage request = CreateRequest(HttpMethod.Post, query);
+        using HttpRequestMessage request = CreateRequest(HttpMethod.Post, query, "application/json");
         request.Content = content;
         (HttpStatusCode status, byte[] body) = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (status != HttpStatusCode.Created)
@@ -73,6 +73,8 @@ internal sealed class FormsServer
 
         FormsImportResponse created = JsonSerializer.Deserialize(body, FormsJsonContext.Default.FormsImportResponse)
             ?? throw new JsonException("Empty import response.");
+        if (string.IsNullOrWhiteSpace(created.FormId))
+            return FormsResult.Failed("honua forms import failed: the server response has no form id.");
         return FormsResult.Succeeded("imported", new Dictionary<string, string>
         {
             ["formId"] = created.FormId,
@@ -83,8 +85,7 @@ internal sealed class FormsServer
 
     internal async Task<FormsResult> ExportAsync(string formId, string? outputPath, CancellationToken cancellationToken)
     {
-        using HttpRequestMessage request = CreateRequest(HttpMethod.Get, Uri.EscapeDataString(formId) + "/export");
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(WorkbookContentType));
+        using HttpRequestMessage request = CreateRequest(HttpMethod.Get, Uri.EscapeDataString(formId) + "/export", WorkbookContentType);
         (HttpStatusCode status, byte[] body) = await SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (status != HttpStatusCode.OK)
             return Problem(status, body, "export");
@@ -99,10 +100,10 @@ internal sealed class FormsServer
         });
     }
 
-    private HttpRequestMessage CreateRequest(HttpMethod method, string relative)
+    private HttpRequestMessage CreateRequest(HttpMethod method, string relative, string primaryAccept)
     {
         HttpRequestMessage request = new(method, new Uri(_baseUri, PackagesPath + relative));
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(primaryAccept));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/problem+json"));
         if (_apiKey is not null)
             request.Headers.TryAddWithoutValidation("X-API-Key", _apiKey);

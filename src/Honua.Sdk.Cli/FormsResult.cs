@@ -8,7 +8,6 @@ using Honua.Sdk.Field.Forms.Authoring;
 
 namespace Honua.Sdk.Cli;
 
-/// <summary>One workbook cell that blocks an import or export.</summary>
 internal sealed record FormsDiagnostic
 {
     [JsonPropertyName("sheet")]
@@ -32,7 +31,6 @@ internal sealed record FormsDiagnostic
     };
 }
 
-/// <summary>The outcome of one forms command, rendered by <see cref="FormsReport"/>.</summary>
 internal sealed record FormsResult
 {
     internal static readonly FormsResult Help = new() { ExitCode = 0, Outcome = "help" };
@@ -47,7 +45,6 @@ internal sealed record FormsResult
 
     internal string? Message { get; init; }
 
-    /// <summary>A converted document written to standard output instead of a summary.</summary>
     internal string? Document { get; init; }
 
     internal static FormsResult Succeeded(string outcome, IReadOnlyDictionary<string, string> fields)
@@ -63,12 +60,10 @@ internal sealed record FormsResult
         => new() { ExitCode = 1, Outcome = "failed", Message = message };
 }
 
-/// <summary>Renders a forms result as text or as one JSON object.</summary>
 internal static class FormsReport
 {
     internal const string Format = "honua.forms-result.v1";
 
-    /// <summary>Writes one JSON object on standard output, or the converted document.</summary>
     internal static async Task WriteJsonAsync(FormsResult result, TextWriter output)
     {
         if (ReferenceEquals(result, FormsResult.Help))
@@ -90,7 +85,6 @@ internal static class FormsReport
         await output.WriteLineAsync(JsonSerializer.Serialize(body, FormsJsonContext.Default.FormsReportBody)).ConfigureAwait(false);
     }
 
-    /// <summary>Writes key=value lines; the failure reason and diagnostics go to standard error.</summary>
     internal static async Task WriteTextAsync(FormsResult result, CliStreams streams)
     {
         if (ReferenceEquals(result, FormsResult.Help))
@@ -113,7 +107,6 @@ internal static class FormsReport
         }
     }
 
-    /// <summary>Replaces control characters in server-supplied text so it cannot drive the terminal.</summary>
     internal static string Printable(string text)
         => string.Create(text.Length, text, static (span, source) =>
         {
@@ -122,7 +115,6 @@ internal static class FormsReport
         });
 }
 
-/// <summary>The --json summary of a forms command.</summary>
 internal sealed class FormsReportBody
 {
     [JsonPropertyName("format")]
@@ -141,7 +133,6 @@ internal sealed class FormsReportBody
     public IReadOnlyList<FormsDiagnostic> Diagnostics { get; init; } = [];
 }
 
-/// <summary>The part of the server's created form package version the CLI reports.</summary>
 internal sealed class FormsImportResponse
 {
     [JsonPropertyName("formId")]
@@ -154,7 +145,6 @@ internal sealed class FormsImportResponse
     public string Status { get; init; } = string.Empty;
 }
 
-/// <summary>The problem-details body the server returns, with optional workbook diagnostics.</summary>
 internal sealed class FormsProblemBody
 {
     [JsonPropertyName("title")]

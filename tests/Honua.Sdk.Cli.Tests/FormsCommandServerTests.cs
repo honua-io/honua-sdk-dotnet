@@ -44,6 +44,49 @@ public sealed class FormsCommandServerTests : IDisposable
     }
 
     [Fact]
+    public async Task Import_ApiKeyWithControlCharacter_ExitsTwoWithoutCallingServer()
+    {
+        Environment.SetEnvironmentVariable(FormsServer.ApiKeyVariable, "key\r\nX-Injected: 1");
+        string workbook = WriteWorkbook("survey.xlsx", [0x50, 0x4B, 0x03, 0x04]);
+        StubHandler handler = new(_ => throw new InvalidOperationException("The server must not be called."));
+        using HttpClient client = new(handler);
+
+        CliRun run = await CliRun.ExecuteAsync(client,
+            "forms", "import", workbook, "--service", "parcels", "--layer", "0", "--base-url", BaseUrl);
+
+        Assert.Equal(2, run.ExitCode);
+        Assert.Contains("control character", run.Stderr, StringComparison.Ordinal);
+        Assert.Equal(0, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task Export_DeclaredOversizedResponse_FailsWithoutWriting()
+    {
+        string output = Path.Combine(_temporary.Path, "inspection.xlsx");
+        using HttpClient client = new(new StubHandler(_ => Task.FromResult(OversizedWorkbook())));
+
+        CliRun run = await CliRun.ExecuteAsync(client, "forms", "export", "inspection", "-o", output, "--base-url", BaseUrl);
+
+        Assert.Equal(1, run.ExitCode);
+        Assert.False(File.Exists(output));
+        Assert.Contains("16 MiB", run.Stderr, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Import_CreatedWithoutFormId_Fails()
+    {
+        string workbook = WriteWorkbook("survey.xlsx", [0x50, 0x4B, 0x03, 0x04]);
+        using HttpClient client = new(new StubHandler(_ => Task.FromResult(
+            Json(HttpStatusCode.Created, """{"formId":"  ","version":1,"status":"draft"}"""))));
+
+        CliRun run = await CliRun.ExecuteAsync(client,
+            "forms", "import", workbook, "--service", "parcels", "--layer", "0", "--base-url", BaseUrl);
+
+        Assert.Equal(1, run.ExitCode);
+        Assert.Contains("no form id", run.Stderr, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Import_RejectedWorkbook_PrintsEveryCellAndExitsOne()
     {
         string workbook = WriteWorkbook("survey.xlsx", [1, 2, 3]);
@@ -99,6 +142,7 @@ public sealed class FormsCommandServerTests : IDisposable
         Assert.Equal(HttpMethod.Get, captured.Method);
         Assert.Equal($"{BaseUrl}/api/v1/admin/forms/packages/inspection%20form/export", captured.Uri);
         Assert.Equal(ApiKey, captured.ApiKey);
+        Assert.StartsWith(FormsServer.WorkbookContentType, captured.Accept, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -166,6 +210,16 @@ public sealed class FormsCommandServerTests : IDisposable
         Assert.Equal(0, handler.CallCount);
     }
 
+    private static HttpResponseMessage OversizedWorkbook()
+    {
+        HttpResponseMessage response = new(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent([0x50, 0x4B, 0x03, 0x04])
+        };
+        response.Content.Headers.ContentLength = 17 * 1024 * 1024;
+        return response;
+    }
+
     private string WriteWorkbook(string name, byte[] content)
     {
         string path = Path.Combine(_temporary.Path, name);
@@ -178,13 +232,14 @@ public sealed class FormsCommandServerTests : IDisposable
         Content = new StringContent(body, Encoding.UTF8, "application/json")
     };
 
-    private sealed record CapturedRequest(HttpMethod Method, string Uri, string? ApiKey, string Body)
+    private sealed record CapturedRequest(HttpMethod Method, string Uri, string? ApiKey, string Accept, string Body)
     {
         internal static async Task<CapturedRequest> ReadAsync(HttpRequestMessage request)
         {
             string body = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync();
             string? apiKey = request.Headers.TryGetValues("X-API-Key", out IEnumerable<string>? values) ? values.Single() : null;
-            return new CapturedRequest(request.Method, request.RequestUri!.AbsoluteUri, apiKey, body);
+            string accept = request.Headers.Accept.ToString();
+            return new CapturedRequest(request.Method, request.RequestUri!.AbsoluteUri, apiKey, accept, body);
         }
     }
 }

@@ -6,10 +6,8 @@ using System.Text.Json;
 
 namespace Honua.Sdk.Cli;
 
-/// <summary>The standard output and error writers a command reports to.</summary>
 internal sealed record CliStreams(TextWriter Output, TextWriter Error);
 
-/// <summary>Parsed <c>honua forms</c> arguments: the verb, its one positional target and named options.</summary>
 internal sealed record FormsInvocation(string Verb, string Target, IReadOnlyDictionary<string, string> Options)
 {
     internal bool Has(string name) => Options.ContainsKey(name);
@@ -20,7 +18,6 @@ internal sealed record FormsInvocation(string Verb, string Target, IReadOnlyDict
     internal string Require(string name, string message) => Get(name) ?? throw new CliArgumentException(message);
 }
 
-/// <summary><c>honua forms import|export</c>: XLSForm workbooks against a server or converted locally.</summary>
 internal static class FormsCommand
 {
     internal const string Name = "forms";
@@ -37,7 +34,7 @@ internal static class FormsCommand
         (TextWriter output, TextWriter error) = streams;
         if (args.Length == 0 || args[0] is "--help" or "-h")
         {
-            await output.WriteLineAsync(Usage).ConfigureAwait(false);
+            await output.WriteLineAsync(Usage, cancellationToken).ConfigureAwait(false);
             return args.Length == 0 ? 2 : 0;
         }
 
@@ -53,7 +50,7 @@ internal static class FormsCommand
         }
         catch (CliArgumentException exception)
         {
-            await error.WriteLineAsync(exception.Message).ConfigureAwait(false);
+            await error.WriteLineAsync(exception.Message, CancellationToken.None).ConfigureAwait(false);
             return 2;
         }
         catch (Exception exception) when (exception is HttpRequestException
@@ -65,7 +62,7 @@ internal static class FormsCommand
             or ArgumentException
             or NotSupportedException)
         {
-            await error.WriteLineAsync("honua forms failed: " + Describe(exception)).ConfigureAwait(false);
+            await error.WriteLineAsync("honua forms failed: " + Describe(exception), CancellationToken.None).ConfigureAwait(false);
             return 1;
         }
     }
@@ -78,7 +75,7 @@ internal static class FormsCommand
     {
         if (invocation.Has("help"))
         {
-            await output.WriteLineAsync(Usage).ConfigureAwait(false);
+            await output.WriteLineAsync(Usage, cancellationToken).ConfigureAwait(false);
             return FormsResult.Help;
         }
 

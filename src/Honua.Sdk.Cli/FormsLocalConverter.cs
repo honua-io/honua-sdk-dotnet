@@ -8,7 +8,6 @@ using Honua.Sdk.Field.Forms.Authoring;
 
 namespace Honua.Sdk.Cli;
 
-/// <summary>Converts between XLSForm workbooks and form definition JSON without a server.</summary>
 internal static class FormsLocalConverter
 {
     internal static FormsResult Import(string workbookPath, string? outputPath)
