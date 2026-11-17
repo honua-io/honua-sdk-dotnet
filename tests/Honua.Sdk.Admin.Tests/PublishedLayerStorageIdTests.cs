@@ -7,9 +7,7 @@ using Honua.Sdk.Admin.Tests.Fixtures;
 
 namespace Honua.Sdk.Admin.Tests;
 
-/// <summary>
-/// The server names the published layer id <c>storageLayerId</c> on the wire; older servers sent <c>layerId</c>.
-/// </summary>
+// The server names the published layer id storageLayerId on the wire; older servers sent layerId.
 public sealed class PublishedLayerStorageIdTests
 {
     private const string ConnectionId = "11111111-1111-1111-1111-111111111111";
