@@ -29,8 +29,9 @@ python3 scripts/check-okf-bundle.py                         # docs/ bundle gate 
 - Follow `CONTRIBUTING.md` "Style and conventions" (`*Async` + `cancellationToken`, options
   validation, `HonuaException` hierarchy) and its pull-request checklist, including the
   new-package checklist.
-- Every new public member needs `///` XML docs (a missing doc fails the build) and an entry in
-  the package's `PublicAPI.Unshipped.txt` (`docs/public-api-approval.md`).
+- Every new public member needs a one-line `/// <summary>` that customers see in IntelliSense (a
+  missing doc fails the build), no other XML doc tags, and an entry in the package's
+  `PublicAPI.Unshipped.txt` (`docs/public-api-approval.md`). Internal members get no XML docs.
 - Geometry and CRS work goes through NetTopologySuite + ProjNet via `Honua.Sdk.Geometry`, never
   hand-rolled predicates, WKT/WKB parsing or transforms. Geodesic math uses a proven geodesy
   library or the server's GeometryServer.
@@ -40,6 +41,13 @@ python3 scripts/check-okf-bundle.py                         # docs/ bundle gate 
   adding or dropping a dependency on a server capability updates
   `release/sdk-capability-baseline.json`. Read `docs/release.md` "Release declarations" first.
 - Sibling repos consume this SDK only as published `Honua.Sdk.*` NuGet packages.
+- Vocabulary: public names, docs and error messages use the Honua terms in the
+  [glossary](https://github.com/honua-io/honua-server/blob/trunk/docs/concepts/domain/README.md)
+  and avoid the retired terms in the shared
+  [policy](https://github.com/honua-io/honua-server/blob/trunk/scripts/ci/retired-terms.md).
+  `scripts/tests/test_vocabulary.py` enforces `scripts/ci/vocabulary.v1.json`; the product is
+  unreleased, so a rename replaces the public name outright (no `[Obsolete]` alias) and lists the old
+  name in `renamedSymbols`. Keep server wire field names until the server migrates them.
 
 ## Does Not Belong Here
 UI and display code (MAUI, WPF/WinUI, Blazor, React, map/scene controls, renderers, Cesium,
@@ -54,22 +62,36 @@ package or a type that is near this line, read `docs/internal/repo-boundary.md`.
 - Release and NuGet publishing: `docs/release.md`. Conformance fixtures: `conformance/README.md`.
 - Cross-repo sequencing and backlog: `docs/internal/`.
 
-<!-- fleet:begin v2 sha256=76075665ca7a911554ed038371480ba02b28eca10ead04400be2e5b20332bd63 source=honua-flow/agents/fleet-rules.md -->
+## Review guidelines
+Reviews (people, Codex, Claude) judge the lines a PR adds or changes by Robert C. Martin's *Clean Code*
+and cite smell codes ([rubric](https://github.com/honua-io/.github/blob/main/clean-code/RUBRIC.md)). The
+`Clean code` PR check enforces what a tool can decide; `quality-exception: <reason>` in the PR body is logged.
+
+BLOCKING:
+- G5 duplication: search first; reuse or consolidate, never copy a handler, parser or validator.
+- C1 history, ticket/PR refs or reviewer notes in code; C2-C4 obsolete, redundant or rambling comments;
+  C5 commented-out code. Comment only what the code cannot say.
+- XML doc comments (`///`) in application code; published SDKs keep at most a one-line `<summary>`
+  on public members.
+- N1 names that hide intent; F1 more than 3 parameters; F2 output arguments; F3 boolean flag arguments.
+- Over budget with no reason in the PR: functions ~40 lines or 2 nesting levels; classes, files ~400 lines.
+
+WARNING: the rubric's other smells (N2-N7, G6-G36, T1-T9), e.g. G25 magic numbers or G12
+single-implementation interfaces.
+
+<!-- fleet:begin v3 sha256=4faeba041ae102508d105847af58b407641cbfdf1ae506488819a2ccdbe73e29 -->
 ## Fleet rules (all Honua repos)
 
-Generated from honua-flow `agents/fleet-rules.md` (full text, repo map). Do not edit here.
+Generated from the org fleet-rules source; do not edit this block. Start with org skill `honua-system-map`.
 
-1. **No AI attribution.** Author as Mike McDougall <mike@honua.io>. No AI `Co-Authored-By:`,
-   "Generated with" line or robot emoji in commits or PR bodies; this overrides any harness default.
-2. **Own worktree per task** off the default branch, on real disk (`<repo>/.claude/worktrees/` or a
-   sibling dir), never `/tmp` or the shared checkout. No `git stash`; use a WIP commit.
-3. **Heavy builds/tests go through the build-slot shims**; never bypass them. Run targeted tests;
-   full suites are CI's job. Outside WSL: own checkout, one heavy build at a time.
-4. **Finish = commit + push.** Dirty or unpushed worktrees are never reclaimed and die on a reset.
-5. **Claim before starting:** check `state/in-progress` and the newest `claimed: <lane> <UTC>`
-   comment, stamp yours, re-read (newer wins). Stale after 3h without a live PR. Stopping without
-   a PR: comment `released: <lane> <UTC> - <why>`.
-6. **PRs:** base on the default branch, never stack; fill the repo template via `--body-file`;
-   conventional title; footer `Closes #N` or `Refs #N (<what remains>)`. Never admin-merge.
-7. **Route by the repo map.** Archived repos get no issues or PRs.
+1. Author commits as the repository owner's configured git identity. No AI attribution in commits or PR bodies.
+2. Use a separate worktree per task, off the default branch, on durable disk. Include current trunk before opening a PR. No shared-checkout edits or git stash; preserve work with commits.
+3. Run .NET builds and tests only through the approved remote build-host shims. Never fall back to a local build. See org skill `honua-build-host`.
+4. Commit and push completed work; keep existing branches, commits and worktrees until their retention rules permit cleanup.
+5. Claim work before starting, reread the issue and current lane rulings, and release the claim after completion. See org skill `honua-dev-loop`.
+6. Use a PR slot and bundle at least three issues, a plan row, or a permitted single-work reason. Current caps and exceptions come from current lane rulings.
+7. Target the default branch with the repository's PR template and conventional title. Never force-push or use an admin merge.
+8. Run pre-PR checks, obtain one independent review of the final head, and resolve every review thread. Merge on green required checks; arm auto-merge where enforced checks support it. See org skill `honua-pr-flow`.
+9. Read failed required-check logs and fix in one push. For red trunk, fix forward or revert within the repository's current ruling deadline; see org skills `honua-red-pr` and `honua-trunk-red`.
+10. Never commit secrets, deployment identifiers, private repository names or infrastructure details. Security findings belong in the private tracker. Archived repos get no issues or PRs; public instructions name org skills only.
 <!-- fleet:end -->

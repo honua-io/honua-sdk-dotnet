@@ -1,14 +1,28 @@
 # Contributing to the Honua .NET SDK
 
-Thanks for considering a contribution. This repo owns reusable .NET SDK
+**This repository does not accept code contributions from outside Honua Geo Inc.**
+Pull requests from outside the organization are closed automatically, regardless
+of the repository's license.
+
+We welcome:
+
+- Bug reports and feature requests through GitHub Issues.
+- Interoperability reports with reproducible requests, responses, and version details.
+- Private security reports to <security@honua.io>, following the
+  [organization security policy](https://github.com/honua-io/.github/blob/main/SECURITY.md).
+  Do not disclose vulnerabilities in public issues.
+
+## Maintainer development guide
+
+This repo owns reusable .NET SDK
 contracts, service clients, protocol adapters, serialization formats, and tests.
 The repo boundary, what belongs here, and what doesn't, is documented in
 [docs/internal/repo-boundary.md](docs/internal/repo-boundary.md) (short form in
-[AGENTS.md](AGENTS.md)) — please read it before opening a pull request.
+[AGENTS.md](AGENTS.md)) — maintainers read it before opening a pull request.
 
-## Quick start for contributors
+## Maintainer quick start
 
-1. Install [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later.
+1. Install [.NET 11.0 SDK](https://dotnet.microsoft.com/download) or later.
 2. Clone the repo and configure the GitHub Packages source — see
    [INSTALL.md](INSTALL.md#prereleases-and-the-github-packages-mirror).
 3. Build the solution:
@@ -56,7 +70,7 @@ process rather than an analyzer suppression. At release, move reviewed
 unshipped declarations into the shipped file. See
 [docs/public-api-approval.md](docs/public-api-approval.md) for the full workflow.
 
-## Internal / contributor documentation
+## Maintainer documentation
 
 Backlog cadence, capability backlog, contract harmonization, and cross-repo
 sequencing live under [docs/internal/](docs/internal/README.md). Consumer
@@ -68,7 +82,7 @@ Before opening a PR, verify:
 
 - [ ] `dotnet build Honua.Sdk.sln --configuration Release /p:TreatWarningsAsErrors=true` is clean — zero warnings, zero errors.
 - [ ] `dotnet test Honua.Sdk.sln --configuration Release --no-build` is green; integration tests under `tests/Honua.Sdk.IntegrationTests` / `tests/Honua.Sdk.ProtocolIntegration.Tests` may stay skipped (environment-gated) unless your change touches their fixtures.
-- [ ] You added or updated XML doc comments on any new public type or member. Missing-doc warnings fail the build under `TreatWarningsAsErrors`.
+- [ ] Every new public type or member has a one-line `/// <summary>` (missing-doc warnings fail the build under `TreatWarningsAsErrors`), and nothing else in XML docs; internal members have none.
 - [ ] You added unit tests for new behavior. Code-coverage floors (75% line / 60% branch, see `.github/workflows/ci.yml`) are enforced solution-wide against the merged report; new packages should meet or exceed those numbers.
 - [ ] Public-API surface changes pass `scripts/validate-api-compat.sh` (the CI `api-compat` job runs this against the prior `dotnet-sdk-v*` tag).
 - [ ] The change does not break the `Honua.Sdk.Abstractions` provider-neutral contracts unless the change is intentional and version-gated; see [docs/feature-edits.md](docs/feature-edits.md).
@@ -93,5 +107,4 @@ making, and the full exception (type + message + stack). See
 
 ## License
 
-By contributing you agree that your contributions will be licensed under the
-[Apache 2.0 License](LICENSE).
+This repository is licensed under the [Apache 2.0 License](LICENSE).

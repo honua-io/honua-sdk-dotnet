@@ -7,6 +7,8 @@ tags: [auth, api-key, oidc]
 ---
 # Authentication
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Honua SDK clients accept static credentials for simple deployments, provider
 delegates for key rotation, and request-aware token providers for production
 OAuth/OIDC refresh flows.
@@ -182,10 +184,11 @@ HTTP exception is loopback or `localhost` for local development.
 
 If a provider throws or its cancellation token is canceled, the current SDK call
 fails before the transport request is sent. Authentication failures from the
-server, such as `401` or `403`, are not retried by the SDK retry policy. HTTP
-clients retry safe methods only on `429`, `502`, and `503`; the gRPC client
-retries configured safe/read-style RPCs on `Unavailable` and `Internal`
-according to its retry policy. That includes FeatureService query calls and the
-ProcessService `ValidatePlan`, `DryRunPlan`, `GetJob`, and `GetJobResult`
-methods. Treat the provider as the place to refresh before a request, not as a
+server, such as `401` or `403`, are not retried by the SDK retry policy.
+
+HTTP clients retry transient failures for safe methods. GeoServices also
+retries idempotent `PUT`/`DELETE` requests and the `POST` `/query` fallback.
+See [Client Behavior: Retries](client-behavior.md#retries) for the HTTP status
+codes, transport failures, and gRPC operations covered by each policy.
+Treat the provider as the place to refresh before a request, not as a
 response-time recovery hook for expired credentials.

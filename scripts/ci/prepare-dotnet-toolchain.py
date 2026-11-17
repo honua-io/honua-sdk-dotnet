@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 PACK_METADATA = {
@@ -39,10 +40,10 @@ def locked_packs(document: dict) -> dict[str, str]:
     return result
 
 
-def verify_evaluation(document: dict, sdk: str, expected: dict[str, str]) -> dict[str, str]:
+def verify_evaluation(document: dict, toolchain: tuple[str, str], expected: dict[str, str]) -> dict[str, str]:
+    sdk, framework = toolchain
     if document.get("Properties", {}).get("NETCoreSdkVersion") != sdk:
         raise ValueError("MSBuild selected a different SDK")
-    framework = "net" + ".".join(sdk.split(".")[:2])
     selected = {}
     for package, (item, metadata) in PACK_METADATA.items():
         matches = [entry[metadata] for entry in document.get("Items", {}).get(item, [])
@@ -73,7 +74,11 @@ def main() -> int:
     try:
         global_json = json.loads((ROOT / "global.json").read_text())
         sdk = pinned_sdk(global_json)
-        lock = ROOT / "tests/Honua.Sdk.BrowserSmoke/packages.lock.json"
+        browser = ROOT / "tests/Honua.Sdk.BrowserSmoke"
+        framework = ET.parse(browser / "Honua.Sdk.BrowserSmoke.csproj").findtext(".//TargetFramework")
+        if framework is None or not re.fullmatch(r"net\d+\.\d+", framework):
+            raise ValueError("Browser smoke must declare one concrete target framework")
+        lock = browser / "packages.lock.json"
         expected = locked_packs(json.loads(lock.read_text()))
         if command(ROOT, "--version").stdout.strip() != sdk:
             raise ValueError("Selected dotnet CLI is not the pinned SDK")
@@ -83,13 +88,12 @@ def main() -> int:
             probe = Path(directory)
             if probe.is_relative_to(ROOT):
                 raise ValueError("Workload probe must be outside the repository checkout")
-            project = '<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly"><PropertyGroup><TargetFramework>net' + ".".join(sdk.split(".")[:2]) + '</TargetFramework><WasmBuildNative>false</WasmBuildNative></PropertyGroup></Project>'
+            project = '<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly"><PropertyGroup><TargetFramework>' + framework + '</TargetFramework><WasmBuildNative>false</WasmBuildNative></PropertyGroup></Project>'
             (probe / "probe.csproj").write_text(project)
             (probe / "global.json").write_text(json.dumps({"sdk": {"version": sdk, "rollForward": "disable"}}))
             before = command(probe, "workload", "--info", required=False)
             baseline, baseline_document = evaluate(probe, required=False)
             if baseline_document is not None:
-                framework = "net" + ".".join(sdk.split(".")[:2])
                 baseline_document = {
                     "Properties": baseline_document.get("Properties", {}),
                     "Items": {item: [{key: value for key, value in entry.items()
@@ -108,7 +112,7 @@ def main() -> int:
                 raise ValueError("Resolved workload set differs from global.json")
             _, document = evaluate(probe)
             assert document is not None
-            selected = verify_evaluation(document, sdk, expected)
+            selected = verify_evaluation(document, (sdk, framework), expected)
             # The preprocessor records the resolver's actual imported manifest
             # path, including when several versions coexist under one SDK root.
             command(probe, "msbuild", "probe.csproj", "-preprocess:imports.xml")

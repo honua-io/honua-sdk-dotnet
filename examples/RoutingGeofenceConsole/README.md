@@ -1,5 +1,7 @@
 # Routing Geofence Console
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Runnable demo for route solving and host-neutral geofence evaluation. The
 default mode uses a deterministic routing fixture so the sample can run without
 a configured NAServer. Geofence evaluation always uses real

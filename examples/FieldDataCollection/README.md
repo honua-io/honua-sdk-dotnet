@@ -1,5 +1,7 @@
 # Archived field data collection reference
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This directory retains source from an earlier .NET MAUI field collection app:
 map and record views, form parsing, location services, and offline sync sketches.
 It depends on the former `Honua.Mobile.Core` API.

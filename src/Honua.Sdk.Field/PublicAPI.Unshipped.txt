@@ -1,1 +1,65 @@
 #nullable enable
+Honua.Sdk.Field.Forms.Authoring.XlsFormConverter
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.<Clone>$() -> Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic!
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Column.get -> string!
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Column.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Equals(Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic? other) -> bool
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Message.get -> string!
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Message.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.RowNumber.get -> int
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.RowNumber.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Sheet.get -> string!
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Sheet.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.XlsFormDiagnostic() -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>
+~Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.<Clone>$() -> Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>!
+Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.Diagnostics.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic!>!
+Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.Diagnostics.init -> void
+~Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.Equals(Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>? other) -> bool
+Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.Value.get -> T?
+Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.Value.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.XlsFormResult() -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.<Clone>$() -> Honua.Sdk.Field.Forms.Authoring.XlsFormRow!
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.Cells.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.Cells.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.Equals(Honua.Sdk.Field.Forms.Authoring.XlsFormRow? other) -> bool
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.RowNumber.get -> int
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.RowNumber.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormRow.XlsFormRow() -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.<Clone>$() -> Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook!
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Choices.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.Authoring.XlsFormRow!>!
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Choices.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Equals(Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? other) -> bool
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Settings.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.Authoring.XlsFormRow!>!
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Settings.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Survey.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.Authoring.XlsFormRow!>!
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Survey.init -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.XlsFormWorkbook() -> void
+Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbookIO
+override Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.ToString() -> string!
+override Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.ToString() -> string!
+override Honua.Sdk.Field.Forms.Authoring.XlsFormRow.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.Authoring.XlsFormRow.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.Authoring.XlsFormRow.ToString() -> string!
+override Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.ToString() -> string!
+static Honua.Sdk.Field.Forms.Authoring.XlsFormConverter.Export(Honua.Sdk.Field.Forms.FormDefinition! form) -> Honua.Sdk.Field.Forms.Authoring.XlsFormResult<Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook!>!
+static Honua.Sdk.Field.Forms.Authoring.XlsFormConverter.Import(Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook! workbook) -> Honua.Sdk.Field.Forms.Authoring.XlsFormResult<Honua.Sdk.Field.Forms.FormDefinition!>!
+static Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.operator !=(Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic? left, Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic? right) -> bool
+static Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic.operator ==(Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic? left, Honua.Sdk.Field.Forms.Authoring.XlsFormDiagnostic? right) -> bool
+~static Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.operator !=(Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>? left, Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>? right) -> bool
+~static Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>.operator ==(Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>? left, Honua.Sdk.Field.Forms.Authoring.XlsFormResult<T>? right) -> bool
+static Honua.Sdk.Field.Forms.Authoring.XlsFormRow.operator !=(Honua.Sdk.Field.Forms.Authoring.XlsFormRow? left, Honua.Sdk.Field.Forms.Authoring.XlsFormRow? right) -> bool
+static Honua.Sdk.Field.Forms.Authoring.XlsFormRow.operator ==(Honua.Sdk.Field.Forms.Authoring.XlsFormRow? left, Honua.Sdk.Field.Forms.Authoring.XlsFormRow? right) -> bool
+static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.operator !=(Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? left, Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? right) -> bool
+static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.operator ==(Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? left, Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? right) -> bool
+static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbookIO.Read(System.IO.Stream! input) -> Honua.Sdk.Field.Forms.Authoring.XlsFormResult<Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook!>!
+static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbookIO.Write(System.IO.Stream! output, Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook! workbook) -> void

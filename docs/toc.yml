@@ -1,5 +1,7 @@
 - name: Get started
   items:
+    - name: Native data paths
+      href: native-data-paths.md
     - name: Architecture overview
       href: architecture.md
     - name: Quickstart
@@ -26,7 +28,7 @@
       href: feature-edits.md
     - name: Geometry analysis
       href: geometry-analysis.md
-    - name: Process authoring & ArcObjects-GP migration
+    - name: Process authoring and compiled GP tool migration
       href: process-authoring.md
     - name: Geofencing
       href: geofencing.md

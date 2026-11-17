@@ -1,5 +1,7 @@
 # Admin Bootstrap Console
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Canonical runnable sample app for this repository. It bootstraps a PostGIS
 table through `Honua.Sdk.Admin` and then verifies the published layer through
 `Honua.Sdk.Grpc`.
@@ -18,9 +20,9 @@ The sample performs one end-to-end operator flow:
 ## Contract Notes
 
 - `CheckCompatibilityAsync` is a hard gate. The sample stops before any admin
-  mutation unless the server reports version `0.1.0` or newer, release channel
-  `preview` or newer, control-plane API major `1`, and base path
-  `/api/v1/admin`.
+  mutation unless the server reports `HonuaAdminCompatibility.MinimumSupportedServerVersion`
+  or newer, control-plane API major `1`, and base path `/api/v1/admin`.
+  The release channel is displayed as advisory metadata.
 - Set either `HONUA_BOOTSTRAP_DB_PASSWORD` or
   `HONUA_BOOTSTRAP_DB_SECRET_REFERENCE`. When using
   `HONUA_BOOTSTRAP_DB_SECRET_REFERENCE`, you must also set
@@ -51,7 +53,7 @@ The sample performs one end-to-end operator flow:
 
 ## Prerequisites
 
-- .NET 10 SDK
+- .NET 11 SDK
 - `psql`
 - A local `honua-server` checkout, referenced below as `HONUA_SERVER_ROOT`
 

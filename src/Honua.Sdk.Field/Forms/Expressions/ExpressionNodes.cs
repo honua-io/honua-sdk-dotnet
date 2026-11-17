@@ -8,6 +8,8 @@ namespace Honua.Sdk.Field.Forms.Expressions;
 /// </summary>
 internal abstract class ExpressionNode
 {
+    public int TreeDepth { get; protected init; }
+
     public abstract object? Evaluate(IReadOnlyDictionary<string, object?> context, int depth);
 
     protected static void GuardDepth(int depth)
@@ -47,6 +49,7 @@ internal sealed class UnaryNode : ExpressionNode
     {
         _op = op;
         _operand = operand;
+        TreeDepth = operand.TreeDepth + 1;
     }
 
     public override object? Evaluate(IReadOnlyDictionary<string, object?> context, int depth)
@@ -77,6 +80,7 @@ internal sealed class BinaryNode : ExpressionNode
         _op = op;
         _left = left;
         _right = right;
+        TreeDepth = Math.Max(left.TreeDepth, right.TreeDepth) + 1;
     }
 
     public override object? Evaluate(IReadOnlyDictionary<string, object?> context, int depth)
@@ -236,6 +240,7 @@ internal sealed class FunctionNode : ExpressionNode
     {
         _name = name;
         _args = args;
+        TreeDepth = (args.Count == 0 ? 0 : args.Max(arg => arg.TreeDepth)) + 1;
     }
 
     public override object? Evaluate(IReadOnlyDictionary<string, object?> context, int depth)

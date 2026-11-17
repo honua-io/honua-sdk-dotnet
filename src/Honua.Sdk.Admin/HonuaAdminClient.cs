@@ -18,7 +18,7 @@ namespace Honua.Sdk.Admin;
 /// <summary>
 /// HTTP client implementation for the Honua Admin REST API.
 /// </summary>
-public sealed class HonuaAdminClient : IHonuaAdminClient
+public sealed partial class HonuaAdminClient : IHonuaAdminClient, IHonuaAdminApiKeysClient
 {
     private const string ApiPrefix = "/api/v1/admin";
 
@@ -36,13 +36,28 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Services ──────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ServiceSummary>> ListServicesAsync(CancellationToken cancellationToken = default)
+        => AdminCatalogWalker.ReadAllAsync(
+            (pageNumber, token) => ReadServiceSliceAsync(pageNumber, token),
+            cancellationToken);
+
+    /// <summary>Returns one page of admin services, including the count of every match.</summary>
+    public async Task<ServiceListPage> ListServicesPageAsync(
+        ServiceListQuery? query = null, CancellationToken cancellationToken = default)
     {
-        var data = await GetAsync<ServiceSummary[]>(
-            $"{ApiPrefix}/services/",
-            HonuaAdminJsonContext.Default.ApiResponseServiceSummaryArray,
+        var data = await GetAsync<ServiceListPage>(
+            $"{ApiPrefix}/services/{AdminCatalogQuery.ForServices(query)}",
+            HonuaAdminJsonContext.Default.ApiResponseServiceListPage,
             cancellationToken).ConfigureAwait(false);
-        return data ?? [];
+        return data ?? new ServiceListPage();
+    }
+
+    private async Task<AdminCatalogWalker.Slice<ServiceSummary>> ReadServiceSliceAsync(
+        int pageNumber, CancellationToken cancellationToken)
+    {
+        var page = await ListServicesPageAsync(new ServiceListQuery { Page = pageNumber }, cancellationToken)
+            .ConfigureAwait(false);
+        return new AdminCatalogWalker.Slice<ServiceSummary>(page.Items, page.Page, page.PageSize, page.Total);
     }
 
     /// <inheritdoc />
@@ -176,7 +191,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     public async Task DeleteMetadataResourceAsync(string kind, string ns, string name, string? ifMatch = null, CancellationToken cancellationToken = default)
     {
         var url = $"{ApiPrefix}/metadata/resources/{HonuaPathSegment.Escape(kind, nameof(kind))}/{HonuaPathSegment.Escape(ns, nameof(ns))}/{HonuaPathSegment.Escape(name, nameof(name))}";
-        using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+        using var request = new HttpRequestMessage(HttpMethod.Delete, CreateRequestUri(url));
 
         if (!string.IsNullOrEmpty(ifMatch))
         {
@@ -205,17 +220,14 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
             request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
         }
 
-        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
-        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
+        var (body, etag) = await SendWithETagAsync(request, cancellationToken).ConfigureAwait(false);
 
         var envelope = JsonSerializer.Deserialize(body, HonuaAdminJsonContext.Default.ApiResponseMetadataResource);
         var responseResource = envelope?.Data ?? throw new HonuaAdminOperationException("Server returned null response.", operation);
         return new MetadataResourceResponse
         {
             Resource = responseResource,
-            ETag = GetETag(response)
+            ETag = etag
         };
     }
 
@@ -376,15 +388,32 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
     // ── Layers ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(string connectionId, string? serviceName = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(
+        string connectionId, string? serviceName = null, CancellationToken cancellationToken = default)
+        => AdminCatalogWalker.ReadAllAsync(
+            (pageNumber, token) => ReadLayerSliceAsync(connectionId, serviceName, pageNumber, token),
+            cancellationToken);
+
+    /// <summary>Returns one page of layers published on a connection.</summary>
+    public async Task<PublishedLayerPage> ListLayersPageAsync(
+        string connectionId, LayerListQuery? query = null, CancellationToken cancellationToken = default)
     {
         var normalizedConnectionId = NormalizeSecureConnectionId(connectionId, nameof(connectionId));
-        var query = BuildQuery(("serviceName", serviceName));
-        var data = await GetAsync<PublishedLayerSummary[]>(
-            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/{query}",
-            HonuaAdminJsonContext.Default.ApiResponsePublishedLayerSummaryArray,
+        var data = await GetAsync<PublishedLayerPage>(
+            $"{ApiPrefix}/connections/{HonuaPathSegment.Escape(normalizedConnectionId, nameof(normalizedConnectionId))}/layers/{AdminCatalogQuery.ForLayers(query)}",
+            HonuaAdminJsonContext.Default.ApiResponsePublishedLayerPage,
             cancellationToken).ConfigureAwait(false);
-        return data ?? [];
+        return data ?? new PublishedLayerPage();
+    }
+
+    private async Task<AdminCatalogWalker.Slice<PublishedLayerSummary>> ReadLayerSliceAsync(
+        string connectionId, string? serviceName, int pageNumber, CancellationToken cancellationToken)
+    {
+        var page = await ListLayersPageAsync(
+            connectionId,
+            new LayerListQuery { Page = pageNumber, ServiceName = serviceName },
+            cancellationToken).ConfigureAwait(false);
+        return new AdminCatalogWalker.Slice<PublishedLayerSummary>(page.Items, page.Page, page.PageSize, page.Total);
     }
 
     /// <inheritdoc />
@@ -528,9 +557,7 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
 
     // ── GeoServices import lifecycle (single layer) ─────────────────────────
 
-    /// <summary>
-    /// Discovers the layers and metadata exposed by an ArcGIS service.
-    /// </summary>
+    /// <summary>Discovers the layers and metadata exposed by a GeoServices REST service.</summary>
     public async Task<GeoservicesDiscoverResponse> DiscoverGeoservicesServiceAsync(
         GeoservicesDiscoverRequest request,
         CancellationToken cancellationToken = default)
@@ -1625,23 +1652,26 @@ public sealed class HonuaAdminClient : IHonuaAdminClient
         AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
     }
 
-    private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
+    private async Task<(string Body, string? ETag)> SendWithETagAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        await AdminHttpHelper.EnsureSuccessAsync(response, body, "Request failed").ConfigureAwait(false);
+        AdminHttpHelper.EnsureEnvelopeSucceeded(response, body);
+        return (body, GetETag(response));
+    }
+
+    private Uri CreateRequestUri(string url)
+    {
+        var uri = new Uri(url, UriKind.RelativeOrAbsolute);
+        if (uri.IsAbsoluteUri || _http.BaseAddress is null) return uri;
+        return new Uri(_http.BaseAddress.GetLeftPart(UriPartial.Path).TrimEnd('/') + "/" + url.TrimStart('/'), UriKind.Absolute);
+    }
 
     private static string? GetETag(HttpResponseMessage response) => response.Headers.ETag?.ToString();
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
-
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+        => AdminQueryString.Format(parameters);
 
     private static string NormalizeSecureConnectionId(string id, string parameterName)
     {

@@ -63,7 +63,6 @@ public class DialogService : IDialogService
     {
         try
         {
-            // Fallback to alert since CommunityToolkit.Maui not available for .NET 10 yet
             await DisplayAlertAsync("Notice", message);
         }
         catch (Exception)

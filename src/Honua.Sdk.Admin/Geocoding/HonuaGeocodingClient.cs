@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Honua.Sdk.Abstractions;
 
@@ -496,32 +497,10 @@ public sealed class HonuaGeocodingClient : IHonuaBatchGeocodingClient
             : $"Geocoding service returned status '{status}' for this input address.";
 
     private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
-
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+        => AdminQueryString.Format(parameters);
 
     private static string BuildQuery(List<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
-
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+        => AdminQueryString.Format(CollectionsMarshal.AsSpan(parameters));
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 }

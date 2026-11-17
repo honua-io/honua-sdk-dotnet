@@ -13,7 +13,7 @@ namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
 public sealed class FeatureServerVectorPayloadTests
 {
     [Fact]
-    public async Task QueryVectorAsync_DefaultsToEsriJsonAndParsesNtsGeometry()
+    public async Task QueryVectorAsync_DefaultsToGeoServicesJsonAndParsesNtsGeometry()
     {
         const string json = """
             {
@@ -36,7 +36,7 @@ public sealed class FeatureServerVectorPayloadTests
 
         var result = await client.QueryVectorAsync("parks", 0, new FeatureServerQueryParams());
 
-        Assert.Equal(VectorPayloadFormat.EsriJson, result.Format);
+        Assert.Equal(VectorPayloadFormat.GeoServicesJson, result.Format);
         var feature = Assert.Single(result.Features);
         Assert.Equal("7", feature.Id);
         Assert.Equal("Harbor", feature.Attributes["name"].GetString());
@@ -105,7 +105,7 @@ public sealed class FeatureServerVectorPayloadTests
 
         var result = await client.QueryVectorAsync("parks", 0, new FeatureServerQueryParams { Where = "1=0" });
 
-        Assert.Equal(VectorPayloadFormat.EsriJson, result.Format);
+        Assert.Equal(VectorPayloadFormat.GeoServicesJson, result.Format);
         Assert.Empty(result.Features);
         Assert.Equal(0, result.NumberReturned);
         Assert.False(result.HasMoreResults);

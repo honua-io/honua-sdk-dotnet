@@ -60,7 +60,7 @@ public static class HonuaAdminMigrationClientExtensions
         throw new NotSupportedException("This IHonuaAdminClient implementation does not support migration source scanning.");
     }
 
-    /// <summary>Discovers the layers and metadata exposed by an ArcGIS service.</summary>
+    /// <summary>Discovers the layers and metadata exposed by a GeoServices REST service.</summary>
     public static Task<GeoservicesDiscoverResponse> DiscoverGeoservicesServiceAsync(
         this IHonuaAdminClient client,
         GeoservicesDiscoverRequest request,

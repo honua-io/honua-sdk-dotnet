@@ -25,9 +25,7 @@ public static class HonuaSceneCapabilities
     /// </summary>
     public const string ElevationProfile = "elevation-profile";
 
-    /// <summary>
-    /// Scene exposes an Esri I3S-compatible scene layer endpoint.
-    /// </summary>
+    /// <summary>Scene exposes an I3S-compatible scene layer endpoint.</summary>
     public const string I3s = "i3s";
 }
 

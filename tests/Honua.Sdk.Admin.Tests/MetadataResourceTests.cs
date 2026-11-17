@@ -137,7 +137,7 @@ public sealed class MetadataResourceTests
             ApiVersion = "honua.io/v1alpha1",
             Kind = "Layer",
             Metadata = new ResourceMetadata { Name = "test-layer", Namespace = "default" },
-            Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+            Spec = JsonElement.Parse("{\"type\":\"Feature\"}")
         });
 
         Assert.Equal("Layer", result.Kind);
@@ -161,7 +161,7 @@ public sealed class MetadataResourceTests
             ApiVersion = "honua.io/v1alpha1",
             Kind = "Layer",
             Metadata = new ResourceMetadata { Name = "test-layer", Namespace = "default" },
-            Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+            Spec = JsonElement.Parse("{\"type\":\"Feature\"}")
         });
 
         Assert.Equal("Layer", result.Resource.Kind);
@@ -188,7 +188,7 @@ public sealed class MetadataResourceTests
             {
                 ApiVersion = "honua.io/v1alpha1",
                 Kind = "Layer",
-                Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+                Spec = JsonElement.Parse("{\"type\":\"Feature\"}")
             },
             ifMatch: "\"v1\"");
 
@@ -215,7 +215,7 @@ public sealed class MetadataResourceTests
             {
                 ApiVersion = "honua.io/v1alpha1",
                 Kind = "Layer",
-                Spec = JsonDocument.Parse("{\"type\":\"Feature\"}").RootElement
+                Spec = JsonElement.Parse("{\"type\":\"Feature\"}")
             },
             ifMatch: "\"v1\"");
 

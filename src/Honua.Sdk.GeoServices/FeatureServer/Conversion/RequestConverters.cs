@@ -58,14 +58,7 @@ public static class RequestConverters
             .ToDictionary(pair => pair.Key, pair => pair.Value!);
     }
 
-    /// <summary>Converts a provider-neutral feature edit payload to a FeatureServer feature.</summary>
-    /// <remarks>
-    /// GeoJSON geometry payloads (<c>{"type":"Point","coordinates":[...]}</c> and friends) are
-    /// projected to FeatureServer's Esri JSON shape (<c>{"x":...,"y":...}</c>, <c>{"paths":[...]}</c>,
-    /// <c>{"rings":[...]}</c>, etc.) so callers can supply provider-neutral GeoJSON without each
-    /// caller re-implementing the conversion. Geometries that already match the FeatureServer
-    /// shape, or shapes the SDK cannot translate, are passed through unchanged.
-    /// </remarks>
+    /// <summary>Converts a feature edit payload to a FeatureServer feature, projecting GeoJSON geometry to GeoServices JSON.</summary>
     public static FeatureServerFeature ToFeatureServerFeature(FeatureEditFeature feature)
     {
         ArgumentNullException.ThrowIfNull(feature);
@@ -77,16 +70,6 @@ public static class RequestConverters
         };
     }
 
-    /// <summary>
-    /// Projects an inbound geometry <see cref="JsonElement"/> to the FeatureServer (Esri JSON) shape.
-    /// Recognises GeoJSON Point/MultiPoint/LineString/MultiLineString/Polygon/MultiPolygon payloads
-    /// via their <c>"type"</c> discriminator and routes them through
-    /// <see cref="GeoJsonGeometryConverter"/> +
-    /// <see cref="GeoServicesGeometryConverter"/>. Geometries that already look like FeatureServer
-    /// shapes (have <c>x</c>/<c>y</c>, <c>rings</c>, <c>paths</c>, or <c>points</c>) or which we
-    /// cannot translate (GeometryCollection, etc.) are cloned and returned verbatim so the wire
-    /// payload is preserved for the server.
-    /// </summary>
     private static JsonElement? ProjectGeometryForFeatureServer(JsonElement? geometry)
     {
         if (!geometry.HasValue)

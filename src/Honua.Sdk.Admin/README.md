@@ -65,9 +65,43 @@ var replay = await events.ReplayFeatureEventsAsync(
     cancellationToken);
 ```
 
+## Folder management
+
+`IHonuaAdminFoldersClient` lists empty Folders, creates and updates Folders,
+deletes empty Folders, and moves logical Services between a Folder and Root.
+Each mutation requires the ETag of the reviewed catalog snapshot and returns
+the next ETag. A stale snapshot or a non-empty delete retains the standard
+`HonuaAdminApiException` response; refresh and review before trying again.
+
+```csharp
+using Honua.Sdk.Admin.Models;
+
+var folders = provider.GetRequiredService<IHonuaAdminFoldersClient>();
+var (catalog, etag) = await folders.ListFoldersAsync(cancellationToken: cancellationToken);
+var (folder, createdETag) = await folders.CreateFolderAsync(
+    new CreateFolderRequest { Name = "Survey", Title = "Field survey" },
+    new FolderMutationOptions { IfMatch = etag ?? throw new InvalidOperationException("Missing catalog ETag.") },
+    cancellationToken);
+var movedETag = await folders.MoveServiceAsync(
+    "logical-parcels", new MoveServiceRequest { FolderId = folder.Metadata.Id },
+    new FolderMutationOptions { IfMatch = createdETag ?? throw new InvalidOperationException("Missing catalog ETag.") },
+    cancellationToken);
+```
+
+Omit the namespace for unscoped operations; supply it consistently for a
+Folder and its Services to select the same server-resolved namespace. An omitted
+`UpdateFolderRequest.Title` preserves the title; `new OptionalString(null)`
+clears it. `MoveServiceRequest.FolderId = null` selects Root. On publishing,
+`PublishLayerRequest.FolderId` defaults to preserving membership,
+`new OptionalString(null)` selects Root, and
+`new OptionalString(folder.Metadata.Id)` selects a Folder. `Namespace` is
+forwarded in the publishing body. `PublicName` is an immutable public Service
+name, separate from its logical identity and display title. Existing root-only
+responses remain valid when the optional organization fields are absent.
+
 ## GeoServices/migration import lifecycle
 
-Discover an ArcGIS service, queue a single-layer import, and wait for it to
+Discover a GeoServices REST service, queue a single-layer import, and wait for it to
 reach a terminal status without ever risking a duplicate import on retry:
 
 ```csharp
@@ -77,11 +111,11 @@ var admin = provider.GetRequiredService<IHonuaAdminClient>();
 
 var discovered = await admin.DiscoverGeoservicesServiceAsync(new GeoservicesDiscoverRequest
 {
-    ServiceUrl = "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+    ServiceUrl = "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
     Credentials = new GeoservicesCredentialDescriptor
     {
         Mode = "token",
-        AccessTokenSecretReference = "secret://arcgis/token"
+        AccessTokenSecretReference = "secret://gis/token"
     }
 });
 
@@ -111,7 +145,7 @@ rolled-up status plus per-child job ids:
 ```csharp
 var batch = await admin.StartMigrationBatchAsync(new MigrationBatchStartRequest
 {
-    SourceKind = "arcgis-geoservices-rest",
+    SourceKind = "geoservices-rest",
     Layers =
     [
         new MigrationBatchLayerSpec
@@ -255,3 +289,21 @@ The server validates storage modes and capability combinations. Catalog discover
 uses service and FeatureServer routes by default; groups, saved source descriptors
 and metadata-only filters require the legacy metadata-resource API and propagate
 server errors when unsupported.
+
+### Managing API keys
+
+Use `IHonuaAdminApiKeysClient` (registered by `AddHonuaAdmin`) to list key metadata,
+create a key, or revoke it by ID. Creation accepts permission grants, an optional
+expiration, and optional referrer/IP restrictions. `CreateApiKeyAsync` returns
+`AdminApiKeySecretResponse.Key` once; store it securely and keep it out of logs.
+List and revoke responses contain metadata only.
+
+```csharp
+var created = await apiKeys.CreateApiKeyAsync(new CreateAdminApiKeyRequest
+{
+    Name = "map-reader",
+    Permissions = ["read:parcels/0"]
+}, cancellationToken);
+// Deliver created.Key through your application's secure secret handoff.
+await apiKeys.RevokeApiKeyAsync(created.ApiKey.Id, cancellationToken);
+```

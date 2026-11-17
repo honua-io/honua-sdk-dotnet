@@ -875,3 +875,185 @@ Honua.Sdk.Admin.Models.PublishLayerRequest.StorageMode.get -> string?
 Honua.Sdk.Admin.Models.PublishLayerRequest.StorageMode.init -> void
 Honua.Sdk.Admin.Models.PublishLayerRequest.Capabilities.get -> System.Collections.Generic.IReadOnlyList<string!>?
 Honua.Sdk.Admin.Models.PublishLayerRequest.Capabilities.init -> void
+Honua.Sdk.Admin.HonuaAdminClient.ListLayersPageAsync(string! connectionId, Honua.Sdk.Admin.Models.LayerListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.PublishedLayerPage!>!
+Honua.Sdk.Admin.HonuaAdminClient.ListServicesPageAsync(Honua.Sdk.Admin.Models.ServiceListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.ServiceListPage!>!
+Honua.Sdk.Admin.IHonuaAdminLayersClient.ListLayersPageAsync(string! connectionId, Honua.Sdk.Admin.Models.LayerListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.PublishedLayerPage!>!
+Honua.Sdk.Admin.IHonuaAdminServicesClient.ListServicesPageAsync(Honua.Sdk.Admin.Models.ServiceListQuery? query = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.ServiceListPage!>!
+Honua.Sdk.Admin.Models.LayerListQuery
+Honua.Sdk.Admin.Models.LayerListQuery.LayerListQuery() -> void
+Honua.Sdk.Admin.Models.LayerListQuery.NameQuery.get -> string?
+Honua.Sdk.Admin.Models.LayerListQuery.NameQuery.init -> void
+Honua.Sdk.Admin.Models.LayerListQuery.Page.get -> int
+Honua.Sdk.Admin.Models.LayerListQuery.Page.init -> void
+Honua.Sdk.Admin.Models.LayerListQuery.PageSize.get -> int
+Honua.Sdk.Admin.Models.LayerListQuery.PageSize.init -> void
+Honua.Sdk.Admin.Models.LayerListQuery.ServiceName.get -> string?
+Honua.Sdk.Admin.Models.LayerListQuery.ServiceName.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage
+Honua.Sdk.Admin.Models.PublishedLayerPage.Items.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.PublishedLayerSummary!>!
+Honua.Sdk.Admin.Models.PublishedLayerPage.Items.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.Page.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerPage.Page.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.PageSize.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerPage.PageSize.init -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.PublishedLayerPage() -> void
+Honua.Sdk.Admin.Models.PublishedLayerPage.Total.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerPage.Total.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage
+Honua.Sdk.Admin.Models.ServiceListPage.Items.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.ServiceSummary!>!
+Honua.Sdk.Admin.Models.ServiceListPage.Items.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.LayerTotal.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.LayerTotal.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.Page.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.Page.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.PageSize.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.PageSize.init -> void
+Honua.Sdk.Admin.Models.ServiceListPage.ServiceListPage() -> void
+Honua.Sdk.Admin.Models.ServiceListPage.Total.get -> int
+Honua.Sdk.Admin.Models.ServiceListPage.Total.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery
+Honua.Sdk.Admin.Models.ServiceListQuery.FolderId.get -> string?
+Honua.Sdk.Admin.Models.ServiceListQuery.FolderId.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.NameQuery.get -> string?
+Honua.Sdk.Admin.Models.ServiceListQuery.NameQuery.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.Page.get -> int
+Honua.Sdk.Admin.Models.ServiceListQuery.Page.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.PageSize.get -> int
+Honua.Sdk.Admin.Models.ServiceListQuery.PageSize.init -> void
+Honua.Sdk.Admin.Models.ServiceListQuery.ServiceListQuery() -> void
+Honua.Sdk.Admin.HonuaAdminClient.CreateFolderAsync(Honua.Sdk.Admin.Models.CreateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.HonuaAdminClient.DeleteFolderAsync(string! folderId, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.HonuaAdminClient.ListFoldersAsync(string? namespaceName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.Folder!>! Folders, string? ETag)>!
+Honua.Sdk.Admin.HonuaAdminClient.MoveServiceAsync(string! serviceName, Honua.Sdk.Admin.Models.MoveServiceRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.HonuaAdminClient.UpdateFolderAsync(string! folderId, Honua.Sdk.Admin.Models.UpdateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.CreateFolderAsync(Honua.Sdk.Admin.Models.CreateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.DeleteFolderAsync(string! folderId, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.ListFoldersAsync(string? namespaceName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.Folder!>! Folders, string? ETag)>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.MoveServiceAsync(string! serviceName, Honua.Sdk.Admin.Models.MoveServiceRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<string?>!
+Honua.Sdk.Admin.IHonuaAdminFoldersClient.UpdateFolderAsync(string! folderId, Honua.Sdk.Admin.Models.UpdateFolderRequest! request, Honua.Sdk.Admin.Models.FolderMutationOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Honua.Sdk.Admin.Models.Folder! Folder, string? ETag)>!
+Honua.Sdk.Admin.Models.CreateFolderRequest
+Honua.Sdk.Admin.Models.CreateFolderRequest.CreateFolderRequest() -> void
+Honua.Sdk.Admin.Models.CreateFolderRequest.Name.get -> string!
+Honua.Sdk.Admin.Models.CreateFolderRequest.Name.init -> void
+Honua.Sdk.Admin.Models.CreateFolderRequest.Title.get -> string?
+Honua.Sdk.Admin.Models.CreateFolderRequest.Title.init -> void
+Honua.Sdk.Admin.Models.Folder
+Honua.Sdk.Admin.Models.Folder.Deleted.get -> bool
+Honua.Sdk.Admin.Models.Folder.Deleted.init -> void
+Honua.Sdk.Admin.Models.Folder.Folder() -> void
+Honua.Sdk.Admin.Models.Folder.Metadata.get -> Honua.Sdk.Admin.Models.FolderMetadata!
+Honua.Sdk.Admin.Models.Folder.Metadata.init -> void
+Honua.Sdk.Admin.Models.Folder.PreviousNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.Folder.PreviousNames.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata
+Honua.Sdk.Admin.Models.FolderMetadata.FolderMetadata() -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Id.get -> string!
+Honua.Sdk.Admin.Models.FolderMetadata.Id.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Name.get -> string!
+Honua.Sdk.Admin.Models.FolderMetadata.Name.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Tenant.get -> string?
+Honua.Sdk.Admin.Models.FolderMetadata.Tenant.init -> void
+Honua.Sdk.Admin.Models.FolderMetadata.Title.get -> string?
+Honua.Sdk.Admin.Models.FolderMetadata.Title.init -> void
+Honua.Sdk.Admin.Models.FolderMutationOptions
+Honua.Sdk.Admin.Models.FolderMutationOptions.FolderMutationOptions() -> void
+Honua.Sdk.Admin.Models.FolderMutationOptions.IfMatch.get -> string!
+Honua.Sdk.Admin.Models.FolderMutationOptions.IfMatch.init -> void
+Honua.Sdk.Admin.Models.FolderMutationOptions.Namespace.get -> string?
+Honua.Sdk.Admin.Models.FolderMutationOptions.Namespace.init -> void
+Honua.Sdk.Admin.Models.MoveServiceRequest
+Honua.Sdk.Admin.Models.MoveServiceRequest.FolderId.get -> string?
+Honua.Sdk.Admin.Models.MoveServiceRequest.FolderId.init -> void
+Honua.Sdk.Admin.Models.MoveServiceRequest.MoveServiceRequest() -> void
+Honua.Sdk.Admin.Models.OptionalString
+Honua.Sdk.Admin.Models.OptionalString.Equals(Honua.Sdk.Admin.Models.OptionalString other) -> bool
+Honua.Sdk.Admin.Models.OptionalString.IsSpecified.get -> bool
+Honua.Sdk.Admin.Models.OptionalString.OptionalString() -> void
+Honua.Sdk.Admin.Models.OptionalString.OptionalString(string? value) -> void
+Honua.Sdk.Admin.Models.OptionalString.Value.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.FolderId.get -> Honua.Sdk.Admin.Models.OptionalString
+Honua.Sdk.Admin.Models.PublishLayerRequest.FolderId.init -> void
+Honua.Sdk.Admin.Models.PublishLayerRequest.PublicName.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.PublicName.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.FolderId.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.FolderId.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.FolderMutationIssues.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.ServiceSummary.FolderMutationIssues.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.FolderName.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.FolderName.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.PublicName.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.PublicName.init -> void
+Honua.Sdk.Admin.Models.ServiceSummary.Title.get -> string?
+Honua.Sdk.Admin.Models.ServiceSummary.Title.init -> void
+Honua.Sdk.Admin.Models.UpdateFolderRequest
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Name.get -> string?
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Name.init -> void
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Title.get -> Honua.Sdk.Admin.Models.OptionalString
+Honua.Sdk.Admin.Models.UpdateFolderRequest.Title.init -> void
+Honua.Sdk.Admin.Models.UpdateFolderRequest.UpdateFolderRequest() -> void
+override Honua.Sdk.Admin.Models.OptionalString.GetHashCode() -> int
+static Honua.Sdk.Admin.Models.OptionalString.operator !=(Honua.Sdk.Admin.Models.OptionalString left, Honua.Sdk.Admin.Models.OptionalString right) -> bool
+static Honua.Sdk.Admin.Models.OptionalString.operator ==(Honua.Sdk.Admin.Models.OptionalString left, Honua.Sdk.Admin.Models.OptionalString right) -> bool
+~override Honua.Sdk.Admin.Models.OptionalString.Equals(object obj) -> bool
+~override Honua.Sdk.Admin.Models.OptionalString.ToString() -> string
+Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.get -> string?
+Honua.Sdk.Admin.Models.PublishLayerRequest.Namespace.init -> void
+
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.CreateAdminApiKeyRequest() -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Name.get -> string!
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Name.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Permissions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.Permissions.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.ExpiresAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.ExpiresAt.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedReferrers.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedReferrers.init -> void
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedIpRanges.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest.AllowedIpRanges.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AdminApiKeyResponse() -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Id.get -> System.Guid
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Id.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Name.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Name.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.KeyPrefix.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.KeyPrefix.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Permissions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Permissions.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Status.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.Status.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.UpdatedAt.get -> System.DateTimeOffset
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.UpdatedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.ExpiresAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.ExpiresAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.LastUsedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.LastUsedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RotatedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RotatedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RevokedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.RevokedAt.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedBy.get -> string?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.CreatedBy.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedReferrers.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedReferrers.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedIpRanges.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Admin.Models.AdminApiKeyResponse.AllowedIpRanges.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.AdminApiKeySecretResponse() -> void
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.ApiKey.get -> Honua.Sdk.Admin.Models.AdminApiKeyResponse!
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.ApiKey.init -> void
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.Key.get -> string!
+Honua.Sdk.Admin.Models.AdminApiKeySecretResponse.Key.init -> void
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient
+Honua.Sdk.Admin.HonuaAdminClient.ListApiKeysAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!>!
+Honua.Sdk.Admin.HonuaAdminClient.CreateApiKeyAsync(Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeySecretResponse!>!
+Honua.Sdk.Admin.HonuaAdminClient.RevokeApiKeyAsync(System.Guid id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient.ListApiKeysAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!>!
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient.CreateApiKeyAsync(Honua.Sdk.Admin.Models.CreateAdminApiKeyRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeySecretResponse!>!
+Honua.Sdk.Admin.IHonuaAdminApiKeysClient.RevokeApiKeyAsync(System.Guid id, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Admin.Models.AdminApiKeyResponse!>!
+Honua.Sdk.Admin.Models.PublishedLayerSummary.StorageLayerId.get -> int
+Honua.Sdk.Admin.Models.PublishedLayerSummary.StorageLayerId.init -> void

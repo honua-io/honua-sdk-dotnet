@@ -295,7 +295,7 @@ public sealed class HonuaRoutingClientTests
     [Fact]
     public async Task GetDirectionsAsync_GeoServicesErrorCode_DoesNotLeakIntoHttpStatus()
     {
-        // GeoServices returns HTTP 200 with an error payload whose code is an Esri code
+        // GeoServices returns HTTP 200 with an error payload whose code is a GeoServices code
         // (1000), NOT an HTTP status. The error must keep the 200 transport status and
         // expose 1000 via GeoServicesErrorCode rather than casting 1000 into HttpStatus,
         // which would break consumers branching on status for retry/auth.

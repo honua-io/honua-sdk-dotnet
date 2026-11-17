@@ -348,7 +348,7 @@ public sealed class HonuaImageServerRasterDataClient : IHonuaRasterDataClient
 
         // Accept a bare wkid ("4326") or an EPSG-prefixed form ("EPSG:4326").
         var token = crs.Contains(':', StringComparison.Ordinal)
-            ? crs[(crs.LastIndexOf(':') + 1)..]
+            ? crs[(crs.AsSpan().LastIndexOf(':') + 1)..]
             : crs;
         return int.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var wkid) ? wkid : null;
     }

@@ -1,5 +1,7 @@
 # Installing the Honua .NET SDK
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 ## Packages
 
 | Package | Description |
@@ -23,7 +25,7 @@
 
 ## Prerequisites
 
-- .NET 10.0 SDK or later
+- .NET 11.0 SDK or later
 - A running Honua Server instance
 - For the runnable samples below: a project to add the packages to (`dotnet new console`), a
   published feature layer, and an admin API key. The samples read them from the environment
@@ -192,8 +194,8 @@ Major versions are coordinated across all Honua SDKs.
 ## Server Compatibility Baseline
 
 `Honua.Sdk.Admin` currently requires Honua Server
-`HonuaAdminCompatibility.MinimumSupportedServerVersion` or newer and a minimum
-server release channel baseline of `preview`. `CheckCompatibilityAsync()`
+`HonuaAdminCompatibility.MinimumSupportedServerVersion` or newer. Release channels,
+including `nightly`, are advisory and do not determine compatibility. `CheckCompatibilityAsync()`
 evaluates that server against `GET /api/v1/admin/capabilities`, including
 control-plane API major `1` and base path `/api/v1/admin`, and also surfaces
 coarse feature flags for metadata and manifest workflows.

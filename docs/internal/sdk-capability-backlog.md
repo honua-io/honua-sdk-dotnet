@@ -6,35 +6,14 @@
 > opening or implementing follow-up work.
 
 This backlog maps Honua .NET SDK gaps against the capability areas exposed by
-ArcGIS Maps SDK for .NET 300.x, while deliberately excluding UI, map display,
+desktop GIS client capabilities, while deliberately excluding UI, map display,
 scene display, renderer, labeling, and toolkit component work from the core SDK
 scope.
 
 Cross-repo implementation order is tracked in
 [`cross-repo-sdk-sequencing.md`](cross-repo-sdk-sequencing.md).
 
-Reference capability areas:
-
-- ArcGIS .NET key features:
-  https://developers.arcgis.com/net/key-features/
-- Query:
-  https://developers.arcgis.com/net/query/
-- Edit features:
-  https://developers.arcgis.com/net/edit-features/
-- Geometry and spatial reference:
-  https://developers.arcgis.com/net/geometry-and-spatial-reference/
-- Offline maps, scenes, and data:
-  https://developers.arcgis.com/net/offline-maps-scenes-and-data/
-- Geocode and search:
-  https://developers.arcgis.com/net/geocode-and-search/
-- Route and directions:
-  https://developers.arcgis.com/net/route-and-directions/
-- Real-time:
-  https://developers.arcgis.com/net/real-time/
-- Portal metadata and search:
-  https://developers.arcgis.com/net/arcgis-organization-portals/portal-metadata-and-search/
-- Security and authentication:
-  https://developers.arcgis.com/net/security-and-authentication/
+Capability research covers common query, editing, geometry, offline, geocoding, routing, real-time, portal, security, and display workflows across desktop GIS clients.
 
 ## Scope Gate
 
@@ -57,16 +36,16 @@ that consumes SDK data contracts.
 
 ## Cross-Repo Harmonization
 
-Local sibling repositories already cover adjacent product surfaces:
+Sibling repositories already cover adjacent product surfaces:
 
-- `/home/makani/honua-mobile` currently contains both mobile runtime work and
+- The `honua-io/honua-mobile` repository currently contains both mobile runtime work and
   reusable SDK code: transport clients, field collection rules, offline
   GeoPackage sync, MAUI integration, background sync, routing, scene metadata,
   and an `@honua/embed` web component surface. Reusable service clients and
   contracts should graduate into this SDK; mobile should consume them.
-- `/home/makani/honua-mobile-sdk` appears to be an older MAUI/native-map SDK
+- A legacy `honua-mobile-sdk` checkout appears to be an older MAUI/native-map SDK
   line with `Honua.Mobile.Core`, `Honua.Mobile`, and a field collection example.
-- `/home/makani/honua-server-admin` is the Blazor WebAssembly operator UI for
+- The archived `honua-server-admin` repository is the Blazor WebAssembly operator UI for
   Honua Server. It owns dashboards, connections, publishing, service settings,
   deploy control, observability, identity, license, spatial SQL, annotations,
   print/export, and other operator workspaces. It also contains in-repo
@@ -403,7 +382,7 @@ Acceptance criteria:
 - Add filtering by service type, tags, owner/namespace, geometry type, and
   capability flags.
 - Add pagination and sorting.
-- Keep web-map/web-scene display documents out of scope unless they are treated
+- Keep third-party map and scene display documents out of scope unless they are treated
   strictly as metadata inputs for another renderer.
 
 ### P1.3 Geocode and place search parity
@@ -662,7 +641,7 @@ SDK implementation notes:
   and diagnostics. It does not render images, terrain, hillshade, map layers, or
   thematic styling.
 - Server execution, persistence, authorization, large-raster streaming, and
-  tenant catalog semantics remain blocked on the linked Honua Server issues.
+  scoped catalog semantics remain blocked on the linked Honua Server issues.
 
 ### P2.6 Non-UI plugin contracts
 
@@ -739,7 +718,7 @@ For web display, a pragmatic stack is:
 
 This is a good fit because deck.gl is built for high-performance WebGPU/WebGL2
 visualization, accepts GeoJSON through `GeoJsonLayer`, supports picking, and
-integrates with basemap providers including MapLibre and ArcGIS. MapLibre should
+integrates with MapLibre and other basemap services. MapLibre should
 own cartographic base-map behavior; deck.gl should own data visualization
 overlays. Native .NET display can be evaluated separately with MAUI/WPF-specific
 packages, but those should consume the same source descriptors and GeoJSON or

@@ -16,6 +16,7 @@
 * [Read and write features](feature-edits.md)
 * [Evaluate geofences](geofencing.md)
 * [Analyse geometry locally](geometry-analysis.md)
+* [Start with gRPC and cloud-native files](native-data-paths.md)
 * [Author a geoprocessing process](process-authoring.md)
 * [Discover and open 3D scenes](scenes.md)
 * [When integration does not work](troubleshooting.md)

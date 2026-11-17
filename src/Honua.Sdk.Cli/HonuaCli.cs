@@ -47,7 +47,7 @@ internal static class HonuaCli
         {
             if (args.Length == 0 || args[0] is "--help" or "-h")
             {
-                await output.WriteLineAsync(Usage()).ConfigureAwait(false);
+                await output.WriteLineAsync(Usage(), cancellationToken).ConfigureAwait(false);
                 return args.Length == 0 ? 2 : 0;
             }
             if (!args[0].Equals("doctor", StringComparison.Ordinal))
@@ -56,7 +56,7 @@ internal static class HonuaCli
             Dictionary<string, string> options = ParseOptions(args[1..]);
             if (options.ContainsKey("help"))
             {
-                await output.WriteLineAsync(Usage()).ConfigureAwait(false);
+                await output.WriteLineAsync(Usage(), cancellationToken).ConfigureAwait(false);
                 return 0;
             }
 
@@ -136,7 +136,7 @@ internal static class HonuaCli
         }
         catch (CliArgumentException exception)
         {
-            await error.WriteLineAsync(exception.Message).ConfigureAwait(false);
+            await error.WriteLineAsync(exception.Message, CancellationToken.None).ConfigureAwait(false);
             return 2;
         }
         catch (Exception exception) when (exception is DiagnosticSafetyException
@@ -146,13 +146,13 @@ internal static class HonuaCli
             or OperationCanceledException
             or JsonException)
         {
-            await error.WriteLineAsync("honua doctor failed safely; no diagnostic artifact was written.").ConfigureAwait(false);
+            await error.WriteLineAsync("honua doctor failed safely; no diagnostic artifact was written.", CancellationToken.None).ConfigureAwait(false);
             return 1;
         }
 #pragma warning disable CA1031 // CLI safety boundary: never leak an unexpected exception or raw input to process streams.
         catch (Exception)
         {
-            await error.WriteLineAsync("honua doctor failed safely; no diagnostic artifact was written.").ConfigureAwait(false);
+            await error.WriteLineAsync("honua doctor failed safely; no diagnostic artifact was written.", CancellationToken.None).ConfigureAwait(false);
             return 1;
         }
 #pragma warning restore CA1031
@@ -300,7 +300,7 @@ internal static class HonuaCli
             outputWritten = true,
             envelopeCount,
             capabilityProbe = capabilityProbe ? "attempted" : "not-configured",
-            runtime = new { framework = RuntimeInformation.FrameworkDescription, target = "net10.0", os = RuntimeInformation.OSDescription },
+            runtime = new { framework = RuntimeInformation.FrameworkDescription, target = "net11.0", os = RuntimeInformation.OSDescription },
             sdk = new { package = "Honua.Sdk.Cli", version },
             schema = DiagnosticSchema.CanonicalUrl,
             schemaSha256 = DiagnosticSchema.Sha256,

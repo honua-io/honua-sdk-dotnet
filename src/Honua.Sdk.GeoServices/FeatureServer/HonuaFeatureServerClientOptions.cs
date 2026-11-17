@@ -3,10 +3,8 @@
 
 namespace Honua.Sdk.GeoServices.FeatureServer;
 
-/// <summary>
-/// The ArcGIS REST service type a <see cref="HonuaFeatureServerClient"/> addresses.
-/// </summary>
-public enum ArcGisServiceType
+/// <summary>The GeoServices REST service type a <see cref="HonuaFeatureServerClient"/> addresses.</summary>
+public enum GeoServicesServiceType
 {
     /// <summary>A <c>FeatureServer</c> service (the default).</summary>
     FeatureServer,
@@ -15,24 +13,13 @@ public enum ArcGisServiceType
     MapServer,
 }
 
-/// <summary>
-/// Addressing and response-size options for <see cref="HonuaFeatureServerClient"/>. The defaults address a
-/// Honua server (<c>{base}/rest/services/{serviceId}/FeatureServer</c>); set these to read an arbitrary
-/// ArcGIS source, or build them from a service root URL with <see cref="ArcGisServiceRoot.ToClientOptions"/>.
-/// </summary>
+/// <summary>Addressing and response-size options for <see cref="HonuaFeatureServerClient"/>; the defaults address a Honua server.</summary>
 public sealed class HonuaFeatureServerClientOptions
 {
-    /// <summary>
-    /// Default response body ceiling in bytes (64 MiB). Matches honua-server's
-    /// <c>MigrationHttpContentReader.DefaultMaxResponseBytes</c> for operator-supplied ArcGIS sources.
-    /// </summary>
+    /// <summary>Default response body ceiling in bytes (64 MiB).</summary>
     public const long DefaultMaxResponseBytes = 64L * 1024 * 1024;
 
-    /// <summary>
-    /// Absolute root every request resolves under, including any path prefix (for example
-    /// <c>https://services.arcgis.com/Org123/arcgis/</c>). When null, the <see cref="HttpClient.BaseAddress"/>
-    /// is used. In both cases the path prefix is preserved whether or not it ends with <c>/</c>.
-    /// </summary>
+    /// <summary>Absolute root every request resolves under, including any path prefix; null uses the HTTP client's base address.</summary>
     public Uri? RootAddress { get; set; }
 
     /// <summary>
@@ -41,8 +28,8 @@ public sealed class HonuaFeatureServerClientOptions
     /// </summary>
     public string ServicesPath { get; set; } = "rest/services";
 
-    /// <summary>The service type segment appended after the service id. Defaults to <see cref="ArcGisServiceType.FeatureServer"/>.</summary>
-    public ArcGisServiceType ServiceType { get; set; } = ArcGisServiceType.FeatureServer;
+    /// <summary>The service type segment appended after the service id. Defaults to <see cref="GeoServicesServiceType.FeatureServer"/>.</summary>
+    public GeoServicesServiceType ServiceType { get; set; } = GeoServicesServiceType.FeatureServer;
 
     /// <summary>
     /// Maximum number of bytes read from a JSON or error response body. A larger body fails with

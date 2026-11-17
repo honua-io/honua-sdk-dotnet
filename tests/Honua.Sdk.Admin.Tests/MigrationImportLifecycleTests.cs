@@ -30,7 +30,7 @@ public sealed class MigrationImportLifecycleTests
             body = await req.Content!.ReadAsStringAsync();
             return RawJson("""
                 {
-                  "serviceUrl": "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+                  "serviceUrl": "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
                   "serviceName": "Parcels",
                   "description": "City parcels",
                   "spatialReferenceWkid": 4326,
@@ -58,16 +58,16 @@ public sealed class MigrationImportLifecycleTests
 
         var result = await client.DiscoverGeoservicesServiceAsync(new GeoservicesDiscoverRequest
         {
-            ServiceUrl = "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+            ServiceUrl = "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
             Credentials = new GeoservicesCredentialDescriptor
             {
                 Mode = "token",
-                AccessTokenSecretReference = "secret://arcgis/token"
+                AccessTokenSecretReference = "secret://gis/token"
             }
         });
 
         using var sent = JsonDocument.Parse(body!);
-        Assert.Equal("secret://arcgis/token", sent.RootElement.GetProperty("credentials").GetProperty("accessTokenSecretReference").GetString());
+        Assert.Equal("secret://gis/token", sent.RootElement.GetProperty("credentials").GetProperty("accessTokenSecretReference").GetString());
 
         Assert.Equal("Parcels", result.ServiceName);
         Assert.Equal(4326, result.SpatialReferenceWkid);
@@ -99,7 +99,7 @@ public sealed class MigrationImportLifecycleTests
 
         var result = await client.StartGeoservicesImportAsync(new GeoservicesStartImportRequest
         {
-            ServiceUrl = "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+            ServiceUrl = "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
             LayerId = 0,
             TableName = "parcels",
             TargetSrid = 4326,
@@ -107,13 +107,13 @@ public sealed class MigrationImportLifecycleTests
             Credentials = new GeoservicesCredentialDescriptor
             {
                 Mode = "token",
-                AccessTokenSecretReference = "secret://arcgis/token"
+                AccessTokenSecretReference = "secret://gis/token"
             }
         });
 
         using var sent = JsonDocument.Parse(body!);
         Assert.False(sent.RootElement.GetProperty("credentials").TryGetProperty("accessToken", out _));
-        Assert.Equal("secret://arcgis/token", sent.RootElement.GetProperty("credentials").GetProperty("accessTokenSecretReference").GetString());
+        Assert.Equal("secret://gis/token", sent.RootElement.GetProperty("credentials").GetProperty("accessTokenSecretReference").GetString());
         Assert.Equal(0, sent.RootElement.GetProperty("layerId").GetInt32());
 
         Assert.Equal("8f1c2a9b3d4e", result.JobId);
@@ -279,8 +279,8 @@ public sealed class MigrationImportLifecycleTests
             return RawJson("""
                 {
                   "batchId": "batch-77",
-                  "sourceKind": "arcgis-geoservices-rest",
-                  "sourceUrl": "https://gis.example.com/arcgis/rest/services",
+                  "sourceKind": "geoservices-rest",
+                  "sourceUrl": "https://gis.example.com/gis/rest/services",
                   "status": "running",
                   "startedAt": "2026-09-10T12:00:00Z",
                   "totalChildren": 2,
@@ -293,7 +293,7 @@ public sealed class MigrationImportLifecycleTests
                     {
                       "ordinal": 0,
                       "sourceResourceId": "res:parcels",
-                      "serviceUrl": "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+                      "serviceUrl": "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
                       "sourceLayerId": 0,
                       "tableName": "parcels",
                       "dependsOn": [],
@@ -304,7 +304,7 @@ public sealed class MigrationImportLifecycleTests
                     {
                       "ordinal": 1,
                       "sourceResourceId": "res:zoning",
-                      "serviceUrl": "https://gis.example.com/arcgis/rest/services/Zoning/FeatureServer",
+                      "serviceUrl": "https://gis.example.com/gis/rest/services/Zoning/FeatureServer",
                       "sourceLayerId": 0,
                       "tableName": "zoning",
                       "dependsOn": ["res:parcels"],
@@ -318,21 +318,21 @@ public sealed class MigrationImportLifecycleTests
 
         var result = await client.StartMigrationBatchAsync(new MigrationBatchStartRequest
         {
-            SourceKind = "arcgis-geoservices-rest",
-            SourceUrl = "https://gis.example.com/arcgis/rest/services",
+            SourceKind = "geoservices-rest",
+            SourceUrl = "https://gis.example.com/gis/rest/services",
             Layers =
             [
                 new MigrationBatchLayerSpec
                 {
                     SourceResourceId = "res:parcels",
-                    ServiceUrl = "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+                    ServiceUrl = "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
                     LayerId = 0,
                     TableName = "parcels"
                 },
                 new MigrationBatchLayerSpec
                 {
                     SourceResourceId = "res:zoning",
-                    ServiceUrl = "https://gis.example.com/arcgis/rest/services/Zoning/FeatureServer",
+                    ServiceUrl = "https://gis.example.com/gis/rest/services/Zoning/FeatureServer",
                     LayerId = 0,
                     TableName = "zoning",
                     DependsOn = ["res:parcels"]
@@ -366,7 +366,7 @@ public sealed class MigrationImportLifecycleTests
             return Task.FromResult(RawJson("""
                 {
                   "batchId": "batch-77",
-                  "sourceKind": "arcgis-geoservices-rest",
+                  "sourceKind": "geoservices-rest",
                   "status": "needs-review",
                   "startedAt": "2026-09-10T12:00:00Z",
                   "completedAt": "2026-09-10T12:05:00Z",
@@ -399,8 +399,8 @@ public sealed class MigrationImportLifecycleTests
             return Task.FromResult(RawJson("""
                 {
                   "batchId": "batch-77",
-                  "sourceKind": "arcgis-geoservices-rest",
-                  "sourceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                  "sourceKind": "geoservices-rest",
+                  "sourceUrl": "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
                   "status": "needs-review",
                   "startedAt": "2026-09-10T12:00:00Z",
                   "completedAt": "2026-09-10T12:05:00Z",
@@ -454,7 +454,7 @@ public sealed class MigrationImportLifecycleTests
                     {
                       "ordinal": 0,
                       "sourceResourceId": "resource:Inspections:layer:0",
-                      "serviceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                      "serviceUrl": "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
                       "sourceLayerId": 0,
                       "tableName": "hydrants",
                       "dependsOn": [],
@@ -466,7 +466,7 @@ public sealed class MigrationImportLifecycleTests
                     {
                       "ordinal": 1,
                       "sourceResourceId": "resource:Inspections:layer:1",
-                      "serviceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                      "serviceUrl": "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
                       "sourceLayerId": 1,
                       "tableName": "inspections",
                       "dependsOn": ["resource:Inspections:layer:0"],
@@ -528,8 +528,8 @@ public sealed class MigrationImportLifecycleTests
                   "status": "needsReview",
                   "featuresProcessed": 12,
                   "estimatedTotalFeatures": 12,
-                  "sourceServiceUrl": "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
-                  "sourceKind": "arcgis-geoservices-rest",
+                  "sourceServiceUrl": "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
+                  "sourceKind": "geoservices-rest",
                   "sourceLayerId": 1,
                   "sourceLayerName": "Inspections",
                   "tableName": "inspections",
@@ -623,15 +623,15 @@ public sealed class MigrationImportLifecycleTests
         var ex = await Assert.ThrowsAsync<HonuaAdminApiException>(() => client.StartMigrationBatchAsync(
             new MigrationBatchStartRequest
             {
-                SourceKind = "arcgis-geoservices-rest",
-                SourceUrl = "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                SourceKind = "geoservices-rest",
+                SourceUrl = "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
                 RequireFullFidelity = true,
                 Layers =
                 [
                     new MigrationBatchLayerSpec
                     {
                         SourceResourceId = "resource:Inspections:layer:0",
-                        ServiceUrl = "https://gis.example.com/arcgis/rest/services/FieldOps/FeatureServer",
+                        ServiceUrl = "https://gis.example.com/gis/rest/services/FieldOps/FeatureServer",
                         LayerId = 0,
                         TableName = "inspections"
                     }
@@ -672,7 +672,7 @@ public sealed class MigrationImportLifecycleTests
         var client = TestHelpers.CreateClient(req =>
         {
             Assert.Equal(
-                "/api/v1/admin/migration/runs/?limit=10&offset=5&sourceKind=arcgis-geoservices-rest&status=failed",
+                "/api/v1/admin/migration/runs/?limit=10&offset=5&sourceKind=geoservices-rest&status=failed",
                 req.RequestUri!.PathAndQuery);
             return Task.FromResult(RawJson("""
                 { "items": [], "totalCount": 0, "limit": 10, "offset": 5 }
@@ -683,7 +683,7 @@ public sealed class MigrationImportLifecycleTests
         {
             Limit = 10,
             Offset = 5,
-            SourceKind = "arcgis-geoservices-rest",
+            SourceKind = "geoservices-rest",
             Status = "failed"
         });
 
@@ -714,8 +714,8 @@ public sealed class MigrationImportLifecycleTests
             return Task.FromResult(RawJson("""
                 {
                   "runId": "run-42",
-                  "sourceKind": "arcgis-geoservices-rest",
-                  "sourceUrl": "https://gis.example.com/arcgis/rest/services",
+                  "sourceKind": "geoservices-rest",
+                  "sourceUrl": "https://gis.example.com/gis/rest/services",
                   "status": "needs-review",
                   "startedAt": "2026-09-10T12:00:00Z",
                   "hasEvidencePack": true,
@@ -746,7 +746,7 @@ public sealed class MigrationImportLifecycleTests
             return RawJson("""
                 {
                   "runId": "run-42",
-                  "sourceKind": "arcgis-geoservices-rest",
+                  "sourceKind": "geoservices-rest",
                   "status": "cancelled",
                   "startedAt": "2026-09-10T12:00:00Z",
                   "completedAt": "2026-09-10T12:01:00Z",
@@ -794,7 +794,7 @@ public sealed class MigrationImportLifecycleTests
             return Task.FromResult(RawJson("""
                 {
                   "runId": "run-42",
-                  "sourceKind": "arcgis-geoservices-rest",
+                  "sourceKind": "geoservices-rest",
                   "generatedAt": "2026-09-10T12:06:00Z",
                   "verdict": "fail",
                   "dataReconciliation": {
@@ -880,7 +880,7 @@ public sealed class MigrationImportLifecycleTests
           "jobId": "8f1c2a9b3d4e",
           "status": "queued",
           "featuresProcessed": 0,
-          "sourceServiceUrl": "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+          "sourceServiceUrl": "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
           "sourceLayerId": 0,
           "tableName": "parcels",
           "startedAt": "2026-09-10T12:00:00Z",
@@ -894,7 +894,7 @@ public sealed class MigrationImportLifecycleTests
           "status": "retrievingFeatures",
           "featuresProcessed": 4200,
           "estimatedTotalFeatures": 15234,
-          "sourceServiceUrl": "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+          "sourceServiceUrl": "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
           "sourceLayerId": 0,
           "tableName": "parcels",
           "startedAt": "2026-09-10T12:00:00Z",
@@ -908,7 +908,7 @@ public sealed class MigrationImportLifecycleTests
           "status": "completed",
           "featuresProcessed": 15234,
           "estimatedTotalFeatures": 15234,
-          "sourceServiceUrl": "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+          "sourceServiceUrl": "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
           "sourceLayerId": 0,
           "tableName": "parcels",
           "publishedLayerId": 42,
@@ -923,7 +923,7 @@ public sealed class MigrationImportLifecycleTests
           "status": "needsReview",
           "featuresProcessed": 15234,
           "estimatedTotalFeatures": 15234,
-          "sourceServiceUrl": "https://gis.example.com/arcgis/rest/services/Parcels/FeatureServer",
+          "sourceServiceUrl": "https://gis.example.com/gis/rest/services/Parcels/FeatureServer",
           "sourceLayerId": 0,
           "tableName": "parcels",
           "publishedLayerId": 42,
@@ -931,7 +931,7 @@ public sealed class MigrationImportLifecycleTests
           "completedAt": "2026-09-10T12:05:00Z",
           "reconciliationArtifact": {
             "runId": "run-42",
-            "sourceKind": "arcgis-geoservices-rest",
+            "sourceKind": "geoservices-rest",
             "classification": "fail",
             "startedAt": "2026-09-10T12:04:30Z",
             "completedAt": "2026-09-10T12:05:00Z",

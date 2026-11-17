@@ -1,4 +1,4 @@
-PASS     package.published-bytes: Honua.Sdk.GeoServices 1.7.1-cert341 (assembly 1.7.1.0, informational 1.7.1-cert341+a880a3813dc16b1d3cb1892be9f38658a14dac82) from local:/home/mike/honua-io/lane-341-run/local-packages; nupkg sha512 matches the expected package hash; loaded assembly sha256 a129f2747c40d82c44b88fef81c11da72ff35ee93a84894c7dc44db8ade59540 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package
+PASS     package.published-bytes: Honua.Sdk.GeoServices 1.7.1-cert341 (assembly 1.7.1.0, informational 1.7.1-cert341+a880a3813dc16b1d3cb1892be9f38658a14dac82) from local:local-packages; nupkg sha512 matches the expected package hash; loaded assembly sha256 a129f2747c40d82c44b88fef81c11da72ff35ee93a84894c7dc44db8ade59540 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package
 PASS     discovery.service-layers: service lists layer 1 'source_sites'
 PASS     discovery.service-tables: every source JSON path under $.tables survives the typed model
 PASS     metadata.service.lossless-roundtrip: every source JSON path under $ survives the typed model

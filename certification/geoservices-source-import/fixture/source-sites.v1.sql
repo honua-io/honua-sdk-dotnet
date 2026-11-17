@@ -1,6 +1,6 @@
 -- honua-sdk-dotnet#341 source-import conformance fixture, version source-import-fixture.v1.
 --
--- The live ArcGIS-REST source for the lossless import certification. Every value
+-- The live GeoServices REST source for the lossless import certification. Every value
 -- here is chosen so that a lossy decode is observable, and expected.v1.json is
 -- derived from these literals by hand (never from the server or the SDK):
 --   * big_counter 9007199254740993 is 2^53 + 1; a double decode yields ...992.

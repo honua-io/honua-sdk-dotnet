@@ -29,7 +29,7 @@ public static class WfsVectorFormats
     {
         VectorPayloadFormat.GeoJson => GeoJsonOutputFormat,
         VectorPayloadFormat.Gml => GmlOutputFormat,
-        VectorPayloadFormat.EsriJson => throw new NotSupportedException("WFS does not expose Esri JSON GetFeature output."),
+        VectorPayloadFormat.GeoServicesJson => throw new NotSupportedException("WFS does not expose GeoServices JSON GetFeature output."),
         _ => throw new NotSupportedException($"Vector payload format '{format}' is not supported by WFS.")
     };
 }

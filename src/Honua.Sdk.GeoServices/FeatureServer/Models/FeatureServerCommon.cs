@@ -126,7 +126,7 @@ public enum SpatialRelationship
 /// </summary>
 public enum FeatureServerFormat
 {
-    /// <summary>Esri JSON (default).</summary>
+    /// <summary>GeoServices JSON (default).</summary>
     Json,
 
     /// <summary>GeoJSON output.</summary>

@@ -62,7 +62,7 @@ referenced with `PackageReference`.
 
 The generated protocol package is separate from `Honua.Sdk.*`: SDK packages may
 depend on `Geospatial.Grpc`, while admin/mobile/server repos should consume
-Honua SDK behavior through `Honua.Sdk.*` packages. Both package families use
+Honua SDK behavior through `Honua.Sdk.*` packages. Both sets of packages use
 `https://nuget.pkg.github.com/honua-io/index.json` for prerelease/private
 distribution.
 
@@ -89,7 +89,7 @@ Foundation work should land before repo cutovers:
 - Browser/WASM matrix: https://github.com/honua-io/honua-sdk-dotnet/issues/62
 
 The browser/WASM package boundary lives in
-[Browser And WebAssembly Support](browser-wasm-support.md). Browser consumers
+[Browser And WebAssembly Support](../browser-wasm-support.md). Browser consumers
 should treat REST packages as candidates until runtime `HttpClient`, CORS, and
 auth validation exists in the consuming app.
 

@@ -26,6 +26,23 @@ internal static class TestHelpers
         return new HonuaAdminClient(httpClient);
     }
 
+    public static object EmptyServicePage() => new
+    {
+        items = Array.Empty<object>(),
+        page = 1,
+        pageSize = 100,
+        total = 0,
+        layerTotal = 0
+    };
+
+    public static object EmptyLayerPage() => new
+    {
+        items = Array.Empty<object>(),
+        page = 1,
+        pageSize = 100,
+        total = 0
+    };
+
     public static HttpResponseMessage CreateJsonResponse<T>(T data, HttpStatusCode statusCode = HttpStatusCode.OK)
         => CreateJsonEnvelopeResponse(data, success: true, message: null, statusCode);
 

@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  DOTNET_VERSION: "10.0.401"
+  DOTNET_VERSION: "11.0.100"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
@@ -95,7 +95,7 @@ jobs:
             ${{ github.repository }}-${{ runner.os }}-nuget-
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -132,19 +132,16 @@ jobs:
           echo "Auditing ${#projects[@]} packages:"
           printf '  %s\n' "${projects[@]}"
 
-          errors=0
+          # Advisories are reported, never fatal: a newly published advisory is
+          # dependency work, not a broken build (NU1901-NU1904 are also warnings
+          # in Directory.Build.props).
           for project in "${projects[@]}"; do
             output_file="/tmp/$(basename "${project}").audit.txt"
             dotnet list "${project}" package --vulnerable --include-transitive 2>&1 | tee "${output_file}"
             if grep -qi "has the following vulnerable packages" "${output_file}"; then
-              echo "::error::Vulnerable NuGet dependencies detected in ${project}."
-              errors=1
+              echo "::warning::Vulnerable NuGet dependencies detected in ${project}; see the table above."
             fi
           done
-
-          if [[ ${errors} -ne 0 ]]; then
-            exit 1
-          fi
 
   code-coverage:
     name: Code Coverage
@@ -162,7 +159,7 @@ jobs:
             ${{ github.repository }}-${{ runner.os }}-nuget-
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -184,7 +181,7 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --settings ./coverlet.runsettings \
             --results-directory ./coverage \
-            --logger "trx;LogFileName=coverage-results.trx"
+            --logger "trx;LogFilePrefix=coverage-results"
 
       - name: Install ReportGenerator
         run: dotnet tool update --global dotnet-reportgenerator-globaltool
@@ -241,7 +238,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -384,7 +381,7 @@ jobs:
 
   browser-wasm-smoke:
     name: Browser WASM Smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -411,7 +408,7 @@ jobs:
         run: dotnet build tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release /p:TreatWarningsAsErrors=true /p:EnforceCodeStyleInBuild=true
 
       - name: Install Playwright Chromium
-        run: pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        run: pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
       - name: Run browser runtime validation
         env:

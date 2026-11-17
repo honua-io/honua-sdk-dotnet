@@ -7,6 +7,8 @@ tags: [api-reference, docfx]
 ---
 # API reference
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 ## Hosted reference
 
 The full DocFX-generated API reference is published to GitHub Pages at
@@ -51,7 +53,7 @@ summaries, parameter docs, and per-package navigation.
 ## 3. Browse the source on GitHub
 
 Each per-package README on
-[nuget.org](https://www.nuget.org/profiles/honua) links back to the
+[nuget.org](https://www.nuget.org/packages/Honua.Sdk) links back to the
 `src/Honua.Sdk.<X>/` directory on GitHub. Browsing the source there gives
 you the full surface plus complete XML doc blocks. Both INSTALL.md and
 each per-package README link to the exact `trunk` directory.
@@ -93,30 +95,31 @@ the matching `AddHonua*` extension registers it.
 | `IHonuaRoutingClient` | `Honua.Sdk.GeoServices` (interface in `Honua.Sdk.Abstractions.Routing`) | [api/Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Abstractions.Routing.IHonuaRoutingClient.html) |
 | `IHonuaFeatureQueryClient` | `Honua.Sdk.Abstractions` | [api/Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Abstractions.Features.IHonuaFeatureQueryClient.html) |
 | `IHonuaFeatureStreamClient` | `Honua.Sdk.Abstractions` | [api/Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Abstractions.Features.IHonuaFeatureStreamClient.html) |
-| `IReplicaSyncClient` | `Honua.Sdk.Offline` (interface in `Honua.Sdk.Abstractions.Offline`) | [api/Honua.Sdk.Abstractions.Offline.IReplicaSyncClient.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Abstractions.Offline.IReplicaSyncClient.html) |
+| `IReplicaSyncClient` | `Honua.Sdk.Offline` (interface in `Honua.Sdk.Offline.Abstractions`) | [api/Honua.Sdk.Offline.Abstractions.IReplicaSyncClient.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Offline.Abstractions.IReplicaSyncClient.html) |
 
 ## Package map (14 sub-packages + the meta package)
 
 Each row links to the package README, the canonical types you reach for
-first, and the DocFX namespace landing page.
+first, and the DocFX namespace landing page. ConsoleShare links to its
+source reference because the hosted DocFX site does not currently include it.
 
 | Package | README | Canonical types | DocFX namespace |
 |---|---|---|---|
 | `Honua.Sdk` (umbrella meta-package) | [src/Honua.Sdk/README.md](../src/Honua.Sdk/README.md) | `HonuaSdkOptions`, `AddHonua(...)` | [api/Honua.Sdk.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.html) |
 | `Honua.Sdk.Abstractions` | [src/Honua.Sdk.Abstractions/README.md](../src/Honua.Sdk.Abstractions/README.md) | `IHonuaFeatureQueryClient`, `IHonuaFeatureEditClient`, `IHonuaFeatureAttachmentClient`, `IHonuaFeatureStreamClient`, `SourceDescriptor`, `SourceQuery`, `HonuaConsoleShellDescriptor`, `HonuaEnvironmentProfile`, `HonuaAnalysisReport`, `HonuaAnalysisResultPackage`, `HonuaException`, `HonuaConfigurationException`, `HonuaPluginManifest` | [api/Honua.Sdk.Abstractions.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Abstractions.html) |
-| `Honua.Sdk.Offline` | [src/Honua.Sdk.Offline/README.md](../src/Honua.Sdk.Offline/README.md) | `OfflineDownloadPlanner`, `OfflineSyncEngine`, `ReplicaSyncClient`, `OfflinePackageManifest`, `OfflineSourceDescriptor` (last two live in `Honua.Sdk.Abstractions.Offline`) | [api/Honua.Sdk.Offline.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Offline.html) |
+| `Honua.Sdk.Offline` | [src/Honua.Sdk.Offline/README.md](../src/Honua.Sdk.Offline/README.md) | `OfflineDownloadPlanner`, `OfflineSyncEngine`, `ReplicaSyncClient`, `OfflinePackageManifest`, `OfflineSourceDescriptor` (last two live in `Honua.Sdk.Offline.Abstractions`) | [api/Honua.Sdk.Offline.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Offline.html) |
 | `Honua.Sdk.Grpc` | [src/Honua.Sdk.Grpc/README.md](../src/Honua.Sdk.Grpc/README.md) | `IHonuaGrpcClient`, `IHonuaProcessGrpcClient`, `HonuaGrpcClient`, `HonuaGrpcClientOptions`, `QueryFeaturesRequest`, `QueryFeaturesResponse`, `ApplyEditsRequest` | [api/Honua.Sdk.Grpc.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Grpc.html) |
 | `Honua.Sdk.Admin` | [src/Honua.Sdk.Admin/README.md](../src/Honua.Sdk.Admin/README.md) | `IHonuaAdminClient` (composes 17 sub-interfaces), `IHonuaAdminRolesClient`, `IHonuaAdminUsersClient`, `IHonuaAdminAlertsClient`, `IHonuaAdminFeatureEventsClient`, `IHonuaAdminStreamingOperationsClient`, `IHonuaCatalogClient`, `IHonuaGeocodingClient`, `HonuaAdminClientOptions` | [api/Honua.Sdk.Admin.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Admin.html) |
 | `Honua.Sdk.Processes` | [src/Honua.Sdk.Processes/README.md](../src/Honua.Sdk.Processes/README.md) | `IHonuaProcessesClient`, `HonuaProcessesClientOptions`, `HonuaProcessList`, `HonuaProcessExecuteRequest`, `HonuaProcessExecuteInputs`, `HonuaProcessJobStatus`, `HonuaProcessResults` | [api/Honua.Sdk.Processes.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Processes.html) |
 | `Honua.Sdk.Spec` | [src/Honua.Sdk.Spec/README.md](../src/Honua.Sdk.Spec/README.md) | `IHonuaSpecClient`, `HonuaSpecClientOptions`, `SpecDocumentRequest`, `SpecValidateRequest`, `SpecApplyStream`, `HonuaSpecArtifact` | [api/Honua.Sdk.Spec.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Spec.html) |
 | `Honua.Sdk.Studio` | [src/Honua.Sdk.Studio/README.md](../src/Honua.Sdk.Studio/README.md) | `IHonuaStudioReportsClient`, `HonuaStudioReportsClient`, `HonuaStudioClientOptions`, `HonuaRenderedReport`, `HonuaStudioApiException`, `HonuaStudioContractException` | [api/Honua.Sdk.Studio.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Studio.html) |
-| `Honua.Sdk.ConsoleShare` | [src/Honua.Sdk.ConsoleShare/README.md](../src/Honua.Sdk.ConsoleShare/README.md) | `IHonuaConsoleShareClient`, `IHonuaConsoleShareExportClient`, `IHonuaConsoleShareOpenDataClient`, `HonuaConsoleShareClient`, `HonuaConsoleShareClientOptions` | [api/Honua.Sdk.ConsoleShare.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.ConsoleShare.html) |
-| `Honua.Sdk.Field` | [src/Honua.Sdk.Field/README.md](../src/Honua.Sdk.Field/README.md) | `FormDefinition`, `FormField`, `FieldRecord`, `FormValidator`, `FormValidationResult` | [api/Honua.Sdk.Field.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Field.html) |
+| `Honua.Sdk.ConsoleShare` | [src/Honua.Sdk.ConsoleShare/README.md](../src/Honua.Sdk.ConsoleShare/README.md) | `IHonuaConsoleShareClient`, `IHonuaConsoleShareExportClient`, `IHonuaConsoleShareOpenDataClient`, `HonuaConsoleShareClient`, `HonuaConsoleShareClientOptions` | [Source reference](https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/src/Honua.Sdk.ConsoleShare) |
+| `Honua.Sdk.Field` | [src/Honua.Sdk.Field/README.md](../src/Honua.Sdk.Field/README.md) | `FormDefinition`, `FormField`, `FieldRecord`, `FormValidator`, `FormValidationResult` | [api/Honua.Sdk.Field.Forms.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Field.Forms.html) |
 | `Honua.Sdk.Geometry` | [src/Honua.Sdk.Geometry/README.md](../src/Honua.Sdk.Geometry/README.md) | `HonuaSpatialReference`, `HonuaCoordinateTransformer`, `HonuaPlanarGeometryAnalyzer`, `HonuaGeofenceEvaluator`, `GeometryText`, `GeoJsonGeometryConverter` | [api/Honua.Sdk.Geometry.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Geometry.html) |
 | `Honua.Sdk.GeoServices` | [src/Honua.Sdk.GeoServices/README.md](../src/Honua.Sdk.GeoServices/README.md) | `IHonuaFeatureServerClient`, `IHonuaFeatureServerEditClient`, `IHonuaRoutingClient`, `HonuaGeoServicesClientOptions` | [api/Honua.Sdk.GeoServices.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.GeoServices.html) |
 | `Honua.Sdk.Scenes` | [src/Honua.Sdk.Scenes/README.md](../src/Honua.Sdk.Scenes/README.md) | `IHonuaSceneClient`, `HonuaSceneClient`, `HonuaSceneClientOptions`, `HonuaSceneListRequest`, `HonuaSceneResolveRequest` | [api/Honua.Sdk.Scenes.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Scenes.html) |
 | `Honua.Sdk.OgcFeatures` | [src/Honua.Sdk.OgcFeatures/README.md](../src/Honua.Sdk.OgcFeatures/README.md) | `IHonuaOgcFeaturesClient`, `IHonuaOgcFeaturesEditClient`, `IHonuaOgcFeaturesPatchClient`, `IHonuaWfsClient`, `OgcItemsParams`, `OgcFeatureCollection`, `OgcQueryables` | [api/Honua.Sdk.OgcFeatures.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.OgcFeatures.html) |
-| `Honua.Sdk.Catalogs` | [src/Honua.Sdk.Catalogs/README.md](../src/Honua.Sdk.Catalogs/README.md) | `IHonuaStacClient`, `StacSearchQuery`, `StacSearchRequest`, `StacItemsQuery`, `StacItemCollection`, `IHonuaOgcRecordsClient`, `OgcRecordsQuery`, `OgcRecord`, `OgcRecordsCollection` | [api/Honua.Sdk.Catalogs.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Catalogs.html) |
+| `Honua.Sdk.Catalogs` | [src/Honua.Sdk.Catalogs/README.md](../src/Honua.Sdk.Catalogs/README.md) | `IHonuaStacClient`, `StacSearchQuery`, `StacSearchRequest`, `StacItemsQuery`, `StacItemCollection`, `IHonuaOgcRecordsClient`, `OgcRecordsQuery`, `OgcRecord`, `OgcRecordsCollection` | [api/Honua.Sdk.Catalogs.Stac.html](https://honua-io.github.io/honua-sdk-dotnet/api/Honua.Sdk.Catalogs.Stac.html) |
 
 ## Worked example: resolve a client from DI
 

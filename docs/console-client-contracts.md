@@ -7,6 +7,8 @@ tags: [console, blazor, contracts]
 ---
 # Console Client Contracts
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Honua Console uses the SDK as its .NET contract boundary for the Blazor Web
 host, shared Razor components, and optional .NET MAUI Blazor Hybrid host. The
 SDK owns reusable contracts and transport clients; Console hosts own UI,
@@ -272,8 +274,8 @@ Capability and edition state is read through `Honua.Sdk.Admin`
 gRPC, and mTLS capability state is read from `Honua.Sdk.Abstractions.Environments`
 (`HonuaTransportCapabilities`, `HonuaTrustProfile`, `HonuaEnvironmentTrustState`).
 Together these satisfy the Console capability-manifest need without a single
-combined server document. Map/App package bodies, publication/share/embed, and
-discrete query/dashboard/form/workflow/ETL package clients are gated on server
+combined server document. Map and App bodies, release/share/embed, and
+discrete Query, Dashboard, Form, Workflow and ETL clients are gated on server
 contracts that do not yet exist and are tracked as server-paired child tickets.
 
 ## Fixtures And Drift Checks

@@ -11,8 +11,8 @@ public enum VectorPayloadFormat
     /// <summary>No vector payload format has been specified.</summary>
     Unspecified = 0,
 
-    /// <summary>GeoServices/Esri JSON feature payloads.</summary>
-    EsriJson = 1,
+    /// <summary>GeoServices JSON feature payloads.</summary>
+    GeoServicesJson = 1,
 
     /// <summary>GeoJSON Feature or FeatureCollection payloads.</summary>
     GeoJson = 2,

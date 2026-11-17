@@ -43,7 +43,7 @@
   "publishedLayer": {
     "success": true,
     "data": {
-      "layerId": 0,
+      "storageLayerId": 12,
       "layerName": "Parcels",
       "schema": "public",
       "table": "parcels",

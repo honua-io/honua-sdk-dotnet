@@ -91,7 +91,7 @@ static void PrintReport(HonuaAnalysisReport report)
                 Console.WriteLine($"  [{chart.Kind}] {chart.ChartKind} chart, {chart.Series.Count} series");
                 break;
             case HonuaMapEmbedSection map:
-                Console.WriteLine($"  [{map.Kind}] {map.Caption} -> {map.MapPackageUri}");
+                Console.WriteLine($"  [{map.Kind}] {map.Caption} -> {map.MapUri}");
                 break;
             case HonuaNarrativeSection narrative:
                 Console.WriteLine($"  [{narrative.Kind}] {(narrative.LlmText ?? narrative.DeterministicText)}");

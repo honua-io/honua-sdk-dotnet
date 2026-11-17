@@ -5,15 +5,7 @@ using Nts = NetTopologySuite.Geometries;
 
 namespace Honua.Sdk.Geometry;
 
-/// <summary>
-/// Applies client-side, on-the-fly reprojection to NetTopologySuite geometries returned by a query.
-/// </summary>
-/// <remarks>
-/// Mirrors arcpy's on-the-fly projection: when a tool asks for an output CRS that differs from the
-/// CRS the server actually returned, this helper reprojects the geometry locally with ProjNET via
-/// <see cref="HonuaCoordinateTransformer"/> instead of trusting the server-honored output SR. The
-/// transform is opt-in and a no-op (returns the input instance) when source and target match.
-/// </remarks>
+/// <summary>Reprojects NetTopologySuite query geometries locally when the requested output CRS differs from the returned one.</summary>
 public sealed class HonuaFeatureReprojector
 {
     private readonly HonuaCoordinateTransformer transformer;

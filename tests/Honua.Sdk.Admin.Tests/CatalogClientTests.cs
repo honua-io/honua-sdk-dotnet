@@ -32,12 +32,12 @@ public sealed class CatalogClientTests
         {
             var path = req.RequestUri!.PathAndQuery;
             requests.Add(path);
-            return Task.FromResult(path switch
+            return Task.FromResult(CatalogRoute(req.RequestUri!) switch
             {
-                "/api/v1/admin/services/" => TestHelpers.CreateJsonResponse(new[]
+                "/api/v1/admin/services/" => TestHelpers.CreateJsonResponse(ServicePage(new
                 {
-                    new { serviceName = "parks", description = "Park service", layerCount = 1, enabledProtocols = new[] { "FeatureServer" } }
-                }),
+                    serviceName = "parks", description = "Park service", layerCount = 1, enabledProtocols = new[] { "FeatureServer" }
+                })),
                 "/rest/services/parks/FeatureServer?f=json" => TestHelpers.CreateRawJsonResponse(new
                 {
                     capabilities = "Query", layers = new[] { new { id = 0, name = "Parks" } }
@@ -96,18 +96,15 @@ public sealed class CatalogClientTests
         {
             var pathAndQuery = req.RequestUri!.PathAndQuery;
             requests.Add(pathAndQuery);
-            return Task.FromResult(pathAndQuery switch
+            return Task.FromResult(CatalogRoute(req.RequestUri!) switch
             {
-                "/api/v1/admin/services/" => TestHelpers.CreateJsonResponse(new[]
+                "/api/v1/admin/services/" => TestHelpers.CreateJsonResponse(ServicePage(new
                 {
-                    new
-                    {
-                        serviceName = "parks",
-                        description = "Parks service",
-                        layerCount = 1,
-                        enabledProtocols = Array.Empty<string>()
-                    }
-                }),
+                    serviceName = "parks",
+                    description = "Parks service",
+                    layerCount = 1,
+                    enabledProtocols = Array.Empty<string>()
+                })),
                 _ => TestHelpers.CreateErrorResponse(HttpStatusCode.NotFound, "not found")
             });
         });
@@ -118,7 +115,8 @@ public sealed class CatalogClientTests
         Assert.Equal("parks", Assert.Single(services).Name);
         Assert.NotNull(service);
         Assert.Equal("parks", service.Name);
-        Assert.Equal(2, requests.Count(path => path == "/api/v1/admin/services/"));
+        Assert.Equal(2, requests.Count(path => path.StartsWith("/api/v1/admin/services/?", StringComparison.Ordinal)));
+        Assert.Contains(requests, path => path.Contains("q=parks", StringComparison.Ordinal));
         Assert.DoesNotContain(requests, path => path.StartsWith("/api/v1/admin/metadata/resources", StringComparison.Ordinal));
     }
 
@@ -144,7 +142,7 @@ public sealed class CatalogClientTests
         {
             var pathAndQuery = req.RequestUri!.PathAndQuery;
             requests[pathAndQuery] = requests.GetValueOrDefault(pathAndQuery) + 1;
-            return pathAndQuery switch
+            return CatalogRoute(req.RequestUri!) switch
             {
                 "/api/v1/admin/metadata/resources?kind=Service" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
                 {
@@ -190,16 +188,13 @@ public sealed class CatalogClientTests
                         },
                         new Dictionary<string, string> { ["tags"] = "saved", ["owner"] = "gis" })
                 })),
-                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
+                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(ServicePage(new
                 {
-                    new
-                    {
-                        serviceName = "parks",
-                        description = "Parks service",
-                        layerCount = 1,
-                        enabledProtocols = new[] { "FeatureServer", "MapServer" }
-                    }
-                })),
+                    serviceName = "parks",
+                    description = "Parks service",
+                    layerCount = 1,
+                    enabledProtocols = new[] { "FeatureServer", "MapServer" }
+                }))),
                 "/rest/services/parks/FeatureServer?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
                 {
                     serviceDescription = "Parks FeatureServer",
@@ -274,7 +269,7 @@ public sealed class CatalogClientTests
         var client = CreateCatalogClient(req =>
         {
             var pathAndQuery = req.RequestUri!.PathAndQuery;
-            return pathAndQuery switch
+            return CatalogRoute(req.RequestUri!) switch
             {
                 "/api/v1/admin/metadata/resources?kind=Service" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
                 "/api/v1/admin/metadata/resources?kind=Layer" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
@@ -288,16 +283,13 @@ public sealed class CatalogClientTests
                 })),
                 "/api/v1/admin/metadata/resources?kind=Group" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
                 "/api/v1/admin/metadata/resources?kind=SourceDescriptor" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
-                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
+                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(ServicePage(new
                 {
-                    new
-                    {
-                        serviceName = "parks",
-                        description = "Parks service",
-                        layerCount = 1,
-                        enabledProtocols = new[] { "FeatureServer" }
-                    }
-                })),
+                    serviceName = "parks",
+                    description = "Parks service",
+                    layerCount = 1,
+                    enabledProtocols = new[] { "FeatureServer" }
+                }))),
                 "/rest/services/parks/FeatureServer?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
                 {
                     capabilities = "Query",
@@ -343,14 +335,13 @@ public sealed class CatalogClientTests
         {
             var pathAndQuery = req.RequestUri!.PathAndQuery;
             requests[pathAndQuery] = requests.GetValueOrDefault(pathAndQuery) + 1;
-            return pathAndQuery switch
+            return CatalogRoute(req.RequestUri!) switch
             {
                 "/api/v1/admin/metadata/resources?kind=Service" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
                 "/api/v1/admin/metadata/resources?kind=Layer" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
                 "/api/v1/admin/metadata/resources?kind=Group" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
                 "/api/v1/admin/metadata/resources?kind=SourceDescriptor" => Task.FromResult(TestHelpers.CreateJsonResponse(Array.Empty<object>())),
-                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(new[]
-                {
+                "/api/v1/admin/services/" => Task.FromResult(TestHelpers.CreateJsonResponse(ServicePage(
                     new
                     {
                         serviceName = "alpha",
@@ -362,8 +353,7 @@ public sealed class CatalogClientTests
                         serviceName = "beta",
                         layerCount = 2,
                         enabledProtocols = new[] { "FeatureServer" }
-                    }
-                })),
+                    }))),
                 "/rest/services/alpha/FeatureServer?f=json" => Task.FromResult(TestHelpers.CreateRawJsonResponse(new
                 {
                     capabilities = "Query",
@@ -465,6 +455,18 @@ public sealed class CatalogClientTests
         Assert.NotNull(group);
         Assert.Equal("default", group.Namespace);
     }
+
+    private static string CatalogRoute(Uri uri) =>
+        uri.AbsolutePath == "/api/v1/admin/services/" ? uri.AbsolutePath : uri.PathAndQuery;
+
+    private static object ServicePage(params object[] items) => new
+    {
+        items,
+        page = 1,
+        pageSize = 100,
+        total = items.Length,
+        layerTotal = 0
+    };
 
     private static object MetadataResource(
         string kind,

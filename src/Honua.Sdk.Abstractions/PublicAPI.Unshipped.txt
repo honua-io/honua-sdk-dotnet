@@ -129,3 +129,33 @@ Honua.Sdk.Offline.Abstractions.ExtractChangesResult.LayerServerGens.get -> Syste
 Honua.Sdk.Offline.Abstractions.ExtractChangesResult.LayerServerGens.init -> void
 Honua.Sdk.Abstractions.HonuaPathSegment
 static Honua.Sdk.Abstractions.HonuaPathSegment.Escape(string? value, string! paramName) -> string!
+Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppId.get -> string?
+Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppId.init -> void
+Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId.get -> string?
+Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapId.init -> void
+Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri.get -> string!
+Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapUri.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId.get -> string?
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.AppPackageId.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId.get -> string?
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaAnalysisResultPackage.MapPackageId.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri.get -> string!
+*REMOVED*Honua.Sdk.Abstractions.Studio.HonuaMapEmbedSection.MapPackageUri.init -> void
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.Dashboard = 3 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.Dashboard = 3 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.GeneratedApp = 5 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.GeneratedApp = 5 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.Layer = 1 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.Layer = 1 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.OpenData = 6 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.OpenData = 6 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.Report = 4 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.Report = 4 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.SavedMap = 2 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.SavedMap = 2 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType.Service = 0 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.Service = 0 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+*REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaOpenDataEligibility.ItemType.get -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
+Honua.Sdk.Abstractions.Console.Share.HonuaOpenDataEligibility.ItemType.get -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind

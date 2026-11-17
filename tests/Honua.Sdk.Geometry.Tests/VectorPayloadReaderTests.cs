@@ -11,7 +11,7 @@ namespace Honua.Sdk.Geometry.Tests;
 public sealed class VectorPayloadReaderTests
 {
     [Fact]
-    public async Task EsriJsonReader_ParsesFeaturesIntoNtsGeometry()
+    public async Task GeoServicesJsonReader_ParsesFeaturesIntoNtsGeometry()
     {
         const string json = """
             {
@@ -27,9 +27,9 @@ public sealed class VectorPayloadReaderTests
             }
             """;
 
-        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoServicesJson);
 
-        Assert.Equal(VectorPayloadFormat.EsriJson, result.Format);
+        Assert.Equal(VectorPayloadFormat.GeoServicesJson, result.Format);
         Assert.Equal("OBJECTID", result.ObjectIdFieldName);
         Assert.True(result.HasMoreResults);
         var feature = Assert.Single(result.Features);
@@ -272,7 +272,7 @@ public sealed class VectorPayloadReaderTests
     }
 
     [Fact]
-    public async Task EsriJsonReader_WebMercatorWkid_MapsToEpsg3857()
+    public async Task GeoServicesJsonReader_WebMercatorWkid_MapsToEpsg3857()
     {
         const string json = """
             {
@@ -283,14 +283,14 @@ public sealed class VectorPayloadReaderTests
             }
             """;
 
-        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoServicesJson);
 
         Assert.Equal("EPSG:3857", result.Crs);
         Assert.Equal("EPSG:3857", Assert.Single(result.Features).Crs);
     }
 
     [Fact]
-    public async Task EsriJsonReader_LatestWkidPreferred_MapsToEpsg()
+    public async Task GeoServicesJsonReader_LatestWkidPreferred_MapsToEpsg()
     {
         const string json = """
             {
@@ -301,31 +301,34 @@ public sealed class VectorPayloadReaderTests
             }
             """;
 
-        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoServicesJson);
 
         Assert.Equal("EPSG:3857", result.Crs);
     }
 
-    [Fact]
-    public async Task EsriJsonReader_UnknownEsriProprietaryWkid_UsesEsriAuthority()
+    [Theory]
+    [InlineData(53034, "ESRI:53034")]
+    [InlineData(54009, "ESRI:54009")]
+    [InlineData(102003, "ESRI:102003")]
+    public async Task GeoServicesJsonReader_NonEpsgWkid_UsesProjAuthorityName(int wkid, string expectedCrs)
     {
-        const string json = """
+        var json = $$"""
             {
-              "spatialReference": { "wkid": 53034 },
+              "spatialReference": { "wkid": {{wkid}} },
               "features": [
                 { "attributes": { "OBJECTID": 1 }, "geometry": { "x": 0.0, "y": 0.0 } }
               ]
             }
             """;
 
-        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoServicesJson);
 
-        Assert.Equal("ESRI:53034", result.Crs);
-        Assert.Equal("ESRI:53034", Assert.Single(result.Features).Crs);
+        Assert.Equal(expectedCrs, result.Crs);
+        Assert.Equal(expectedCrs, Assert.Single(result.Features).Crs);
     }
 
     [Fact]
-    public async Task EsriJsonReader_StandardEpsgWkid_UsesEpsgAuthority()
+    public async Task GeoServicesJsonReader_StandardEpsgWkid_UsesEpsgAuthority()
     {
         const string json = """
             {
@@ -336,7 +339,7 @@ public sealed class VectorPayloadReaderTests
             }
             """;
 
-        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.EsriJson);
+        var result = await VectorPayloadReaders.ReadAsync(ToStream(json), VectorPayloadFormat.GeoServicesJson);
 
         Assert.Equal("EPSG:4326", result.Crs);
     }

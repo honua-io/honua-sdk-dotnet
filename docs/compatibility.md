@@ -7,14 +7,16 @@ tags: [compatibility, versioning, policy]
 ---
 # Compatibility Policy
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This SDK treats compatibility as two separate contracts: server compatibility
 for runtime behavior and package API compatibility for released .NET packages.
 
 ## Server Compatibility Matrix
 
-| SDK package baseline | Honua Server baseline | Release channel baseline | Admin API major | Admin API base path |
+| SDK package baseline | Honua Server baseline | Release channel policy | Admin API major | Admin API base path |
 |----------------------|-----------------------|--------------------------|-----------------|---------------------|
-| `1.x` | `2026.1.0-0` or newer | `preview` or later | `1` | `/api/v1/admin` |
+| `1.x` | `2026.1.0-0` or newer | Advisory only | `1` | `/api/v1/admin` |
 
 The server baseline is derived, not chosen. `release/sdk-capability-baseline.json`
 declares `minimumServerVersion: first-release`, and the honua-release
@@ -28,17 +30,19 @@ table disagree.
 `Honua.Sdk.Admin` evaluates this matrix through
 `HonuaAdminCompatibility.Evaluate()` and `IHonuaAdminClient.CheckCompatibilityAsync()`.
 A server is unsupported when it omits compatibility metadata, reports a lower
-server version, advertises a lower release channel, changes the control-plane
+server version, changes the control-plane
 API major, changes the admin base path, or marks the advertised control-plane
 API as deprecated.
 
-Supported release channels, from lowest to highest, are `nightly`, `dev`,
-`alpha`, `preview`, `beta`, `rc`, `stable`, and `lts`. The current SDK baseline
-requires `preview` or higher.
+Release channels such as `nightly`, `dev`, `alpha`, `preview`, `beta`, `rc`,
+`stable`, and `lts` describe the server build. They are advisory: neither an
+unknown nor an empty channel rejects a server that satisfies the version and
+API requirements. The public `MinimumSupportedReleaseChannel` member retains
+its value as advisory metadata for existing clients.
 
 ## 2026.1 Source-Import Support Matrix
 
-ArcGIS service/layer import through `Honua.Sdk.GeoServices` is qualified only
+GeoServices REST service/layer import through `Honua.Sdk.GeoServices` is qualified only
 for the supported representations in the
 [source-import certification](sdk-certification.md#import-fidelity-for-20261).
 Package API availability alone does not establish lossless import support.

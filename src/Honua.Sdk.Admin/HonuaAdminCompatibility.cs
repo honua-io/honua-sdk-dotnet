@@ -32,9 +32,7 @@ public static class HonuaAdminCompatibility
     /// </summary>
     public const string SupportedControlPlaneApiBasePath = "/api/v1/admin";
 
-    /// <summary>
-    /// Minimum server release channel expected by this SDK baseline.
-    /// </summary>
+    /// <summary>Advisory release-channel baseline; release channels do not determine compatibility.</summary>
     public const string MinimumSupportedReleaseChannel = "preview";
 
     /// <summary>
@@ -93,22 +91,6 @@ public static class HonuaAdminCompatibility
                 "The advertised control-plane API major is deprecated.");
         }
 
-        var actualReleaseChannelRank = GetReleaseChannelRank(capabilities.ReleaseChannel);
-        var minimumReleaseChannelRank = GetReleaseChannelRank(MinimumSupportedReleaseChannel);
-        if (actualReleaseChannelRank < 0)
-        {
-            return Unsupported(
-                capabilities,
-                $"Release channel '{capabilities.ReleaseChannel}' is not recognized by this SDK baseline.");
-        }
-
-        if (actualReleaseChannelRank < minimumReleaseChannelRank)
-        {
-            return Unsupported(
-                capabilities,
-                $"Release channel '{capabilities.ReleaseChannel}' is below the minimum supported release channel '{MinimumSupportedReleaseChannel}'.");
-        }
-
         return new ServerCompatibilityResult
         {
             Capabilities = capabilities,
@@ -132,27 +114,13 @@ public static class HonuaAdminCompatibility
         }
 
         var normalized = path.Trim();
-        if (!normalized.StartsWith('/'))
+        if (!normalized.AsSpan().StartsWith("/", StringComparison.Ordinal))
         {
             normalized = "/" + normalized;
         }
 
         return normalized.TrimEnd('/');
     }
-
-    private static int GetReleaseChannelRank(string releaseChannel)
-        => releaseChannel.Trim().ToUpperInvariant() switch
-        {
-            "NIGHTLY" => 0,
-            "DEV" => 1,
-            "ALPHA" => 2,
-            "PREVIEW" => 3,
-            "BETA" => 4,
-            "RC" => 5,
-            "STABLE" => 6,
-            "LTS" => 7,
-            _ => -1
-        };
 
     private readonly record struct SemanticVersion(int Major, int Minor, int Patch) : IComparable<SemanticVersion>
     {
@@ -183,7 +151,7 @@ public static class HonuaAdminCompatibility
             }
 
             var normalized = value.Trim();
-            if (normalized.StartsWith('v') || normalized.StartsWith('V'))
+            if (normalized.AsSpan().StartsWith("v", StringComparison.Ordinal) || normalized.AsSpan().StartsWith("V", StringComparison.Ordinal))
             {
                 normalized = normalized[1..];
             }

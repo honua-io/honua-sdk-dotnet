@@ -272,6 +272,127 @@ class SdkCertificationTests(unittest.TestCase):
                 self.assertIn("ownerIssue", cell)
                 self.assertIn("disposition", cell)
 
+    def test_ogc_discovery_and_paging_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetLandingPageAsync": "OgcDiscovery_AdvertisesCollectionsAndCoreConformance",
+            "GetConformanceAsync": "OgcDiscovery_AdvertisesCollectionsAndCoreConformance",
+            "GetItemsRawAsync": "OgcRawItems_ReturnsBoundedGeoJson",
+            "GetItemsPagesAsync": "OgcPages_FollowsNextLinkWithoutRepeatingFeatures",
+            "GetFeaturesAsync": "WfsFormatHandler_ReturnsBoundedGeoJson",
+            "GetFeaturesAsyncEnumerable": "WfsEnumeration_AdvancesPastTheFirstPage",
+        }
+        operations = [cell for cell in document["operations"]
+                      if "OgcFeatures" in cell["client"] and cell["operation"] in expected
+                      and (cell["operation"] != "GetFeaturesAsync" or "<TResult>" in cell["id"])]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_geometry_operations_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "ProjectAsync": "Project_TransformsPointToWebMercator",
+            "BufferAsync": "Buffer_ReturnsPolygonAroundPoint",
+            "LengthsAsync": "Lengths_ReturnsPlanarDistance",
+            "AreasAndLengthsAsync": "AreasAndLengths_ReturnsPlanarSquareMeasurements",
+        }
+        operations = [cell for cell in document["operations"]
+                      if ".GeometryServer." in cell["client"]]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_process_metadata_has_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetLandingPageAsync": "LandingPage_LinksToDiscoveryResources",
+            "GetConformanceAsync": "Conformance_DeclaresProcessesCore",
+            "ListProcessesAsync": "ProcessCatalog_DescribesCanonicalPlanInput",
+            "GetProcessAsync": "ProcessCatalog_DescribesCanonicalPlanInput",
+        }
+        operations = [cell for cell in document["operations"]
+                      if cell["client"].endswith(".IHonuaProcessesClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertEqual(["nightly", "release"], cell["requiredTiers"])
+
+    def test_featureserver_reads_and_paging_have_executing_protocol_mappings(self):
+        document = MODULE.build_document()
+        expected = {
+            "GetFeatureAsync": "SingleFeature_MatchesRequestedObjectId",
+            "QueryExtentAsync": "Extent_ContainsReturnedFeatureGeometry",
+            "QueryRawAsync": "RawQuery_ReturnsBoundedJsonWithoutGeometry",
+            "QueryPagesAsync": "OffsetPages_AdvanceWithoutRepeatingFeatures",
+            "QueryAllFeaturesByObjectIdBatchesAsync": "ObjectIdBatches_ReturnExactlyRequestedFeatures",
+        }
+        operations = [cell for cell in document["operations"]
+                      if cell["client"].endswith(".IHonuaFeatureServerClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(len(expected), len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_featureserver_statistics_and_sql_have_executing_protocol_mappings(self):
+        expected = {
+            "QueryStatisticsAsync": "Statistics_CountMatchesFilteredFeatureCount",
+            "ValidateSqlAsync": "SqlValidation_DistinguishesValidAndMalformedExpressions",
+        }
+        operations = [cell for cell in MODULE.build_document()["operations"]
+                      if cell["client"].endswith("IHonuaFeatureServerClient")
+                      and cell["operation"] in expected]
+        self.assertEqual(2, len(operations))
+        for cell in operations:
+            with self.subTest(operation=cell["id"]):
+                self.assertEqual("exercised", cell["status"])
+                self.assertIn("Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests."
+                              + expected[cell["operation"]], cell["tests"])
+                self.assertEqual("included", cell["releaseDenominator"])
+                self.assertIn("nightly", cell["requiredTiers"])
+
+    def test_pr_workflow_executes_every_mapped_pr_protocol_test(self):
+        workflow = (MODULE.ROOT / ".github/workflows/sdk-certification.yml").read_text()
+        protocol_filter = next(line.strip().split("=", 1)[1].strip("'\"")
+                               for line in workflow.splitlines() if line.strip().startswith("filter="))
+        selected = [term.removeprefix("FullyQualifiedName~") for term in protocol_filter.split("|")]
+        for cell in MODULE.build_document()["operations"]:
+            if "pr" not in cell["requiredTiers"]:
+                continue
+            for test in cell["tests"]:
+                if ".ProtocolIntegration.Tests." in test:
+                    self.assertTrue(any(term in test for term in selected), test)
+
+    def test_sql_validation_request_evidence_targets_validate_sql(self):
+        operation = {
+            "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
+            "surface": "geoservices", "operation": "ValidateSqlAsync",
+        }
+        identity = {"serviceId": "places", "layerId": "0", "collectionId": "0",
+                    "baseUrl": "https://candidate.test/"}
+        self.assertEqual("https://candidate.test/rest/services/places/FeatureServer/0/validateSQL",
+                         MODULE._certification_request_url(operation, identity))
+
     def test_fixture_dependent_operations_remain_individual_release_obligations(self):
         document = MODULE.build_document()
         names = {
@@ -678,6 +799,22 @@ class SdkCertificationTests(unittest.TestCase):
             self.assertIsNone(MODULE._certification_request_url(
                 {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
 
+    def test_process_metadata_request_urls_match_exercised_endpoints(self):
+        identity = {"baseUrl": "https://candidate.test/", "grpcBaseUrl": "https://candidate.test:8443/",
+                    "serviceId": "places", "layerId": "0", "collectionId": "0"}
+        for surface, client in [("processes", "Honua.Sdk.Processes.HonuaProcessesClient"),
+                                ("abstractions", "Honua.Sdk.Abstractions.Processes.IHonuaProcessesClient")]:
+            paths = {"GetLandingPageAsync": "/ogc/processes",
+                     "GetConformanceAsync": "/ogc/processes/conformance",
+                     "ListProcessesAsync": "/ogc/processes/processes",
+                     "GetProcessAsync": "/ogc/processes/processes/honua-geoprocessing"}
+            for method, path in paths.items():
+                with self.subTest(surface=surface, method=method):
+                    self.assertEqual("https://candidate.test" + path, MODULE._certification_request_url(
+                        {"surface": surface, "client": client, "operation": method}, identity))
+            self.assertIsNone(MODULE._certification_request_url(
+                {"surface": surface, "client": client, "operation": "UnknownAsync"}, identity))
+
     def test_ogc_tiles_request_urls_name_the_tiles_surface(self):
         identity = {
             "baseUrl": "https://candidate.test/",
@@ -790,6 +927,30 @@ class SdkCertificationTests(unittest.TestCase):
 
         self.assertTrue(expected <= actual, expected - actual)
 
+    def test_partial_clients_preserve_concrete_operations_without_interface_duplicates(self):
+        for modifiers in ("partial", "sealed partial", "partial sealed"):
+            with self.subTest(modifiers=modifiers), tempfile.TemporaryDirectory() as directory:
+                source = Path(directory)
+                package = source / "Honua.Sdk.Admin"
+                package.mkdir()
+                (package / "FixtureClient.cs").write_text(
+                    "namespace Fixture; public interface IFixtureClient { Task ListAsync(); } "
+                    f"public {modifiers} class FixtureClient : IFixtureClient {{ "
+                    "public Task ListAsync() => Task.CompletedTask; "
+                    "public Task MainOnlyAsync() => Task.CompletedTask; }")
+                (package / "FixtureClient.Folders.cs").write_text(
+                    f"namespace Fixture; public {modifiers} class FixtureClient {{ "
+                    "public Task ExtraOnlyAsync() => Task.CompletedTask; }")
+
+                operations = MODULE._declared_operations(source)
+
+                self.assertEqual({
+                    "Fixture.IFixtureClient.ListAsync()",
+                    "Fixture.FixtureClient.MainOnlyAsync()",
+                    "Fixture.FixtureClient.ExtraOnlyAsync()",
+                }, {operation["id"] for operation in operations})
+                self.assertTrue(all(operation["implemented"] for operation in operations))
+
     def test_replica_sync_client_contract_is_cataloged(self):
         operations = MODULE.build_document()["operations"]
         replica = [
@@ -860,7 +1021,7 @@ class SdkCertificationTests(unittest.TestCase):
             for cell in non_addressable
         ))
 
-    def test_overloads_have_distinct_ids_and_only_the_invoked_signature_is_exercised(self):
+    def test_overloads_have_distinct_ids_and_separate_executing_tests(self):
         document = MODULE.build_document()
         overloads = [
             cell for cell in document["operations"]
@@ -871,7 +1032,8 @@ class SdkCertificationTests(unittest.TestCase):
         ordinary = next(cell for cell in overloads if "IWfsOutputFormatHandler" not in cell["signature"])
         handler = next(cell for cell in overloads if "IWfsOutputFormatHandler" in cell["signature"])
         self.assertEqual("exercised", ordinary["status"])
-        self.assertEqual("gap", handler["status"])
+        self.assertEqual("exercised", handler["status"])
+        self.assertTrue(set(ordinary["tests"]).isdisjoint(handler["tests"]))
 
     def test_async_enumerable_and_local_service_operations_are_cataloged(self):
         document = MODULE.build_document()
@@ -968,7 +1130,7 @@ class SdkCertificationTests(unittest.TestCase):
         names = {
             "RollbackDeployOperationAsync", "RotateEncryptionKeyAsync", "ImportRasterAsync",
             "PatchItemAsync", "RollbackAsync", "CommitEditSessionAsync", "StartEditSessionAsync",
-            "ConnectAsync", "ReconnectAsync", "SubscribeAsync", "UnsubscribeAsync", "ReopenVersionAsync",
+            "ConnectAsync", "ReconnectAsync", "SubscribeAsync", "UnsubscribeAsync", "ReopenVersionAsync", "MoveServiceAsync",
         }
         matched = [cell for cell in document["operations"] if cell["operation"] in names]
         self.assertEqual(names, {cell["operation"] for cell in matched})

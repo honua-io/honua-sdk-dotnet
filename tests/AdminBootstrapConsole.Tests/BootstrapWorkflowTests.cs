@@ -13,15 +13,18 @@ public sealed class BootstrapWorkflowTests
 {
     private static readonly Guid TestConnectionId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    [Fact]
-    public async Task RunAsync_StopsAfterCompatibilityCheck_WhenServerUnsupported()
+    [Theory]
+    [InlineData("stable")]
+    [InlineData("nightly")]
+    public async Task RunAsync_StopsAfterCompatibilityCheck_WhenServerUnsupported(string releaseChannel)
     {
         var adminClient = new Mock<IHonuaAdminClient>(MockBehavior.Strict);
         var grpcClient = new Mock<IHonuaGrpcClient>(MockBehavior.Strict);
+        var compatibility = CreateCompatibility(isSupported: false, serverVersion: "0.0.1", releaseChannel: releaseChannel);
 
         adminClient
             .Setup(client => client.CheckCompatibilityAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(CreateCompatibility(isSupported: false, serverVersion: "0.0.1"));
+            .ReturnsAsync(compatibility);
 
         var workflow = CreateWorkflow(adminClient, grpcClient);
 
@@ -29,6 +32,10 @@ public sealed class BootstrapWorkflowTests
             () => workflow.RunAsync(new StringWriter()));
 
         Assert.Contains("not supported", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(compatibility.MinimumSupportedServerVersion, ex.Message, StringComparison.Ordinal);
+        Assert.Contains(compatibility.UnsupportedReason!, ex.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("release channel", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(HonuaAdminCompatibility.MinimumSupportedReleaseChannel, ex.Message, StringComparison.Ordinal);
         adminClient.Verify(client => client.CheckCompatibilityAsync(It.IsAny<CancellationToken>()), Times.Once);
         adminClient.VerifyNoOtherCalls();
         grpcClient.VerifyNoOtherCalls();
@@ -310,7 +317,7 @@ public sealed class BootstrapWorkflowTests
         };
     }
 
-    private static ServerCompatibilityResult CreateCompatibility(bool isSupported, string serverVersion = "1.0.0")
+    private static ServerCompatibilityResult CreateCompatibility(bool isSupported, string serverVersion = "1.0.0", string releaseChannel = "stable")
     {
         return new ServerCompatibilityResult
         {
@@ -321,7 +328,7 @@ public sealed class BootstrapWorkflowTests
                 Compatibility = new AdminCompatibilityInfo
                 {
                     ServerVersion = serverVersion,
-                    ReleaseChannel = "stable",
+                    ReleaseChannel = releaseChannel,
                     ControlPlaneApi = new ControlPlaneApiCompatibility
                     {
                         Major = 1,

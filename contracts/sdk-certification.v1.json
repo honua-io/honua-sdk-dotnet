@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
   "complete": false,
   "summary": {
-    "total": 330,
-    "exercised": 39,
-    "gap": 273,
+    "total": 340,
+    "exercised": 60,
+    "gap": 262,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 312,
+    "denominator": 322,
     "excluded": []
   },
   "operations": [
@@ -2012,6 +2012,90 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
+      "id": "Honua.Sdk.Admin.IHonuaAdminApiKeysClient.CreateApiKeyAsync(CreateAdminApiKeyRequest,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminApiKeysClient",
+      "operation": "CreateApiKeyAsync",
+      "signature": "CreateApiKeyAsync(CreateAdminApiKeyRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminApiKeysClient.ListApiKeysAsync(CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminApiKeysClient",
+      "operation": "ListApiKeysAsync",
+      "signature": "ListApiKeysAsync(CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminApiKeysClient.RevokeApiKeyAsync(Guid,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminApiKeysClient",
+      "operation": "RevokeApiKeyAsync",
+      "signature": "RevokeApiKeyAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient.CheckCompatibilityAsync(CancellationToken)",
       "surface": "admin",
       "client": "Honua.Sdk.Admin.IHonuaAdminCompatibilityClient",
@@ -2655,6 +2739,146 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.CreateFolderAsync(CreateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "CreateFolderAsync",
+      "signature": "CreateFolderAsync(CreateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.DeleteFolderAsync(string,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "DeleteFolderAsync",
+      "signature": "DeleteFolderAsync(string,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.ListFoldersAsync(string?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "ListFoldersAsync",
+      "signature": "ListFoldersAsync(string?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.MoveServiceAsync(string,MoveServiceRequest,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "MoveServiceAsync",
+      "signature": "MoveServiceAsync(string,MoveServiceRequest,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminFoldersClient.UpdateFolderAsync(string,UpdateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminFoldersClient",
+      "operation": "UpdateFolderAsync",
+      "signature": "UpdateFolderAsync(string,UpdateFolderRequest,FolderMutationOptions,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.Admin.IHonuaAdminIdentityClient.CreateOidcProviderAsync(CreateOidcProviderRequest,CancellationToken)",
       "surface": "admin",
       "client": "Honua.Sdk.Admin.IHonuaAdminIdentityClient",
@@ -2912,6 +3136,34 @@
       "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
       "operation": "ListLayersAsync",
       "signature": "ListLayersAsync(string,string?,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminLayersClient.ListLayersPageAsync(string,LayerListQuery?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminLayersClient",
+      "operation": "ListLayersPageAsync",
+      "signature": "ListLayersPageAsync(string,LayerListQuery?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",
@@ -3750,6 +4002,34 @@
       "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
       "operation": "ListServicesAsync",
       "signature": "ListServicesAsync(CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Admin.HonuaAdminClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Admin.HonuaAdminClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Admin.IHonuaAdminServicesClient.ListServicesPageAsync(ServiceListQuery?,CancellationToken)",
+      "surface": "admin",
+      "client": "Honua.Sdk.Admin.IHonuaAdminServicesClient",
+      "operation": "ListServicesPageAsync",
+      "signature": "ListServicesPageAsync(ServiceListQuery?,CancellationToken)",
       "status": "gap",
       "requiredTiers": [
         "nightly",
@@ -5994,7 +6274,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "GetFeatureAsync",
       "signature": "GetFeatureAsync(string,int,long,FeatureServerQueryParams?,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6002,19 +6282,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.SingleFeature_MatchesRequestedObjectId"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.SingleFeature_MatchesRequestedObjectId"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.GetLayerInfoAsync(string,int,CancellationToken)",
@@ -6032,14 +6311,20 @@
         "read-only"
       ],
       "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.OffsetPages_AdvanceWithoutRepeatingFeatures",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.SingleFeature_MatchesRequestedObjectId",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.Statistics_CountMatchesFilteredFeatureCount"
       ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.OffsetPages_AdvanceWithoutRepeatingFeatures",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.SingleFeature_MatchesRequestedObjectId",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.Statistics_CountMatchesFilteredFeatureCount"
         ]
       },
       "releaseDenominator": "included"
@@ -6078,7 +6363,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "QueryAllFeaturesByObjectIdBatchesAsync",
       "signature": "QueryAllFeaturesByObjectIdBatchesAsync(string,int,FeatureServerQueryParams,int,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6086,19 +6371,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.ObjectIdBatches_ReturnExactlyRequestedFeatures"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.ObjectIdBatches_ReturnExactlyRequestedFeatures"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -6117,7 +6401,8 @@
       ],
       "tests": [
         "Honua.Sdk.Conformance.Tests.LiveConformanceTests.FeatureServerQuery_RoundTripsCanonicalAttributeProjection",
-        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.Extent_ContainsReturnedFeatureGeometry"
       ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
@@ -6125,7 +6410,8 @@
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
           "Honua.Sdk.Conformance.Tests.LiveConformanceTests.FeatureServerQuery_RoundTripsCanonicalAttributeProjection",
-          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.Extent_ContainsReturnedFeatureGeometry"
         ]
       },
       "releaseDenominator": "included"
@@ -6174,14 +6460,16 @@
         "read-only"
       ],
       "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.Statistics_CountMatchesFilteredFeatureCount"
       ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.Statistics_CountMatchesFilteredFeatureCount"
         ]
       },
       "releaseDenominator": "included"
@@ -6192,7 +6480,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "QueryExtentAsync",
       "signature": "QueryExtentAsync(string,int,FeatureServerQueryParams,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6200,19 +6488,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.Extent_ContainsReturnedFeatureGeometry"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.Extent_ContainsReturnedFeatureGeometry"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryIdsAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -6230,14 +6517,18 @@
         "read-only"
       ],
       "tests": [
-        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.ObjectIdBatches_ReturnExactlyRequestedFeatures",
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.SingleFeature_MatchesRequestedObjectId"
       ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
-          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable"
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureProtocolIntegrationTests.FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.ObjectIdBatches_ReturnExactlyRequestedFeatures",
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.SingleFeature_MatchesRequestedObjectId"
         ]
       },
       "releaseDenominator": "included"
@@ -6248,7 +6539,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "QueryPagesAsync",
       "signature": "QueryPagesAsync(string,int,FeatureServerQueryParams,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6257,19 +6548,18 @@
         "read-only",
         "pagination"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.OffsetPages_AdvanceWithoutRepeatingFeatures"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.OffsetPages_AdvanceWithoutRepeatingFeatures"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryRawAsync(string,int,FeatureServerQueryParams,CancellationToken)",
@@ -6277,7 +6567,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "QueryRawAsync",
       "signature": "QueryRawAsync(string,int,FeatureServerQueryParams,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6285,19 +6575,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.RawQuery_ReturnsBoundedJsonWithoutGeometry"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureReadProtocolIntegrationTests.RawQuery_ReturnsBoundedJsonWithoutGeometry"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryStatisticsAsync(string,int,FeatureServerStatisticsParams,CancellationToken)",
@@ -6305,7 +6594,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "QueryStatisticsAsync",
       "signature": "QueryStatisticsAsync(string,int,FeatureServerStatisticsParams,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6313,19 +6602,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.Statistics_CountMatchesFilteredFeatureCount"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.Statistics_CountMatchesFilteredFeatureCount"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.ValidateSqlAsync(string,int,string,CancellationToken)",
@@ -6333,7 +6621,7 @@
       "client": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient",
       "operation": "ValidateSqlAsync",
       "signature": "ValidateSqlAsync(string,int,string,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6341,19 +6629,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.SqlValidation_DistinguishesValidAndMalformedExpressions"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": []
+        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureStatisticsProtocolIntegrationTests.SqlValidation_DistinguishesValidAndMalformedExpressions"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.FeatureServer.HonuaFeatureServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerEditClient.AddFeaturesAsync(string,int,IReadOnlyList<FeatureServerFeature>,bool,CancellationToken)",
@@ -6499,7 +6786,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "AreasAndLengthsAsync",
       "signature": "AreasAndLengthsAsync(AreasAndLengthsRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6507,19 +6794,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.AreasAndLengths_ReturnsPlanarSquareMeasurements"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.AreasAndLengths_ReturnsPlanarSquareMeasurements"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.BufferAsync(BufferGeometriesRequest,CancellationToken)",
@@ -6527,7 +6813,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "BufferAsync",
       "signature": "BufferAsync(BufferGeometriesRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6535,19 +6821,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Buffer_ReturnsPolygonAroundPoint"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Buffer_ReturnsPolygonAroundPoint"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.LengthsAsync(LengthsRequest,CancellationToken)",
@@ -6555,7 +6840,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "LengthsAsync",
       "signature": "LengthsAsync(LengthsRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6563,19 +6848,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Lengths_ReturnsPlanarDistance"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Lengths_ReturnsPlanarDistance"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient.ProjectAsync(ProjectGeometriesRequest,CancellationToken)",
@@ -6583,7 +6867,7 @@
       "client": "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient",
       "operation": "ProjectAsync",
       "signature": "ProjectAsync(ProjectGeometriesRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -6591,19 +6875,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Project_TransformsPointToWebMercator"
+      ],
       "implementations": [
         "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": []
+        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.GeometryProtocolIntegrationTests.Project_TransformsPointToWebMercator"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.GeoServices.GeometryServer.HonuaGeometryServerClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.GeoServices.ImageServer.HonuaImageServerClient.ComputeStatisticsHistogramsAsync(string,IEnumerable<(stringKey,string?Value)>,CancellationToken)",
@@ -7399,7 +7682,7 @@
       "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
       "operation": "GetConformanceAsync",
       "signature": "GetConformanceAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -7407,19 +7690,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcDiscovery_AdvertisesCollectionsAndCoreConformance"
+      ],
       "implementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
+        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcDiscovery_AdvertisesCollectionsAndCoreConformance"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemAsync(string,string,CancellationToken)",
@@ -7485,7 +7767,7 @@
       "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
       "operation": "GetItemsPagesAsync",
       "signature": "GetItemsPagesAsync(string,OgcItemsParams?,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -7494,19 +7776,18 @@
         "read-only",
         "pagination"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcPages_FollowsNextLinkWithoutRepeatingFeatures"
+      ],
       "implementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
+        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcPages_FollowsNextLinkWithoutRepeatingFeatures"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetItemsRawAsync(string,OgcItemsParams?,CancellationToken)",
@@ -7514,7 +7795,7 @@
       "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
       "operation": "GetItemsRawAsync",
       "signature": "GetItemsRawAsync(string,OgcItemsParams?,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -7522,19 +7803,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcRawItems_ReturnsBoundedGeoJson"
+      ],
       "implementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
+        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcRawItems_ReturnsBoundedGeoJson"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetLandingPageAsync(CancellationToken)",
@@ -7542,7 +7822,7 @@
       "client": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient",
       "operation": "GetLandingPageAsync",
       "signature": "GetLandingPageAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -7550,19 +7830,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcDiscovery_AdvertisesCollectionsAndCoreConformance"
+      ],
       "implementations": [
         "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": []
+        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.OgcDiscovery_AdvertisesCollectionsAndCoreConformance"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.OgcFeatures.HonuaOgcFeaturesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.IHonuaOgcFeaturesClient.GetQueryablesAsync(string,CancellationToken)",
@@ -8048,7 +8327,7 @@
       "client": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient",
       "operation": "GetFeaturesAsync",
       "signature": "GetFeaturesAsync<TResult>(GetFeaturesRequest,IWfsOutputFormatHandler<TResult>,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8056,19 +8335,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.WfsFormatHandler_ReturnsBoundedGeoJson"
+      ],
       "implementations": [
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
+        "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.WfsFormatHandler_ReturnsBoundedGeoJson"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient.GetFeaturesAsyncEnumerable(GetFeaturesRequest,CancellationToken)",
@@ -8076,7 +8354,7 @@
       "client": "Honua.Sdk.OgcFeatures.Wfs.IHonuaWfsClient",
       "operation": "GetFeaturesAsyncEnumerable",
       "signature": "GetFeaturesAsyncEnumerable(GetFeaturesRequest,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8085,19 +8363,18 @@
         "read-only",
         "pagination"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.WfsEnumeration_AdvancesPastTheFirstPage"
+      ],
       "implementations": [
         "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": []
+        "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.FeatureDiscoveryProtocolIntegrationTests.WfsEnumeration_AdvancesPastTheFirstPage"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.OgcFeatures.Wfs.HonuaWfsClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.DismissJobAsync(string,CancellationToken)",
@@ -8189,7 +8466,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "GetConformanceAsync",
       "signature": "GetConformanceAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8197,19 +8474,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.Conformance_DeclaresProcessesCore"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.Conformance_DeclaresProcessesCore"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetJobAsync(string,CancellationToken)",
@@ -8273,7 +8549,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "GetLandingPageAsync",
       "signature": "GetLandingPageAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8281,19 +8557,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.LandingPage_LinksToDiscoveryResources"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.LandingPage_LinksToDiscoveryResources"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.GetProcessAsync(string,CancellationToken)",
@@ -8301,7 +8576,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "GetProcessAsync",
       "signature": "GetProcessAsync(string,CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8309,19 +8584,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.ListJobsAsync(int?,CancellationToken)",
@@ -8357,7 +8631,7 @@
       "client": "Honua.Sdk.Processes.IHonuaProcessesClient",
       "operation": "ListProcessesAsync",
       "signature": "ListProcessesAsync(CancellationToken)",
-      "status": "gap",
+      "status": "exercised",
       "requiredTiers": [
         "nightly",
         "release"
@@ -8365,19 +8639,18 @@
       "scenarioFacets": [
         "read-only"
       ],
-      "tests": [],
+      "tests": [
+        "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+      ],
       "implementations": [
         "Honua.Sdk.Processes.HonuaProcessesClient"
       ],
       "implementationTests": {
-        "Honua.Sdk.Processes.HonuaProcessesClient": []
+        "Honua.Sdk.Processes.HonuaProcessesClient": [
+          "Honua.Sdk.ProtocolIntegration.Tests.ProcessMetadataProtocolIntegrationTests.ProcessCatalog_DescribesCanonicalPlanInput"
+        ]
       },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Processes.HonuaProcessesClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
+      "releaseDenominator": "included"
     },
     {
       "id": "Honua.Sdk.Processes.IHonuaProcessesClient.SubmitJobAsync(string,HonuaProcessExecuteRequest,CancellationToken)",
@@ -8629,6 +8902,482 @@
       "disposition": "Concrete public SDK operation has no canonical live certification test."
     },
     {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CompareVersionsAsync(Guid,CompareStudioContentVersionsRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "CompareVersionsAsync",
+      "signature": "CompareVersionsAsync(Guid,CompareStudioContentVersionsRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CreateContentVersionAsync(Guid,SaveStudioContentVersionRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "CreateContentVersionAsync",
+      "signature": "CreateContentVersionAsync(Guid,SaveStudioContentVersionRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CreateDraftAsync(CreateStudioContentDraftRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "CreateDraftAsync",
+      "signature": "CreateDraftAsync(CreateStudioContentDraftRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.CreatePublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "CreatePublishRequestAsync",
+      "signature": "CreatePublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.DeleteDraftAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "DeleteDraftAsync",
+      "signature": "DeleteDraftAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetContentKindsAsync(CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "GetContentKindsAsync",
+      "signature": "GetContentKindsAsync(CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetContentPointersAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "GetContentPointersAsync",
+      "signature": "GetContentPointersAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetDraftAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "GetDraftAsync",
+      "signature": "GetDraftAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetPublishedArtifactAsync(string,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "GetPublishedArtifactAsync",
+      "signature": "GetPublishedArtifactAsync(string,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.GetVersionAsync(Guid,Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "GetVersionAsync",
+      "signature": "GetVersionAsync(Guid,Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.ListVersionsAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "ListVersionsAsync",
+      "signature": "ListVersionsAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.PreviewPlanAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "PreviewPlanAsync",
+      "signature": "PreviewPlanAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.ReopenVersionAsync(Guid,Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "ReopenVersionAsync",
+      "signature": "ReopenVersionAsync(Guid,Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.RollbackAsync(Guid,CreateStudioRollbackRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "RollbackAsync",
+      "signature": "RollbackAsync(Guid,CreateStudioRollbackRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.SubmitPublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "SubmitPublishRequestAsync",
+      "signature": "SubmitPublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.UpdateDraftAsync(Guid,UpdateStudioContentDraftRequest,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "UpdateDraftAsync",
+      "signature": "UpdateDraftAsync(Guid,UpdateStudioContentDraftRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient.ValidateDraftAsync(Guid,CancellationToken)",
+      "surface": "studio",
+      "client": "Honua.Sdk.Studio.Content.IHonuaStudioContentClient",
+      "operation": "ValidateDraftAsync",
+      "signature": "ValidateDraftAsync(Guid,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Studio.Content.HonuaStudioContentClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
       "id": "Honua.Sdk.Studio.IHonuaStudioReportsClient.GetReportAsync(string,CancellationToken)",
       "surface": "studio",
       "client": "Honua.Sdk.Studio.IHonuaStudioReportsClient",
@@ -8680,482 +9429,6 @@
       "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.Studio.HonuaStudioReportsClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CompareVersionsAsync(Guid,CompareStudioContentVersionsRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "CompareVersionsAsync",
-      "signature": "CompareVersionsAsync(Guid,CompareStudioContentVersionsRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreateContentVersionAsync(Guid,SaveStudioContentVersionRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "CreateContentVersionAsync",
-      "signature": "CreateContentVersionAsync(Guid,SaveStudioContentVersionRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreateDraftAsync(CreateStudioPackageDraftRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "CreateDraftAsync",
-      "signature": "CreateDraftAsync(CreateStudioPackageDraftRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.CreatePublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "CreatePublishRequestAsync",
-      "signature": "CreatePublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.DeleteDraftAsync(Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "DeleteDraftAsync",
-      "signature": "DeleteDraftAsync(Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetContentItemPointersAsync(Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "GetContentItemPointersAsync",
-      "signature": "GetContentItemPointersAsync(Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetDraftAsync(Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "GetDraftAsync",
-      "signature": "GetDraftAsync(Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPackageFamiliesAsync(CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "GetPackageFamiliesAsync",
-      "signature": "GetPackageFamiliesAsync(CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetPublishedArtifactAsync(string,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "GetPublishedArtifactAsync",
-      "signature": "GetPublishedArtifactAsync(string,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.GetVersionAsync(Guid,Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "GetVersionAsync",
-      "signature": "GetVersionAsync(Guid,Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ListVersionsAsync(Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "ListVersionsAsync",
-      "signature": "ListVersionsAsync(Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.PreviewPlanAsync(Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "PreviewPlanAsync",
-      "signature": "PreviewPlanAsync(Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ReopenVersionAsync(Guid,Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "ReopenVersionAsync",
-      "signature": "ReopenVersionAsync(Guid,Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.RollbackAsync(Guid,CreateStudioRollbackRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "RollbackAsync",
-      "signature": "RollbackAsync(Guid,CreateStudioRollbackRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.SubmitPublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "SubmitPublishRequestAsync",
-      "signature": "SubmitPublishRequestAsync(Guid,Guid,CreateStudioPublicationRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.UpdateDraftAsync(Guid,UpdateStudioPackageDraftRequest,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "UpdateDraftAsync",
-      "signature": "UpdateDraftAsync(Guid,UpdateStudioPackageDraftRequest,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "mutation"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
-      "disposition": "Concrete public SDK operation has no canonical live certification test."
-    },
-    {
-      "id": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient.ValidateDraftAsync(Guid,CancellationToken)",
-      "surface": "studio",
-      "client": "Honua.Sdk.Studio.Packages.IHonuaStudioPackageClient",
-      "operation": "ValidateDraftAsync",
-      "signature": "ValidateDraftAsync(Guid,CancellationToken)",
-      "status": "gap",
-      "requiredTiers": [
-        "nightly",
-        "release"
-      ],
-      "scenarioFacets": [
-        "read-only"
-      ],
-      "tests": [],
-      "implementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
-      ],
-      "implementationTests": {
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient": []
-      },
-      "releaseDenominator": "included",
-      "missingImplementations": [
-        "Honua.Sdk.Studio.Packages.HonuaStudioPackageClient"
       ],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
       "disposition": "Concrete public SDK operation has no canonical live certification test."

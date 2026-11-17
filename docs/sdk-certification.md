@@ -109,11 +109,11 @@ and exact excluded operation IDs to the matrix digest.
 
 ## Source-import certification
 
-`certification/geoservices-source-import/` certifies the supported ArcGIS
+`certification/geoservices-source-import/` certifies the supported GeoServices REST
 service/layer source representations through the installed `Honua.Sdk.GeoServices` package, for
 [honua-sdk-dotnet#341](https://github.com/honua-io/honua-sdk-dotnet/issues/341).
 Unlike the operation ledger, it treats the digest-pinned candidate as a live
-ArcGIS REST *source*. A versioned fixture is published through the supported
+GeoServices REST *source*. A versioned fixture is published through the supported
 admin API, and a consumer restores the SDK from nuget.org by version.
 
 Metadata cells require every member of the source's own JSON to survive the

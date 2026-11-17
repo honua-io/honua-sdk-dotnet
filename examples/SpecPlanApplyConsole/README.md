@@ -1,5 +1,7 @@
 # Spec Plan/Apply Console
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Runnable scaffold for the .NET Spec workflow. The sample builds a typed
 `SpecDocumentRequest`, calls `PlanAsync`, then consumes apply events from
 `ApplyAsync`.

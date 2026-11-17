@@ -121,7 +121,7 @@ public sealed class LiveConformanceTests(LiveConformanceFixture fixture)
         var feature = Assert.Single(query.Features ?? []);
         // The GeoServices contract (honua-server#5131, #5147): JSONB columns are
         // advertised as esriFieldTypeString, and their object or array values are
-        // written as JSON text so Esri clients can materialise them. The text must
+        // written as JSON text so GeoServices clients can materialise them. The text must
         // still carry the native JSON value, not an envelope or a lossy rendering.
         // OGC API Features keeps the native JSON projection (see below).
         Assert.NotNull(feature.Attributes);

@@ -53,6 +53,8 @@ Common fixture identifiers:
   geocoding tests
 - `HONUA_PROTOCOL_REVERSE_GEOCODE_LATITUDE`
 - `HONUA_PROTOCOL_REVERSE_GEOCODE_LONGITUDE`
+- `HONUA_PROTOCOL_GEOCODE_LOCATOR`, optional locator name when the server's
+  `Geocoding:LocatorName` is not the SDK default `World`
 
 Destructive/write tests require:
 
@@ -87,16 +89,21 @@ reason.
 | Geocoding | Forward, reverse, suggest, and batch when geocoder fixture values are configured |
 | Spec | Validate canonical spec JSON, plan, apply SSE stream |
 | gRPC | Bounded `QueryFeaturesAsync`, geometry omitted |
-| WFS | `GetCapabilities`, `DescribeFeatureType`, `GetFeatures`, hits/count |
-| GeoServices FeatureServer | Service info, layer info, bounded query, count, IDs |
+| WFS | `GetCapabilities`, `DescribeFeatureType`, typed and format-handler `GetFeatures`, hits/count, two-page async enumeration |
+| GeoServices FeatureServer | Service/layer info, bounded typed/raw queries, single object-ID lookup, count/IDs, extent, distinct offset pages, exact object-ID batches |
 | FeatureServer edits | Add/update/delete round-trip in destructive lane |
 | FeatureServer attachments | Planned destructive lane once fixture exposes attachment-enabled layer |
-| OGC API Features | Collections, collection, queryables, bounded items, item by id |
+| OGC API Features | Landing page, core conformance, collections, collection, queryables, bounded typed/raw GeoJSON items, item by id, two-page next-link traversal |
 | OGC edits | Planned destructive lane after fixture advertises writable OGC collection |
 | Scenes | List, metadata get, resolve 3D Tiles-capable scene |
 | Routing/NAServer | Metadata, directions, optional service area, optional closest facility |
 | Realtime | Placeholder skipped until server realtime fixture exists |
 | Source facade | Equivalent bounded query across gRPC, FeatureServer, WFS, and OGC |
+
+The FeatureServer read checks require at least two point features with numeric object IDs.
+They request WGS84 for the extent check and verify that returned point coordinates lie inside it.
+Paging checks use one feature per page and stop after two distinct IDs; object-ID batches
+filter to two requested IDs and exhaust the iterator to detect missing or extra results.
 
 ## Server Fixture Contract
 

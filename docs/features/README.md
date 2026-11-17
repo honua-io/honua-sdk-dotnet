@@ -1,11 +1,13 @@
 ---
 type: index
 title: "What this repository owns"
-description: "The official .NET client libraries and shared abstractions this repo ships, and where each surface lives across the Honua.Sdk package family."
+description: "The official .NET client libraries and shared abstractions this repo ships, and where each surface lives across the Honua.Sdk packages."
 resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [sdk, dotnet, surfaces]
 ---
 # Honua .NET SDK Feature Map
+
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
 
 This repository owns official .NET client libraries and shared host-neutral contracts.
 

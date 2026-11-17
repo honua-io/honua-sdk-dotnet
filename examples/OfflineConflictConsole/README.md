@@ -1,5 +1,7 @@
 # OfflineConflictConsole
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](../../docs/native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 Deterministic console sample for the Honua SDK offline conflict workflow. It uses
 `Honua.Sdk.Offline.OfflineSyncEngine` with in-memory stores to show how a local
 edit produces an `OfflineConflictEnvelope`, how a host detects it, and how the

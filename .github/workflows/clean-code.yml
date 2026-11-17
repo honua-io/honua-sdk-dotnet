@@ -1,0 +1,18 @@
+name: Clean code
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+# No concurrency group: this is a required check, and a cancelled run left as the
+# newest check run of that name blocks merging even when another run passed (a rerun
+# of an older run cancels the newer one). Runs take seconds, so every run completes.
+
+jobs:
+  clean-code:
+    uses: honua-io/.github/.github/workflows/clean-code.yml@59eaa6c5bd779ab6b66f51319f1792e36c49484e # v1.2.0
+    with:
+      xml-docs: public-summary

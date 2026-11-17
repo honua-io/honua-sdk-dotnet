@@ -84,7 +84,7 @@ public class GeoServicesGeometryConverterTests
     [Fact]
     public void ReadGeometry_LeadingHoleRing_ClassifiesByOrientationNotPosition()
     {
-        // The CCW hole ring is listed FIRST, before the CW outer shell. Esri JSON does
+        // The CCW hole ring is listed FIRST, before the CW outer shell. GeoServices JSON does
         // not mandate shell-before-hole ordering; classification must be by orientation
         // (CW = shell, CCW = hole), so the hole must not be promoted to the exterior.
         using var document = JsonDocument.Parse(
@@ -146,13 +146,13 @@ public class GeoServicesGeometryConverterTests
     }
 
     [Fact]
-    public void WriteGeometry_NormalizesPolygonRingOrientationToEsriConvention()
+    public void WriteGeometry_NormalizesPolygonRingOrientationToGeoServicesConvention()
     {
         var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
 
         // Exterior wound CCW and hole wound CW: the GeoJSON (RFC 7946) convention, which
-        // is the OPPOSITE of Esri's clockwise-exterior / counter-clockwise-hole rule. The
-        // writer must normalize so a strict Esri consumer (and this SDK's orientation-aware
+        // is the OPPOSITE of GeoServices's clockwise-exterior / counter-clockwise-hole rule. The
+        // writer must normalize so a strict GeoServices consumer (and this SDK's orientation-aware
         // reader) does not mis-demote the exterior ring of a multi-ring polygon to a hole.
         var shell = factory.CreateLinearRing(
         [
@@ -180,7 +180,7 @@ public class GeoServicesGeometryConverterTests
         var rings = json.GetProperty("rings");
         Assert.Equal(2, rings.GetArrayLength());
 
-        // Esri convention: clockwise exterior (not CCW), counter-clockwise hole.
+        // GeoServices convention: clockwise exterior (not CCW), counter-clockwise hole.
         Assert.False(Orientation.IsCCW(ReadRing(rings[0])));
         Assert.True(Orientation.IsCCW(ReadRing(rings[1])));
 

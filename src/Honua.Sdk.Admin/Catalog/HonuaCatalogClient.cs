@@ -93,7 +93,8 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
-        var services = (await LoadServicesAsync(CatalogMetadataIndex.Empty, cancellationToken).ConfigureAwait(false)).Services;
+        var services = (await LoadServicesAsync(
+            CatalogMetadataIndex.Empty, cancellationToken, LookupNameQuery(serviceName)).ConfigureAwait(false)).Services;
         return services.FirstOrDefault(service => string.Equals(service.Name, serviceName, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -117,7 +118,7 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceName);
 
         var metadata = CatalogMetadataIndex.Empty;
-        var service = (await LoadServicesAsync(metadata, cancellationToken).ConfigureAwait(false)).Services
+        var service = (await LoadServicesAsync(metadata, cancellationToken, LookupNameQuery(serviceName)).ConfigureAwait(false)).Services
             .FirstOrDefault(candidate => string.Equals(candidate.Name, serviceName, StringComparison.OrdinalIgnoreCase));
         if (service is null)
         {
@@ -177,14 +178,30 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
         return resource is null ? null : TryBuildSourceDescriptor(resource);
     }
 
+    private async Task<ServiceSummary[]> ReadServiceSummariesAsync(string? nameQuery, CancellationToken cancellationToken)
+    {
+        var services = await AdminCatalogWalker.ReadAllAsync(
+            (pageNumber, token) => ReadServiceSliceAsync(pageNumber, nameQuery, token),
+            cancellationToken).ConfigureAwait(false);
+        return [.. services];
+    }
+
+    private async Task<AdminCatalogWalker.Slice<ServiceSummary>> ReadServiceSliceAsync(
+        int pageNumber, string? nameQuery, CancellationToken cancellationToken)
+    {
+        var page = await GetAdminEnvelopeAsync<ServiceListPage>(
+            $"{ApiPrefix}/services/{AdminCatalogQuery.ForServices(new ServiceListQuery { Page = pageNumber, NameQuery = nameQuery })}",
+            HonuaAdminJsonContext.Default.ApiResponseServiceListPage,
+            cancellationToken).ConfigureAwait(false) ?? new ServiceListPage();
+        return new AdminCatalogWalker.Slice<ServiceSummary>(page.Items, page.Page, page.PageSize, page.Total);
+    }
+
     private async Task<CatalogServiceLoadResult> LoadServicesAsync(
         CatalogMetadataIndex metadata,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? nameQuery = null)
     {
-        var summaries = await GetAdminEnvelopeAsync<ServiceSummary[]>(
-            $"{ApiPrefix}/services/",
-            HonuaAdminJsonContext.Default.ApiResponseServiceSummaryArray,
-            cancellationToken).ConfigureAwait(false) ?? [];
+        var summaries = await ReadServiceSummariesAsync(nameQuery, cancellationToken).ConfigureAwait(false);
 
         var services = new List<CatalogService>(summaries.Length);
         var featureServerInfo = new Dictionary<string, CatalogFeatureServerServiceInfo?>(StringComparer.OrdinalIgnoreCase);
@@ -994,19 +1011,11 @@ public sealed class HonuaCatalogClient : IHonuaCatalogClient
             _ => FeatureSpatialGeometryType.Unspecified
         };
 
-    private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
-    {
-        var parts = new List<string>();
-        foreach (var (key, value) in parameters)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-            }
-        }
+    private static string? LookupNameQuery(string serviceName)
+        => serviceName.Length <= AdminCatalogQuery.MaxNameQueryLength ? serviceName : null;
 
-        return parts.Count > 0 ? $"?{string.Join("&", parts)}" : string.Empty;
-    }
+    private static string BuildQuery(params ReadOnlySpan<(string Key, string? Value)> parameters)
+        => AdminQueryString.Format(parameters);
 
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 

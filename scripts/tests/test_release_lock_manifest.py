@@ -157,21 +157,33 @@ class ReleaseLockManifestTests(unittest.TestCase):
         fake_gh.write_text("#!/usr/bin/env python3\nimport os\nprint(os.environ['TEST_PR_JSON'])\n")
         fake_gh.chmod(0o755)
         output = self.root / "selector-output"
-        for draft in (False, True):
+        valid_pr = {"number": 436, "headRefName": BRANCH, "headRefOid": "a" * 40,
+                    "baseRefName": "trunk", "isCrossRepository": False, "isDraft": True}
+        cases = [("draft", [valid_pr], False),
+                 ("ready", [{**valid_pr, "isDraft": False}], False),
+                 ("absent", [], False), ("duplicate", [valid_pr, valid_pr], True)]
+        for field, value in (("headRefName", "other"), ("baseRefName", "other"),
+                             ("headRefOid", "invalid"), ("isCrossRepository", True),
+                             ("isDraft", None)):
+            cases.append((field, [{**valid_pr, "isDraft": False, field: value}], True))
+        for name, prs, invalid in cases:
             output.write_text("")
-            pr = {"number": 436, "headRefName": BRANCH, "headRefOid": "a" * 40,
-                  "baseRefName": "trunk", "isCrossRepository": False, "isDraft": draft}
             environment = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}",
-                           "TEST_PR_JSON": json.dumps([pr]), "GITHUB_OUTPUT": str(output),
+                           "TEST_PR_JSON": json.dumps(prs), "GITHUB_OUTPUT": str(output),
                            "GITHUB_REPOSITORY": "honua-io/honua-sdk-dotnet"}
             result = subprocess.run(["bash", "-c", script], cwd=self.root, env=environment,
                                     text=True, capture_output=True)
-            if draft:
+            if invalid:
+                self.assertNotEqual(0, result.returncode, name)
+                self.assertEqual("", output.read_text(), name)
+                continue
+            if name == "draft":
                 self.assertEqual(0, result.returncode, result.stderr)
                 self.assertEqual(f"branch={BRANCH}\nsha={'a' * 40}\n", output.read_text())
             else:
-                self.assertNotEqual(0, result.returncode)
-                self.assertIn("not draft", result.stderr)
+                self.assertEqual(0, result.returncode, result.stderr)
+                if name == "ready":
+                    self.assertIn("ready for review", result.stdout)
                 self.assertEqual("", output.read_text())
 
     def test_verification_dispatches_complete_set_and_stops_if_branch_moves(self) -> None:

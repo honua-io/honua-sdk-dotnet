@@ -7,6 +7,8 @@ tags: [geofencing, geometry, alerts]
 ---
 # Geofencing
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 `Honua.Sdk.Geometry` includes a host-neutral geofence evaluator over
 NetTopologySuite geometries. The SDK owns the portable data model
 (boundary geometries, buffer/proximity distances, source-backed metadata)
@@ -75,6 +77,7 @@ SDK will not silently treat degrees as metres.
 
 ```csharp
 using Honua.Sdk.Geometry;
+using NetTopologySuite;
 using NetTopologySuite.Geometries;
 
 // Build a fence in Web Mercator (SRID 3857) so buffer/proximity distances
@@ -100,7 +103,7 @@ var state = new HonuaGeofenceEvaluationState();
 
 var position = new HonuaGeofencePosition
 {
-    Location = factory.CreatePoint(new Coordinate(11, 5)),
+    Location = factory.CreatePoint(new Coordinate(13, 5)),
     TrackId = "truck-1",
     Timestamp = DateTimeOffset.UtcNow,
 };
@@ -119,6 +122,7 @@ geometries amortise the cost of repeated `Covers` calls.
 
 ```csharp
 using Honua.Sdk.Geometry;
+using NetTopologySuite;
 using NetTopologySuite.Geometries;
 
 var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);

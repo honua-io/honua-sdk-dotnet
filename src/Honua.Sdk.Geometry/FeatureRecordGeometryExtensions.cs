@@ -12,24 +12,17 @@ namespace Honua.Sdk.Geometry;
 /// </summary>
 public enum FeatureGeometryFormat
 {
-    /// <summary>Infer the encoding from the geometry shape (Esri JSON vs GeoJSON).</summary>
+    /// <summary>Infer the encoding from the geometry shape (GeoServices JSON vs GeoJSON).</summary>
     Auto = 0,
 
-    /// <summary>Esri / GeoServices JSON (<c>x</c>/<c>y</c>, <c>rings</c>, <c>paths</c>, <c>points</c>).</summary>
-    EsriJson = 1,
+    /// <summary>GeoServices JSON (<c>x</c>/<c>y</c>, <c>rings</c>, <c>paths</c>, <c>points</c>).</summary>
+    GeoServicesJson = 1,
 
     /// <summary>GeoJSON (<c>type</c> + <c>coordinates</c>).</summary>
     GeoJson = 2,
 }
 
-/// <summary>
-/// NetTopologySuite accessors for provider-neutral <see cref="FeatureRecord"/> geometries.
-/// </summary>
-/// <remarks>
-/// Provides arcpy-style <c>feature.geometry</c> access over the JSON geometry that protocol clients
-/// return. GeoServices clients populate Esri JSON; OGC API Features / WFS clients populate GeoJSON.
-/// The format is auto-detected by default, or can be supplied explicitly.
-/// </remarks>
+/// <summary>NetTopologySuite accessors for the GeoServices JSON or GeoJSON geometry on a <see cref="FeatureRecord"/>.</summary>
 public static class FeatureRecordGeometryExtensions
 {
     /// <summary>
@@ -62,7 +55,7 @@ public static class FeatureRecordGeometryExtensions
     private static FeatureGeometryFormat DetectFormat(JsonElement geometry)
     {
         // GeoJSON is the only encoding with a "type" discriminator plus a "coordinates"/"geometries"
-        // member; Esri JSON keys the shape by x/y, rings, paths, or points.
+        // member; GeoServices JSON keys the shape by x/y, rings, paths, or points.
         if (geometry.TryGetProperty("type", out var type) &&
             type.ValueKind == JsonValueKind.String &&
             (geometry.TryGetProperty("coordinates", out _) || geometry.TryGetProperty("geometries", out _)))
@@ -70,6 +63,6 @@ public static class FeatureRecordGeometryExtensions
             return FeatureGeometryFormat.GeoJson;
         }
 
-        return FeatureGeometryFormat.EsriJson;
+        return FeatureGeometryFormat.GeoServicesJson;
     }
 }

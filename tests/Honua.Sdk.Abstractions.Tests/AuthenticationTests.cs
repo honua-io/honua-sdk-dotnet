@@ -255,7 +255,7 @@ public sealed class AuthenticationTests
         };
         using var http = new HttpClient(handler);
 
-        // ArcGisSourceCredentialHandler raises the same type and message for the same condition.
+        // GeoServicesSourceCredentialHandler raises the same type and message for the same condition.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => http.GetAsync(new Uri("http://honua.example/services")));
 

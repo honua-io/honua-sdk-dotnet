@@ -10,7 +10,7 @@ namespace Honua.Sdk.Geometry.Tests;
 public class FeatureRecordGeometryExtensionsTests
 {
     [Fact]
-    public void GetGeometry_ReadsEsriJson_Point()
+    public void GetGeometry_ReadsGeoServicesJson_Point()
     {
         var record = RecordWithGeometry(
             """{ "x": -122.4, "y": 37.8, "z": 5, "spatialReference": { "wkid": 4326 } }""");
@@ -24,14 +24,14 @@ public class FeatureRecordGeometryExtensionsTests
     }
 
     [Fact]
-    public void GetGeometry_ReadsEsriJson_PolygonRingOrientation()
+    public void GetGeometry_ReadsGeoServicesJson_PolygonRingOrientation()
     {
         var record = RecordWithGeometry(
             """{ "rings": [ [ [0,0],[10,0],[10,10],[0,10],[0,0] ] ] }""");
 
         var polygon = Assert.IsType<Polygon>(record.GetGeometry());
 
-        // Esri outer rings are clockwise; NTS normalizes shells to counter-clockwise.
+        // GeoServices outer rings are clockwise; NTS normalizes shells to counter-clockwise.
         Assert.True(NetTopologySuite.Algorithm.Orientation.IsCCW(polygon.ExteriorRing.Coordinates));
     }
 

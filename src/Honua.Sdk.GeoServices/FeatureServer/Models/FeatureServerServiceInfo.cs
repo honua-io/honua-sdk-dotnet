@@ -20,9 +20,7 @@ public sealed class FeatureServerServiceInfo
     [JsonPropertyName("description")]
     public string? Description { get; init; }
 
-    /// <summary>
-    /// The provider-native server version (a number such as 11.3 on ArcGIS, sometimes a string), preserved verbatim.
-    /// </summary>
+    /// <summary>The provider-native server version (a number such as 11.3, sometimes a string), preserved verbatim.</summary>
     [JsonPropertyName("currentVersion")]
     public JsonElement? CurrentVersion { get; init; }
 

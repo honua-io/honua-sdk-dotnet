@@ -38,6 +38,8 @@ trap cleanup EXIT
 mkdir -p "${BASE_PACKAGES}" "${CURRENT_PACKAGES}"
 
 git -C "${ROOT}" worktree add --detach "${BASE_WORKTREE}" "${BASE_REF}" >/dev/null
+# Historical workload pins may be unavailable under the candidate SDK.
+cp "${ROOT}/global.json" "${BASE_WORKTREE}/global.json"
 dotnet tool restore --tool-manifest "${ROOT}/.config/dotnet-tools.json" >/dev/null
 
 PACKAGE_MANIFEST="${ROOT}/eng/shipped-packages.txt"
@@ -78,14 +80,26 @@ for entry in "${projects[@]}"; do
   # transitive dependency (e.g. a NuGetAudit advisory published after that
   # commit landed) that we cannot go back and patch. Disable NuGetAudit for
   # this restore only so a new advisory against old code can't block the
-  # compatibility check; the candidate pack below keeps full audit enforcement.
+  # compatibility check (older baselines predate the NU1901-NU1904 warning
+  # exemption); the candidate pack below still reports advisories as warnings.
+  # The .NET 11 major release retires older framework assets. Compare the
+  # historical public API on the supported framework without waiving API errors.
+  # Retargeted historical dependencies need preservation; native net11 baselines
+  # retain framework pruning so retired package dependencies are not restored.
+  baseline_restore_args=()
+  if ! grep -Eq '<TargetFrameworks?>net11\.0</TargetFrameworks?>' "${BASE_WORKTREE}/${project}"; then
+    baseline_restore_args+=(/p:RestoreEnablePackagePruning=false)
+  fi
   echo "Packing ${package_id} baseline from ${BASE_REF}..."
   dotnet pack "${BASE_WORKTREE}/${project}" \
     --configuration "${CONFIGURATION}" \
     -o "${baseline_output}" \
     /p:TreatWarningsAsErrors=true \
     /p:ContinuousIntegrationBuild=true \
-    /p:NuGetAudit=false
+    /p:NuGetAudit=false \
+    "${baseline_restore_args[@]}" \
+    /p:TargetFramework=net11.0 \
+    /p:TargetFrameworks=net11.0
 
   echo "Packing ${package_id} from current checkout..."
   dotnet pack "${ROOT}/${project}" \

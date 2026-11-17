@@ -77,6 +77,16 @@ public sealed class AdminProtocolIntegrationTests(ProtocolIntegrationFixture fix
         var batch = await _fixture.GeocodingClient.BatchGeocodeAsync(
             [_fixture.Options.GeocodeText!],
             cancellationToken: timeout.Token).ConfigureAwait(false);
+        if (batch.Count == 0 && _fixture.GeocodingClient is Honua.Sdk.Admin.Geocoding.IHonuaBatchGeocodingClient detailedClient)
+        {
+            var detailed = await detailedClient.BatchGeocodeDetailedAsync(
+                [_fixture.Options.GeocodeText!],
+                cancellationToken: timeout.Token).ConfigureAwait(false);
+            Assert.Fail("Batch geocode returned no candidate: " + string.Join("; ", detailed.Select(row =>
+                $"input={row.InputId} status={row.Status ?? "none"} error={row.ErrorMessage ?? "none"} " +
+                string.Join(",", row.Attributes.Select(attribute => $"{attribute.Key}={attribute.Value}")))));
+        }
+
         Assert.NotEmpty(batch);
     }
 }

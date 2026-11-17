@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
-  DOTNET_VERSION: "10.0.401"
+  DOTNET_VERSION: "11.0.100"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
 
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   browser-wasm-trim:
     name: Trimmed Browser WASM Runtime
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -87,7 +87,7 @@ jobs:
           /p:EnforceCodeStyleInBuild=true
 
       - name: Install Playwright Chromium
-        run: pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        run: pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
       - name: Validate trimmed browser runtime
         env:

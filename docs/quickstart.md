@@ -7,6 +7,8 @@ tags: [quickstart, dotnet, dependency-injection]
 ---
 # Quickstart
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This page has two paths:
 
 - [60-second hello-features](#60-second-hello-features) — one package, one
@@ -22,7 +24,7 @@ it as it is; nothing needs splicing into an earlier file.
 
 ## Prerequisites
 
-- The [.NET 10 SDK](https://dotnet.microsoft.com/download).
+- The [.NET 11 SDK](https://dotnet.microsoft.com/download).
 - A running Honua server. If you do not have one, the
   [honua-server quickstart](https://github.com/honua-io/honua-server/blob/trunk/docs/get-started/quickstart.md)
   brings one up with Docker Compose in a few minutes. The server serves its HTTP protocols on one

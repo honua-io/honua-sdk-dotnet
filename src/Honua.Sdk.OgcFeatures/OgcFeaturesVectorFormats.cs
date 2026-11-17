@@ -24,7 +24,7 @@ public static class OgcFeaturesVectorFormats
     {
         VectorPayloadFormat.GeoJson => OgcFeaturesFormat.GeoJson,
         VectorPayloadFormat.Gml => OgcFeaturesFormat.Gml,
-        VectorPayloadFormat.EsriJson => throw new NotSupportedException("OGC API Features does not expose Esri JSON item output."),
+        VectorPayloadFormat.GeoServicesJson => throw new NotSupportedException("OGC API Features does not expose GeoServices JSON item output."),
         _ => throw new NotSupportedException($"Vector payload format '{format}' is not supported by OGC API Features.")
     };
 

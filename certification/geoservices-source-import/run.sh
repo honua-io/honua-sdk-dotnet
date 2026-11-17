@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Lossless ArcGIS service/layer import certification (honua-sdk-dotnet#341).
+# Lossless GeoServices REST service and layer import certification.
 #
-# Boots the digest-pinned honua-server candidate as a live ArcGIS REST source,
+# Boots the digest-pinned honua-server candidate as a live GeoServices REST source,
 # publishes fixture/source-sites.v1.sql through the supported admin API, restores
 # the requested Honua.Sdk.GeoServices version from nuget.org only, and runs the
 # installed-package consumer. A second run with a deliberately corrupted oracle
@@ -184,7 +184,8 @@ consumer="$here/consumer"
 nuget_config="$consumer/NuGet.config"
 if [ -n "${LOCAL_PACKAGE_DIR:-}" ]; then
   log "restore Honua.Sdk.GeoServices $SDK_PACKAGE_VERSION from local packages $LOCAL_PACKAGE_DIR (NOT published bytes)"
-  package_source="local:$LOCAL_PACKAGE_DIR"
+  # Record only the directory name: receipts are committed to a public repository.
+  package_source="local:$(basename "$LOCAL_PACKAGE_DIR")"
   published_hash="$(openssl dgst -sha512 -binary "$LOCAL_PACKAGE_DIR/Honua.Sdk.GeoServices.$SDK_PACKAGE_VERSION.nupkg" | base64 -w0)"
   nuget_config="$WORK_DIR/NuGet.local.config"
   cat > "$nuget_config" <<EOF

@@ -107,7 +107,7 @@ class AttestationWorkflowContractTests(unittest.TestCase):
         sbom = _job(self.workflow, "attest-dotnet-sbom")
         self.assertIn("- publish-dotnet-packages", provenance)
         self.assertIn("needs.publish-dotnet-packages.result == 'success'", provenance)
-        self.assertIn("needs: attest-dotnet-provenance", sbom)
+        self.assertIn("- attest-dotnet-provenance", sbom)
         for job in (provenance, sbom):
             self.assertIn("id-token: write", job)
             self.assertIn("attestations: write", job)

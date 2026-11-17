@@ -7,6 +7,8 @@ tags: [browser, wasm, blazor]
 ---
 # Browser And WebAssembly Support
 
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
+
 This matrix defines what `honua-sdk-dotnet` considers browser-safe today. The
 line is intentionally conservative: DTOs, abstractions, and REST clients that
 run through the host's browser `HttpClient` are candidates; native transport,
@@ -119,7 +121,7 @@ Example local automated browser run:
 
 ```bash
 dotnet build tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release
-pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net10.0/playwright.ps1 install chromium
+pwsh tests/Honua.Sdk.BrowserSmoke.Tests/bin/Release/net11.0/playwright.ps1 install chromium
 HONUA_BROWSER_RUNTIME_SMOKE=true dotnet test tests/Honua.Sdk.BrowserSmoke.Tests/Honua.Sdk.BrowserSmoke.Tests.csproj --configuration Release --no-build
 ```
 

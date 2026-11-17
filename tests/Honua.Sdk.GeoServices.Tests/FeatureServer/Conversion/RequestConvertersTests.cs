@@ -403,7 +403,7 @@ public class RequestConvertersTests
         Assert.False(geometry.TryGetProperty("type", out _));
         var rings = geometry.GetProperty("rings");
         Assert.Equal(JsonValueKind.Array, rings.ValueKind);
-        // A MultiPolygon with two single-ring polygons projects to two Esri rings.
+        // A MultiPolygon with two single-ring polygons projects to two GeoServices rings.
         Assert.Equal(2, rings.GetArrayLength());
         Assert.All(
             Enumerable.Range(0, rings.GetArrayLength()),

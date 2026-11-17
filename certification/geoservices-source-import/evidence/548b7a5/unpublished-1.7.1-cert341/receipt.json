@@ -7,7 +7,7 @@
   "package": {
     "id": "Honua.Sdk.GeoServices",
     "version": "1.7.1-cert341",
-    "source": "local:/home/mike/honua-io/lane-341-run/local-packages",
+    "source": "local:local-packages",
     "nupkgSha512": "AdgGBrfpDCxxWAbL6K04EL9xQ06iJKP4oAhkMbWu2xdtnD0X800iLitNgIZei/YdV\u002BP5miOn8/LhkMX2drrXpQ==",
     "informationalVersion": "1.7.1-cert341\u002Ba880a3813dc16b1d3cb1892be9f38658a14dac82"
   },
@@ -28,7 +28,7 @@
       "id": "package.published-bytes",
       "criterion": "AC6 normal versioned PackageReference from the published package",
       "verdict": "pass",
-      "detail": "Honua.Sdk.GeoServices 1.7.1-cert341 (assembly 1.7.1.0, informational 1.7.1-cert341\u002Ba880a3813dc16b1d3cb1892be9f38658a14dac82) from local:/home/mike/honua-io/lane-341-run/local-packages; nupkg sha512 matches the expected package hash; loaded assembly sha256 a129f2747c40d82c44b88fef81c11da72ff35ee93a84894c7dc44db8ade59540 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package"
+      "detail": "Honua.Sdk.GeoServices 1.7.1-cert341 (assembly 1.7.1.0, informational 1.7.1-cert341\u002Ba880a3813dc16b1d3cb1892be9f38658a14dac82) from local:local-packages; nupkg sha512 matches the expected package hash; loaded assembly sha256 a129f2747c40d82c44b88fef81c11da72ff35ee93a84894c7dc44db8ade59540 equals lib/net10.0/Honua.Sdk.GeoServices.dll in the restored package"
     },
     {
       "id": "discovery.service-layers",

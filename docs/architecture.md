@@ -1,11 +1,13 @@
 ---
 type: concept
 title: "How the packages relate"
-description: "A one-page map of the Honua.Sdk package family: which package owns which surface, what depends on what, and why the abstractions package sits underneath."
+description: "A one-page map of the Honua.Sdk packages: which package owns which surface, what depends on what, and why the abstractions package sits underneath."
 resource: "https://github.com/orgs/honua-io/packages?repo_name=honua-sdk-dotnet"
 tags: [architecture, packages]
 ---
 # Architecture overview
+
+> **Native application path:** [gRPC for live data and edits; PMTiles, GeoParquet and COG through the CDN](native-data-paths.md). Start there for browser gRPC-Web setup, signed private URLs and regeneration after changes. OGC API and GeoServices REST examples below are compatibility workflows.
 
 A one-page map of how the Honua .NET SDK packages relate. Use this when
 you're choosing which package(s) to take a dependency on, or when you need

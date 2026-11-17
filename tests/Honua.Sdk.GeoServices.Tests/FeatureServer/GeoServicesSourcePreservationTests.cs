@@ -1,0 +1,413 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.FeatureServer.Models;
+using Honua.Sdk.GeoServices.Tests.Fixtures;
+
+namespace Honua.Sdk.GeoServices.Tests.FeatureServer;
+
+public sealed class GeoServicesSourcePreservationTests
+{
+    private const string ServiceJson = """
+        {
+          "currentVersion": 11.3,
+          "serviceDescription": "Parcels",
+          "description": "County parcel fabric",
+          "maxRecordCount": 2000,
+          "capabilities": "Query",
+          "units": "esriMeters",
+          "layers": [ { "id": 0, "name": "Parcels", "type": "Feature Layer", "geometryType": "esriGeometryPolygon" } ],
+          "tables": [ { "id": 3, "name": "Inspections", "type": "Table" } ]
+        }
+        """;
+
+    private const string LayerJson = """
+        {
+          "id": 0,
+          "name": "Parcels",
+          "type": "Feature Layer",
+          "geometryType": "esriGeometryPolygon",
+          "hasZ": true,
+          "hasM": false,
+          "supportsPagination": false,
+          "advancedQueryCapabilities": { "supportsPagination": false, "supportsOrderBy": true },
+          "objectIdField": "OBJECTID",
+          "globalIdField": "PARCEL_GUID",
+          "displayField": "NAME",
+          "minScale": 250000,
+          "maxScale": 0,
+          "subtypeField": "ZONE",
+          "defaultSubtypeCode": 1,
+          "attributeRules": [ { "name": "AreaCalc", "type": "esriARTCalculation", "fieldName": "AREA", "scriptExpression": "Area($feature)", "triggeringEvents": [ "esriARTEInsert" ] } ],
+          "typeIdField": "ZONE",
+          "types": [ { "id": 1, "name": "Residential", "domains": {}, "templates": [] } ],
+          "subtypes": [ { "code": 1, "name": "Residential", "defaultValues": { "ZONE": 1 }, "domains": {} } ],
+          "relationships": [
+            {
+              "id": 0,
+              "name": "Parcel_Inspections",
+              "relatedTableId": 3,
+              "cardinality": "esriRelCardinalityOneToMany",
+              "role": "esriRelRoleOrigin",
+              "keyField": "PARCEL_GUID",
+              "composite": false
+            }
+          ],
+          "drawingInfo": {
+            "renderer": {
+              "type": "uniqueValue",
+              "field1": "ZONE",
+              "uniqueValueInfos": [ { "value": "1", "label": "Residential", "symbol": { "type": "esriSFS", "color": [ 10, 20, 30, 255 ] } } ]
+            },
+            "transparency": 25,
+            "labelingInfo": [
+              {
+                "labelExpressionInfo": { "expression": "$feature.NAME" },
+                "labelPlacement": "esriServerPolygonPlacementAlwaysHorizontal",
+                "minScale": 25000
+              }
+            ]
+          },
+          "timeInfo": {
+            "startTimeField": "CREATED",
+            "endTimeField": null,
+            "timeExtent": [ 1577836800000, null ],
+            "timeReference": { "timeZone": "UTC", "respectsDaylightSaving": false },
+            "timeInterval": 1,
+            "timeIntervalUnits": "esriTimeUnitsDays"
+          },
+          "fields": [
+            { "name": "OBJECTID", "type": "esriFieldTypeOID", "alias": "OBJECTID", "sqlType": "sqlTypeOther", "nullable": false, "editable": false, "defaultValue": null, "modelName": "OBJECTID" },
+            { "name": "PARCEL_GUID", "type": "esriFieldTypeGlobalID", "alias": "Parcel GUID", "sqlType": "sqlTypeOther", "length": 38, "nullable": false, "editable": false, "defaultValue": null, "modelName": "PARCEL_GUID" }
+          ],
+          "templates": [],
+          "maxRecordCount": 2000,
+          "x-vendorExtension": { "k": [ 1, 2.5, "three", null ] }
+        }
+        """;
+
+    [Fact]
+    public async Task GetServiceInfoAsync_TablesAndUnmodelledMembers_ArePreserved()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(TestHelpers.CreateRawJsonResponse(ServiceJson)));
+
+        var service = await client.GetServiceInfoAsync("Parcels");
+
+        var table = Assert.Single(service.Tables!);
+        Assert.Equal(3, table.Id);
+        Assert.Equal("Inspections", table.Name);
+        Assert.Equal("Table", table.AdditionalProperties!["type"].GetString());
+        Assert.Equal("esriGeometryPolygon", service.Layers![0].AdditionalProperties!["geometryType"].GetString());
+        Assert.Equal("esriMeters", service.AdditionalProperties!["units"].GetString());
+        Assert.Equal("11.3", service.CurrentVersion!.Value.GetRawText());
+        Assert.Equal("County parcel fabric", service.Description);
+        AssertEverySourceMemberPreserved(ServiceJson, service);
+    }
+
+    [Fact]
+    public async Task GetLayerInfoAsync_DrawingInfoRelationshipsSubtypesAndPaging_ArePreservedLosslessly()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(TestHelpers.CreateRawJsonResponse(LayerJson)));
+
+        var layer = await client.GetLayerInfoAsync("Parcels", 0);
+
+        Assert.Equal("Feature Layer", layer.Type);
+        Assert.True(layer.HasZ);
+        Assert.False(layer.HasM);
+        Assert.False(layer.SupportsPagination);
+        Assert.False(layer.AdvancedQueryCapabilities!.Value.GetProperty("supportsPagination").GetBoolean());
+        Assert.Equal("ZONE", layer.TypeIdField);
+        Assert.Equal(250000d, layer.MinScale);
+        Assert.Equal(0d, layer.MaxScale);
+        Assert.Equal("ZONE", layer.SubtypeField);
+        Assert.Equal(1, layer.DefaultSubtypeCode!.Value.GetInt32());
+        Assert.Equal("Area($feature)", layer.AttributeRules!.Value[0].GetProperty("scriptExpression").GetString());
+        Assert.Equal("Residential", layer.Types!.Value[0].GetProperty("name").GetString());
+        Assert.Equal(1, layer.Subtypes!.Value[0].GetProperty("defaultValues").GetProperty("ZONE").GetInt32());
+        Assert.Equal("PARCEL_GUID", layer.Relationships!.Value[0].GetProperty("keyField").GetString());
+        Assert.Equal(3, layer.Relationships!.Value[0].GetProperty("relatedTableId").GetInt32());
+        Assert.Equal(
+            "$feature.NAME",
+            layer.DrawingInfo!.Value.GetProperty("labelingInfo")[0].GetProperty("labelExpressionInfo").GetProperty("expression").GetString());
+        Assert.Equal(1577836800000L, layer.TimeInfo!.TimeExtent!.Value[0].GetInt64());
+        Assert.Equal(JsonValueKind.Null, layer.TimeInfo!.TimeExtent!.Value[1].ValueKind);
+        Assert.Equal("esriTimeUnitsDays", layer.TimeInfo.AdditionalProperties!["timeIntervalUnits"].GetString());
+        Assert.Equal("sqlTypeOther", layer.Fields![0].AdditionalProperties!["sqlType"].GetString());
+        Assert.Equal("PARCEL_GUID", layer.Fields[1].AdditionalProperties!["modelName"].GetString());
+        Assert.Equal("NAME", layer.AdditionalProperties!["displayField"].GetString());
+        Assert.Equal("""[ 1, 2.5, "three", null ]""", layer.AdditionalProperties["x-vendorExtension"].GetProperty("k").GetRawText());
+        AssertEverySourceMemberPreserved(LayerJson, layer);
+    }
+
+    [Fact]
+    public async Task QueryAsync_TrueCurveGeometry_IsPreservedVerbatimAndNeverCoercedToLinearGeometry()
+    {
+        const string curveGeometry = """{ "hasZ": false, "curvePaths": [ [ [ 0, 0 ], { "c": [ [ 10, 0 ], [ 5, 5 ] ] }, { "a": [ [ 20, 0 ], [ 15, 0 ], 0, 1 ] } ] ], "spatialReference": { "wkid": 3857 } }""";
+        var client = TestHelpers.CreateFeatureServerClient(_ => Task.FromResult(TestHelpers.CreateRawJsonResponse(
+            $$"""{ "features": [ { "attributes": { "OBJECTID": 1 }, "geometry": {{curveGeometry}} } ] }""")));
+
+        var response = await client.QueryAsync("Parcels", 0, new FeatureServerQueryParams { OutFields = "*" });
+
+        var geometry = Assert.Single(response.Features!).Geometry!.Value;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(curveGeometry), JsonNode.Parse(geometry.GetRawText())));
+        Assert.Throws<JsonException>(() => Honua.Sdk.Geometry.GeoServicesGeometryConverter.ReadGeometry(geometry));
+    }
+
+    [Fact]
+    public async Task QueryAsync_ReturnZAndReturnM_AreSentOnlyWhenRequested()
+    {
+        var requests = new List<string>();
+        var client = TestHelpers.CreateFeatureServerClient(request =>
+        {
+            requests.Add(request.RequestUri!.Query);
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse("""{ "features": [] }"""));
+        });
+
+        await client.QueryAsync("Parcels", 0, new FeatureServerQueryParams { ReturnZ = true, ReturnM = true });
+        await client.QueryAsync("Parcels", 0, new FeatureServerQueryParams { ReturnZ = false });
+        await client.QueryAsync("Parcels", 0, new FeatureServerQueryParams());
+
+        Assert.Contains("returnZ=true", requests[0], StringComparison.Ordinal);
+        Assert.Contains("returnM=true", requests[0], StringComparison.Ordinal);
+        Assert.Contains("returnZ=false", requests[1], StringComparison.Ordinal);
+        Assert.DoesNotContain("returnM", requests[1], StringComparison.Ordinal);
+        Assert.DoesNotContain("returnZ", requests[2], StringComparison.Ordinal);
+        Assert.DoesNotContain("returnM", requests[2], StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(null, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(null, true)]
+    public async Task QueryRawAsync_TrueCurveOption_PreservesGetPostAndUnmodifiedCurvePayload(bool? returnTrueCurves, bool longQuery)
+    {
+        const string body = """{ "features": [ { "attributes": { "OBJECTID": 1 }, "geometry": { "curvePaths": [ [ [ 0, 0, 10, 100 ], { "c": [ [ 10, 0, 30, 300 ], [ 5, 5, 20, 200 ] ] } ] ], "spatialReference": { "wkid": 4326 } } } ] }""";
+        string? parameters = null;
+        HttpMethod? method = null;
+        var client = TestHelpers.CreateFeatureServerClient(async request =>
+        {
+            method = request.Method;
+            parameters = request.Method == HttpMethod.Post
+                ? await request.Content!.ReadAsStringAsync()
+                : request.RequestUri!.Query;
+            return TestHelpers.CreateRawJsonResponse(body);
+        });
+
+        using var response = await client.QueryRawAsync("Parcels", 0, new FeatureServerQueryParams
+        {
+            Where = longQuery ? new string('x', 3000) : "1=1",
+            ReturnTrueCurves = returnTrueCurves,
+            ReturnZ = true,
+            ReturnM = true
+        });
+
+        Assert.Equal(longQuery ? HttpMethod.Post : HttpMethod.Get, method);
+        Assert.NotNull(parameters);
+        if (returnTrueCurves.HasValue)
+            Assert.Contains("returnTrueCurves=" + (returnTrueCurves.Value ? "true" : "false"), parameters, StringComparison.Ordinal);
+        else
+            Assert.DoesNotContain("returnTrueCurves", parameters, StringComparison.Ordinal);
+        Assert.Contains("returnZ=true", parameters, StringComparison.Ordinal);
+        Assert.Contains("returnM=true", parameters, StringComparison.Ordinal);
+        Assert.Equal(body, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [InlineData(null)]
+    public void QueryParameters_SourceGeneratedJson_PreservesTrueFalseAndUnspecified(bool? returnTrueCurves)
+    {
+        var query = new FeatureServerQueryParams { ReturnTrueCurves = returnTrueCurves };
+        var json = JsonSerializer.Serialize(query, FeatureServerJsonContext.Default.FeatureServerQueryParams);
+        using var document = JsonDocument.Parse(json);
+        Assert.Equal(returnTrueCurves.HasValue, document.RootElement.TryGetProperty("returnTrueCurves", out var value));
+        if (returnTrueCurves.HasValue)
+            Assert.Equal(returnTrueCurves.Value, value.GetBoolean());
+        var restored = JsonSerializer.Deserialize(json, FeatureServerJsonContext.Default.FeatureServerQueryParams);
+        Assert.NotNull(restored);
+        Assert.Equal(returnTrueCurves, restored.ReturnTrueCurves);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_RetainsTrueCurveRequestAcrossOffsets()
+    {
+        var requests = new List<string>();
+        var client = TestHelpers.CreateFeatureServerClient(request =>
+        {
+            requests.Add(request.RequestUri!.Query);
+            var id = requests.Count;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                $$"""{ "objectIdFieldName": "OBJECTID", "features": [ { "attributes": { "OBJECTID": {{id}} } } ], "exceededTransferLimit": {{(id == 1 ? "true" : "false")}} }"""));
+        });
+
+        var pages = new List<FeatureServerQueryResponse>();
+        await foreach (var page in client.QueryPagesAsync("Parcels", 0, new FeatureServerQueryParams { ReturnTrueCurves = true, ResultRecordCount = 1 }))
+            pages.Add(page);
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal(2, requests.Count);
+        Assert.All(requests, query => Assert.Contains("returnTrueCurves=true", query, StringComparison.Ordinal));
+        Assert.Contains("resultOffset=1", requests[1], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_SourceRepeatsPage_FailsBeforeYieldingDuplicates()
+    {
+        var calls = 0;
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            calls++;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                """{ "objectIdFieldName": "OBJECTID", "features": [ { "attributes": { "OBJECTID": 1 } }, { "attributes": { "OBJECTID": 2 } } ], "exceededTransferLimit": true }"""));
+        });
+
+        var yielded = new List<long>();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var page in client.QueryPagesAsync("Parcels", 0, new FeatureServerQueryParams { ResultRecordCount = 2 }))
+            {
+                yielded.AddRange(page.Features!.Select(feature => feature.Attributes!["OBJECTID"].GetInt64()));
+            }
+        });
+
+        Assert.Equal([1L, 2L], yielded);
+        Assert.Equal(2, calls);
+        Assert.Contains("QueryAllFeaturesByObjectIdBatchesAsync", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_SourceOverlapsPreviousPage_FailsBeforeYieldingDuplicates()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(request =>
+        {
+            var json = request.RequestUri!.Query.Contains("resultOffset=2", StringComparison.Ordinal)
+                ? """{ "objectIdFieldName": "OBJECTID", "features": [ { "attributes": { "OBJECTID": 2 } }, { "attributes": { "OBJECTID": 3 } } ], "exceededTransferLimit": true }"""
+                : """{ "objectIdFieldName": "OBJECTID", "features": [ { "attributes": { "OBJECTID": 1 } }, { "attributes": { "OBJECTID": 2 } } ], "exceededTransferLimit": true }""";
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = 0;
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _ in client.QueryPagesAsync("Parcels", 0, new FeatureServerQueryParams { ResultRecordCount = 2 }))
+            {
+                pages++;
+            }
+        });
+
+        Assert.Equal(1, pages);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_RepeatedPageWithoutObjectIdField_FailsBeforeYieldingDuplicates()
+    {
+        var calls = 0;
+        var client = TestHelpers.CreateFeatureServerClient(_ =>
+        {
+            calls++;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(
+                """{ "features": [ { "attributes": { "NAME": "a" }, "geometry": { "x": 1, "y": 2 } } ], "exceededTransferLimit": true }"""));
+        });
+
+        var pages = 0;
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await foreach (var _ in client.QueryPagesAsync("Parcels", 0, new FeatureServerQueryParams { OutFields = "NAME", ResultRecordCount = 1 }))
+            {
+                pages++;
+            }
+        });
+
+        Assert.Equal(1, pages);
+        Assert.Equal(2, calls);
+    }
+
+    [Fact]
+    public async Task QueryPagesAsync_DistinctPagesWithoutObjectIdField_Complete()
+    {
+        var client = TestHelpers.CreateFeatureServerClient(request =>
+        {
+            var json = request.RequestUri!.Query.Contains("resultOffset=1", StringComparison.Ordinal)
+                ? """{ "features": [ { "attributes": { "NAME": "b" } } ], "exceededTransferLimit": false }"""
+                : """{ "features": [ { "attributes": { "NAME": "a" } } ], "exceededTransferLimit": true }""";
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var names = new List<string>();
+        await foreach (var page in client.QueryPagesAsync("Parcels", 0, new FeatureServerQueryParams { OutFields = "NAME", ResultRecordCount = 1 }))
+        {
+            names.AddRange(page.Features!.Select(feature => feature.Attributes!["NAME"].GetString()!));
+        }
+
+        Assert.Equal(["a", "b"], names);
+    }
+
+    private static void AssertEverySourceMemberPreserved<T>(string sourceJson, T model)
+    {
+        var decoded = JsonSerializer.SerializeToNode(model, new JsonSerializerOptions(JsonSerializerDefaults.General));
+        var lost = new List<string>();
+        CollectLoss(JsonNode.Parse(sourceJson), decoded, "$", lost);
+        Assert.True(lost.Count == 0, $"Source members lost by {typeof(T).Name}: {string.Join("; ", lost)}");
+    }
+
+    private static void CollectLoss(JsonNode? source, JsonNode? decoded, string path, List<string> lost)
+    {
+        switch (source)
+        {
+            case null:
+                if (decoded is not null && decoded.GetValueKind() != JsonValueKind.Null)
+                {
+                    lost.Add($"{path}: null became {decoded.ToJsonString()}");
+                }
+
+                break;
+            case JsonObject sourceObject:
+                if (decoded is not JsonObject decodedObject)
+                {
+                    lost.Add($"{path}: object not preserved");
+                    break;
+                }
+
+                foreach (var (name, value) in sourceObject)
+                {
+                    if (decodedObject.TryGetPropertyValue(name, out var decodedValue))
+                    {
+                        CollectLoss(value, decodedValue, $"{path}.{name}", lost);
+                    }
+                    else
+                    {
+                        lost.Add($"{path}.{name}: dropped");
+                    }
+                }
+
+                break;
+            case JsonArray sourceArray:
+                if (decoded is not JsonArray decodedArray || decodedArray.Count != sourceArray.Count)
+                {
+                    lost.Add($"{path}: array not preserved");
+                    break;
+                }
+
+                for (var i = 0; i < sourceArray.Count; i++)
+                {
+                    CollectLoss(sourceArray[i], decodedArray[i], $"{path}[{i}]", lost);
+                }
+
+                break;
+            default:
+                if (!JsonNode.DeepEquals(source, decoded))
+                {
+                    lost.Add($"{path}: {source.ToJsonString()} became {decoded?.ToJsonString() ?? "(dropped)"}");
+                }
+
+                break;
+        }
+    }
+}

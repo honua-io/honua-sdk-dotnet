@@ -10,6 +10,19 @@ namespace Honua.Sdk.Admin.Models;
 /// </summary>
 public sealed record PublishLayerRequest
 {
+    /// <summary>The namespace selector; null leaves publishing unscoped.</summary>
+    [JsonPropertyName("namespace")]
+    public string? Namespace { get; init; }
+
+    /// <summary>The destination Folder; default preserves membership, explicit null selects Root.</summary>
+    [JsonPropertyName("folderId")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OptionalString FolderId { get; init; }
+
+    /// <summary>The immutable public Service name when supplied.</summary>
+    [JsonPropertyName("publicName")]
+    public string? PublicName { get; init; }
+
     /// <summary>
     /// Schema containing the source table.
     /// </summary>
@@ -101,6 +114,14 @@ public sealed class PublishedLayerSummary
     /// </summary>
     [JsonPropertyName("layerId")]
     public int LayerId { get; init; }
+
+    /// <summary>The layer identifier under the server's current wire name; reading either name sets both.</summary>
+    [JsonPropertyName("storageLayerId")]
+    public int StorageLayerId
+    {
+        get => LayerId;
+        init => LayerId = value;
+    }
 
     /// <summary>
     /// Layer display name.

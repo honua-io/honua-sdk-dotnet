@@ -20,6 +20,12 @@ public interface IHonuaAdminLayersClient
     /// <returns>A list of published layer summaries.</returns>
     Task<IReadOnlyList<PublishedLayerSummary>> ListLayersAsync(string connectionId, string? serviceName = null, CancellationToken cancellationToken = default);
 
+    /// <summary>Returns one page of layers published on a connection.</summary>
+    Task<PublishedLayerPage> ListLayersPageAsync(
+        string connectionId, LayerListQuery? query = null, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException(
+            "Use HonuaAdminClient to read one page of published layers.");
+
     /// <summary>
     /// Publishes a PostGIS table as a layer.
     /// </summary>

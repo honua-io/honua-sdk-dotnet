@@ -73,8 +73,8 @@ public sealed class StudioReportContractFixtureTests
             ?? throw new InvalidOperationException("Result package fixture was empty.");
 
         Assert.Equal(HonuaGeoprocessingWorkflowStatus.Completed, package.Status);
-        Assert.Equal("map-7f3c", package.MapPackageId);
-        Assert.Equal("app-7f3c", package.AppPackageId);
+        Assert.Equal("map-7f3c", package.MapId);
+        Assert.Equal("app-7f3c", package.AppId);
 
         Assert.Collection(
             package.Artifacts,

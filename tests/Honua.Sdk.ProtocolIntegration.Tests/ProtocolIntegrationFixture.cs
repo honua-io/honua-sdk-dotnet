@@ -8,10 +8,13 @@ using Honua.Sdk.Admin.Extensions;
 using Honua.Sdk.Admin.Geocoding;
 using Honua.Sdk.GeoServices.Extensions;
 using Honua.Sdk.GeoServices.FeatureServer;
+using Honua.Sdk.GeoServices.GeometryServer;
 using Honua.Sdk.Grpc;
 using Honua.Sdk.Grpc.Extensions;
 using Honua.Sdk.OgcFeatures;
 using Honua.Sdk.OgcFeatures.Extensions;
+using Honua.Sdk.Processes;
+using Honua.Sdk.Processes.Extensions;
 using Honua.Sdk.Scenes.Extensions;
 using Honua.Sdk.Spec;
 using Honua.Sdk.Spec.Extensions;
@@ -53,9 +56,13 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
 
     public HonuaFeatureServerClient SourceMetadataClient => (HonuaFeatureServerClient)FeatureServerClient;
 
+    public HonuaGeometryServerClient GeometryServerClient => Services.GetRequiredService<HonuaGeometryServerClient>();
+
     public IHonuaFeatureServerEditClient FeatureServerEditClient => Services.GetRequiredService<IHonuaFeatureServerEditClient>();
 
     public IHonuaOgcFeaturesClient OgcFeaturesClient => Services.GetRequiredService<IHonuaOgcFeaturesClient>();
+
+    public IHonuaProcessesClient ProcessesClient => Services.GetRequiredService<IHonuaProcessesClient>();
 
     public IHonuaSceneClient SceneClient => Services.GetRequiredService<IHonuaSceneClient>();
 
@@ -126,12 +133,7 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });
-        services.AddHonuaGeocoding(options =>
-        {
-            options.BaseAddress = baseUri;
-            options.ApiKey = Options.ApiKey;
-            options.BearerToken = Options.BearerToken;
-        });
+        AddGeocoding(services, baseUri);
         services.AddHonuaSpec(options =>
         {
             options.BaseAddress = baseUri;
@@ -160,6 +162,12 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
             options.RoutingServiceAreaLayerName = Options.ServiceAreaLayerName ?? "ServiceArea";
             options.RoutingClosestFacilityLayerName = Options.ClosestFacilityLayerName ?? "ClosestFacility";
         });
+        services.AddHonuaGeometryServer(options =>
+        {
+            options.BaseAddress = baseUri;
+            options.ApiKey = Options.ApiKey;
+            options.BearerToken = Options.BearerToken;
+        });
         services.AddHonuaRouting(options =>
         {
             options.BaseAddress = baseUri;
@@ -176,6 +184,12 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
             options.ApiKey = Options.ApiKey;
             options.BearerToken = Options.BearerToken;
         });
+        services.AddHonuaProcesses(options =>
+        {
+            options.BaseAddress = baseUri;
+            options.ApiKey = Options.ApiKey;
+            options.BearerToken = Options.BearerToken;
+        });
         services.AddHonuaScenes(options =>
         {
             options.BaseAddress = baseUri;
@@ -184,5 +198,26 @@ public sealed class ProtocolIntegrationFixture : IAsyncLifetime, IDisposable
         });
 
         return services.BuildServiceProvider();
+    }
+
+    private void AddGeocoding(IServiceCollection services, Uri baseUri)
+    {
+        services.AddHonuaGeocoding(options =>
+        {
+            options.BaseAddress = baseUri;
+            options.ApiKey = Options.ApiKey;
+            options.BearerToken = Options.BearerToken;
+        });
+        if (string.IsNullOrWhiteSpace(Options.GeocodeLocatorName))
+        {
+            return;
+        }
+
+        // AddHonuaGeocoding addresses the default "World" locator; a fixture that serves
+        // another locator name reuses the same configured HTTP client with that name.
+        var locatorName = Options.GeocodeLocatorName;
+        services.AddTransient<IHonuaGeocodingClient>(sp => new HonuaGeocodingClient(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(HonuaGeocodingClient)),
+            locatorName));
     }
 }

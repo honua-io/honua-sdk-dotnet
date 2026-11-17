@@ -785,7 +785,7 @@ public sealed class HonuaGrpcClient :
             return new Models.SpatialReference { Wkid = bareWkid };
         }
 
-        var separatorIndex = Math.Max(trimmed.LastIndexOf(':'), trimmed.LastIndexOf('/'));
+        var separatorIndex = Math.Max(trimmed.AsSpan().LastIndexOf(':'), trimmed.AsSpan().LastIndexOf('/'));
         if (separatorIndex >= 0 &&
             int.TryParse(
                 trimmed[(separatorIndex + 1)..],

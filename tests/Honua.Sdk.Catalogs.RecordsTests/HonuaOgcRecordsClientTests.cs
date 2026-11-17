@@ -129,7 +129,7 @@ public sealed class HonuaOgcRecordsClientTests
             Query = "parks",
             Ids = ["svc-parks", "layer-parks-0"],
             Types = ["service", "layer"],
-            ExternalIds = ["arcgis:parks"],
+            ExternalIds = ["source:parks"],
             Filter = "properties.owner = 'gis'",
             FilterLang = "cql2-text",
             SortBy = "-updated",
@@ -154,7 +154,7 @@ public sealed class HonuaOgcRecordsClientTests
         Assert.Contains("q=parks", capturedUrl);
         Assert.Contains("ids=svc-parks%2Clayer-parks-0", capturedUrl);
         Assert.Contains("type=service%2Clayer", capturedUrl);
-        Assert.Contains("externalIds=arcgis%3Aparks", capturedUrl);
+        Assert.Contains("externalIds=source%3Aparks", capturedUrl);
         Assert.Contains("filter=", capturedUrl);
         Assert.Contains("filter-lang=cql2-text", capturedUrl);
         Assert.Contains("sortby=-updated", capturedUrl);

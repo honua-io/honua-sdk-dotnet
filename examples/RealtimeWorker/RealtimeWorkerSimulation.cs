@@ -23,12 +23,12 @@ public static class RealtimeWorkerSimulation
 
         var writeResults = new List<RealtimeWorkerWriteRecord>();
 
-        await output.WriteLineAsync("Mode: simulated");
-        await output.WriteLineAsync("Transport: deterministic FeatureStreamEvent envelopes");
+        await output.WriteLineAsync("Mode: simulated", cancellationToken);
+        await output.WriteLineAsync("Transport: deterministic FeatureStreamEvent envelopes", cancellationToken);
         await output.WriteLineAsync(
-            $"Subscription: {subscription.SubscriptionId} source={subscription.Source.ServiceId}/{subscription.Source.LayerId?.ToString(CultureInfo.InvariantCulture) ?? "none"}");
-        await output.WriteLineAsync();
-        await output.WriteLineAsync("Write decisions:");
+            $"Subscription: {subscription.SubscriptionId} source={subscription.Source.ServiceId}/{subscription.Source.LayerId?.ToString(CultureInfo.InvariantCulture) ?? "none"}", cancellationToken);
+        await output.WriteLineAsync(string.Empty, cancellationToken);
+        await output.WriteLineAsync("Write decisions:", cancellationToken);
 
         foreach (var featureEvent in CreateEvents())
         {
@@ -37,7 +37,7 @@ public static class RealtimeWorkerSimulation
             var result = buffer.TryWrite(featureEvent);
             var record = new RealtimeWorkerWriteRecord(featureEvent, result);
             writeResults.Add(record);
-            await output.WriteLineAsync($"  {FormatWriteRecord(record)}");
+            await output.WriteLineAsync($"  {FormatWriteRecord(record)}", cancellationToken);
         }
 
         buffer.Complete();
@@ -71,16 +71,16 @@ public static class RealtimeWorkerSimulation
             .Select(result => result.Event)
             .Last();
 
-        await output.WriteLineAsync();
-        await output.WriteLineAsync("Projection:");
+        await output.WriteLineAsync(string.Empty, cancellationToken);
+        await output.WriteLineAsync("Projection:", cancellationToken);
         foreach (var incident in projection.Values.OrderBy(item => item.IncidentId, StringComparer.Ordinal))
         {
             await output.WriteLineAsync(
-                $"  {incident.IncidentId} status={incident.Status} sequence={incident.LastSequenceNumber} resume={incident.ResumeToken}");
+                $"  {incident.IncidentId} status={incident.Status} sequence={incident.LastSequenceNumber} resume={incident.ResumeToken}", cancellationToken);
         }
 
         await output.WriteLineAsync(
-            $"  active={projection.Count} closed={closedCount} lastSequence={lastAccepted.SequenceNumber} resume={lastAccepted.ResumeToken}");
+            $"  active={projection.Count} closed={closedCount} lastSequence={lastAccepted.SequenceNumber} resume={lastAccepted.ResumeToken}", cancellationToken);
 
         return new RealtimeWorkerRunSummary(
             AcceptedCount: acceptedCount,

@@ -76,7 +76,7 @@ on:
         type: string
 
 env:
-  DOTNET_VERSION: "10.0.401"
+  DOTNET_VERSION: "11.0.100"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
   # The server candidate and the published Honua.Sdk package are pinned in
@@ -454,6 +454,7 @@ jobs:
             -e Security__ConnectionEncryption__MasterKey="${key}" \
             -e Security__ConnectionEncryption__Salt="${salt}" \
             -e HONUA_ADMIN_PASSWORD="ci-protocol-api-key" \
+            -e Public__BaseUrl="http://localhost:8080" \
             -e Kestrel__Endpoints__Http__Url="http://+:8080" \
             -e Kestrel__Endpoints__Http__Protocols="Http1" \
             -e Kestrel__Endpoints__Grpc__Url="http://+:8081" \
@@ -491,6 +492,9 @@ jobs:
             --base-url http://localhost:8080 --receipt artifacts/evidence/location-setup-receipt.json
           python3 .certification/location-source/scripts/certification/verify-sdk-protocol-fixture.py --client-env \
             | jq -er 'to_entries[] | "\(.key)=\(.value)"' >> "${GITHUB_ENV}"
+          # The fixture's offline geocoder serves one named locator; the SDK client must address it.
+          locator="$(jq -er '.["Geocoding__LocatorName"]' .certification/location-server-config.json)"
+          echo "HONUA_PROTOCOL_GEOCODE_LOCATOR=${locator}" >> "${GITHUB_ENV}"
 
       - name: Retain candidate entitlement observation
         env:
@@ -521,7 +525,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p artifacts/test-results
-          filter='FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
+          filter='FullyQualifiedName~FeatureReadProtocolIntegrationTests|FullyQualifiedName~Statistics_CountMatchesFilteredFeatureCount|FullyQualifiedName~GrpcQuery_IsBoundedAndCanOmitGeometry|FullyQualifiedName~FeatureServer_Metadata_QueryStatisticsAndVectorPayload_AreReachable|FullyQualifiedName~FeatureServer_SourceMetadata_ReturnsConfiguredServiceAndLayer|FullyQualifiedName~OgcCollections_Items_Queryables_AndSingleItem_AreReachable'
           conformance_filter='FullyQualifiedName~GrpcQueryFeatures_RoundTripsCanonicalResponseShape|FullyQualifiedName~GrpcQuery_GeometryOmission_IsHonored|FullyQualifiedName~FeatureServerQuery_RoundTripsCanonicalAttributeProjection|FullyQualifiedName~OgcItems_RoundTripCanonicalPropertyProjection'
           if [[ "${TIER}" != pr ]]; then
             filter='Category=ProtocolIntegration'
@@ -530,6 +534,7 @@ jobs:
           protocol_code=0
           dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --framework net11.0 \
             --no-restore \
             --filter "${filter}" \
             --logger 'trx;LogFileName=protocol-integration.trx' \
@@ -537,6 +542,7 @@ jobs:
           conformance_code=0
           dotnet test "${{ steps.sdk-package.outputs.project }}" \
             --configuration Release \
+            --framework net11.0 \
             --no-restore \
             --filter "${conformance_filter}" \
             --logger 'trx;LogFileName=live-conformance.trx' \

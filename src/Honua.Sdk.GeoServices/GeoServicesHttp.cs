@@ -215,12 +215,7 @@ internal static class GeoServicesHttp
         }
     }
 
-    /// <summary>
-    /// Maps a GeoServices <c>error.code</c> to an <see cref="HttpStatusCode"/> only when it is a
-    /// valid HTTP status (100-599). GeoServices codes are an independent code space (e.g. 1000,
-    /// 4001) and must not be blindly cast — doing so produces nonsensical <see cref="HttpStatusCode"/>.
-    /// Out-of-range codes keep the transport status; the Esri code is still exposed via <c>GeoServicesErrorCode</c>.
-    /// </summary>
+    // GeoServices error codes are their own code space (e.g. 4001); only 100-599 maps to an HTTP status.
     internal static HttpStatusCode MapErrorCodeToStatus(int errorCode, HttpStatusCode transportStatus)
         => errorCode is >= 100 and <= 599 ? (HttpStatusCode)errorCode : transportStatus;
 

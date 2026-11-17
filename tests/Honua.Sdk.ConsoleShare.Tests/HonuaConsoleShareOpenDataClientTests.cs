@@ -68,7 +68,7 @@ public sealed class HonuaConsoleShareOpenDataClientTests
         Assert.Equal("https://example.org/parcels.geojson", Assert.Single(response.Page.Distributions).AccessUrl);
         Assert.Equal(-160.3, response.Page.SpatialExtent?.West);
         Assert.True(response.Eligibility.Eligible);
-        Assert.Equal(HonuaConsoleContentItemType.Layer, response.Eligibility.ItemType);
+        Assert.Equal(HonuaConsoleContentKind.Layer, response.Eligibility.ItemType);
         Assert.Equal(HonuaConsoleShareAccessTier.PublicIndexed, response.Eligibility.AccessTier);
         Assert.Equal(HonuaConsoleStacPublicationStatus.Published, response.StacPublication.Status);
         Assert.Equal("col-1", response.StacPublication.CollectionId);

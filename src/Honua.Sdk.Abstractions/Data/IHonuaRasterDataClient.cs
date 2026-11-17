@@ -32,18 +32,7 @@ public interface IHonuaRasterDataClient
         RasterCoverageStatisticsRequest request,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Reads a windowed subset of a raster: the cells covered by a bounding-box
-    /// extent, sampled to a target pixel size. This is the read path a raster
-    /// geoprocessing tool uses to pull a clipped extent of a large raster
-    /// (analogous to <c>arcpy</c> reading a clipped raster window) instead of
-    /// transferring the entire dataset. The returned
-    /// <see cref="RasterWindowReadResult"/> owns a response-backed stream and
-    /// must be disposed by the caller.
-    /// </summary>
-    /// <param name="request">Windowed read request (extent + target size).</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The raster window result; the caller owns and disposes the stream.</returns>
+    /// <summary>Reads the raster cells inside a bounding box at a target pixel size; the caller disposes the result stream.</summary>
     Task<RasterWindowReadResult> ReadWindowAsync(
         RasterWindowReadRequest request,
         CancellationToken cancellationToken = default);
