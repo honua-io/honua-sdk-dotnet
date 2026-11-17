@@ -25,6 +25,7 @@ An index of the public documentation that ships alongside the
 - [Browser / WASM support](browser-wasm-support.md) — supported surface, gRPC-Web, host-side constraints.
 - [Troubleshooting](troubleshooting.md) — concrete failure modes and fixes for configuration, auth, retry, CORS, compatibility, Catalog/Records/STAC/Scenes, and offline sync.
 - [Sanitized diagnostic bundles](diagnostic-bundles.md) — `honua doctor` capture, consent, schema provenance, privacy boundary, and read-only replay.
+- [XLSForm import and export](xlsform-cli.md) — `honua forms import|export` against a server, and `--local` conversion without one.
 
 ## Capability guides
 

@@ -50,8 +50,10 @@ internal static class HonuaCli
                 await output.WriteLineAsync(Usage(), cancellationToken).ConfigureAwait(false);
                 return args.Length == 0 ? 2 : 0;
             }
+            if (args[0].Equals(FormsCommand.Name, StringComparison.Ordinal))
+                return await FormsCommand.RunAsync(args[1..], new CliStreams(output, error), client, cancellationToken).ConfigureAwait(false);
             if (!args[0].Equals("doctor", StringComparison.Ordinal))
-                throw new CliArgumentException("Unknown command. Only 'honua doctor' is supported.");
+                throw new CliArgumentException("Unknown command. Use 'honua doctor' or 'honua forms'.");
 
             Dictionary<string, string> options = ParseOptions(args[1..]);
             if (options.ContainsKey("help"))
@@ -319,5 +321,7 @@ internal static class HonuaCli
             --output <replay.json> [--json]
 
         The command validates against the pinned support v1 schema and never uploads automatically.
+
+          honua forms import|export ...   XLSForm workbooks; run 'honua forms --help'.
         """;
 }
