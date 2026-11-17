@@ -28,7 +28,7 @@ internal static class CliFiles
         return buffer.ToArray();
     }
 
-    internal static string WriteAtomically(string path, ReadOnlySpan<byte> content)
+    internal static string WriteAtomically(string path, ReadOnlySpan<byte> content, UnixFileMode? ownerOnly = null)
     {
         string destination = Path.GetFullPath(path);
         string directory = Path.GetDirectoryName(destination)
@@ -42,7 +42,12 @@ internal static class CliFiles
                 stream.Write(content);
                 stream.Flush(flushToDisk: true);
             }
+
+            if (ownerOnly is not null && !OperatingSystem.IsWindows())
+                File.SetUnixFileMode(temporary, ownerOnly.Value);
             File.Move(temporary, destination, overwrite: true);
+            if (ownerOnly is not null && !OperatingSystem.IsWindows())
+                File.SetUnixFileMode(destination, ownerOnly.Value);
             return destination;
         }
         finally

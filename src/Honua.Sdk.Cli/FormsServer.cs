@@ -40,14 +40,13 @@ internal sealed class FormsServer
         if (!baseUri.AbsolutePath.EndsWith('/', StringComparison.Ordinal))
             baseUri = new Uri(baseUri.AbsoluteUri + "/");
 
-        int timeoutMs = 60_000;
-        string? timeoutValue = invocation.Get("timeout-ms");
-        if (timeoutValue is not null
-            && (!int.TryParse(timeoutValue, NumberStyles.None, CultureInfo.InvariantCulture, out timeoutMs)
-                || timeoutMs is < 1 or > 300_000))
-        {
-            throw new CliArgumentException("--timeout-ms must be between 1 and 300000.");
-        }
+        int timeoutMs = CliOptions.ReadInteger(
+            invocation.Get("timeout-ms"),
+            "timeout-ms",
+            60_000,
+            1,
+            300_000,
+            "--timeout-ms must be between 1 and 300000.");
 
         string? apiKey = Environment.GetEnvironmentVariable(ApiKeyVariable);
         if (apiKey is not null && apiKey.Any(char.IsControl))

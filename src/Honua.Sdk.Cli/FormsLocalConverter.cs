@@ -40,6 +40,13 @@ internal static class FormsLocalConverter
             .ConfigureAwait(false);
         FormDefinition form = JsonSerializer.Deserialize(content, FormsJsonContext.Default.FormDefinition)
             ?? throw new JsonException("The form definition is empty.");
+        if (string.IsNullOrWhiteSpace(form.FormId)
+            || form.Sections is null
+            || form.Metadata is null
+            || form.Sections.Any(section => section is null || section.Fields is null))
+        {
+            throw new InvalidDataException("The form definition is missing its id, sections or metadata.");
+        }
 
         XlsFormResult<XlsFormWorkbook> exported = XlsFormConverter.Export(form);
         if (exported.Value is null)

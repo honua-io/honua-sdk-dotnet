@@ -94,7 +94,7 @@ to keep forms under version control.
 |---|---|
 | `--service <id>` | Import only. The service that owns the target layer. |
 | `--layer <id>` | Import only. The integer layer id questions bind to. |
-| `-o`, `--output <file>` | Destination file. Export defaults to `<formId>.xlsx`; local import defaults to stdout. |
+| `-o`, `--output <file>` | Destination file. Required to be non-empty when present. Export defaults to `<formId>.xlsx`; local import defaults to stdout. A server import does not take this option. |
 | `--base-url <url>` | Server base URL (or `HONUA_BASE_URL`). |
 | `--timeout-ms <n>` | Request timeout, 1 to 300000 ms (default 60000). |
 | `--local` | Convert without a server; cannot be combined with the server options. |

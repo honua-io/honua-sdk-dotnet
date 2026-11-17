@@ -78,6 +78,22 @@ public sealed class FormsCommandLocalTests : IDisposable
     }
 
     [Fact]
+    public async Task LocalExport_NullSections_FailsAsFormsCommand()
+    {
+        string path = Path.Combine(_temporary.Path, "form.json");
+        string output = Path.Combine(_temporary.Path, "form.xlsx");
+        await File.WriteAllTextAsync(path, """{"formId":"f","name":"n","sections":null}""");
+        using HttpClient client = new(_handler, disposeHandler: false);
+
+        CliRun run = await CliRun.ExecuteAsync(client, "forms", "export", path, "--local", "-o", output);
+
+        Assert.Equal(1, run.ExitCode);
+        Assert.False(File.Exists(output));
+        Assert.Contains("honua forms failed:", run.Stderr, StringComparison.Ordinal);
+        Assert.DoesNotContain("honua doctor", run.Stderr, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task LocalExport_InvalidFormJson_FailsWithoutOutput()
     {
         string path = Path.Combine(_temporary.Path, "form.json");

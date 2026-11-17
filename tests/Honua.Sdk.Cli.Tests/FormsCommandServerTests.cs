@@ -198,6 +198,8 @@ public sealed class FormsCommandServerTests : IDisposable
     [InlineData("publish", "inspection")]
     [InlineData("export", "..", "--base-url", BaseUrl)]
     [InlineData("export", "inspection", "--unknown", "x")]
+    [InlineData("import", "survey.xlsx", "--service", "parcels", "--layer", "0", "--base-url", BaseUrl, "-o", "out.json")]
+    [InlineData("export", "inspection", "--base-url", BaseUrl, "--output=")]
     public async Task InvalidArguments_ExitTwoWithoutCallingServer(params string[] arguments)
     {
         StubHandler handler = new(_ => throw new InvalidOperationException("The server must not be called."));

@@ -65,6 +65,13 @@ internal static class FormsCommand
             await error.WriteLineAsync("honua forms failed: " + Describe(exception), CancellationToken.None).ConfigureAwait(false);
             return 1;
         }
+#pragma warning disable CA1031 // The CLI boundary must not fall through to the doctor command's catch-all.
+        catch (Exception)
+        {
+            await error.WriteLineAsync("honua forms failed.", CancellationToken.None).ConfigureAwait(false);
+            return 1;
+        }
+#pragma warning restore CA1031
     }
 
     private static async Task<FormsResult> ExecuteAsync(
@@ -78,6 +85,11 @@ internal static class FormsCommand
             await output.WriteLineAsync(Usage, cancellationToken).ConfigureAwait(false);
             return FormsResult.Help;
         }
+
+        if (invocation.Options.ContainsKey("output") && invocation.Get("output") is null)
+            throw new CliArgumentException("--output requires a file path.");
+        if (invocation.Verb == "import" && !invocation.Has("local") && invocation.Options.ContainsKey("output"))
+            throw new CliArgumentException("--output cannot be combined with a server import.");
 
         if (invocation.Has("local"))
         {
@@ -107,9 +119,20 @@ internal static class FormsCommand
             if (argument is "-o")
                 argument = "--output";
             if (argument.StartsWith("--", StringComparison.Ordinal))
-                index = ReadOption(args, index, argument[2..], options);
+            {
+                index = CliOptions.Read(
+                    args,
+                    index,
+                    argument[2..],
+                    Flags,
+                    ValueOptions.Contains,
+                    options,
+                    name => $"honua forms received an unknown option --{name}.");
+            }
             else
+            {
                 positional.Add(argument);
+            }
         }
 
         if (options.ContainsKey("help"))
@@ -122,37 +145,6 @@ internal static class FormsCommand
         if (verb == "export" && !options.ContainsKey("local") && positional[0].Trim() is "" or "." or "..")
             throw new CliArgumentException("honua forms export requires a form id.");
         return new FormsInvocation(verb, positional[0], options);
-    }
-
-    private static int ReadOption(string[] args, int index, string token, Dictionary<string, string> options)
-    {
-        int equals = token.IndexOf('=', StringComparison.Ordinal);
-        string name = equals >= 0 ? token[..equals] : token;
-        string value;
-        if (Flags.Contains(name))
-        {
-            if (equals >= 0)
-                throw new CliArgumentException($"--{name} does not accept a value.");
-            value = "true";
-        }
-        else if (!ValueOptions.Contains(name))
-        {
-            throw new CliArgumentException($"honua forms received an unknown option --{name}.");
-        }
-        else if (equals >= 0)
-        {
-            value = token[(equals + 1)..];
-        }
-        else
-        {
-            if (++index >= args.Length || args[index].StartsWith("--", StringComparison.Ordinal))
-                throw new CliArgumentException($"--{name} requires a value.");
-            value = args[index];
-        }
-
-        if (!options.TryAdd(name, value))
-            throw new CliArgumentException($"--{name} may be specified only once.");
-        return index;
     }
 
     private static FormsImportTarget ReadImportTarget(FormsInvocation invocation)

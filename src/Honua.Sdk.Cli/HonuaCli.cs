@@ -63,9 +63,9 @@ internal static class HonuaCli
             }
 
             string destination = Require(options, "output", "honua doctor requires --output <bundle.json>.");
-            int timeoutMilliseconds = ReadInteger(options, "timeout-ms", 10_000, 1, 30_000);
-            int previewBytes = ReadInteger(
-                options,
+            int timeoutMilliseconds = CliOptions.ReadInteger(Get(options, "timeout-ms"), "timeout-ms", 10_000, 1, 30_000);
+            int previewBytes = CliOptions.ReadInteger(
+                Get(options, "preview-bytes"),
                 "preview-bytes",
                 DiagnosticSanitizer.DefaultPreviewBytes,
                 1,
@@ -166,31 +166,10 @@ internal static class HonuaCli
         using (JsonDocument document = JsonDocument.Parse(serialized))
             DiagnosticSchema.Instance.AssertValid(document.RootElement);
 
-        string destination = Path.GetFullPath(path);
-        string? directory = Path.GetDirectoryName(destination);
-        if (directory is null)
-            throw new IOException("Diagnostic output directory could not be resolved.");
-        Directory.CreateDirectory(directory);
-        string temporary = Path.Combine(directory, $".{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp");
-        try
-        {
-            using (FileStream stream = new(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            {
-                stream.Write(serialized);
-                stream.WriteByte((byte)'\n');
-                stream.Flush(flushToDisk: true);
-            }
-            if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(temporary, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-            File.Move(temporary, destination, overwrite: true);
-            if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
-        finally
-        {
-            if (File.Exists(temporary))
-                File.Delete(temporary);
-        }
+        byte[] payload = new byte[serialized.Length + 1];
+        serialized.CopyTo(payload, 0);
+        payload[^1] = (byte)'\n';
+        CliFiles.WriteAtomically(path, payload, UnixFileMode.UserRead | UnixFileMode.UserWrite);
     }
 
     private static Dictionary<string, string> ParseOptions(string[] args)
@@ -201,34 +180,19 @@ internal static class HonuaCli
             string argument = args[index];
             if (!argument.StartsWith("--", StringComparison.Ordinal))
                 throw new CliArgumentException("honua doctor does not accept positional arguments.");
-            string token = argument[2..];
-            int equals = token.IndexOf('=', StringComparison.Ordinal);
-            string name = equals >= 0 ? token[..equals] : token;
-            string value;
-            if (name is "json" or "help")
-            {
-                value = "true";
-                if (equals >= 0)
-                    throw new CliArgumentException($"--{name} does not accept a value.");
-            }
-            else if (equals >= 0)
-            {
-                value = token[(equals + 1)..];
-            }
-            else
-            {
-                if (++index >= args.Length || args[index].StartsWith("--", StringComparison.Ordinal))
-                    throw new CliArgumentException($"--{name} requires a value.");
-                value = args[index];
-            }
-
-            if (!KnownOptions.Contains(name))
-                throw new CliArgumentException("honua doctor received an unknown option.");
-            if (!options.TryAdd(name, value))
-                throw new CliArgumentException($"--{name} may be specified only once.");
+            index = CliOptions.Read(
+                args,
+                index,
+                argument[2..],
+                Flags,
+                name => KnownOptions.Contains(name),
+                options,
+                _ => "honua doctor received an unknown option.");
         }
         return options;
     }
+
+    private static readonly HashSet<string> Flags = new(StringComparer.Ordinal) { "help", "json" };
 
     private static readonly HashSet<string> KnownOptions = new(StringComparer.Ordinal)
     {
@@ -251,25 +215,6 @@ internal static class HonuaCli
             "false" => false,
             _ => throw new CliArgumentException($"--{name} must be explicitly true or false.")
         };
-    }
-
-    private static int ReadInteger(
-        Dictionary<string, string> options,
-        string name,
-        int defaultValue,
-        int minimum,
-        int maximum)
-    {
-        string? value = Get(options, name);
-        if (value is null)
-            return defaultValue;
-        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int parsed)
-            || parsed < minimum
-            || parsed > maximum)
-        {
-            throw new CliArgumentException($"--{name} is outside the supported range.");
-        }
-        return parsed;
     }
 
     private static void RejectPresent(Dictionary<string, string> options, params string[] names)
