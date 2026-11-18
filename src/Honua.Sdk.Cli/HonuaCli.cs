@@ -50,8 +50,13 @@ internal static class HonuaCli
                 await output.WriteLineAsync(Usage(), cancellationToken).ConfigureAwait(false);
                 return args.Length == 0 ? 2 : 0;
             }
+            if (args[0].Equals(FormsCommand.Name, StringComparison.Ordinal))
+            {
+                FormsCommandContext context = new(new CliStreams(output, error), client);
+                return await FormsCommand.RunAsync(args[1..], context, cancellationToken).ConfigureAwait(false);
+            }
             if (!args[0].Equals("doctor", StringComparison.Ordinal))
-                throw new CliArgumentException("Unknown command. Only 'honua doctor' is supported.");
+                throw new CliArgumentException("Unknown command. Use 'honua doctor' or 'honua forms'.");
 
             Dictionary<string, string> options = ParseOptions(args[1..]);
             if (options.ContainsKey("help"))
@@ -60,75 +65,10 @@ internal static class HonuaCli
                 return 0;
             }
 
-            string destination = Require(options, "output", "honua doctor requires --output <bundle.json>.");
-            int timeoutMilliseconds = ReadInteger(options, "timeout-ms", 10_000, 1, 30_000);
-            int previewBytes = ReadInteger(
-                options,
-                "preview-bytes",
-                DiagnosticSanitizer.DefaultPreviewBytes,
-                1,
-                DiagnosticSanitizer.MaxPreviewBytes);
-            TimeSpan timeout = TimeSpan.FromMilliseconds(timeoutMilliseconds);
-            string? replayPath = Get(options, "replay");
-
-            DiagnosticBundle bundle;
-            string outcome;
-            bool capabilityProbe;
-            if (replayPath is not null)
-            {
-                RejectPresent(options, "exchange", "classification", "redaction-acknowledged", "share-with-support", "granted-by", "bundle-id");
-                string baseValue = Get(options, "base-url")
-                    ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL")
-                    ?? throw new CliArgumentException("Replay requires --base-url or HONUA_BASE_URL.");
-                Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
-                DiagnosticBundle source = DiagnosticReplay.ReadAndValidateBundle(replayPath);
-                bundle = await DiagnosticReplay.ReplayAsync(
-                    source,
-                    baseUri,
-                    client,
-                    timeout,
-                    cancellationToken).ConfigureAwait(false);
-                outcome = "replayed";
-                capabilityProbe = false;
-            }
-            else
-            {
-                string classification = Require(
-                    options,
-                    "classification",
-                    "honua doctor requires --classification <value>.");
-                DiagnosticConsent consent = new(
-                    ReadExplicitBoolean(options, "redaction-acknowledged"),
-                    ReadExplicitBoolean(options, "share-with-support"),
-                    Get(options, "granted-by"));
-                List<DiagnosticExchangeInput> exchanges = [];
-                string? baseValue = Get(options, "base-url") ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL");
-                capabilityProbe = baseValue is not null;
-                if (baseValue is not null)
-                {
-                    Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
-                    exchanges.Add(await DiagnosticDoctor.ProbeCapabilitiesAsync(
-                        baseUri,
-                        client,
-                        timeout,
-                        cancellationToken).ConfigureAwait(false));
-                }
-
-                string? exchangePath = Get(options, "exchange");
-                if (exchangePath is not null)
-                    exchanges.Add(DiagnosticDoctor.ReadCapturedExchange(exchangePath));
-                if (exchanges.Count == 0)
-                    throw new CliArgumentException("honua doctor requires --base-url/HONUA_BASE_URL or --exchange <captured.json>.");
-
-                bundle = DiagnosticSanitizer.CreateBundle(
-                    classification,
-                    consent,
-                    exchanges,
-                    Get(options, "bundle-id"),
-                    previewBytes);
-                outcome = "emitted";
-            }
-
+            string destination = CliOptions.Require(options, "output", "honua doctor requires --output <bundle.json>.");
+            DoctorRun doctor = new(options, client, ReadDoctorLimits(options));
+            (DiagnosticBundle bundle, string outcome, bool capabilityProbe) =
+                await BuildDoctorBundleAsync(doctor, cancellationToken).ConfigureAwait(false);
             WriteValidatedBundle(destination, bundle);
             await WriteSummaryAsync(output, options.ContainsKey("json"), outcome, bundle.Envelopes.Count, capabilityProbe)
                 .ConfigureAwait(false);
@@ -164,31 +104,93 @@ internal static class HonuaCli
         using (JsonDocument document = JsonDocument.Parse(serialized))
             DiagnosticSchema.Instance.AssertValid(document.RootElement);
 
-        string destination = Path.GetFullPath(path);
-        string? directory = Path.GetDirectoryName(destination);
-        if (directory is null)
-            throw new IOException("Diagnostic output directory could not be resolved.");
-        Directory.CreateDirectory(directory);
-        string temporary = Path.Combine(directory, $".{Path.GetFileName(destination)}.{Guid.NewGuid():N}.tmp");
-        try
+        byte[] payload = new byte[serialized.Length + 1];
+        serialized.CopyTo(payload, 0);
+        payload[^1] = (byte)'\n';
+        CliFiles.WriteAtomically(path, payload, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    private readonly record struct DoctorLimits(TimeSpan Timeout, int PreviewBytes);
+
+    private readonly record struct DoctorRun(Dictionary<string, string> Options, HttpClient Client, DoctorLimits Limits);
+
+    private static DoctorLimits ReadDoctorLimits(Dictionary<string, string> options)
+    {
+        IntegerBounds timeout = new() { Name = "timeout-ms", DefaultValue = 10_000, Minimum = 1, Maximum = 30_000 };
+        IntegerBounds preview = new()
         {
-            using (FileStream stream = new(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            {
-                stream.Write(serialized);
-                stream.WriteByte((byte)'\n');
-                stream.Flush(flushToDisk: true);
-            }
-            if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(temporary, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-            File.Move(temporary, destination, overwrite: true);
-            if (!OperatingSystem.IsWindows())
-                File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        }
-        finally
+            Name = "preview-bytes",
+            DefaultValue = DiagnosticSanitizer.DefaultPreviewBytes,
+            Minimum = 1,
+            Maximum = DiagnosticSanitizer.MaxPreviewBytes
+        };
+        int timeoutMilliseconds = CliOptions.ReadInteger(CliOptions.Get(options, "timeout-ms"), timeout);
+        int previewBytes = CliOptions.ReadInteger(CliOptions.Get(options, "preview-bytes"), preview);
+        return new DoctorLimits(TimeSpan.FromMilliseconds(timeoutMilliseconds), previewBytes);
+    }
+
+    private static async Task<(DiagnosticBundle Bundle, string Outcome, bool CapabilityProbe)> BuildDoctorBundleAsync(
+        DoctorRun doctor,
+        CancellationToken cancellationToken)
+    {
+        string? replayPath = CliOptions.Get(doctor.Options, "replay");
+        if (replayPath is not null)
         {
-            if (File.Exists(temporary))
-                File.Delete(temporary);
+            RejectPresent(doctor.Options, "exchange", "classification", "redaction-acknowledged", "share-with-support", "granted-by", "bundle-id");
+            string baseValue = CliOptions.RequireBaseUrl(
+                CliOptions.Get(doctor.Options, "base-url"),
+                "Replay requires --base-url or HONUA_BASE_URL.");
+            Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
+            DiagnosticBundle source = DiagnosticReplay.ReadAndValidateBundle(replayPath);
+            DiagnosticBundle bundle = await DiagnosticReplay.ReplayAsync(
+                source,
+                baseUri,
+                doctor.Client,
+                doctor.Limits.Timeout,
+                cancellationToken).ConfigureAwait(false);
+            return (bundle, "replayed", false);
         }
+
+        return await CaptureDoctorBundleAsync(doctor, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<(DiagnosticBundle Bundle, string Outcome, bool CapabilityProbe)> CaptureDoctorBundleAsync(
+        DoctorRun doctor,
+        CancellationToken cancellationToken)
+    {
+        string classification = CliOptions.Require(
+            doctor.Options,
+            "classification",
+            "honua doctor requires --classification <value>.");
+        DiagnosticConsent consent = new(
+            ReadExplicitBoolean(doctor.Options, "redaction-acknowledged"),
+            ReadExplicitBoolean(doctor.Options, "share-with-support"),
+            CliOptions.Get(doctor.Options, "granted-by"));
+        List<DiagnosticExchangeInput> exchanges = [];
+        string? baseValue = CliOptions.Get(doctor.Options, "base-url") ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL");
+        if (baseValue is not null)
+        {
+            Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
+            exchanges.Add(await DiagnosticDoctor.ProbeCapabilitiesAsync(
+                baseUri,
+                doctor.Client,
+                doctor.Limits.Timeout,
+                cancellationToken).ConfigureAwait(false));
+        }
+
+        string? exchangePath = CliOptions.Get(doctor.Options, "exchange");
+        if (exchangePath is not null)
+            exchanges.Add(DiagnosticDoctor.ReadCapturedExchange(exchangePath));
+        if (exchanges.Count == 0)
+            throw new CliArgumentException("honua doctor requires --base-url/HONUA_BASE_URL or --exchange <captured.json>.");
+
+        DiagnosticBundle captured = DiagnosticSanitizer.CreateBundle(
+            classification,
+            consent,
+            exchanges,
+            CliOptions.Get(doctor.Options, "bundle-id"),
+            doctor.Limits.PreviewBytes);
+        return (captured, "emitted", baseValue is not null);
     }
 
     private static Dictionary<string, string> ParseOptions(string[] args)
@@ -199,34 +201,12 @@ internal static class HonuaCli
             string argument = args[index];
             if (!argument.StartsWith("--", StringComparison.Ordinal))
                 throw new CliArgumentException("honua doctor does not accept positional arguments.");
-            string token = argument[2..];
-            int equals = token.IndexOf('=', StringComparison.Ordinal);
-            string name = equals >= 0 ? token[..equals] : token;
-            string value;
-            if (name is "json" or "help")
-            {
-                value = "true";
-                if (equals >= 0)
-                    throw new CliArgumentException($"--{name} does not accept a value.");
-            }
-            else if (equals >= 0)
-            {
-                value = token[(equals + 1)..];
-            }
-            else
-            {
-                if (++index >= args.Length || args[index].StartsWith("--", StringComparison.Ordinal))
-                    throw new CliArgumentException($"--{name} requires a value.");
-                value = args[index];
-            }
-
-            if (!KnownOptions.Contains(name))
-                throw new CliArgumentException("honua doctor received an unknown option.");
-            if (!options.TryAdd(name, value))
-                throw new CliArgumentException($"--{name} may be specified only once.");
+            index = CliOptions.Read(new OptionRead(new OptionCursor(args, index, argument[2..]), options, Grammar));
         }
         return options;
     }
+
+    private static readonly HashSet<string> Flags = new(StringComparer.Ordinal) { "help", "json" };
 
     private static readonly HashSet<string> KnownOptions = new(StringComparer.Ordinal)
     {
@@ -234,40 +214,20 @@ internal static class HonuaCli
         "preview-bytes", "redaction-acknowledged", "replay", "share-with-support", "timeout-ms"
     };
 
-    private static string Require(Dictionary<string, string> options, string name, string message)
-        => Get(options, name) ?? throw new CliArgumentException(message);
-
-    private static string? Get(Dictionary<string, string> options, string name)
-        => options.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+    private static readonly OptionGrammar Grammar = new(
+        Flags,
+        static name => KnownOptions.Contains(name),
+        static _ => "honua doctor received an unknown option.");
 
     private static bool ReadExplicitBoolean(Dictionary<string, string> options, string name)
     {
-        string value = Require(options, name, $"--{name} must be explicitly true or false.");
+        string value = CliOptions.Require(options, name, $"--{name} must be explicitly true or false.");
         return value switch
         {
             "true" => true,
             "false" => false,
             _ => throw new CliArgumentException($"--{name} must be explicitly true or false.")
         };
-    }
-
-    private static int ReadInteger(
-        Dictionary<string, string> options,
-        string name,
-        int defaultValue,
-        int minimum,
-        int maximum)
-    {
-        string? value = Get(options, name);
-        if (value is null)
-            return defaultValue;
-        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int parsed)
-            || parsed < minimum
-            || parsed > maximum)
-        {
-            throw new CliArgumentException($"--{name} is outside the supported range.");
-        }
-        return parsed;
     }
 
     private static void RejectPresent(Dictionary<string, string> options, params string[] names)
@@ -319,5 +279,7 @@ internal static class HonuaCli
             --output <replay.json> [--json]
 
         The command validates against the pinned support v1 schema and never uploads automatically.
+
+          honua forms import|export ...   XLSForm workbooks; run 'honua forms --help'.
         """;
 }

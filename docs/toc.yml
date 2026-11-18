@@ -16,6 +16,8 @@
       href: troubleshooting.md
     - name: Sanitized diagnostic bundles
       href: diagnostic-bundles.md
+    - name: XLSForm import and export (CLI)
+      href: xlsform-cli.md
     - name: Browser / WASM
       href: browser-wasm-support.md
 - name: API reference

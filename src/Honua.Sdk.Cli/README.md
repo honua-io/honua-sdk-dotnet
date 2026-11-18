@@ -1,11 +1,15 @@
 # Honua.Sdk.Cli
 
-Support-safe Honua command-line diagnostics, installed as the global .NET tool
-`honua`. Its single command, `honua doctor`, produces a local, sanitized,
-schema-pinned diagnostic bundle from a captured HTTP exchange and/or an
-anonymous server capability probe, and can re-run a previously captured bundle
-in bounded read-only replay mode. It validates every bundle against the pinned
-support v1 schema and never uploads anything automatically.
+The Honua command-line tool, installed as the global .NET tool `honua`.
+
+- `honua doctor` produces a local, sanitized, schema-pinned diagnostic bundle
+  from a captured HTTP exchange and/or an anonymous server capability probe, and
+  can re-run a previously captured bundle in bounded read-only replay mode. It
+  validates every bundle against the pinned support v1 schema and never uploads
+  anything automatically.
+- `honua forms import|export` moves form packages between XLSForm workbooks and
+  a server, or converts them locally with `--local`. See
+  [XLSForm import and export](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/xlsform-cli.md).
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
 repo README for the full package catalog, browser/WASM support, authentication, and
@@ -39,9 +43,23 @@ honua doctor --replay diagnostic-bundle.json \
   --output replay.json --json
 ```
 
+## Forms quick usage
+
+```bash
+export HONUA_BASE_URL="https://your-honua-server"
+export HONUA_API_KEY="<admin-api-key>"
+honua forms import inspection.xlsx --service parcels --layer 0   # creates a draft
+honua forms export inspection -o inspection.xlsx                 # published version
+honua forms import inspection.xlsx --local -o inspection.form.json
+```
+
+Rejected workbooks print each blocking cell (sheet, row, column, message) and
+exit 1; invalid arguments exit 2. The full option list is in
+[XLSForm import and export](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/docs/xlsform-cli.md).
+
 ## Command reference
 
-`honua doctor` is the only command. Capture mode requires `--classification`,
+`honua doctor`: capture mode requires `--classification`,
 explicit `--redaction-acknowledged=<true|false>` and
 `--share-with-support=<true|false>` consent flags, and at least one input:
 `--exchange <capture.json>` and/or `--base-url <url>` (or the `HONUA_BASE_URL`

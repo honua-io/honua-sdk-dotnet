@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Honua.Sdk.Cli</PackageId>
-    <Description>Support-safe Honua command-line diagnostics and schema-pinned read-only replay.</Description>
+    <Description>Honua command-line tool: support-safe diagnostics, schema-pinned read-only replay, and XLSForm form import and export.</Description>
     <RootNamespace>Honua.Sdk.Cli</RootNamespace>
     <Authors>Honua</Authors>
     <Copyright>Copyright (c) Honua</Copyright>
@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/honua-io/honua-sdk-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/honua-io/honua-sdk-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>honua;diagnostics;support;cli;dotnet-tool</PackageTags>
+    <PackageTags>honua;diagnostics;support;cli;dotnet-tool;xlsform;forms</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>honua</ToolCommandName>
@@ -28,6 +28,10 @@
       <LogicalName>Honua.Sdk.Cli.Schemas.diagnostic-bundle.v1.json</LogicalName>
     </EmbeddedResource>
     <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Honua.Sdk.Field\Honua.Sdk.Field.csproj" />
   </ItemGroup>
 
   <ItemGroup>

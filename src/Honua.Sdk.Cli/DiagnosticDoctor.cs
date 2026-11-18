@@ -110,21 +110,15 @@ internal static class DiagnosticDoctor
         if (response.Content.Headers.ContentLength > maximumBytes)
             throw new DiagnosticSafetyException("response-over-budget", "Diagnostic response exceeds the byte budget.");
 
-        Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        await using (responseStream.ConfigureAwait(false))
+        try
         {
-            using MemoryStream output = new();
-            byte[] buffer = new byte[8192];
-            while (true)
-            {
-                int read = await responseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-                if (read == 0)
-                    break;
-                if (output.Length + read > maximumBytes)
-                    throw new DiagnosticSafetyException("response-over-budget", "Diagnostic response exceeds the byte budget.");
-                await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
-            }
-            return output.ToArray();
+            Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (responseStream.ConfigureAwait(false))
+                return await CliFiles.ReadBoundedAsync(responseStream, maximumBytes, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ContentTooLargeException)
+        {
+            throw new DiagnosticSafetyException("response-over-budget", "Diagnostic response exceeds the byte budget.");
         }
     }
 
