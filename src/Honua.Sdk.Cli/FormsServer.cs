@@ -10,6 +10,8 @@ namespace Honua.Sdk.Cli;
 
 internal sealed record FormsImportTarget(string ServiceId, int LayerId);
 
+internal readonly record struct FormsEndpoint(Uri BaseUri, string ApiKey, TimeSpan Timeout);
+
 internal sealed class FormsServer
 {
     internal const string WorkbookContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -18,17 +20,13 @@ internal sealed class FormsServer
     private const int MaxResponseBytes = 16 * 1024 * 1024;
     private static readonly byte[] ZipSignature = [0x50, 0x4B, 0x03, 0x04];
 
-    private readonly Uri _baseUri;
-    private readonly string? _apiKey;
+    private readonly FormsEndpoint _endpoint;
     private readonly HttpClient _client;
-    private readonly TimeSpan _timeout;
 
-    private FormsServer(Uri baseUri, string? apiKey, HttpClient client, TimeSpan timeout)
+    private FormsServer(FormsEndpoint endpoint, HttpClient client)
     {
-        _baseUri = baseUri;
-        _apiKey = apiKey;
+        _endpoint = endpoint;
         _client = client;
-        _timeout = timeout;
     }
 
     internal static FormsServer Create(FormsInvocation invocation, HttpClient client)
@@ -56,7 +54,7 @@ internal sealed class FormsServer
             throw new CliArgumentException("honua forms requires HONUA_API_KEY for a server import or export.");
         if (apiKey.Any(char.IsControl))
             throw new CliArgumentException("HONUA_API_KEY contains a control character.");
-        return new FormsServer(baseUri, apiKey, client, TimeSpan.FromMilliseconds(timeoutMs));
+        return new FormsServer(new FormsEndpoint(baseUri, apiKey, TimeSpan.FromMilliseconds(timeoutMs)), client);
     }
 
     internal async Task<FormsResult> ImportAsync(string workbookPath, FormsImportTarget target, CancellationToken cancellationToken)
@@ -106,18 +104,17 @@ internal sealed class FormsServer
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string relative, string primaryAccept)
     {
-        HttpRequestMessage request = new(method, new Uri(_baseUri, PackagesPath + relative));
+        HttpRequestMessage request = new(method, new Uri(_endpoint.BaseUri, PackagesPath + relative));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(primaryAccept));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/problem+json"));
-        if (_apiKey is not null)
-            request.Headers.TryAddWithoutValidation("X-API-Key", _apiKey);
+        request.Headers.TryAddWithoutValidation("X-API-Key", _endpoint.ApiKey);
         return request;
     }
 
     private async Task<(HttpStatusCode Status, byte[] Body)> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(_timeout);
+        timeout.CancelAfter(_endpoint.Timeout);
         using HttpResponseMessage response = await _client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token)
             .ConfigureAwait(false);
