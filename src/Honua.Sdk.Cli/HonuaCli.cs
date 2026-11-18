@@ -62,16 +62,21 @@ internal static class HonuaCli
                 return 0;
             }
 
-            string destination = Require(options, "output", "honua doctor requires --output <bundle.json>.");
-            int timeoutMilliseconds = CliOptions.ReadInteger(Get(options, "timeout-ms"), "timeout-ms", 10_000, 1, 30_000);
+            string destination = CliOptions.Require(options, "output", "honua doctor requires --output <bundle.json>.");
+            int timeoutMilliseconds = CliOptions.ReadInteger(
+                CliOptions.Get(options, "timeout-ms"),
+                new IntegerBounds { Name = "timeout-ms", DefaultValue = 10_000, Minimum = 1, Maximum = 30_000 });
             int previewBytes = CliOptions.ReadInteger(
-                Get(options, "preview-bytes"),
-                "preview-bytes",
-                DiagnosticSanitizer.DefaultPreviewBytes,
-                1,
-                DiagnosticSanitizer.MaxPreviewBytes);
+                CliOptions.Get(options, "preview-bytes"),
+                new IntegerBounds
+                {
+                    Name = "preview-bytes",
+                    DefaultValue = DiagnosticSanitizer.DefaultPreviewBytes,
+                    Minimum = 1,
+                    Maximum = DiagnosticSanitizer.MaxPreviewBytes
+                });
             TimeSpan timeout = TimeSpan.FromMilliseconds(timeoutMilliseconds);
-            string? replayPath = Get(options, "replay");
+            string? replayPath = CliOptions.Get(options, "replay");
 
             DiagnosticBundle bundle;
             string outcome;
@@ -79,9 +84,9 @@ internal static class HonuaCli
             if (replayPath is not null)
             {
                 RejectPresent(options, "exchange", "classification", "redaction-acknowledged", "share-with-support", "granted-by", "bundle-id");
-                string baseValue = Get(options, "base-url")
-                    ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL")
-                    ?? throw new CliArgumentException("Replay requires --base-url or HONUA_BASE_URL.");
+                string baseValue = CliOptions.RequireBaseUrl(
+                    CliOptions.Get(options, "base-url"),
+                    "Replay requires --base-url or HONUA_BASE_URL.");
                 Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
                 DiagnosticBundle source = DiagnosticReplay.ReadAndValidateBundle(replayPath);
                 bundle = await DiagnosticReplay.ReplayAsync(
@@ -95,16 +100,16 @@ internal static class HonuaCli
             }
             else
             {
-                string classification = Require(
+                string classification = CliOptions.Require(
                     options,
                     "classification",
                     "honua doctor requires --classification <value>.");
                 DiagnosticConsent consent = new(
                     ReadExplicitBoolean(options, "redaction-acknowledged"),
                     ReadExplicitBoolean(options, "share-with-support"),
-                    Get(options, "granted-by"));
+                    CliOptions.Get(options, "granted-by"));
                 List<DiagnosticExchangeInput> exchanges = [];
-                string? baseValue = Get(options, "base-url") ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL");
+                string? baseValue = CliOptions.Get(options, "base-url") ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL");
                 capabilityProbe = baseValue is not null;
                 if (baseValue is not null)
                 {
@@ -116,7 +121,7 @@ internal static class HonuaCli
                         cancellationToken).ConfigureAwait(false));
                 }
 
-                string? exchangePath = Get(options, "exchange");
+                string? exchangePath = CliOptions.Get(options, "exchange");
                 if (exchangePath is not null)
                     exchanges.Add(DiagnosticDoctor.ReadCapturedExchange(exchangePath));
                 if (exchanges.Count == 0)
@@ -126,7 +131,7 @@ internal static class HonuaCli
                     classification,
                     consent,
                     exchanges,
-                    Get(options, "bundle-id"),
+                    CliOptions.Get(options, "bundle-id"),
                     previewBytes);
                 outcome = "emitted";
             }
@@ -180,14 +185,7 @@ internal static class HonuaCli
             string argument = args[index];
             if (!argument.StartsWith("--", StringComparison.Ordinal))
                 throw new CliArgumentException("honua doctor does not accept positional arguments.");
-            index = CliOptions.Read(
-                args,
-                index,
-                argument[2..],
-                Flags,
-                name => KnownOptions.Contains(name),
-                options,
-                _ => "honua doctor received an unknown option.");
+            index = CliOptions.Read(new OptionRead(new OptionCursor(args, index, argument[2..]), options, Grammar));
         }
         return options;
     }
@@ -200,15 +198,14 @@ internal static class HonuaCli
         "preview-bytes", "redaction-acknowledged", "replay", "share-with-support", "timeout-ms"
     };
 
-    private static string Require(Dictionary<string, string> options, string name, string message)
-        => Get(options, name) ?? throw new CliArgumentException(message);
-
-    private static string? Get(Dictionary<string, string> options, string name)
-        => options.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+    private static readonly OptionGrammar Grammar = new(
+        Flags,
+        static name => KnownOptions.Contains(name),
+        static _ => "honua doctor received an unknown option.");
 
     private static bool ReadExplicitBoolean(Dictionary<string, string> options, string name)
     {
-        string value = Require(options, name, $"--{name} must be explicitly true or false.");
+        string value = CliOptions.Require(options, name, $"--{name} must be explicitly true or false.");
         return value switch
         {
             "true" => true,

@@ -33,25 +33,30 @@ internal sealed class FormsServer
 
     internal static FormsServer Create(FormsInvocation invocation, HttpClient client)
     {
-        string baseValue = invocation.Get("base-url")
-            ?? Environment.GetEnvironmentVariable("HONUA_BASE_URL")
-            ?? throw new CliArgumentException("honua forms requires --base-url or HONUA_BASE_URL (or --local).");
+        string baseValue = CliOptions.RequireBaseUrl(
+            invocation.Get("base-url"),
+            "honua forms requires --base-url or HONUA_BASE_URL (or --local).");
         Uri baseUri = DiagnosticReplay.ValidateBaseUri(baseValue);
         if (!baseUri.AbsolutePath.EndsWith('/', StringComparison.Ordinal))
             baseUri = new Uri(baseUri.AbsoluteUri + "/");
 
         int timeoutMs = CliOptions.ReadInteger(
             invocation.Get("timeout-ms"),
-            "timeout-ms",
-            60_000,
-            1,
-            300_000,
-            "--timeout-ms must be between 1 and 300000.");
+            new IntegerBounds
+            {
+                Name = "timeout-ms",
+                DefaultValue = 60_000,
+                Minimum = 1,
+                Maximum = 300_000,
+                Message = "--timeout-ms must be between 1 and 300000."
+            });
 
         string? apiKey = Environment.GetEnvironmentVariable(ApiKeyVariable);
-        if (apiKey is not null && apiKey.Any(char.IsControl))
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new CliArgumentException("honua forms requires HONUA_API_KEY for a server import or export.");
+        if (apiKey.Any(char.IsControl))
             throw new CliArgumentException("HONUA_API_KEY contains a control character.");
-        return new FormsServer(baseUri, string.IsNullOrWhiteSpace(apiKey) ? null : apiKey, client, TimeSpan.FromMilliseconds(timeoutMs));
+        return new FormsServer(baseUri, apiKey, client, TimeSpan.FromMilliseconds(timeoutMs));
     }
 
     internal async Task<FormsResult> ImportAsync(string workbookPath, FormsImportTarget target, CancellationToken cancellationToken)
@@ -117,7 +122,7 @@ internal sealed class FormsServer
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token)
             .ConfigureAwait(false);
         if (response.Content.Headers.ContentLength > MaxResponseBytes)
-            throw new IOException("The server response exceeds 16 MiB.");
+            throw new ContentTooLargeException("The server response exceeds 16 MiB.");
         Stream stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
         await using (stream.ConfigureAwait(false))
         {

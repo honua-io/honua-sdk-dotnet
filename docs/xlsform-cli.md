@@ -64,8 +64,8 @@ honua forms export inspection -o inspection.xlsx
 
 The command downloads the current published version from
 `GET /api/v1/admin/forms/packages/{formId}/export`. Without `-o` it writes
-`<formId>.xlsx` in the current directory, with `.`, `/` and `\` in the id
-replaced by `_`. A response that is not an XLSX workbook (for example a proxy
+`<formId>.xlsx` in the current directory, with control characters, `.`, `/`
+and `\` in the id replaced by `_`. A response that is not an XLSX workbook (for example a proxy
 sign-in page) is not saved and exits 1. A form that uses behavior XLSForm
 cannot represent returns HTTP 422 with diagnostics; the command prints them,
 writes no file and exits 1. An unknown or unpublished form returns HTTP 404.
@@ -104,6 +104,6 @@ to keep forms under version control.
 |---|---|
 | 0 | Imported, exported or converted. |
 | 1 | Rejected with diagnostics, or the server, network or file operation failed. |
-| 2 | Invalid arguments. Nothing was sent. |
+| 2 | Invalid arguments, including a missing API key. Nothing was sent. |
 
 Workbooks are limited to 8 MiB, the same limit the server applies.

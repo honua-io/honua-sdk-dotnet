@@ -12,10 +12,9 @@ internal sealed record FormsInvocation(string Verb, string Target, IReadOnlyDict
 {
     internal bool Has(string name) => Options.ContainsKey(name);
 
-    internal string? Get(string name)
-        => Options.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value) ? value : null;
+    internal string? Get(string name) => CliOptions.Get(Options, name);
 
-    internal string Require(string name, string message) => Get(name) ?? throw new CliArgumentException(message);
+    internal string Require(string name, string message) => CliOptions.Require(Options, name, message);
 }
 
 internal static class FormsCommand
@@ -28,6 +27,11 @@ internal static class FormsCommand
     {
         "base-url", "layer", "output", "service", "timeout-ms"
     };
+
+    private static readonly OptionGrammar Grammar = new(
+        Flags,
+        ValueOptions.Contains,
+        static name => $"honua forms received an unknown option --{name}.");
 
     internal static async Task<int> RunAsync(string[] args, CliStreams streams, HttpClient client, CancellationToken cancellationToken)
     {
@@ -118,16 +122,11 @@ internal static class FormsCommand
             string argument = args[index];
             if (argument is "-o")
                 argument = "--output";
+            else if (argument.StartsWith("-o=", StringComparison.Ordinal))
+                argument = "--output=" + argument[3..];
             if (argument.StartsWith("--", StringComparison.Ordinal))
             {
-                index = CliOptions.Read(
-                    args,
-                    index,
-                    argument[2..],
-                    Flags,
-                    ValueOptions.Contains,
-                    options,
-                    name => $"honua forms received an unknown option --{name}.");
+                index = CliOptions.Read(new OptionRead(new OptionCursor(args, index, argument[2..]), options, Grammar));
             }
             else
             {
@@ -164,12 +163,16 @@ internal static class FormsCommand
             throw new CliArgumentException($"--{present} cannot be combined with --local.");
     }
 
-    private static string Describe(Exception exception) => exception switch
+    private static string Describe(Exception exception)
     {
-        OperationCanceledException => "the request timed out or was cancelled.",
-        JsonException => "the input or response is not valid JSON.",
-        _ => exception.Message
-    };
+        string text = exception switch
+        {
+            OperationCanceledException => "the request timed out or was cancelled.",
+            JsonException => "the input or response is not valid JSON.",
+            _ => exception.Message
+        };
+        return FormsReport.Printable(text);
+    }
 
     internal const string Usage = """
         Usage:

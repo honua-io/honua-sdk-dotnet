@@ -3,6 +3,23 @@
 
 namespace Honua.Sdk.Cli;
 
+internal sealed class ContentTooLargeException : IOException
+{
+    public ContentTooLargeException()
+    {
+    }
+
+    public ContentTooLargeException(string message)
+        : base(message)
+    {
+    }
+
+    public ContentTooLargeException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
 internal static class CliFiles
 {
     internal const int MaxWorkbookBytes = 8 * 1024 * 1024;
@@ -22,7 +39,7 @@ internal static class CliFiles
         while ((read = await stream.ReadAsync(chunk, cancellationToken).ConfigureAwait(false)) > 0)
         {
             if (buffer.Length + read > maxBytes)
-                throw new IOException($"The content exceeds {maxBytes / (1024 * 1024)} MiB.");
+                throw new ContentTooLargeException($"The content exceeds {maxBytes / (1024 * 1024)} MiB.");
             await buffer.WriteAsync(chunk.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
         }
         return buffer.ToArray();
@@ -60,7 +77,7 @@ internal static class CliFiles
     internal static string DefaultWorkbookName(string formId)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
-        string safe = new(formId.Select(c => invalid.Contains(c) || c is '.' or '\\' ? '_' : c).ToArray());
+        string safe = new(formId.Select(c => invalid.Contains(c) || char.IsControl(c) || c is '.' or '\\' ? '_' : c).ToArray());
         return (safe.Trim('_').Length == 0 ? "form" : safe) + ".xlsx";
     }
 }

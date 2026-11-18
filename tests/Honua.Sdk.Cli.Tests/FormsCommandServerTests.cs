@@ -60,6 +60,58 @@ public sealed class FormsCommandServerTests : IDisposable
     }
 
     [Fact]
+    public async Task Import_MissingApiKey_ExitsTwoWithoutCallingServer()
+    {
+        Environment.SetEnvironmentVariable(FormsServer.ApiKeyVariable, null);
+        string workbook = WriteWorkbook("survey.xlsx", [0x50, 0x4B, 0x03, 0x04]);
+        StubHandler handler = new(_ => throw new InvalidOperationException("The server must not be called."));
+        using HttpClient client = new(handler);
+
+        CliRun run = await CliRun.ExecuteAsync(client,
+            "forms", "import", workbook, "--service", "parcels", "--layer", "0", "--base-url", BaseUrl);
+
+        Assert.Equal(2, run.ExitCode);
+        Assert.Contains("HONUA_API_KEY", run.Stderr, StringComparison.Ordinal);
+        Assert.Equal(0, handler.CallCount);
+    }
+
+    [Fact]
+    public async Task Export_EqualsShortOption_WritesTheNamedFile()
+    {
+        byte[] workbook = [0x50, 0x4B, 0x03, 0x04, 0x14];
+        string output = Path.Combine(_temporary.Path, "named.xlsx");
+        using HttpClient client = new(new StubHandler(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(workbook)
+        })));
+
+        CliRun run = await CliRun.ExecuteAsync(client, "forms", "export", "inspection", "-o=" + output, "--base-url", BaseUrl);
+
+        Assert.Equal(0, run.ExitCode);
+        Assert.Equal(workbook, File.ReadAllBytes(output));
+    }
+
+    [Fact]
+    public void DefaultWorkbookName_ReplacesControlCharacters()
+    {
+        Assert.Equal("in_spection.xlsx", CliFiles.DefaultWorkbookName("in\nspection"));
+        Assert.Equal("form.xlsx", CliFiles.DefaultWorkbookName("\n"));
+    }
+
+    [Fact]
+    public async Task Export_TransportFailure_PrintsSanitizedFormsError()
+    {
+        using HttpClient client = new(new StubHandler(_ => throw new HttpRequestException("upstream\r\nfailed")));
+
+        CliRun run = await CliRun.ExecuteAsync(client, "forms", "export", "inspection", "--base-url", BaseUrl);
+
+        Assert.Equal(1, run.ExitCode);
+        Assert.Contains("honua forms failed: upstream??failed", run.Stderr, StringComparison.Ordinal);
+        Assert.DoesNotContain("\r", run.Stderr, StringComparison.Ordinal);
+        Assert.DoesNotContain("honua doctor", run.Stderr, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Export_DeclaredOversizedResponse_FailsWithoutWriting()
     {
         string output = Path.Combine(_temporary.Path, "inspection.xlsx");

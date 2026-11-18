@@ -116,7 +116,7 @@ internal static class DiagnosticDoctor
             await using (responseStream.ConfigureAwait(false))
                 return await CliFiles.ReadBoundedAsync(responseStream, maximumBytes, cancellationToken).ConfigureAwait(false);
         }
-        catch (IOException)
+        catch (ContentTooLargeException)
         {
             throw new DiagnosticSafetyException("response-over-budget", "Diagnostic response exceeds the byte budget.");
         }
