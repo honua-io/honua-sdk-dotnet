@@ -32,7 +32,7 @@ public sealed class DoctorCommandTests
               }
             }
             """);
-        using HttpClient client = new(new RecordingHandler(_ => throw new InvalidOperationException()));
+        using HttpClient client = new(StubHandler.FromResult(_ => throw new InvalidOperationException()));
         StringWriter stdout = new();
         StringWriter stderr = new();
 
@@ -84,7 +84,7 @@ public sealed class DoctorCommandTests
     {
         using TemporaryDirectory temporary = new();
         string output = Path.Combine(temporary.Path, "bundle.json");
-        RecordingHandler handler = new(request =>
+        StubHandler handler = StubHandler.FromResult(request =>
         {
             Assert.Equal("https://example.test/honua/api/v1/services?limit=1", request.RequestUri!.AbsoluteUri);
             Assert.Null(request.Headers.Authorization);
@@ -127,7 +127,7 @@ public sealed class DoctorCommandTests
         File.WriteAllText(capture, "{\"request\":{\"method\":\"GET\",\"url\":\"https://example.test/api?token=raw-secret\"}}");
         StringWriter stdout = new();
         StringWriter stderr = new();
-        using HttpClient client = new(new RecordingHandler(_ => throw new InvalidOperationException()));
+        using HttpClient client = new(StubHandler.FromResult(_ => throw new InvalidOperationException()));
 
         int exitCode = await HonuaCli.RunAsync(
             [
@@ -158,7 +158,7 @@ public sealed class DoctorCommandTests
               "envelopes": [{ "method": "GET", "normalizedPath": "/api/v1/services?limit={value}" }]
             }
             """);
-        RecordingHandler handler = new(request =>
+        StubHandler handler = StubHandler.FromResult(request =>
         {
             Assert.Equal("https://new.example.test/honua/api/v1/services", request.RequestUri!.AbsoluteUri);
             Assert.Null(request.Headers.Authorization);
@@ -195,7 +195,7 @@ public sealed class DoctorCommandTests
               "envelopes": [{ "method": "POST", "normalizedPath": "/api/v1/applyEdits" }]
             }
             """);
-        RecordingHandler handler = new(_ => new HttpResponseMessage(HttpStatusCode.OK));
+        StubHandler handler = StubHandler.FromResult(_ => new HttpResponseMessage(HttpStatusCode.OK));
         using HttpClient client = new(handler);
 
         int exitCode = await HonuaCli.RunAsync(
@@ -209,16 +209,6 @@ public sealed class DoctorCommandTests
         Assert.False(File.Exists(output));
     }
 
-    private sealed class RecordingHandler(Func<HttpRequestMessage, HttpResponseMessage> response) : HttpMessageHandler
-    {
-        internal int CallCount { get; private set; }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            CallCount++;
-            return Task.FromResult(response(request));
-        }
-    }
 }
 
 internal sealed class TemporaryDirectory : IDisposable

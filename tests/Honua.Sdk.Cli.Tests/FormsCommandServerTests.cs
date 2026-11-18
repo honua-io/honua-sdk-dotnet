@@ -309,13 +309,20 @@ internal sealed record CliRun(int ExitCode, string Stdout, string Stderr)
     }
 }
 
-internal sealed class StubHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> respond) : HttpMessageHandler
+internal sealed class StubHandler : HttpMessageHandler
 {
+    private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _respond;
+
+    internal StubHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> respond) => _respond = respond;
+
+    internal static StubHandler FromResult(Func<HttpRequestMessage, HttpResponseMessage> respond)
+        => new(request => Task.FromResult(respond(request)));
+
     internal int CallCount { get; private set; }
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         CallCount++;
-        return respond(request);
+        return _respond(request);
     }
 }

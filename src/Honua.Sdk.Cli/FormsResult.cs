@@ -33,7 +33,7 @@ internal sealed record FormsDiagnostic
 
 internal sealed record FormsResult
 {
-    internal static readonly FormsResult Help = new() { ExitCode = 0, Outcome = "help" };
+    internal static readonly FormsResult Help = new() { ExitCode = 0, Outcome = "help", Document = FormsCommand.Usage };
 
     internal required int ExitCode { get; init; }
 
@@ -66,8 +66,6 @@ internal static class FormsReport
 
     internal static async Task WriteJsonAsync(FormsResult result, TextWriter output)
     {
-        if (ReferenceEquals(result, FormsResult.Help))
-            return;
         if (result.Document is not null)
         {
             await output.WriteLineAsync(result.Document).ConfigureAwait(false);
@@ -87,8 +85,6 @@ internal static class FormsReport
 
     internal static async Task WriteTextAsync(FormsResult result, CliStreams streams)
     {
-        if (ReferenceEquals(result, FormsResult.Help))
-            return;
         if (result.Document is not null)
         {
             await streams.Output.WriteLineAsync(result.Document).ConfigureAwait(false);

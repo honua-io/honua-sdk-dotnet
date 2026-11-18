@@ -51,7 +51,10 @@ internal static class HonuaCli
                 return args.Length == 0 ? 2 : 0;
             }
             if (args[0].Equals(FormsCommand.Name, StringComparison.Ordinal))
-                return await FormsCommand.RunAsync(args[1..], new CliStreams(output, error), client, cancellationToken).ConfigureAwait(false);
+                return await FormsCommand.RunAsync(
+                    args[1..],
+                    new FormsCommandContext(new CliStreams(output, error), client),
+                    cancellationToken).ConfigureAwait(false);
             if (!args[0].Equals("doctor", StringComparison.Ordinal))
                 throw new CliArgumentException("Unknown command. Use 'honua doctor' or 'honua forms'.");
 

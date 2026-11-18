@@ -8,6 +8,8 @@ namespace Honua.Sdk.Cli;
 
 internal sealed record CliStreams(TextWriter Output, TextWriter Error);
 
+internal readonly record struct FormsCommandContext(CliStreams Streams, HttpClient Client);
+
 internal sealed record FormsInvocation(string Verb, string Target, IReadOnlyDictionary<string, string> Options)
 {
     internal bool Has(string name) => Options.ContainsKey(name);
@@ -33,9 +35,9 @@ internal static class FormsCommand
         ValueOptions.Contains,
         static name => $"honua forms received an unknown option --{name}.");
 
-    internal static async Task<int> RunAsync(string[] args, CliStreams streams, HttpClient client, CancellationToken cancellationToken)
+    internal static async Task<int> RunAsync(string[] args, FormsCommandContext context, CancellationToken cancellationToken)
     {
-        (TextWriter output, TextWriter error) = streams;
+        (TextWriter output, TextWriter error) = context.Streams;
         if (args.Length == 0 || args[0] is "--help" or "-h")
         {
             await output.WriteLineAsync(Usage, cancellationToken).ConfigureAwait(false);
@@ -45,10 +47,10 @@ internal static class FormsCommand
         try
         {
             FormsInvocation invocation = Parse(args);
-            FormsResult result = await ExecuteAsync(invocation, output, client, cancellationToken).ConfigureAwait(false);
+            FormsResult result = await ExecuteAsync(invocation, context.Client, cancellationToken).ConfigureAwait(false);
             Task report = invocation.Has("json")
                 ? FormsReport.WriteJsonAsync(result, output)
-                : FormsReport.WriteTextAsync(result, streams);
+                : FormsReport.WriteTextAsync(result, context.Streams);
             await report.ConfigureAwait(false);
             return result.ExitCode;
         }
@@ -80,15 +82,11 @@ internal static class FormsCommand
 
     private static async Task<FormsResult> ExecuteAsync(
         FormsInvocation invocation,
-        TextWriter output,
         HttpClient client,
         CancellationToken cancellationToken)
     {
         if (invocation.Has("help"))
-        {
-            await output.WriteLineAsync(Usage, cancellationToken).ConfigureAwait(false);
             return FormsResult.Help;
-        }
 
         if (invocation.Options.ContainsKey("output") && invocation.Get("output") is null)
             throw new CliArgumentException("--output requires a file path.");
