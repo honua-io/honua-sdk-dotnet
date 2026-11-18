@@ -427,6 +427,8 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertIn("--follow-manifest", follow)
         self.assertIn("--check", follow)
         self.assertIn("chore/certification-pin-follow", follow)
+        self.assertIn('--ref "${branch}"', follow)
+        self.assertNotIn('--ref "${sha}"', follow)
         self.assertNotIn("gh pr merge", follow)
         for value in (
             PINS["sdkPackageVersion"], PINS["sdkPackageSha512"], PINS["sdkPackageDigest"],

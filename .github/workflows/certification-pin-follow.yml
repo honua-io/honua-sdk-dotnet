@@ -43,8 +43,9 @@ jobs:
           branch="chore/certification-pin-follow"
 
           # workflow_dispatch is the exception that still runs when the caller
-          # is GITHUB_TOKEN. Pin the run to the commit the pull request will
-          # review, on the pr tier the pull_request lane would have used.
+          # is GITHUB_TOKEN. Run it on the pin branch, whose tip is the commit
+          # the pull request will review (the dispatch API takes a branch or
+          # tag, not a commit), on the pr tier the pull_request lane would use.
           # Skip when that commit already has a certification run so a later
           # schedule does not start a second one. A missing run is retried:
           # once the pin commit is on the branch, the next schedule sees a
@@ -59,7 +60,7 @@ jobs:
             fi
             gh workflow run sdk-certification.yml \
               --repo "${GITHUB_REPOSITORY}" \
-              --ref "${sha}" \
+              --ref "${branch}" \
               -f tier=pr
             echo "Dispatched sdk-certification.yml tier=pr on ${sha}."
           }
