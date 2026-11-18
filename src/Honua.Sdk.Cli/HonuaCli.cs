@@ -151,6 +151,13 @@ internal static class HonuaCli
             return (bundle, "replayed", false);
         }
 
+        return await CaptureDoctorBundleAsync(doctor, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<(DiagnosticBundle Bundle, string Outcome, bool CapabilityProbe)> CaptureDoctorBundleAsync(
+        DoctorRun doctor,
+        CancellationToken cancellationToken)
+    {
         string classification = CliOptions.Require(
             doctor.Options,
             "classification",
