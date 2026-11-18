@@ -20,6 +20,7 @@
 * [Author a geoprocessing process](process-authoring.md)
 * [Discover and open 3D scenes](scenes.md)
 * [When integration does not work](troubleshooting.md)
+* [Import and export XLSForm workbooks from the command line](xlsform-cli.md)
 
 ## Concepts
 

@@ -1,0 +1,188 @@
+// Copyright (c) Honua. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
+
+using System.Globalization;
+using System.Text.Json;
+
+namespace Honua.Sdk.Cli;
+
+internal sealed record CliStreams(TextWriter Output, TextWriter Error);
+
+internal readonly record struct FormsCommandContext(CliStreams Streams, HttpClient Client);
+
+internal sealed record FormsInvocation(string Verb, string Target, IReadOnlyDictionary<string, string> Options)
+{
+    internal bool Has(string name) => Options.ContainsKey(name);
+
+    internal string? Get(string name) => CliOptions.Get(Options, name);
+
+    internal string Require(string name, string message) => CliOptions.Require(Options, name, message);
+}
+
+internal static class FormsCommand
+{
+    internal const string Name = "forms";
+
+    private static readonly HashSet<string> Flags = new(StringComparer.Ordinal) { "help", "json", "local" };
+
+    private static readonly HashSet<string> ValueOptions = new(StringComparer.Ordinal)
+    {
+        "base-url", "layer", "output", "service", "timeout-ms"
+    };
+
+    private static readonly OptionGrammar Grammar = new(
+        Flags,
+        ValueOptions.Contains,
+        static name => $"honua forms received an unknown option --{name}.");
+
+    internal static async Task<int> RunAsync(string[] args, FormsCommandContext context, CancellationToken cancellationToken)
+    {
+        (TextWriter output, TextWriter error) = context.Streams;
+        if (args.Length == 0 || args[0] is "--help" or "-h")
+        {
+            await output.WriteLineAsync(Usage, cancellationToken).ConfigureAwait(false);
+            return args.Length == 0 ? 2 : 0;
+        }
+
+        try
+        {
+            FormsInvocation invocation = Parse(args);
+            FormsResult result = await ExecuteAsync(invocation, context.Client, cancellationToken).ConfigureAwait(false);
+            Task report = invocation.Has("json")
+                ? FormsReport.WriteJsonAsync(result, output)
+                : FormsReport.WriteTextAsync(result, context.Streams);
+            await report.ConfigureAwait(false);
+            return result.ExitCode;
+        }
+        catch (CliArgumentException exception)
+        {
+            await error.WriteLineAsync(exception.Message, CancellationToken.None).ConfigureAwait(false);
+            return 2;
+        }
+        catch (Exception exception) when (exception is HttpRequestException
+            or IOException
+            or UnauthorizedAccessException
+            or OperationCanceledException
+            or JsonException
+            or InvalidDataException
+            or ArgumentException
+            or NotSupportedException)
+        {
+            await error.WriteLineAsync("honua forms failed: " + Describe(exception), CancellationToken.None).ConfigureAwait(false);
+            return 1;
+        }
+#pragma warning disable CA1031 // The CLI boundary must not fall through to the doctor command's catch-all.
+        catch (Exception)
+        {
+            await error.WriteLineAsync("honua forms failed.", CancellationToken.None).ConfigureAwait(false);
+            return 1;
+        }
+#pragma warning restore CA1031
+    }
+
+    private static async Task<FormsResult> ExecuteAsync(
+        FormsInvocation invocation,
+        HttpClient client,
+        CancellationToken cancellationToken)
+    {
+        if (invocation.Has("help"))
+            return FormsResult.Help;
+
+        if (invocation.Options.ContainsKey("output") && invocation.Get("output") is null)
+            throw new CliArgumentException("--output requires a file path.");
+        if (invocation.Verb == "import" && !invocation.Has("local") && invocation.Options.ContainsKey("output"))
+            throw new CliArgumentException("--output cannot be combined with a server import.");
+
+        if (invocation.Has("local"))
+        {
+            RejectServerOptions(invocation);
+            return invocation.Verb == "import"
+                ? FormsLocalConverter.Import(invocation.Target, invocation.Get("output"))
+                : await FormsLocalConverter.ExportAsync(invocation.Target, invocation.Get("output"), cancellationToken).ConfigureAwait(false);
+        }
+
+        FormsServer server = FormsServer.Create(invocation, client);
+        return invocation.Verb == "import"
+            ? await server.ImportAsync(invocation.Target, ReadImportTarget(invocation), cancellationToken).ConfigureAwait(false)
+            : await server.ExportAsync(invocation.Target, invocation.Get("output"), cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static FormsInvocation Parse(string[] args)
+    {
+        string verb = args[0];
+        if (verb is not ("import" or "export"))
+            throw new CliArgumentException("Unknown forms command. Use 'honua forms import' or 'honua forms export'.");
+
+        Dictionary<string, string> options = new(StringComparer.Ordinal);
+        List<string> positional = [];
+        for (int index = 1; index < args.Length; index++)
+        {
+            string argument = args[index];
+            if (argument is "-o")
+                argument = "--output";
+            else if (argument.StartsWith("-o=", StringComparison.Ordinal))
+                argument = "--output=" + argument[3..];
+            if (argument.StartsWith("--", StringComparison.Ordinal))
+            {
+                index = CliOptions.Read(new OptionRead(new OptionCursor(args, index, argument[2..]), options, Grammar));
+            }
+            else
+            {
+                positional.Add(argument);
+            }
+        }
+
+        if (options.ContainsKey("help"))
+            return new FormsInvocation(verb, string.Empty, options);
+        if (positional.Count != 1)
+        {
+            string expected = verb == "import" ? "<workbook.xlsx>" : "<formId>";
+            throw new CliArgumentException($"honua forms {verb} requires exactly one {expected} argument.");
+        }
+        if (verb == "export" && !options.ContainsKey("local") && positional[0].Trim() is "" or "." or "..")
+            throw new CliArgumentException("honua forms export requires a form id.");
+        return new FormsInvocation(verb, positional[0], options);
+    }
+
+    private static FormsImportTarget ReadImportTarget(FormsInvocation invocation)
+    {
+        string service = invocation.Require("service", "honua forms import requires --service <id> (or --local).");
+        string layerValue = invocation.Require("layer", "honua forms import requires --layer <id> (or --local).");
+        if (!int.TryParse(layerValue, NumberStyles.None, CultureInfo.InvariantCulture, out int layer))
+            throw new CliArgumentException("--layer must be a non-negative integer layer id.");
+        return new FormsImportTarget(service, layer);
+    }
+
+    private static void RejectServerOptions(FormsInvocation invocation)
+    {
+        string[] serverOnly = ["base-url", "service", "layer", "timeout-ms"];
+        string? present = serverOnly.FirstOrDefault(invocation.Has);
+        if (present is not null)
+            throw new CliArgumentException($"--{present} cannot be combined with --local.");
+    }
+
+    private static string Describe(Exception exception)
+    {
+        string text = exception switch
+        {
+            OperationCanceledException => "the request timed out or was cancelled.",
+            JsonException => "the input or response is not valid JSON.",
+            _ => exception.Message
+        };
+        return FormsReport.Printable(text);
+    }
+
+    internal const string Usage = """
+        Usage:
+          honua forms import <workbook.xlsx> --service <id> --layer <id> [--base-url <url>] [--json]
+          honua forms export <formId> [-o <file.xlsx>] [--base-url <url>] [--json]
+
+          honua forms import <workbook.xlsx> --local [-o <form.json>]
+          honua forms export <form.json> --local [-o <file.xlsx>] [--json]
+
+        The server URL comes from --base-url or HONUA_BASE_URL and the admin API key from
+        HONUA_API_KEY. Import creates a draft form; it is not published. --local converts with
+        the Honua.Sdk.Field XLSForm converter without a server. Rejected workbooks print each
+        blocking cell (sheet, row, column, message) and exit 1; usage errors exit 2.
+        """;
+}
