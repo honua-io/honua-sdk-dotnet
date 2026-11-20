@@ -51,15 +51,29 @@ def _valid_receipt(cell, requirements_revision):
 '''
 
 
-def _check(mode):
+HELPER = "FIXTURE_HELPER = True\n"
+
+
+def _check(mode, helper=None, tamper_helper=False):
     with tempfile.TemporaryDirectory() as directory:
         governance = Path(directory)
         consumer = governance / "check_protocol_certification.py"
-        consumer.write_text(CONSUMER % mode, encoding="utf-8")
+        source = CONSUMER % mode
+        files = {}
+        if helper is not None:
+            # The retained consumer imports a sibling helper, as the release consumer does with digests.py.
+            source = f"from {helper} import FIXTURE_HELPER\n" + source
+            module = governance / f"{helper}.py"
+            module.write_text(HELPER, encoding="utf-8")
+            files[f"tools/{helper}.py"] = {"sha256": hashlib.sha256(module.read_bytes()).hexdigest()}
+            if tamper_helper:
+                module.write_text("FIXTURE_HELPER = False\n", encoding="utf-8")
+        consumer.write_text(source, encoding="utf-8")
+        files["tools/check_protocol_certification.py"] = {
+            "sha256": hashlib.sha256(consumer.read_bytes()).hexdigest()}
         (governance / "source-binding.json").write_text(json.dumps({
             "repository": "honua-io/honua-release", "sourceSha": "f" * 40,
-            "files": {"tools/check_protocol_certification.py": {
-                "sha256": hashlib.sha256(consumer.read_bytes()).hexdigest()}}}), encoding="utf-8")
+            "files": files}), encoding="utf-8")
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
             MODULE.check(governance)
@@ -77,6 +91,14 @@ class ReceiptContractCheckTests(unittest.TestCase):
         output = _check("admit")
         self.assertNotIn("EXPECTED FAILURE", output)
         self.assertIn("2 positive + 8 refusal controls", output)
+
+    def test_consumer_imports_its_retained_helper_module(self):
+        output = _check("admit", helper="fixture_digests_ok")
+        self.assertIn("2 positive + 8 refusal controls", output)
+
+    def test_tampered_helper_module_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "differ from retained immutable source"):
+            _check("admit", helper="fixture_digests_tampered", tamper_helper=True)
 
     def test_consumer_admitting_another_package_fails(self):
         with self.assertRaisesRegex(ValueError, "another package"):

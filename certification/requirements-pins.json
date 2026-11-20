@@ -1,9 +1,10 @@
 {
   "repository": "honua-io/honua-release",
-  "sourceSha": "f89928d60d8117524ef759bdd8fae433a05673b2",
-  "requirementsRevision": "2026-10-19-complete.25",
+  "sourceSha": "64a7e581ad400db21427907dcab7d3b862b46e46",
+  "requirementsRevision": "2026-10-26-complete.26",
   "sha256": {
-    "certification/protocol-certification-requirements.v1.json": "3bfe64a3d9590dcc5d9685e8507cc3d7a5ddceffd0b9dd6ca93efe5bea75f0bd",
-    "tools/check_protocol_certification.py": "06a08dea45d979e638bc6761f00361479f307da5b73f7927d1d2221959eaa0cd"
+    "certification/protocol-certification-requirements.v1.json": "44798486eced77896b568a0de05440ff94b1c09031db64a37e071d151833df0d",
+    "tools/check_protocol_certification.py": "87bdec8407af076e88fa0d619ba03400616b2222c0d76fd0a6851fad62216e46",
+    "tools/digests.py": "2795b01cc4053acafd00a606a13d4f027230da340460ba6eb1a8bc25fc630d70"
   }
 }

@@ -13,6 +13,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 from unittest import mock
 
@@ -33,15 +34,33 @@ def digest_of(receipt):
         receipt, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
+def verify_retained(governance, binding):
+    if "tools/check_protocol_certification.py" not in binding["files"]:
+        raise ValueError("contract consumer is not bound to retained immutable source")
+    for path, entry in binding["files"].items():
+        if not path.startswith("tools/"):
+            continue
+        retained = governance / Path(path).name
+        if hashlib.sha256(retained.read_bytes()).hexdigest() != entry["sha256"]:
+            raise ValueError(f"contract consumer bytes differ from retained immutable source: {path}")
+
+
+def load_consumer(governance, consumer):
+    # The consumer imports its retained sibling helpers, such as digests.py.
+    sys.path.insert(0, str(governance))
+    try:
+        return load("retained_release_receipt_consumer", consumer)
+    finally:
+        sys.path.remove(str(governance))
+
+
 def check(governance):
     consumer = governance / "check_protocol_certification.py"
     binding = json.loads((governance / "source-binding.json").read_text())
     if binding.get("repository") != "honua-io/honua-release":
         raise ValueError("contract consumer repository differs")
-    expected = binding["files"]["tools/check_protocol_certification.py"]["sha256"]
-    if hashlib.sha256(consumer.read_bytes()).hexdigest() != expected:
-        raise ValueError("contract consumer bytes differ from retained immutable source")
-    gate = load("retained_release_receipt_consumer", consumer)
+    verify_retained(governance, binding)
+    gate = load_consumer(governance, consumer)
     producer = load("sdk_certification_producer", Path(__file__).with_name("generate-sdk-certification.py"))
     operation = {"id": "Fixture.IClient.QueryAsync", "surface": "geoservices", "client": "Fixture.IClient",
                  "status": "exercised", "operation": "QueryAsync", "requiredTiers": ["pr"],
