@@ -17,7 +17,8 @@ def fixtures():
     source, head = "a" * 40, "b" * 40
     data = [json.dumps({"schema": "honua.protocol-certification-requirements/v1", "revision": "fixture",
                         "complete": True, "receipt_schema_min": "v2", "requirements": []}).encode(),
-            b"# fixture consumer bytes; not executed\n"]
+            b"# fixture consumer bytes; not executed\n",
+            b"# fixture consumer helper bytes; not executed\n"]
     blobs = [hashlib.sha1(b"blob " + str(len(value)).encode() + b"\0" + value).hexdigest() for value in data]
     repo = "repos/" + MODULE.REPOSITORY
     responses = {
@@ -66,6 +67,19 @@ class GovernanceFetchTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     MODULE.fetch(pins, Path(directory), get=broken.__getitem__)
                 self.assertEqual([], list(Path(directory).iterdir()))
+
+    def test_retains_the_consumer_helper_module(self):
+        # honua-release #1283: the consumer imports tools/digests.py, so the helper is pinned too.
+        self.assertIn("tools/digests.py", MODULE.PATHS)
+        pins, responses = fixtures()
+        with tempfile.TemporaryDirectory() as directory:
+            result = MODULE.fetch(pins, Path(directory), get=responses.__getitem__)
+            self.assertIn("tools/digests.py", result["files"])
+            self.assertTrue((Path(directory) / "digests.py").is_file())
+        unbound = deepcopy(pins)
+        del unbound["sha256"]["tools/digests.py"]
+        with tempfile.TemporaryDirectory() as directory, self.assertRaises(ValueError):
+            MODULE.fetch(unbound, Path(directory), get=responses.__getitem__)
 
     def test_api_failure_never_falls_back_to_trunk_or_cached_bytes(self):
         pins, _ = fixtures()

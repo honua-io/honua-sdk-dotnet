@@ -12,7 +12,9 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = "honua-io/honua-release"
-PATHS = ("certification/protocol-certification-requirements.v1.json", "tools/check_protocol_certification.py")
+# The consumer imports tools/digests.py (honua-release #1283), so its bytes are pinned and retained too.
+PATHS = ("certification/protocol-certification-requirements.v1.json", "tools/check_protocol_certification.py",
+         "tools/digests.py")
 
 
 def api(path):
@@ -32,7 +34,7 @@ def fetch(pins, destination, *, source_sha=None, revision=None, get=api):
     if not isinstance(expected_revision, str) or not expected_revision.strip():
         raise ValueError("governance requirements revision is required")
     if not isinstance(pins["sha256"], dict) or set(pins["sha256"]) != set(PATHS):
-        raise ValueError("governance pins must bind both retained source files")
+        raise ValueError("governance pins must bind every retained source file")
     if any(not re.fullmatch(r"[0-9a-f]{64}", value) for value in pins["sha256"].values()):
         raise ValueError("governance file pins must be SHA-256 digests")
     repo = get(f"repos/{REPOSITORY}")

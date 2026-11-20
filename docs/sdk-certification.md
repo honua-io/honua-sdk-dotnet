@@ -163,10 +163,10 @@ missing, duplicate or stale operation/client/version identities and mismatched
 fixture, contract, authentication or facet context. The consumer does not infer
 this context. The source catalog is retained alongside the TRX and receipt.
 
-`certification/requirements-pins.json` binds the default catalog and strict release
-consumer to immutable reviewed bytes. The fetcher verifies the canonical release
-repository, protected `trunk`, source ancestry, Git blob identities and SHA-256
-pins before retaining either file. Release dispatches must explicitly supply
+`certification/requirements-pins.json` binds the default catalog, the strict release
+consumer and the consumer's `tools/digests.py` helper to immutable reviewed bytes.
+The fetcher verifies the canonical release repository, protected `trunk`, source
+ancestry, Git blob identities and SHA-256 pins before retaining any file. Release dispatches must explicitly supply
 `requirements_ref` (a full protected-trunk ancestor commit) and
 `requirements_revision`; mutable branch names are refused. An override retains
 its exact source and byte digests. No release Python from an unreviewed feature
