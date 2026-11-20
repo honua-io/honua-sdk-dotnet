@@ -61,7 +61,7 @@ def _check(mode, helper=None, tamper_helper=False):
         source = CONSUMER % mode
         files = {}
         if helper is not None:
-            # The retained consumer imports a sibling helper, as honua-release #1283 does with digests.py.
+            # The retained consumer imports a sibling helper, as the release consumer does with digests.py.
             source = f"from {helper} import FIXTURE_HELPER\n" + source
             module = governance / f"{helper}.py"
             module.write_text(HELPER, encoding="utf-8")

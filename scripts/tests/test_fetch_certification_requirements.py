@@ -69,7 +69,7 @@ class GovernanceFetchTests(unittest.TestCase):
                 self.assertEqual([], list(Path(directory).iterdir()))
 
     def test_retains_the_consumer_helper_module(self):
-        # honua-release #1283: the consumer imports tools/digests.py, so the helper is pinned too.
+        # The consumer imports tools/digests.py, so the helper is pinned too.
         self.assertIn("tools/digests.py", MODULE.PATHS)
         pins, responses = fixtures()
         with tempfile.TemporaryDirectory() as directory:

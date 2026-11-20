@@ -12,7 +12,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = "honua-io/honua-release"
-# The consumer imports tools/digests.py (honua-release #1283), so its bytes are pinned and retained too.
+# The consumer imports tools/digests.py, so its bytes are pinned and retained too.
 PATHS = ("certification/protocol-certification-requirements.v1.json", "tools/check_protocol_certification.py",
          "tools/digests.py")
 
