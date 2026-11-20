@@ -8,10 +8,47 @@
 *REMOVED*Honua.Sdk.Geometry.Vector.VectorPayloadFormat.EsriJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
 *REMOVED*static Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.EsriJsonVectorPayloadReader!
 Honua.Sdk.Geometry.FeatureGeometryFormat.GeoServicesJson = 1 -> Honua.Sdk.Geometry.FeatureGeometryFormat
+Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding
+Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding.CoordinateMessages = 0 -> Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding
+Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding.PackedOrdinates = 1 -> Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding
+Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding.QuantizedDelta = 2 -> Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.<Clone>$() -> Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions!
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.CoordinateTransform.get -> Geospatial.V1.CoordinateTransform?
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.CoordinateTransform.init -> void
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.Equals(Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions? other) -> bool
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.GeometryFactory.get -> NetTopologySuite.Geometries.GeometryFactory?
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.GeometryFactory.init -> void
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.HonuaGrpcGeometryReadOptions() -> void
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.SpatialReference.get -> Honua.Sdk.Geometry.HonuaSpatialReference?
+Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.SpatialReference.init -> void
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.<Clone>$() -> Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions!
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.CoordinateEncoding.get -> Honua.Sdk.Geometry.HonuaGrpcCoordinateEncoding
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.CoordinateEncoding.init -> void
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.CoordinateTransform.get -> Geospatial.V1.CoordinateTransform?
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.CoordinateTransform.init -> void
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.Equals(Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions? other) -> bool
+Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.HonuaGrpcGeometryWriteOptions() -> void
+Honua.Sdk.Geometry.HonuaSpatialReference.LatestVcsWkid.get -> int?
+Honua.Sdk.Geometry.HonuaSpatialReference.VcsWkid.get -> int?
+Honua.Sdk.Geometry.HonuaSpatialReference.WithVerticalWkid(int vcsWkid, int? latestVcsWkid = null) -> Honua.Sdk.Geometry.HonuaSpatialReference!
 Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader
-Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.GeoServicesJsonVectorPayloadReader() -> void
 Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Format.get -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.GeoServicesJsonVectorPayloadReader() -> void
 Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Read(System.Text.Json.JsonElement root, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null) -> Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!
 Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.ReadAsync(System.IO.Stream! stream, Honua.Sdk.Geometry.Vector.VectorPayloadReadOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Geometry.Vector.VectorPayloadFeatureSet!>!
 Honua.Sdk.Geometry.Vector.VectorPayloadFormat.GeoServicesJson = 1 -> Honua.Sdk.Geometry.Vector.VectorPayloadFormat
+override Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.GetHashCode() -> int
+override Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.ToString() -> string!
+override Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.Equals(object? obj) -> bool
+override Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.GetHashCode() -> int
+override Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.ToString() -> string!
+static Honua.Sdk.Geometry.GrpcGeometryConverter.ReadGeometry(Geospatial.V1.Geometry! geometry, Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions! options) -> NetTopologySuite.Geometries.Geometry!
+static Honua.Sdk.Geometry.GrpcGeometryConverter.WriteGeometry(NetTopologySuite.Geometries.Geometry! geometry, Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions! options) -> Geospatial.V1.Geometry!
+static Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.operator !=(Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions? left, Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions? right) -> bool
+static Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions.operator ==(Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions? left, Honua.Sdk.Geometry.HonuaGrpcGeometryReadOptions? right) -> bool
+static Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.operator !=(Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions? left, Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions? right) -> bool
+static Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions.operator ==(Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions? left, Honua.Sdk.Geometry.HonuaGrpcGeometryWriteOptions? right) -> bool
 static Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader.Instance.get -> Honua.Sdk.Geometry.Vector.GeoServicesJsonVectorPayloadReader!

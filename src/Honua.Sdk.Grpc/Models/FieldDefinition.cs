@@ -19,6 +19,9 @@ public sealed class FieldDefinition
 
     /// <summary>Whether the field is nullable.</summary>
     public bool Nullable { get; init; }
+
+    /// <summary>Display alias for the field.</summary>
+    public string Alias { get; init; } = string.Empty;
 }
 
 /// <summary>

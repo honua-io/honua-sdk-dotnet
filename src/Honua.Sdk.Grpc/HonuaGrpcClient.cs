@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Honua.Sdk.Abstractions.Features;
+using Honua.Sdk.Geometry;
 using Honua.Sdk.Grpc.Conversion;
 using Microsoft.Extensions.Options;
 using Proto = Geospatial.V1;
@@ -16,8 +17,8 @@ namespace Honua.Sdk.Grpc;
 /// <summary>
 /// gRPC client for the Honua FeatureService.
 /// </summary>
-public sealed class HonuaGrpcClient :
-    IHonuaGrpcClient,
+public sealed partial class HonuaGrpcClient :
+    IHonuaGrpcFeatureClient,
     IHonuaFeatureQueryClient,
     IHonuaFeatureEditClient,
     IHonuaFeatureDescriptorClient,
@@ -25,8 +26,6 @@ public sealed class HonuaGrpcClient :
     IDisposable
 {
     private const string FeatureServiceName = "geospatial.v1.FeatureService";
-    // Long-term native fix tracked in geospatial-grpc#43 (attachment RPCs + time/having facets).
-    private const string UnsupportedAttachmentReason = "gRPC FeatureService does not expose attachment RPCs yet.";
     private const string UnsupportedQueryFacetReason =
         "gRPC FeatureService does not expose time-filter or grouped-statistics having facets yet; " +
         "route these queries through an attachment/query-capable provider (for example GeoServices FeatureServer) " +
@@ -46,8 +45,12 @@ public sealed class HonuaGrpcClient :
     };
     private static readonly FeatureAttachmentCapabilities GrpcAttachmentCapabilities = new()
     {
-        NativeSurface = "grpc FeatureService attachments",
-        UnsupportedReason = UnsupportedAttachmentReason
+        SupportsList = true,
+        SupportsDownload = false,
+        SupportsAdd = true,
+        SupportsUpdate = true,
+        SupportsDelete = true,
+        NativeSurface = "grpc FeatureService attachments"
     };
     private static readonly FeatureQueryCapabilities GrpcQueryCapabilities = new()
     {
@@ -84,7 +87,15 @@ public sealed class HonuaGrpcClient :
             ServiceConfig = HonuaGrpcClientSupport.BuildServiceConfig(
                 opts,
                 FeatureServiceName,
-                ["QueryFeatures", "QueryFeaturesStream"])
+                [
+                    "QueryFeatures",
+                    "QueryFeaturesStream",
+                    "DescribeService",
+                    "DescribeLayer",
+                    "QueryRelatedRecords",
+                    "ListAttachments",
+                    "GetAttachmentUrl"
+                ])
         };
         if (opts.PrimaryHttpMessageHandlerFactory is { } primaryHandlerFactory)
         {
@@ -145,71 +156,17 @@ public sealed class HonuaGrpcClient :
     public FeatureQueryCapabilities QueryCapabilities => GrpcQueryCapabilities;
 
     /// <inheritdoc />
-    public async Task<SourceDescriptor> GetDescriptorAsync(SourceDescriptor descriptor, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(descriptor);
-
-        var locator = descriptor.Locator;
-        if (string.IsNullOrWhiteSpace(locator.ServiceId) || !locator.LayerId.HasValue)
-        {
-            throw new ArgumentException(
-                "gRPC descriptor discovery requires SourceDescriptor.Locator.ServiceId and LayerId.",
-                nameof(descriptor));
-        }
-
-        var schemaResponse = await QueryFeaturesAsync(
-            new Models.QueryFeaturesRequest
-            {
-                ServiceId = locator.ServiceId,
-                LayerId = locator.LayerId.Value,
-                Where = "1=1",
-                ReturnGeometry = false,
-                ResultRecordCount = 0,
-            },
-            cancellationToken).ConfigureAwait(false);
-        var extentResponse = await QueryFeaturesAsync(
-            new Models.QueryFeaturesRequest
-            {
-                ServiceId = locator.ServiceId,
-                LayerId = locator.LayerId.Value,
-                Where = "1=1",
-                ReturnGeometry = false,
-                ReturnExtentOnly = true,
-            },
-            cancellationToken).ConfigureAwait(false);
-
-        return descriptor with
-        {
-            Capabilities = BuildDiscoveredCapabilities(),
-            Schema = BuildSourceSchema(schemaResponse, extentResponse.Extent),
-        };
-    }
-
-    /// <inheritdoc />
-    public async Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
+    public Task<Models.QueryFeaturesResponse> QueryFeaturesAsync(
         Models.QueryFeaturesRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var protoRequest = ProtoAdapter.ToProtoRequest(request);
-        AsyncUnaryCall<Proto.QueryFeaturesResponse>? call = null;
-        try
-        {
-            var metadata = await BuildMetadataAsync("QueryFeatures", cancellationToken).ConfigureAwait(false);
-            call = _client.QueryFeaturesAsync(
-                protoRequest,
-                metadata,
-                deadline: CreateDeadline(),
-                cancellationToken: cancellationToken);
-            var protoResponse = await call.ResponseAsync.ConfigureAwait(false);
-            return ProtoAdapter.FromProtoResponse(protoResponse);
-        }
-        catch (RpcException ex)
-        {
-            throw HonuaGrpcException.FromRpcException(
-                ex,
-                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
-        }
+        return ExecuteUnaryAsync(
+            new UnaryRpcSpec<Proto.QueryFeaturesResponse, Models.QueryFeaturesResponse>(
+                "QueryFeatures",
+                (metadata, deadline, token) => _client.QueryFeaturesAsync(protoRequest, metadata, deadline, token),
+                ProtoAdapter.FromProtoResponse),
+            cancellationToken);
     }
 
     /// <inheritdoc />
@@ -233,30 +190,17 @@ public sealed class HonuaGrpcClient :
     }
 
     /// <inheritdoc />
-    public async Task<Models.ApplyEditsResponse> ApplyEditsAsync(
+    public Task<Models.ApplyEditsResponse> ApplyEditsAsync(
         Models.ApplyEditsRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var protoRequest = ProtoAdapter.ToProtoApplyEditsRequest(request);
-        AsyncUnaryCall<Proto.ApplyEditsResponse>? call = null;
-        try
-        {
-            var metadata = await BuildMetadataAsync("ApplyEdits", cancellationToken).ConfigureAwait(false);
-            call = _client.ApplyEditsAsync(
-                protoRequest,
-                metadata,
-                deadline: CreateDeadline(),
-                cancellationToken: cancellationToken);
-            var protoResponse = await call.ResponseAsync.ConfigureAwait(false);
-            return ProtoAdapter.FromProtoApplyEditsResponse(protoResponse);
-        }
-        catch (RpcException ex)
-        {
-            throw HonuaGrpcException.FromRpcException(
-                ex,
-                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
-        }
+        return ExecuteUnaryAsync(
+            new UnaryRpcSpec<Proto.ApplyEditsResponse, Models.ApplyEditsResponse>(
+                "ApplyEdits",
+                (metadata, deadline, token) => _client.ApplyEditsAsync(protoRequest, metadata, deadline, token),
+                ProtoAdapter.FromProtoApplyEditsResponse),
+            cancellationToken);
     }
 
     /// <inheritdoc />
@@ -266,36 +210,6 @@ public sealed class HonuaGrpcClient :
         var response = await ApplyEditsAsync(BuildGrpcEditRequest(request), cancellationToken).ConfigureAwait(false);
         return ToFeatureEditResponse(response);
     }
-
-    /// <inheritdoc />
-    public Task<IReadOnlyList<FeatureAttachmentInfo>> ListAttachmentsAsync(
-        FeatureAttachmentListRequest request,
-        CancellationToken cancellationToken = default)
-        => ThrowUnsupportedAttachmentAsync<IReadOnlyList<FeatureAttachmentInfo>>(request, cancellationToken);
-
-    /// <inheritdoc />
-    public Task<FeatureAttachmentContent> DownloadAttachmentAsync(
-        FeatureAttachmentDownloadRequest request,
-        CancellationToken cancellationToken = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentContent>(request, cancellationToken);
-
-    /// <inheritdoc />
-    public Task<FeatureAttachmentResult> AddAttachmentAsync(
-        FeatureAttachmentAddRequest request,
-        CancellationToken cancellationToken = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
-
-    /// <inheritdoc />
-    public Task<FeatureAttachmentResult> UpdateAttachmentAsync(
-        FeatureAttachmentUpdateRequest request,
-        CancellationToken cancellationToken = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
-
-    /// <inheritdoc />
-    public Task<FeatureAttachmentResult> DeleteAttachmentAsync(
-        FeatureAttachmentDeleteRequest request,
-        CancellationToken cancellationToken = default)
-        => ThrowUnsupportedAttachmentAsync<FeatureAttachmentResult>(request, cancellationToken);
 
     /// <inheritdoc />
     public async IAsyncEnumerable<Models.FeaturePage> QueryFeaturesStreamAsync(
@@ -310,6 +224,9 @@ public sealed class HonuaGrpcClient :
             metadata,
             deadline: CreateDeadline(),
             cancellationToken: cancellationToken);
+        IReadOnlyList<Proto.FieldDefinition>? streamFields = null;
+        Proto.CoordinateTransform? streamTransform = null;
+        HonuaSpatialReference? streamSpatialReference = null;
         try
         {
             while (true)
@@ -331,7 +248,23 @@ public sealed class HonuaGrpcClient :
                         await HonuaGrpcException.TryGetInitialMetadataAsync(call.ResponseHeadersAsync).ConfigureAwait(false));
                 }
 
-                var page = ProtoAdapter.FromProtoPage(protoPage);
+                if (protoPage.Fields.Count > 0)
+                {
+                    streamFields = protoPage.Fields;
+                }
+
+                if (protoPage.CoordinateTransform is not null)
+                {
+                    streamTransform = protoPage.CoordinateTransform;
+                }
+
+                if (protoPage.SpatialReference is not null)
+                {
+                    streamSpatialReference = GrpcGeometryConverter.ReadSpatialReference(protoPage.SpatialReference);
+                }
+
+                var context = new ProtoAdapter.FeatureDecodeContext(streamFields, streamTransform, streamSpatialReference);
+                var page = ProtoAdapter.FromProtoPage(protoPage, context);
                 yield return page;
                 if (protoPage.IsLastPage)
                 {
@@ -349,6 +282,31 @@ public sealed class HonuaGrpcClient :
     public void Dispose()
     {
         _ownedChannel?.Dispose();
+    }
+
+    private sealed record UnaryRpcSpec<TProtoResponse, TResult>(
+        string MethodName,
+        Func<Metadata, DateTime, CancellationToken, AsyncUnaryCall<TProtoResponse>> Invoke,
+        Func<TProtoResponse, TResult> Convert);
+
+    private async Task<TResult> ExecuteUnaryAsync<TProtoResponse, TResult>(
+        UnaryRpcSpec<TProtoResponse, TResult> spec,
+        CancellationToken cancellationToken)
+    {
+        AsyncUnaryCall<TProtoResponse>? call = null;
+        try
+        {
+            var metadata = await BuildMetadataAsync(spec.MethodName, cancellationToken).ConfigureAwait(false);
+            call = spec.Invoke(metadata, CreateDeadline(), cancellationToken);
+            var protoResponse = await call.ResponseAsync.ConfigureAwait(false);
+            return spec.Convert(protoResponse);
+        }
+        catch (RpcException ex)
+        {
+            throw HonuaGrpcException.FromRpcException(
+                ex,
+                await HonuaGrpcException.TryGetInitialMetadataAsync(call?.ResponseHeadersAsync).ConfigureAwait(false));
+        }
     }
 
     private async Task<Metadata> BuildMetadataAsync(string methodName, CancellationToken cancellationToken)
@@ -370,11 +328,13 @@ public sealed class HonuaGrpcClient :
     private static SourceSchema BuildSourceSchema(Models.QueryFeaturesResponse response, Models.Extent? extent)
     {
         var objectIdField = string.IsNullOrWhiteSpace(response.ObjectIdFieldName) ? null : response.ObjectIdFieldName;
+        var globalIdField = string.IsNullOrWhiteSpace(response.GlobalIdFieldName) ? null : response.GlobalIdFieldName;
         return new SourceSchema
         {
             Fields = response.Fields.Select(ToSourceField).ToList(),
             PrimaryKey = objectIdField,
             ObjectIdField = objectIdField,
+            GlobalIdField = globalIdField,
             GeometryType = ToSourceGeometryType(response.GeometryType),
             Extent = extent is not null ? ToFeatureBoundingBox(extent) : null,
             SpatialReference = FormatSpatialReference(response.SpatialReference),
@@ -383,17 +343,11 @@ public sealed class HonuaGrpcClient :
         };
     }
 
-    private static Task<TResult> ThrowUnsupportedAttachmentAsync<TResult>(object request, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        cancellationToken.ThrowIfCancellationRequested();
-        throw new NotSupportedException(UnsupportedAttachmentReason);
-    }
-
     private static SourceField ToSourceField(Models.FieldDefinition field)
         => new()
         {
             Name = field.Name,
+            Alias = string.IsNullOrWhiteSpace(field.Alias) ? null : field.Alias,
             Type = field.FieldType.ToString(),
             Nullable = field.Nullable,
             Length = field.Length > 0 ? field.Length : null,
@@ -411,11 +365,25 @@ public sealed class HonuaGrpcClient :
         };
 
     private static string? FormatSpatialReference(Models.SpatialReference? spatialReference)
-        => spatialReference?.Wkid > 0
-            ? string.Create(
-                System.Globalization.CultureInfo.InvariantCulture,
-                $"EPSG:{spatialReference.Wkid}")
-            : spatialReference?.Wkt;
+    {
+        if (spatialReference is null)
+        {
+            return null;
+        }
+
+        if (spatialReference.Wkid > 0)
+        {
+            return spatialReference.VcsWkid > 0
+                ? string.Create(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    $"EPSG:{spatialReference.Wkid}+{spatialReference.VcsWkid}")
+                : string.Create(
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    $"EPSG:{spatialReference.Wkid}");
+        }
+
+        return string.IsNullOrWhiteSpace(spatialReference.Wkt) ? null : spatialReference.Wkt;
+    }
 
     private static Models.QueryFeaturesRequest BuildGrpcQuery(FeatureQueryRequest request)
     {

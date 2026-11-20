@@ -310,7 +310,7 @@
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
-          "Geospatial.Grpc": "[1.0.2, )",
+          "Geospatial.Grpc": "[1.5.0, )",
           "Honua.Sdk.Abstractions": "[5.0.1, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
@@ -355,9 +355,9 @@
       },
       "Geospatial.Grpc": {
         "type": "CentralTransitive",
-        "requested": "[1.0.2, )",
-        "resolved": "1.0.2",
-        "contentHash": "kR3TThy8DUzHiL3ad/76gsx+GbqyXse5JWus17CXA/7KPzqFEzAcBjacxsHoDF8J5oZTH6n0vgoU01gv5DwxrQ==",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "xXxmpWDkAK85oWbrNs/WhLNf2A7JsednfolO7TOaKIbX85ypSgek5ZI7GmRz7csL4WvMsiDSxk2cymIwmcyt9w==",
         "dependencies": {
           "Google.Protobuf": "3.36.2",
           "Grpc.Core.Api": "2.84.0"
