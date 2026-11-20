@@ -123,7 +123,10 @@ resolver. A diverged server pin is refused and is not rewritten.
 An unpublished `publicationState`, or a version that nuget.org does not serve,
 fails the run and does not open a pull request. The workflow opens or updates
 one pull request, branch `chore/certification-pin-follow` into `trunk`. It
-does not merge. The push uses the repository `GITHUB_TOKEN`, which does not
-start `pull_request` workflows, so the same job dispatches
-`sdk-certification.yml` with `tier=pr` on that commit. Commits on the branch
-use the repository owner identity.
+does not merge. Opening the pull request with the app token starts
+`sdk-certification.yml` through its `pull_request` event. A later push uses the
+repository `GITHUB_TOKEN`, which does not start `pull_request` workflows, so
+the job then dispatches `sdk-certification.yml` with `tier=pr` on that commit. Commits on the branch
+use the repository owner identity. Repository settings do not let
+`GITHUB_TOKEN` create pull requests, so the job opens or edits the pull request
+with the release automation app token (`BOT_APP_ID`), scoped to pull requests.
