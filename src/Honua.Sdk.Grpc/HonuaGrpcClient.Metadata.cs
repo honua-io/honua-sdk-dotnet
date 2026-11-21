@@ -75,6 +75,7 @@ public sealed partial class HonuaGrpcClient
         }
         catch (HonuaGrpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
         {
+            // Servers without GetLayerMetadata fall back to query-based discovery below.
         }
 
         return await GetDescriptorViaQueryFallbackAsync(descriptor, locator, cancellationToken).ConfigureAwait(false);

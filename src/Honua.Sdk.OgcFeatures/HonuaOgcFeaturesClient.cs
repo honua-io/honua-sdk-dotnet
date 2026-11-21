@@ -745,14 +745,11 @@ public sealed class HonuaOgcFeaturesClient :
             }
         }
 
-        if (minX > maxX)
+        // OGC API Features allows antimeridian-crossing geographic bounding boxes where
+        // west > east within [-180, 180]. Reject inverted X bounds outside geographic longitude range.
+        if (minX > maxX && (minX is < -180.0 or > 180.0 || maxX is < -180.0 or > 180.0))
         {
-            // OGC API Features allows antimeridian-crossing geographic bounding boxes where
-            // west > east within [-180, 180]. Reject inverted X bounds outside geographic longitude range.
-            if (minX is < -180.0 or > 180.0 || maxX is < -180.0 or > 180.0)
-            {
-                throw new ArgumentException("Bounding box minX must be less than or equal to maxX unless crossing the antimeridian within [-180, 180].", nameof(bbox));
-            }
+            throw new ArgumentException("Bounding box minX must be less than or equal to maxX unless crossing the antimeridian within [-180, 180].", nameof(bbox));
         }
 
         return string.Join(",", bbox.Select(static d => d.ToString(CultureInfo.InvariantCulture)));

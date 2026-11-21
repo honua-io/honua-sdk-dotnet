@@ -103,14 +103,11 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
             : _options.SceneApiPath;
 
         var path = basePath.AsSpan().StartsWith("/", StringComparison.Ordinal) ? basePath : $"/{basePath}";
-        path = path.TrimEnd('/');
+        var escapedSegments = segments
+            .Where(segment => !string.IsNullOrWhiteSpace(segment))
+            .Select(segment => "/" + HonuaPathSegment.Escape(segment, nameof(segments)));
 
-        foreach (var segment in segments.Where(segment => !string.IsNullOrWhiteSpace(segment)))
-        {
-            path += $"/{HonuaPathSegment.Escape(segment, nameof(segments))}";
-        }
-
-        return path;
+        return path.TrimEnd('/') + string.Concat(escapedSegments);
     }
 
     private static string RequireSceneId(string sceneId)

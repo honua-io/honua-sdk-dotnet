@@ -877,6 +877,7 @@ public sealed class HonuaStacClientTests
 
         await foreach (var _ in client.PostSearchPagesAsync(new StacSearchRequest { Limit = 1 }))
         {
+            // Drain every page so the follow-up request is sent.
         }
 
         Assert.NotNull(secondRequest);

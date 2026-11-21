@@ -1106,11 +1106,13 @@ public class HonuaOgcFeaturesClientTests
             Locator = new SourceLocator { CollectionId = "buildings-3d" }
         });
 
-        Assert.NotNull(descriptor.Schema?.Extent);
-        Assert.Equal(-120.5, descriptor.Schema!.Extent!.MinX);
-        Assert.Equal(34.0, descriptor.Schema.Extent.MinY);
-        Assert.Equal(-118.2, descriptor.Schema.Extent.MaxX);
-        Assert.Equal(35.5, descriptor.Schema.Extent.MaxY);
+        Assert.NotNull(descriptor.Schema);
+        var extent = descriptor.Schema.Extent;
+        Assert.NotNull(extent);
+        Assert.Equal(-120.5, extent.MinX);
+        Assert.Equal(34.0, extent.MinY);
+        Assert.Equal(-118.2, extent.MaxX);
+        Assert.Equal(35.5, extent.MaxY);
     }
 
     [Theory]

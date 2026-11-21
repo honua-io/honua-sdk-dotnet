@@ -444,7 +444,7 @@ public static class GeoServicesGeometryConverter
         int srid,
         JsonElement geometry)
     {
-        if (!(minX > maxX) ||
+        if (double.IsNaN(minX) || double.IsNaN(maxX) || minX <= maxX ||
             minX is < -180.0 or > 180.0 ||
             maxX is < -180.0 or > 180.0 ||
             minY is < -90.0 or > 90.0 ||
