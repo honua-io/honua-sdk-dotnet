@@ -760,4 +760,41 @@ public class ProtoAdapterTests
         Assert.Null(result.SpatialReference);
         Assert.False(result.IsLastPage);
     }
+
+    [Fact]
+    public void FromProtoResponse_PropagatesWkidAndLatestWkidToFeatureGeometrySrid()
+    {
+        var feature = new Proto.Feature
+        {
+            Id = 1,
+            Geometry = new Proto.Geometry
+            {
+                Point = new Proto.PointGeometry { X = -122.4, Y = 37.7 },
+            },
+        };
+
+        var responseWithWkid = new Proto.QueryFeaturesResponse
+        {
+            SpatialReference = new Proto.SpatialReference { Wkid = 4326 },
+        };
+        responseWithWkid.Features.Add(feature);
+
+        var resultWithWkid = ProtoAdapter.FromProtoResponse(responseWithWkid);
+        Assert.NotNull(resultWithWkid.Features[0].NtsGeometry);
+        Assert.Equal(4326, resultWithWkid.Features[0].NtsGeometry!.SRID);
+
+        var responseWithWktAndLatestWkid = new Proto.QueryFeaturesResponse
+        {
+            SpatialReference = new Proto.SpatialReference
+            {
+                LatestWkid = 3857,
+                Wkt = "PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\"]",
+            },
+        };
+        responseWithWktAndLatestWkid.Features.Add(feature);
+
+        var resultWithLatestWkid = ProtoAdapter.FromProtoResponse(responseWithWktAndLatestWkid);
+        Assert.NotNull(resultWithLatestWkid.Features[0].NtsGeometry);
+        Assert.Equal(3857, resultWithLatestWkid.Features[0].NtsGeometry!.SRID);
+    }
 }

@@ -1056,4 +1056,71 @@ public class HonuaOgcFeaturesClientTests
         Assert.NotNull(capturedUrl);
         Assert.Contains("f=csv", capturedUrl);
     }
+
+    [Fact]
+    public void FormatBbox_Validates6Element3DBboxAndAllowsAntimeridianCrossing()
+    {
+        Assert.Equal("-120,30,0,-110,40,500", HonuaOgcFeaturesClient.FormatBbox([-120, 30, 0, -110, 40, 500]));
+        Assert.Equal("170,-10,-170,10", HonuaOgcFeaturesClient.FormatBbox([170, -10, -170, 10]));
+        Assert.Equal("170,-10,0,-170,10,500", HonuaOgcFeaturesClient.FormatBbox([170, -10, 0, -170, 10, 500]));
+
+        // Invalid minZ > maxZ on 6-element bbox
+        Assert.Throws<ArgumentException>(() => HonuaOgcFeaturesClient.FormatBbox([-120, 30, 500, -110, 40, 100]));
+        // Invalid minY > maxY on 6-element bbox
+        Assert.Throws<ArgumentException>(() => HonuaOgcFeaturesClient.FormatBbox([-120, 40, 0, -110, 30, 100]));
+        // Invalid non-geographic inverted minX > maxX
+        Assert.Throws<ArgumentException>(() => HonuaOgcFeaturesClient.FormatBbox([500000, 0, 100000, 10000]));
+        // Invalid element count
+        Assert.Throws<ArgumentException>(() => HonuaOgcFeaturesClient.FormatBbox([-120, 30, 0, -110, 40]));
+    }
+
+    [Fact]
+    public async Task GetDescriptorAsync_Maps6Element3DBboxExtentCorrectly()
+    {
+        var collectionJson = """
+        {
+            "id": "buildings-3d",
+            "title": "3D Buildings",
+            "extent": {
+                "spatial": {
+                    "bbox": [[-120.5, 34.0, 10.0, -118.2, 35.5, 250.0]],
+                    "crs": "http://www.opengis.net/def/crs/OGC/0/CRS84h"
+                }
+            }
+        }
+        """;
+        var client = TestHelpers.CreateOgcFeaturesClient(req =>
+        {
+            if (req.RequestUri!.AbsolutePath.EndsWith("/queryables", StringComparison.Ordinal))
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(collectionJson));
+        });
+
+        var descriptor = await ((IHonuaFeatureDescriptorClient)client).GetDescriptorAsync(new SourceDescriptor
+        {
+            Id = "buildings-3d",
+            Protocol = FeatureProtocolIds.OgcFeatures,
+            Locator = new SourceLocator { CollectionId = "buildings-3d" }
+        });
+
+        Assert.NotNull(descriptor.Schema?.Extent);
+        Assert.Equal(-120.5, descriptor.Schema!.Extent!.MinX);
+        Assert.Equal(34.0, descriptor.Schema.Extent.MinY);
+        Assert.Equal(-118.2, descriptor.Schema.Extent.MaxX);
+        Assert.Equal(35.5, descriptor.Schema.Extent.MaxY);
+    }
+
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task GetCollectionAndItem_RejectDotSegmentPathTraversal(string badId)
+    {
+        var client = TestHelpers.CreateOgcFeaturesClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetCollectionAsync(badId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetItemAsync("buildings", badId));
+    }
 }

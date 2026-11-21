@@ -303,7 +303,18 @@ internal static partial class ProtoAdapter
                 CoordinateTransform = context?.CoordinateTransform,
             };
             ntsGeometry = GrpcGeometryConverter.ReadGeometry(feature.Geometry, readOptions);
-            geoServicesGeometry = ConvertGeometry(ntsGeometry);
+            if (ntsGeometry.SRID <= 0)
+            {
+                var fallbackSrid = context?.SpatialReference?.Wkid is int wkid && wkid > 0
+                    ? wkid
+                    : context?.SpatialReference?.LatestWkid;
+                if (fallbackSrid is int resolvedSrid && resolvedSrid > 0)
+                {
+                    ntsGeometry.SRID = resolvedSrid;
+                }
+            }
+
+            geoServicesGeometry = ConvertGeometry(ntsGeometry, context?.SpatialReference);
         }
 
         return new Models.Feature
@@ -377,9 +388,10 @@ internal static partial class ProtoAdapter
     }
 
     private static IReadOnlyDictionary<string, object?>? ConvertGeometry(
-        NetTopologySuite.Geometries.Geometry ntsGeometry)
+        NetTopologySuite.Geometries.Geometry ntsGeometry,
+        HonuaSpatialReference? spatialReference = null)
     {
-        var geoServicesJson = GeoServicesGeometryConverter.WriteGeometry(ntsGeometry);
+        var geoServicesJson = GeoServicesGeometryConverter.WriteGeometry(ntsGeometry, spatialReference);
         return UnwrapGeometryJsonValue(geoServicesJson) as IReadOnlyDictionary<string, object?>;
     }
 

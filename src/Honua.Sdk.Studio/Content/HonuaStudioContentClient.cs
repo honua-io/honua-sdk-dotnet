@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Internal;
 
@@ -37,7 +38,7 @@ public sealed class HonuaStudioContentClient : IHonuaStudioContentClient
             throw new ArgumentException("Supply a publication route key without traversal segments, not a URL.", nameof(route));
         }
 
-        var path = $"{BasePath}/published/" + string.Join('/', segments.Select(Uri.EscapeDataString));
+        var path = $"{BasePath}/published/" + string.Join('/', segments.Select(segment => HonuaPathSegment.Escape(segment, nameof(route))));
         using var response = await _http.GetAsync(
             new Uri(path, UriKind.Relative), cancellationToken).ConfigureAwait(false);
         var envelope = await StudioHttpResponseReader.ReadAsync(

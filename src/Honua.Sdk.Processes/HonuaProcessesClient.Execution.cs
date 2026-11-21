@@ -53,7 +53,7 @@ public sealed partial class HonuaProcessesClient
             }
 
             using var message = new HttpRequestMessage(HttpMethod.Post,
-                CreateRequestUri($"{BasePath}/processes/{Uri.EscapeDataString(processId)}/execution"))
+                CreateRequestUri($"{BasePath}/processes/{HonuaPathSegment.Escape(processId, nameof(processId))}/execution"))
             {
                 Content = JsonContent.Create(request, ProcessesJsonContext.Default.HonuaProcessExecuteRequest)
             };
@@ -88,7 +88,7 @@ public sealed partial class HonuaProcessesClient
             jobId = submitted.JobId;
             var terminal = await WaitForTerminalCoreAsync(jobId, submitted, interval, deadline.Token).ConfigureAwait(false);
             using var resultsResponse = await _http.GetAsync(
-                CreateRequestUri($"{BasePath}/jobs/{Uri.EscapeDataString(jobId)}/results"), deadline.Token).ConfigureAwait(false);
+                CreateRequestUri($"{BasePath}/jobs/{HonuaPathSegment.Escape(jobId, nameof(jobId))}/results"), deadline.Token).ConfigureAwait(false);
             return await ReadExecutionResultAsync(resultsResponse, request.Response, terminal, deadline.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested && deadline.IsCancellationRequested)

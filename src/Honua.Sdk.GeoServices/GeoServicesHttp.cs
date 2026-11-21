@@ -44,6 +44,14 @@ internal static class GeoServicesHttp
 
     internal static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
+    private static readonly HashSet<string> SensitiveQueryParameters = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "token",
+        "api_key",
+        "access_token",
+        "key",
+    };
+
     /// <summary>
     /// Reads a response body as a string without buffering more than <paramref name="maxBytes"/> bytes.
     /// A declared <c>Content-Length</c> over the ceiling is refused before the body is read; a body that
@@ -56,7 +64,10 @@ internal static class GeoServicesHttp
         if (response.Content.Headers.ContentLength is { } declared && declared > maxBytes)
         {
             throw new HonuaFeatureServerResponseTooLargeException(
-                response.StatusCode, response.RequestMessage?.RequestUri, maxBytes, declared);
+                response.StatusCode,
+                RedactSensitiveQueryParameters(response.RequestMessage?.RequestUri),
+                maxBytes,
+                declared);
         }
 
         var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -72,7 +83,10 @@ internal static class GeoServicesHttp
                     if (buffered.Length + read > maxBytes)
                     {
                         throw new HonuaFeatureServerResponseTooLargeException(
-                            response.StatusCode, response.RequestMessage?.RequestUri, maxBytes, declaredContentLength: null);
+                            response.StatusCode,
+                            RedactSensitiveQueryParameters(response.RequestMessage?.RequestUri),
+                            maxBytes,
+                            declaredContentLength: null);
                     }
 
                     await buffered.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
@@ -84,6 +98,73 @@ internal static class GeoServicesHttp
             }
 
             return DecodeString(buffered, response.Content.Headers.ContentType?.CharSet);
+        }
+    }
+
+    internal static Uri? RedactSensitiveQueryParameters(Uri? uri)
+    {
+        if (uri is null)
+        {
+            return null;
+        }
+
+        var original = uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString;
+        var queryIndex = original.IndexOf('?', StringComparison.Ordinal);
+        if (queryIndex < 0)
+        {
+            return uri;
+        }
+
+        var fragmentIndex = original.IndexOf('#', queryIndex + 1);
+        var prefix = original[..queryIndex];
+        var query = fragmentIndex >= 0
+            ? original[(queryIndex + 1)..fragmentIndex]
+            : original[(queryIndex + 1)..];
+        var fragment = fragmentIndex >= 0 ? original[fragmentIndex..] : string.Empty;
+
+        if (query.Length == 0)
+        {
+            return uri;
+        }
+
+        var segments = query.Split('&');
+        var redacted = false;
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var segment = segments[i];
+            if (segment.Length == 0)
+            {
+                continue;
+            }
+
+            var eqIndex = segment.IndexOf('=', StringComparison.Ordinal);
+            var rawKey = eqIndex >= 0 ? segment[..eqIndex] : segment;
+            var decodedKey = DecodeQueryName(rawKey);
+            if (SensitiveQueryParameters.Contains(decodedKey))
+            {
+                segments[i] = $"{rawKey}=REDACTED";
+                redacted = true;
+            }
+        }
+
+        if (!redacted)
+        {
+            return uri;
+        }
+
+        var rebuilt = $"{prefix}?{string.Join('&', segments)}{fragment}";
+        return new Uri(rebuilt, uri.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
+    }
+
+    private static string DecodeQueryName(string rawKey)
+    {
+        try
+        {
+            return Uri.UnescapeDataString(rawKey.Replace('+', ' '));
+        }
+        catch (UriFormatException)
+        {
+            return rawKey;
         }
     }
 

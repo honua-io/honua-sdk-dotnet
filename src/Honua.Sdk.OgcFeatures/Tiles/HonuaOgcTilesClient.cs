@@ -4,6 +4,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.OgcFeatures.Exceptions;
 using Honua.Sdk.OgcFeatures.Tiles.Models;
 
@@ -39,7 +40,7 @@ public sealed class HonuaOgcTilesClient : IHonuaOgcTilesClient
 
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
-            $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/tiles");
+            $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/tiles");
         request.Headers.Accept.ParseAdd("application/json");
 
         var (body, _) = await SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -60,8 +61,8 @@ public sealed class HonuaOgcTilesClient : IHonuaOgcTilesClient
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(tileMatrixSetId);
 
-        var path = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/tiles/" +
-                   $"{Uri.EscapeDataString(tileMatrixSetId)}/{tileMatrix.ToString(System.Globalization.CultureInfo.InvariantCulture)}/{tileRow}/{tileCol}";
+        var path = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/tiles/" +
+                   $"{HonuaPathSegment.Escape(tileMatrixSetId, nameof(tileMatrixSetId))}/{tileMatrix.ToString(System.Globalization.CultureInfo.InvariantCulture)}/{tileRow}/{tileCol}";
         if (format == OgcTileFormat.Png)
         {
             path += "?f=png";

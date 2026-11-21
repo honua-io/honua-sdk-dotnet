@@ -6,6 +6,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Geometry.Vector;
@@ -113,7 +114,7 @@ public sealed class HonuaOgcFeaturesClient :
     public async Task<OgcCollection> GetCollectionAsync(string collectionId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}?f=json";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcCollection)
@@ -124,7 +125,7 @@ public sealed class HonuaOgcFeaturesClient :
     public async Task<OgcQueryables> GetQueryablesAsync(string collectionId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/queryables?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/queryables?f=json";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcQueryables)
@@ -157,7 +158,7 @@ public sealed class HonuaOgcFeaturesClient :
         string collectionId, OgcItemsParams? query = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeatureCollection)
@@ -261,7 +262,7 @@ public sealed class HonuaOgcFeaturesClient :
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(featureId, nameof(featureId))}?f=json";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcFeaturesJsonContext.Default.OgcFeature)
@@ -273,7 +274,7 @@ public sealed class HonuaOgcFeaturesClient :
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(feature);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items?f=json";
         return SendFeatureAsync(HttpMethod.Post, url, feature, cancellationToken);
     }
 
@@ -283,7 +284,7 @@ public sealed class HonuaOgcFeaturesClient :
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
         ArgumentNullException.ThrowIfNull(feature);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(featureId, nameof(featureId))}?f=json";
         return SendFeatureAsync(HttpMethod.Put, url, feature, cancellationToken);
     }
 
@@ -292,7 +293,7 @@ public sealed class HonuaOgcFeaturesClient :
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(featureId, nameof(featureId))}?f=json";
         return SendMergePatchAsync(url, featureId, patch, cancellationToken);
     }
 
@@ -301,7 +302,7 @@ public sealed class HonuaOgcFeaturesClient :
     {
         ArgumentNullException.ThrowIfNull(collectionId);
         ArgumentNullException.ThrowIfNull(featureId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(featureId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(featureId, nameof(featureId))}?f=json";
 
         using var response = await _http.DeleteAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -368,7 +369,7 @@ public sealed class HonuaOgcFeaturesClient :
         string collectionId, OgcItemsParams? query = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
 
         // ResponseHeadersRead: return the response without buffering the body so the caller can
         // stream large export payloads (PBF/FlatGeobuf/Parquet). The caller owns disposal.
@@ -388,7 +389,7 @@ public sealed class HonuaOgcFeaturesClient :
         var vectorFormat = format ?? OgcFeaturesVectorFormats.FromOgcFeaturesFormat(query?.Format);
         var protocolFormat = OgcFeaturesVectorFormats.ToOgcFeaturesFormat(vectorFormat);
         var vectorQuery = (query ?? new OgcItemsParams()) with { Format = protocolFormat };
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(vectorQuery)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(vectorQuery)}";
 
         // Stream the response body directly into the reader (ResponseHeadersRead): no buffering
         // to a string and no UTF-8 round-trip, so large/binary vector payloads are neither
@@ -526,8 +527,8 @@ public sealed class HonuaOgcFeaturesClient :
         if (query.Offset.HasValue)
             parameters.Add(("offset", query.Offset.Value.ToString(CultureInfo.InvariantCulture)));
 
-        if (query.Bbox is { Count: >= 4 })
-            parameters.Add(("bbox", string.Join(",", query.Bbox.Select(d => d.ToString(CultureInfo.InvariantCulture)))));
+        if (query.Bbox is { Count: > 0 })
+            parameters.Add(("bbox", FormatBbox(query.Bbox)));
 
         if (query.BboxCrs is not null)
             parameters.Add(("bbox-crs", query.BboxCrs));
@@ -706,20 +707,72 @@ public sealed class HonuaOgcFeaturesClient :
             ? property.Clone()
             : null;
 
+    internal static string FormatBbox(IReadOnlyList<double> bbox)
+    {
+        ArgumentNullException.ThrowIfNull(bbox);
+
+        if (bbox.Count is not (4 or 6))
+        {
+            throw new ArgumentException("Bounding box must contain 4 (2D) or 6 (3D) finite coordinates.", nameof(bbox));
+        }
+
+        for (var i = 0; i < bbox.Count; i++)
+        {
+            if (!double.IsFinite(bbox[i]))
+            {
+                throw new ArgumentException("Bounding box coordinates must be finite numbers.", nameof(bbox));
+            }
+        }
+
+        var is3D = bbox.Count == 6;
+        var minX = bbox[0];
+        var minY = bbox[1];
+        var maxX = is3D ? bbox[3] : bbox[2];
+        var maxY = is3D ? bbox[4] : bbox[3];
+
+        if (minY > maxY)
+        {
+            throw new ArgumentException("Bounding box minY must be less than or equal to maxY.", nameof(bbox));
+        }
+
+        if (is3D)
+        {
+            var minZ = bbox[2];
+            var maxZ = bbox[5];
+            if (minZ > maxZ)
+            {
+                throw new ArgumentException("Bounding box minZ must be less than or equal to maxZ.", nameof(bbox));
+            }
+        }
+
+        if (minX > maxX)
+        {
+            // OGC API Features allows antimeridian-crossing geographic bounding boxes where
+            // west > east within [-180, 180]. Reject inverted X bounds outside geographic longitude range.
+            if (minX is < -180.0 or > 180.0 || maxX is < -180.0 or > 180.0)
+            {
+                throw new ArgumentException("Bounding box minX must be less than or equal to maxX unless crossing the antimeridian within [-180, 180].", nameof(bbox));
+            }
+        }
+
+        return string.Join(",", bbox.Select(static d => d.ToString(CultureInfo.InvariantCulture)));
+    }
+
     private static FeatureBoundingBox? ToFeatureBoundingBox(OgcSpatialExtent? spatialExtent, string? fallbackCrs)
     {
         var bbox = spatialExtent?.Bbox is { Count: > 0 } bboxes ? bboxes[0] : null;
-        if (bbox is not { Count: >= 4 })
+        if (bbox is null || bbox.Count is not (4 or 6))
         {
             return null;
         }
 
+        var is3D = bbox.Count == 6;
         return new FeatureBoundingBox
         {
             MinX = bbox[0],
             MinY = bbox[1],
-            MaxX = bbox[2],
-            MaxY = bbox[3],
+            MaxX = is3D ? bbox[3] : bbox[2],
+            MaxY = is3D ? bbox[4] : bbox[3],
             Crs = spatialExtent?.Crs ?? fallbackCrs,
         };
     }

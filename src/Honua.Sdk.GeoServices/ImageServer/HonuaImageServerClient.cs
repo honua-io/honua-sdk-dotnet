@@ -266,7 +266,7 @@ public sealed class HonuaImageServerClient
     }
 
     private static string ServicePath(string serviceId)
-        => $"/rest/services/{Uri.EscapeDataString(serviceId)}/ImageServer";
+        => $"/rest/services/{Honua.Sdk.Abstractions.HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/ImageServer";
 
     private static string RequireServiceId(string? serviceId)
         => string.IsNullOrWhiteSpace(serviceId)

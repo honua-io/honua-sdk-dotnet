@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.OgcFeatures.Exceptions;
 using Honua.Sdk.OgcFeatures.Styles.Models;
 
@@ -53,7 +54,7 @@ public sealed class HonuaOgcStylesClient : IHonuaOgcStylesClient
 
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
-            $"{BasePath}/{Uri.EscapeDataString(styleId)}");
+            $"{BasePath}/{HonuaPathSegment.Escape(styleId, nameof(styleId))}");
         request.Headers.Accept.ParseAdd(ToAcceptHeader(encoding));
 
         var (body, mediaType) = await SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -75,7 +76,7 @@ public sealed class HonuaOgcStylesClient : IHonuaOgcStylesClient
 
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
-            $"{BasePath}/{Uri.EscapeDataString(styleId)}/metadata?f=json");
+            $"{BasePath}/{HonuaPathSegment.Escape(styleId, nameof(styleId))}/metadata?f=json");
         request.Headers.Accept.ParseAdd("application/json");
 
         var (body, _) = await SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -95,7 +96,7 @@ public sealed class HonuaOgcStylesClient : IHonuaOgcStylesClient
 
         using var request = new HttpRequestMessage(
             HttpMethod.Put,
-            $"{BasePath}/{Uri.EscapeDataString(styleId)}")
+            $"{BasePath}/{HonuaPathSegment.Escape(styleId, nameof(styleId))}")
         {
             Content = new StringContent(mapLibreStyleJson, Encoding.UTF8)
         };

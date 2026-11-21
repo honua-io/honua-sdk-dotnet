@@ -203,8 +203,11 @@ public static class GrpcGeometryConverter
 
     private static GeometryFactory ResolveGeometryFactory(HonuaSpatialReference? spatialReference)
     {
-        return spatialReference?.Wkid is int wkid && wkid > 0
-            ? DefaultGeometryFactory.WithSRID(wkid)
+        var wkid = spatialReference?.Wkid is int w && w > 0
+            ? w
+            : spatialReference?.LatestWkid;
+        return wkid is int resolved && resolved > 0
+            ? DefaultGeometryFactory.WithSRID(resolved)
             : DefaultGeometryFactory;
     }
 

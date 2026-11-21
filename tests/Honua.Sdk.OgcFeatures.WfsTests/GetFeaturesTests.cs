@@ -676,4 +676,34 @@ public sealed class GetFeaturesTests
 
         Assert.Equal("InvalidParameterValue", ex.ExceptionCode);
     }
+
+    [Theory]
+    [InlineData("""
+        <?xml version="1.0" encoding="UTF-8"?>
+        <ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows/1.1" version="2.0.0">
+          <ows:Exception exceptionCode="InvalidParameterValue" locator="TYPENAMES">
+            <ows:ExceptionText>Unknown feature type</ows:ExceptionText>
+          </ows:Exception>
+        </ows:ExceptionReport>
+        """)]
+    [InlineData("""
+        <ExceptionReport xmlns="http://www.opengis.net/ows/1.1" version="2.0.0">
+          <Exception exceptionCode="InvalidParameterValue">
+            <ExceptionText>Unknown feature type</ExceptionText>
+          </Exception>
+        </ExceptionReport>
+        """)]
+    public async Task GetFeatures_WithGmlHandler_Http200ExceptionReport_ThrowsHonuaWfsException(string exceptionXml)
+    {
+        var handler = new RawStreamHandler("application/gml+xml; version=3.2");
+        var client = TestHelpers.CreateClient(_ =>
+            Task.FromResult(TestHelpers.CreateXmlResponse(exceptionXml, HttpStatusCode.OK)));
+
+        var ex = await Assert.ThrowsAsync<HonuaWfsException>(
+            () => client.GetFeaturesAsync(new GetFeaturesRequest { TypeNames = "bad" }, handler));
+
+        Assert.Equal(HttpStatusCode.OK, ex.StatusCode);
+        Assert.Equal("InvalidParameterValue", ex.ExceptionCode);
+        Assert.Contains("Unknown feature type", ex.Message, StringComparison.Ordinal);
+    }
 }

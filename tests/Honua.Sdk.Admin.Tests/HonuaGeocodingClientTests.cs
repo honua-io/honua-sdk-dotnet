@@ -516,7 +516,7 @@ public sealed class HonuaGeocodingClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaGeocodingClient(httpClient);
@@ -551,7 +551,7 @@ public sealed class HonuaGeocodingClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaGeocodingClient(httpClient);

@@ -44,11 +44,29 @@ public static class GeoServicesGeometryConverter
             return factory.CreatePoint(CreateCoordinate(x, y, z, m));
         }
 
+        if (IsEmptyPointObject(geometry))
+        {
+            return factory.CreatePoint();
+        }
+
         if (TryReadNumber(geometry, "xmin", out var minX) &&
             TryReadNumber(geometry, "ymin", out var minY) &&
             TryReadNumber(geometry, "xmax", out var maxX) &&
             TryReadNumber(geometry, "ymax", out var maxY))
         {
+            if (IsAntimeridianEnvelope(minX, maxX, minY, maxY, factory.SRID, geometry))
+            {
+                var ring = factory.CreateLinearRing(
+                [
+                    new Coordinate(minX, minY),
+                    new Coordinate(minX, maxY),
+                    new Coordinate(maxX, maxY),
+                    new Coordinate(maxX, minY),
+                    new Coordinate(minX, minY),
+                ]);
+                return factory.CreatePolygon(ring);
+            }
+
             return factory.ToGeometry(new Envelope(minX, maxX, minY, maxY));
         }
 
@@ -400,16 +418,83 @@ public static class GeoServicesGeometryConverter
         writer.WriteEndObject();
     }
 
+    private static bool IsEmptyPointObject(JsonElement geometry)
+    {
+        if (!geometry.TryGetProperty("x", out var xElement) ||
+            !geometry.TryGetProperty("y", out var yElement))
+        {
+            return false;
+        }
+
+        return IsEmptyOrdinate(xElement) || IsEmptyOrdinate(yElement);
+    }
+
+    private static bool IsEmptyOrdinate(JsonElement element)
+    {
+        return element.ValueKind == JsonValueKind.Null ||
+            (element.ValueKind == JsonValueKind.String &&
+             string.Equals(element.GetString(), "NaN", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsAntimeridianEnvelope(
+        double minX,
+        double maxX,
+        double minY,
+        double maxY,
+        int srid,
+        JsonElement geometry)
+    {
+        if (!(minX > maxX) ||
+            minX is < -180.0 or > 180.0 ||
+            maxX is < -180.0 or > 180.0 ||
+            minY is < -90.0 or > 90.0 ||
+            maxY is < -90.0 or > 90.0)
+        {
+            return false;
+        }
+
+        if (srid > 0)
+        {
+            return IsGeographicWkid(srid);
+        }
+
+        var spatialReference = ReadSpatialReference(geometry);
+        if (spatialReference?.Wkid is int wkid && wkid > 0)
+        {
+            return IsGeographicWkid(wkid);
+        }
+
+        if (!string.IsNullOrWhiteSpace(spatialReference?.Wkt))
+        {
+            var wkt = spatialReference.Wkt.TrimStart();
+            if (wkt.StartsWith("PROJCS", StringComparison.OrdinalIgnoreCase) ||
+                wkt.StartsWith("PROJCRS", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsGeographicWkid(int wkid)
+        => wkid is 4326 or 4269 or 4267 or 4258 or 4979 or 4322 or 4167 or 4283 or 4612 or 4019;
+
     private static void WritePoint(Utf8JsonWriter writer, Point point)
     {
-        writer.WriteNumber("x", point.X);
-        writer.WriteNumber("y", point.Y);
-
         var sequence = point.CoordinateSequence;
-        if (sequence.Count == 0)
+        if (point.IsEmpty ||
+            sequence.Count == 0 ||
+            double.IsNaN(point.X) ||
+            double.IsNaN(point.Y))
         {
+            writer.WriteNull("x");
+            writer.WriteNull("y");
             return;
         }
+
+        writer.WriteNumber("x", point.X);
+        writer.WriteNumber("y", point.Y);
 
         var z = sequence.GetOrdinate(0, Ordinate.Z);
         if (!double.IsNaN(z))
@@ -433,6 +518,14 @@ public static class GeoServicesGeometryConverter
         writer.WriteStartArray();
         foreach (Point point in multiPoint.Geometries)
         {
+            if (point.IsEmpty ||
+                point.CoordinateSequence.Count == 0 ||
+                double.IsNaN(point.X) ||
+                double.IsNaN(point.Y))
+            {
+                continue;
+            }
+
             WriteCoordinate(writer, point.CoordinateSequence, 0, hasZ, hasM);
         }
 

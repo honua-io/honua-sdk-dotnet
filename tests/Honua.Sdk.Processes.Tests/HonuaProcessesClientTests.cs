@@ -253,6 +253,20 @@ public sealed class HonuaProcessesClientTests
         Assert.Contains("timeout", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task PathSegmentIdentifiers_RejectDotSegmentTraversal(string badId)
+    {
+        using var http = CreateHttpClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+        var client = new HonuaProcessesClient(http);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetProcessAsync(badId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetJobAsync(badId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.DismissJobAsync(badId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetJobResultsAsync(badId));
+    }
+
     private static HttpClient CreateHttpClient(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
         => new(new MockHttpHandler(handler))
         {
