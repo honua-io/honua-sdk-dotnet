@@ -115,7 +115,8 @@ internal static class GeoServicesHttp
             return uri;
         }
 
-        var fragmentIndex = original.IndexOf('#', queryIndex + 1);
+        var fragmentOffset = original.AsSpan(queryIndex + 1).IndexOf('#');
+        var fragmentIndex = fragmentOffset >= 0 ? queryIndex + 1 + fragmentOffset : -1;
         var prefix = original[..queryIndex];
         var query = fragmentIndex >= 0
             ? original[(queryIndex + 1)..fragmentIndex]
