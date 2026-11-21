@@ -1,6 +1,8 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using Honua.Sdk.Abstractions.Http;
+
 namespace Honua.Sdk.Abstractions.Authentication;
 
 /// <summary>Shared authentication handler for Honua REST clients; rejects credentials over plain HTTP to non-loopback hosts.</summary>
@@ -40,8 +42,14 @@ public abstract class HonuaAuthHandler<TOptions> : DelegatingHandler
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        if (!IsCredentialTargetAllowed(request.RequestUri, _options.BaseAddress))
+        {
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        var effectiveUri = ResolveEffectiveUri(request.RequestUri, _options.BaseAddress);
         if (HonuaAuthenticationSupport.HasCredentialSource(_options) &&
-            HonuaAuthenticationSupport.RequiresHttpsForAuthentication(request.RequestUri))
+            HonuaAuthenticationSupport.RequiresHttpsForAuthentication(effectiveUri))
         {
             var context = HonuaAuthenticationSupport.CreateHttpRequest(request, _options, _serviceName);
             await HonuaAuthenticationSupport.EmitInsecureTransportRejectedDiagnosticAsync(
@@ -58,5 +66,39 @@ public abstract class HonuaAuthHandler<TOptions> : DelegatingHandler
             cancellationToken).ConfigureAwait(false);
 
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static bool IsCredentialTargetAllowed(Uri? requestUri, Uri? baseAddress)
+    {
+        if (baseAddress is null || !baseAddress.IsAbsoluteUri)
+        {
+            return true;
+        }
+
+        if (requestUri is null)
+        {
+            return true;
+        }
+
+        if (!requestUri.IsAbsoluteUri)
+        {
+            return NextLinkOriginValidator.IsSameOrigin(requestUri.OriginalString, baseAddress);
+        }
+
+        return string.Equals(requestUri.Scheme, baseAddress.Scheme, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(requestUri.Host, baseAddress.Host, StringComparison.OrdinalIgnoreCase) &&
+               requestUri.Port == baseAddress.Port;
+    }
+
+    private static Uri? ResolveEffectiveUri(Uri? requestUri, Uri? baseAddress)
+    {
+        if (requestUri is not null && !requestUri.IsAbsoluteUri &&
+            baseAddress is not null && baseAddress.IsAbsoluteUri &&
+            Uri.TryCreate(baseAddress, requestUri, out var resolved))
+        {
+            return resolved;
+        }
+
+        return requestUri;
     }
 }

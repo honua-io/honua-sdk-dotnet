@@ -134,9 +134,7 @@ public sealed class HonuaWfsClient :
         var url = BuildGetFeatureUrl(request, DefaultGeoJsonHandler.MediaType);
         using var response = await _httpClient.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-        await EnsureGetFeatureSuccessAsync(response, DefaultGeoJsonHandler.MediaType, cancellationToken).ConfigureAwait(false);
-
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var stream = await EnsureGetFeatureSuccessAndGetStreamAsync(response, DefaultGeoJsonHandler.MediaType, cancellationToken).ConfigureAwait(false);
         var result = await DefaultGeoJsonHandler.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
         return result;
@@ -243,9 +241,7 @@ public sealed class HonuaWfsClient :
         var response = await _httpClient.GetAsync(CreateRequestUri(url), HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         try
         {
-            await EnsureGetFeatureSuccessAsync(response, handler.MediaType, cancellationToken).ConfigureAwait(false);
-
-            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            Stream stream = await EnsureGetFeatureSuccessAndGetStreamAsync(response, handler.MediaType, cancellationToken).ConfigureAwait(false);
 
             if (handler.OwnsResponseStream)
             {
@@ -258,6 +254,7 @@ public sealed class HonuaWfsClient :
 
             if (!handler.OwnsResponseStream)
             {
+                await stream.DisposeAsync().ConfigureAwait(false);
                 response.Dispose();
             }
 
@@ -442,13 +439,12 @@ public sealed class HonuaWfsClient :
         return Task.CompletedTask;
     }
 
-    private static async Task EnsureGetFeatureSuccessAsync(
+    private const int ExceptionReportPeekBytes = 1024;
+
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Ownership of the returned stream transfers to the caller.")]
+    private static async Task<Stream> EnsureGetFeatureSuccessAndGetStreamAsync(
         HttpResponseMessage response, string requestedMediaType, CancellationToken cancellationToken)
     {
-        // WFS servers may return XML ExceptionReport even when GeoJSON was requested.
-        // Check Content-Type to detect this. When the handler explicitly requested an
-        // XML format (e.g. GML), skip the XML probe on success to avoid materializing
-        // the entire response body as a string just to check for ExceptionReport.
         var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
         bool requestedXml = requestedMediaType.Contains("xml", StringComparison.OrdinalIgnoreCase);
         bool unexpectedXml = !requestedXml &&
@@ -483,6 +479,177 @@ public sealed class HonuaWfsClient :
                     $"WFS request failed with status {(int)response.StatusCode}.",
                     body);
             }
+        }
+
+        // OGC WFS servers may return HTTP 200 with an XML <ows:ExceptionReport> or <ExceptionReport>,
+        // including when the caller requested an XML/GML output format. Peek only the leading prefix
+        // so large GML responses stay streaming without buffering the whole payload in memory.
+        var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var prefix = new byte[ExceptionReportPeekBytes];
+        var bytesRead = 0;
+        while (bytesRead < prefix.Length)
+        {
+            var read = await stream.ReadAsync(prefix.AsMemory(bytesRead), cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            bytesRead += read;
+        }
+
+        if (bytesRead > 0 && LooksLikeExceptionReport(prefix.AsSpan(0, bytesRead)))
+        {
+            using var fullBuffer = new MemoryStream(bytesRead * 2);
+            await fullBuffer.WriteAsync(prefix.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+            await stream.CopyToAsync(fullBuffer, cancellationToken).ConfigureAwait(false);
+            await stream.DisposeAsync().ConfigureAwait(false);
+
+            var body = DecodeText(fullBuffer.GetBuffer().AsSpan(0, (int)fullBuffer.Length), response.Content.Headers.ContentType?.CharSet);
+            var exceptionReport = WfsExceptionParser.TryParse(body);
+            if (exceptionReport is not null)
+            {
+                throw new HonuaWfsException(
+                    response.StatusCode,
+                    exceptionReport.ExceptionText ?? $"WFS exception: {exceptionReport.ExceptionCode}",
+                    body,
+                    exceptionReport.ExceptionCode);
+            }
+
+            return new MemoryStream(fullBuffer.ToArray(), writable: false);
+        }
+
+        return bytesRead == 0 ? stream : new PrefixedStream(prefix, bytesRead, stream);
+    }
+
+    private static bool LooksLikeExceptionReport(ReadOnlySpan<byte> prefix)
+    {
+        var text = DecodeText(prefix, charSet: null);
+        return text.Contains("<ows:ExceptionReport", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains("<ExceptionReport", StringComparison.OrdinalIgnoreCase) ||
+               text.Contains(":ExceptionReport", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string DecodeText(ReadOnlySpan<byte> bytes, string? charSet)
+    {
+        Encoding encoding = Encoding.UTF8;
+        if (bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE)
+        {
+            encoding = Encoding.Unicode;
+        }
+        else if (bytes.Length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF)
+        {
+            encoding = Encoding.BigEndianUnicode;
+        }
+        else if (!string.IsNullOrWhiteSpace(charSet))
+        {
+            try
+            {
+                encoding = Encoding.GetEncoding(charSet.Trim('"'));
+            }
+            catch (ArgumentException)
+            {
+                // Fall back to UTF-8 for unknown charsets.
+            }
+        }
+
+        var text = encoding.GetString(bytes);
+        return text.Length > 0 && text[0] == '\uFEFF' ? text[1..] : text;
+    }
+
+    private sealed class PrefixedStream : Stream
+    {
+        private readonly byte[] _prefix;
+        private readonly int _prefixLength;
+        private readonly Stream _inner;
+        private int _prefixOffset;
+
+        public PrefixedStream(byte[] prefix, int prefixLength, Stream inner)
+        {
+            _prefix = prefix;
+            _prefixLength = prefixLength;
+            _inner = inner;
+        }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override void Flush() => _inner.Flush();
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (_prefixOffset < _prefixLength)
+            {
+                var available = Math.Min(count, _prefixLength - _prefixOffset);
+                Buffer.BlockCopy(_prefix, _prefixOffset, buffer, offset, available);
+                _prefixOffset += available;
+                return available;
+            }
+
+            return _inner.Read(buffer, offset, count);
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            if (_prefixOffset < _prefixLength)
+            {
+                var available = Math.Min(buffer.Length, _prefixLength - _prefixOffset);
+                _prefix.AsSpan(_prefixOffset, available).CopyTo(buffer);
+                _prefixOffset += available;
+                return available;
+            }
+
+            return _inner.Read(buffer);
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            if (_prefixOffset < _prefixLength)
+            {
+                return Task.FromResult(Read(buffer, offset, count));
+            }
+
+            return _inner.ReadAsync(buffer, offset, count, cancellationToken);
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            if (_prefixOffset < _prefixLength)
+            {
+                var available = Math.Min(buffer.Length, _prefixLength - _prefixOffset);
+                _prefix.AsSpan(_prefixOffset, available).CopyTo(buffer.Span);
+                _prefixOffset += available;
+                return ValueTask.FromResult(available);
+            }
+
+            return _inner.ReadAsync(buffer, cancellationToken);
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _inner.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await _inner.DisposeAsync().ConfigureAwait(false);
+            await base.DisposeAsync().ConfigureAwait(false);
         }
     }
 

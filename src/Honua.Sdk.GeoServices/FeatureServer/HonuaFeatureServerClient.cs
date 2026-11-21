@@ -129,7 +129,7 @@ public sealed class HonuaFeatureServerClient :
                 nameof(serviceId));
         }
 
-        var escapedServiceId = string.Join('/', segments.Select(Uri.EscapeDataString));
+        var escapedServiceId = string.Join('/', segments.Select(segment => Honua.Sdk.Abstractions.HonuaPathSegment.Escape(segment, nameof(serviceId))));
         return _servicesPath.Length == 0
             ? $"{escapedServiceId}/{_serviceTypeSegment}"
             : $"{_servicesPath}/{escapedServiceId}/{_serviceTypeSegment}";

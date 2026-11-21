@@ -172,6 +172,18 @@ public sealed class HonuaStudioReportsClientTests
         await Assert.ThrowsAsync<ArgumentException>(() => client.GetReportAsync("   "));
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task ReportMethods_RejectDotSegmentPathTraversal(string badJobId)
+    {
+        using var http = CreateHttpClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+        var client = new HonuaStudioReportsClient(http);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetReportAsync(badJobId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.RenderReportAsync(badJobId, HonuaReportRenderFormat.Markdown));
+    }
+
     [Fact]
     public void AddHonuaStudio_ConfiguresHttpClientTimeoutAndResolvesClient()
     {

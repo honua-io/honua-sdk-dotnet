@@ -34,6 +34,9 @@ public sealed class EditResult
 
     /// <summary>Error details if the operation failed.</summary>
     public EditError? Error { get; init; }
+
+    /// <summary>Stable global ID of the affected feature when available.</summary>
+    public string GlobalId { get; init; } = string.Empty;
 }
 
 /// <summary>

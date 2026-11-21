@@ -410,4 +410,15 @@ public sealed class HonuaOgcRecordsClientTests
         Assert.Contains("bbox parameter", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(json, ex.ResponseBody);
     }
+
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task GetCollectionAndRecord_RejectDotSegmentPathTraversal(string badId)
+    {
+        var client = TestHelpers.CreateOgcRecordsClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetCollectionAsync(badId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetRecordAsync("default", badId));
+    }
 }

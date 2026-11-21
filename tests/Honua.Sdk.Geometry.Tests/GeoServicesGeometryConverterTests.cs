@@ -189,6 +189,62 @@ public class GeoServicesGeometryConverterTests
         Assert.Equal(1, roundTripped.NumInteriorRings);
     }
 
+    [Fact]
+    public void WriteGeometry_EmptyPoint_WritesNullCoordinatesAndRoundTrips()
+    {
+        var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+        var emptyPoint = factory.CreatePoint();
+
+        var json = GeoServicesGeometryConverter.WriteGeometry(emptyPoint);
+
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("x").ValueKind);
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("y").ValueKind);
+        Assert.Equal(4326, json.GetProperty("spatialReference").GetProperty("wkid").GetInt32());
+
+        var roundTripped = Assert.IsType<Point>(GeoServicesGeometryConverter.ReadGeometry(json));
+        Assert.True(roundTripped.IsEmpty);
+        Assert.Equal(4326, roundTripped.SRID);
+    }
+
+    [Fact]
+    public void WriteGeometry_NaNPoint_DoesNotCrashUtf8JsonWriter()
+    {
+        var factory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+        var nanPoint = factory.CreatePoint(new Coordinate(double.NaN, double.NaN));
+
+        var json = GeoServicesGeometryConverter.WriteGeometry(nanPoint);
+
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("x").ValueKind);
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("y").ValueKind);
+    }
+
+    [Fact]
+    public void ReadGeometry_AntimeridianGeographicEnvelope_PreservesXminXmaxOrder()
+    {
+        using var document = JsonDocument.Parse(
+            """
+            {
+                "xmin": 170.0,
+                "ymin": -10.0,
+                "xmax": -170.0,
+                "ymax": 10.0,
+                "spatialReference": { "wkid": 4326 }
+            }
+            """);
+
+        var geometry = GeoServicesGeometryConverter.ReadGeometry(document.RootElement);
+
+        var polygon = Assert.IsType<Polygon>(geometry);
+        Assert.Equal(4326, polygon.SRID);
+        var coords = polygon.ExteriorRing.Coordinates;
+        Assert.Equal(5, coords.Length);
+        Assert.Equal(new Coordinate(170.0, -10.0), coords[0]);
+        Assert.Equal(new Coordinate(170.0, 10.0), coords[1]);
+        Assert.Equal(new Coordinate(-170.0, 10.0), coords[2]);
+        Assert.Equal(new Coordinate(-170.0, -10.0), coords[3]);
+        Assert.Equal(new Coordinate(170.0, -10.0), coords[4]);
+    }
+
     private static Coordinate[] ReadRing(JsonElement ring)
         => ring.EnumerateArray()
             .Select(coordinate => new Coordinate(coordinate[0].GetDouble(), coordinate[1].GetDouble()))

@@ -25,4 +25,10 @@ public sealed class FeaturePage
 
     /// <summary>Whether this is the final page.</summary>
     public bool IsLastPage { get; init; }
+
+    /// <summary>Name of the global ID field (first page only).</summary>
+    public string GlobalIdFieldName { get; init; } = string.Empty;
+
+    /// <summary>Optional quantization transform (first page only when delta-encoded coordinates are used).</summary>
+    public CoordinateTransform? CoordinateTransform { get; init; }
 }

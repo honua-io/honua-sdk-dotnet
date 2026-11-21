@@ -34,7 +34,11 @@ public enum FieldType
     /// <summary>Binary field.</summary>
     Binary = 12,
     /// <summary>UUID field.</summary>
-    Uuid = 13
+    Uuid = 13,
+    /// <summary>RFC 3339 timestamp with preserved UTC offset.</summary>
+    TimestampOffset = 14,
+    /// <summary>Exact base-10 decimal field.</summary>
+    Decimal = 15
 }
 
 /// <summary>Supported geometry types.</summary>
@@ -103,7 +107,11 @@ public enum DistanceUnit
     /// <summary>Kilometers.</summary>
     Kilometers = 3,
     /// <summary>Miles.</summary>
-    Miles = 4
+    Miles = 4,
+    /// <summary>US Survey Feet.</summary>
+    SurveyFeet = 5,
+    /// <summary>International Nautical Miles.</summary>
+    NauticalMiles = 6
 }
 
 /// <summary>Aggregate statistic functions.</summary>
@@ -125,4 +133,51 @@ public enum StatisticType
     Stddev = 6,
     /// <summary>Variance.</summary>
     Var = 7
+}
+
+/// <summary>Cardinality of a layer relationship from origin to destination.</summary>
+public enum RelationshipCardinality
+{
+    /// <summary>Unspecified relationship cardinality.</summary>
+    Unspecified = 0,
+    /// <summary>One-to-one relationship.</summary>
+    OneToOne = 1,
+    /// <summary>One-to-many relationship.</summary>
+    OneToMany = 2,
+    /// <summary>Many-to-many relationship.</summary>
+    ManyToMany = 3
+}
+
+/// <summary>Role of a described layer in a relationship.</summary>
+public enum RelationshipRole
+{
+    /// <summary>Unspecified relationship role.</summary>
+    Unspecified = 0,
+    /// <summary>Layer is the relationship origin.</summary>
+    Origin = 1,
+    /// <summary>Layer is the relationship destination.</summary>
+    Destination = 2
+}
+
+/// <summary>Unit of a temporal navigation interval.</summary>
+public enum TimeIntervalUnit
+{
+    /// <summary>Unspecified time interval unit.</summary>
+    Unspecified = 0,
+    /// <summary>Milliseconds.</summary>
+    Milliseconds = 1,
+    /// <summary>Seconds.</summary>
+    Seconds = 2,
+    /// <summary>Minutes.</summary>
+    Minutes = 3,
+    /// <summary>Hours.</summary>
+    Hours = 4,
+    /// <summary>Days.</summary>
+    Days = 5,
+    /// <summary>Weeks.</summary>
+    Weeks = 6,
+    /// <summary>Months.</summary>
+    Months = 7,
+    /// <summary>Years.</summary>
+    Years = 8
 }

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Catalogs.Records.Exceptions;
 using Honua.Sdk.Catalogs.Records.Models;
@@ -64,7 +65,7 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
     public async Task<OgcRecordsCollection> GetCollectionAsync(string collectionId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}?f=json";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcRecordsJsonContext.Default.OgcRecordsCollection)
@@ -78,7 +79,7 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcRecordsJsonContext.Default.OgcRecordCollection)
@@ -100,7 +101,7 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(recordId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(recordId, nameof(recordId))}?f=json";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, OgcRecordsJsonContext.Default.OgcRecord)
@@ -170,7 +171,7 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonDocument.Parse(body);
     }
@@ -183,7 +184,7 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(recordId)}?f=json";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(recordId, nameof(recordId))}?f=json";
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonDocument.Parse(body);
     }
@@ -195,7 +196,7 @@ public sealed class HonuaOgcRecordsClient : IHonuaOgcRecordsClient
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
         return await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
     }
 

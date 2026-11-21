@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Scenes;
 using Honua.Sdk.Scenes.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,14 +103,11 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
             : _options.SceneApiPath;
 
         var path = basePath.AsSpan().StartsWith("/", StringComparison.Ordinal) ? basePath : $"/{basePath}";
-        path = path.TrimEnd('/');
+        var escapedSegments = segments
+            .Where(segment => !string.IsNullOrWhiteSpace(segment))
+            .Select(segment => "/" + HonuaPathSegment.Escape(segment, nameof(segments)));
 
-        foreach (var segment in segments.Where(segment => !string.IsNullOrWhiteSpace(segment)))
-        {
-            path += $"/{Uri.EscapeDataString(segment)}";
-        }
-
-        return path;
+        return path.TrimEnd('/') + string.Concat(escapedSegments);
     }
 
     private static string RequireSceneId(string sceneId)
@@ -119,7 +117,9 @@ public sealed class HonuaSceneClient : IHonuaSceneClient
             throw new ArgumentException("Scene id is required.", nameof(sceneId));
         }
 
-        return sceneId.Trim();
+        var trimmed = sceneId.Trim();
+        _ = HonuaPathSegment.Escape(trimmed, nameof(sceneId));
+        return trimmed;
     }
 
     private static void EnsureCapabilities(

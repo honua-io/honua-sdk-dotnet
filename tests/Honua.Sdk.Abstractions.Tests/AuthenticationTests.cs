@@ -264,6 +264,98 @@ public sealed class AuthenticationTests
         Assert.False(sent);
     }
 
+    [Fact]
+    public async Task AuthHandler_AttachesCredentials_OnlyForConfiguredBaseAddressOrigin()
+    {
+        var requests = new List<(Uri? Uri, string? ApiKey, string? Authorization)>();
+        var options = new TestClientOptions
+        {
+            BaseAddress = new Uri("https://honua.example:8443/api/"),
+            ApiKey = "api-secret",
+            BearerToken = "bearer-secret",
+        };
+        using var handler = new TestAuthHandler(options)
+        {
+            InnerHandler = new RecordingHandler((request, _) =>
+            {
+                request.Headers.TryGetValues("X-API-Key", out var apiKeys);
+                requests.Add((request.RequestUri, apiKeys?.SingleOrDefault(), request.Headers.Authorization?.ToString()));
+                return Task.FromResult(JsonResponse("{}"));
+            }),
+        };
+        using var http = new HttpClient(handler)
+        {
+            BaseAddress = options.BaseAddress
+        };
+
+        // Same-origin relative and absolute requests receive credentials.
+        await http.GetAsync("/v1/services");
+        await http.GetAsync(new Uri("https://honua.example:8443/v1/layers"));
+
+        // Different host, port, or scheme must NOT receive credentials.
+        await http.GetAsync(new Uri("https://evil.example:8443/v1/services"));
+        await http.GetAsync(new Uri("https://honua.example:9443/v1/services"));
+        await http.GetAsync(new Uri("http://honua.example:8443/v1/services"));
+
+        Assert.Collection(
+            requests,
+            relative =>
+            {
+                Assert.Equal("api-secret", relative.ApiKey);
+                Assert.Equal("Bearer bearer-secret", relative.Authorization);
+            },
+            sameOrigin =>
+            {
+                Assert.Equal("api-secret", sameOrigin.ApiKey);
+                Assert.Equal("Bearer bearer-secret", sameOrigin.Authorization);
+            },
+            differentHost =>
+            {
+                Assert.Null(differentHost.ApiKey);
+                Assert.Null(differentHost.Authorization);
+            },
+            differentPort =>
+            {
+                Assert.Null(differentPort.ApiKey);
+                Assert.Null(differentPort.Authorization);
+            },
+            differentScheme =>
+            {
+                Assert.Null(differentScheme.ApiKey);
+                Assert.Null(differentScheme.Authorization);
+            });
+    }
+
+    [Fact]
+    public async Task AuthHandler_OmitsCredentials_ForProtocolRelativeCrossOriginUri()
+    {
+        string? capturedApiKey = null;
+        string? capturedAuth = null;
+        var options = new TestClientOptions
+        {
+            BaseAddress = new Uri("https://honua.example/"),
+            ApiKey = "api-secret",
+            BearerToken = "bearer-secret",
+        };
+        using var handler = new TestAuthHandler(options)
+        {
+            InnerHandler = new RecordingHandler((request, _) =>
+            {
+                request.Headers.TryGetValues("X-API-Key", out var apiKeys);
+                capturedApiKey = apiKeys?.SingleOrDefault();
+                capturedAuth = request.Headers.Authorization?.ToString();
+                return Task.FromResult(JsonResponse("{}"));
+            }),
+        };
+        using var invoker = new HttpMessageInvoker(handler);
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri("//evil.example/steal", UriKind.Relative));
+
+        await invoker.SendAsync(req, CancellationToken.None);
+
+        Assert.Null(capturedApiKey);
+        Assert.Null(capturedAuth);
+    }
+
     private static HttpResponseMessage JsonResponse(string json)
         => new(HttpStatusCode.OK)
         {

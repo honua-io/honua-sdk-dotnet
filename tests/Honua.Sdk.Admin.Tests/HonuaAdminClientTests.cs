@@ -52,7 +52,7 @@ public sealed class HonuaAdminClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaAdminClient(httpClient);
@@ -85,7 +85,7 @@ public sealed class HonuaAdminClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaAdminClient(httpClient);
@@ -125,7 +125,7 @@ public sealed class HonuaAdminClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaAdminClient(httpClient);
@@ -163,7 +163,7 @@ public sealed class HonuaAdminClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaAdminClient(httpClient);
@@ -213,7 +213,7 @@ public sealed class HonuaAdminClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaAdminClient(httpClient);
@@ -259,7 +259,7 @@ public sealed class HonuaAdminClientTests
 
         var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         var client = new HonuaAdminClient(httpClient);

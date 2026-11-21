@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Http;
 using Honua.Sdk.Catalogs.Stac.Exceptions;
 using Honua.Sdk.Catalogs.Stac.Models;
@@ -24,6 +25,15 @@ public sealed class HonuaStacClient : IHonuaStacClient
     /// guarding against servers that emit self-referential or cyclic next-links.
     /// </summary>
     private const int MaxAutoPages = 100;
+
+    private static readonly HashSet<string> RestrictedNextLinkHeaders = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Authorization",
+        "X-API-Key",
+        "Cookie",
+        "Host",
+        "Proxy-Authorization",
+    };
 
     private readonly HttpClient _http;
 
@@ -61,7 +71,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
     public async Task<StacCollection> GetCollectionAsync(string collectionId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, StacJsonContext.Default.StacCollection)
@@ -75,7 +85,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return DeserializeItemCollection(body, "Failed to deserialize STAC items response.");
@@ -89,7 +99,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(itemId)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(itemId, nameof(itemId))}";
 
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonSerializer.Deserialize(body, StacJsonContext.Default.StacItem)
@@ -210,6 +220,19 @@ public sealed class HonuaStacClient : IHonuaStacClient
         StacSearchQuery? query = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // `intersects` is only valid on POST /search per the STAC API spec (matching SearchAsync).
+        // Route paginated intersects searches through PostSearchPagesAsync so both the initial
+        // request and any POST continuation links preserve the geometry filter.
+        if (query?.Intersects is not null)
+        {
+            await foreach (var postPage in PostSearchPagesAsync(ToSearchRequest(query), cancellationToken).ConfigureAwait(false))
+            {
+                yield return postPage;
+            }
+
+            yield break;
+        }
+
         var page = await SearchAsync(query, cancellationToken).ConfigureAwait(false);
         yield return page;
 
@@ -275,12 +298,18 @@ public sealed class HonuaStacClient : IHonuaStacClient
                 yield break;
             }
 
-            if (!visitedHrefs.Add(nextLink.Href))
+            var isPost = string.Equals(nextLink.Method, "POST", StringComparison.OrdinalIgnoreCase);
+            JsonElement? mergedBody = isPost
+                ? ResolvePostNextLinkBody(nextLink, requestBody)
+                : null;
+            var visitedKey = BuildVisitedLinkKey(isPost ? "POST" : "GET", nextLink.Href, mergedBody);
+
+            if (!visitedHrefs.Add(visitedKey))
             {
                 yield break;
             }
 
-            var body = await FollowNextLinkAsync(nextLink, requestBody, cancellationToken).ConfigureAwait(false);
+            var body = await FollowNextLinkAsync(nextLink, mergedBody, cancellationToken).ConfigureAwait(false);
             page = DeserializeItemCollection(body, "Failed to deserialize paged STAC search response.");
 
             pageCount++;
@@ -310,7 +339,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonDocument.Parse(body);
     }
@@ -323,7 +352,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(itemId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items/{Uri.EscapeDataString(itemId)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items/{HonuaPathSegment.Escape(itemId, nameof(itemId))}";
         var body = await GetStringAsync(url, cancellationToken).ConfigureAwait(false);
         return JsonDocument.Parse(body);
     }
@@ -362,7 +391,7 @@ public sealed class HonuaStacClient : IHonuaStacClient
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionId);
-        var url = $"{BasePath}/collections/{Uri.EscapeDataString(collectionId)}/items{BuildQueryString(query)}";
+        var url = $"{BasePath}/collections/{HonuaPathSegment.Escape(collectionId, nameof(collectionId))}/items{BuildQueryString(query)}";
         return await _http.GetAsync(CreateRequestUri(url), cancellationToken).ConfigureAwait(false);
     }
 
@@ -427,24 +456,17 @@ public sealed class HonuaStacClient : IHonuaStacClient
     /// </summary>
     private async Task<string> FollowNextLinkAsync(
         StacLink nextLink,
-        JsonElement originalBody,
+        JsonElement? mergedBody,
         CancellationToken cancellationToken)
     {
         ValidateNextLinkOrigin(nextLink.Href);
 
-        if (!string.Equals(nextLink.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        if (!mergedBody.HasValue)
         {
             return await GetStringAsync(nextLink.Href, cancellationToken).ConfigureAwait(false);
         }
 
-        // STAC API pagination: a POST next-link's body should be merged onto the original
-        // request body (link members override). The default merge behavior is to merge unless
-        // the link explicitly sets merge:false.
-        var mergedBody = nextLink.Merge == false
-            ? nextLink.Body ?? originalBody
-            : MergeJsonObjects(originalBody, nextLink.Body);
-
-        var payload = JsonSerializer.SerializeToUtf8Bytes(mergedBody, StacJsonContext.Default.JsonElement);
+        var payload = JsonSerializer.SerializeToUtf8Bytes(mergedBody.Value, StacJsonContext.Default.JsonElement);
         using var content = new ByteArrayContent(payload);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
@@ -457,6 +479,12 @@ public sealed class HonuaStacClient : IHonuaStacClient
         {
             foreach (var header in nextLink.Headers)
             {
+                if (string.IsNullOrWhiteSpace(header.Key) ||
+                    RestrictedNextLinkHeaders.Contains(header.Key.Trim()))
+                {
+                    continue;
+                }
+
                 requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
@@ -465,6 +493,27 @@ public sealed class HonuaStacClient : IHonuaStacClient
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         EnsureSuccess(response, responseBody);
         return responseBody;
+    }
+
+    private static JsonElement ResolvePostNextLinkBody(StacLink nextLink, JsonElement originalBody)
+    {
+        // STAC API pagination: a POST next-link's body should be merged onto the original
+        // request body (link members override). The default merge behavior is to merge unless
+        // the link explicitly sets merge:false.
+        return nextLink.Merge == false
+            ? nextLink.Body ?? originalBody
+            : MergeJsonObjects(originalBody, nextLink.Body);
+    }
+
+    private static string BuildVisitedLinkKey(string method, string href, JsonElement? body)
+    {
+        if (!body.HasValue)
+        {
+            return $"{method}\0{href}";
+        }
+
+        var bodyKey = JsonSerializer.Serialize(body.Value, StacJsonContext.Default.JsonElement);
+        return $"{method}\0{href}\0{bodyKey}";
     }
 
     /// <summary>

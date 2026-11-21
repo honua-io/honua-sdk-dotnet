@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Studio;
 using Honua.Sdk.Studio.Exceptions;
 using Honua.Sdk.Studio.Models;
@@ -33,7 +34,7 @@ public sealed class HonuaStudioReportsClient : IHonuaStudioReportsClient
         EnsureId(jobId, nameof(jobId));
 
         using var response = await _http.GetAsync(
-            CreateRequestUri($"{BasePath}/{Uri.EscapeDataString(jobId)}"),
+            CreateRequestUri($"{BasePath}/{HonuaPathSegment.Escape(jobId, nameof(jobId))}"),
             cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
@@ -80,7 +81,7 @@ public sealed class HonuaStudioReportsClient : IHonuaStudioReportsClient
 
         using var message = new HttpRequestMessage(
             HttpMethod.Get,
-            CreateRequestUri($"{BasePath}/{Uri.EscapeDataString(jobId)}/render?format={formatValue}"));
+            CreateRequestUri($"{BasePath}/{HonuaPathSegment.Escape(jobId, nameof(jobId))}/render?format={formatValue}"));
         message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptMediaType));
 
         using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
@@ -130,10 +131,5 @@ public sealed class HonuaStudioReportsClient : IHonuaStudioReportsClient
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static void EnsureId(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Identifier must be supplied.", parameterName);
-        }
-    }
+        => _ = HonuaPathSegment.Escape(value, parameterName);
 }

@@ -184,6 +184,40 @@ public sealed class GeoServicesSourceResponseLimitTests
         Assert.Equal(1_000, ex.MaxResponseBytes);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task OversizedBody_RedactsSensitiveQueryParametersFromRequestUri(bool declareLength)
+    {
+        var body = new CountingStream(length: declareLength ? Limit + 1 : long.MaxValue);
+        var handler = new MockHttpHandler(request =>
+        {
+            request.RequestUri = new Uri(
+                "https://gis.example.com/gis/rest/services/Hydrants/FeatureServer/0?f=json&token=secret-tok&api_key=secret-api&access_token=secret-at&key=secret-k&where=1%3D1");
+            var response = Respond(HttpStatusCode.OK, body, declareLength);
+            response.RequestMessage = request;
+            return Task.FromResult(response);
+        });
+        var http = new HttpClient(handler) { BaseAddress = new Uri("https://gis.example.com/gis/") };
+        var client = new HonuaFeatureServerClient(http, new HonuaFeatureServerClientOptions { MaxResponseBytes = Limit });
+
+        var ex = await Assert.ThrowsAsync<HonuaFeatureServerResponseTooLargeException>(
+            () => client.GetLayerInfoAsync("Hydrants", 0));
+
+        Assert.NotNull(ex.RequestUri);
+        var uriText = ex.RequestUri!.AbsoluteUri;
+        Assert.DoesNotContain("secret-tok", uriText, StringComparison.Ordinal);
+        Assert.DoesNotContain("secret-api", uriText, StringComparison.Ordinal);
+        Assert.DoesNotContain("secret-at", uriText, StringComparison.Ordinal);
+        Assert.DoesNotContain("secret-k", uriText, StringComparison.Ordinal);
+        Assert.Contains("f=json", uriText, StringComparison.Ordinal);
+        Assert.Contains("where=1%3D1", uriText, StringComparison.Ordinal);
+        Assert.Contains("token=REDACTED", uriText, StringComparison.Ordinal);
+        Assert.Contains("api_key=REDACTED", uriText, StringComparison.Ordinal);
+        Assert.Contains("access_token=REDACTED", uriText, StringComparison.Ordinal);
+        Assert.Contains("key=REDACTED", uriText, StringComparison.Ordinal);
+    }
+
     // ── queryAttachments ────────────────────────────────────────────
 
     [Fact]

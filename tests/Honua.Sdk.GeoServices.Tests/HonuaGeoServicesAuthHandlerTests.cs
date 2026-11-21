@@ -37,7 +37,7 @@ public sealed class HonuaGeoServicesAuthHandlerTests
 
         using var httpClient = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
 
         await httpClient.GetAsync("/FeatureServer");

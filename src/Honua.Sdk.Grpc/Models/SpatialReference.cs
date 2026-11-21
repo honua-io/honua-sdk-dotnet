@@ -16,4 +16,10 @@ public sealed class SpatialReference
 
     /// <summary>Well-known text.</summary>
     public string Wkt { get; init; } = string.Empty;
+
+    /// <summary>Vertical coordinate system well-known ID.</summary>
+    public int VcsWkid { get; init; }
+
+    /// <summary>Latest vertical coordinate system well-known ID.</summary>
+    public int LatestVcsWkid { get; init; }
 }

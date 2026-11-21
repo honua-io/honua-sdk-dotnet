@@ -292,6 +292,20 @@ public sealed class ReplicaSyncClientTests
     }
 
     [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task ReplicaSyncMethods_RejectDotSegmentPathTraversal(string badServiceId)
+    {
+        var handler = new StubHttpMessageHandler((_, _) => throw new InvalidOperationException("HTTP should not be called."));
+        var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.CreateReplicaAsync(badServiceId, "rep"));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.ExtractChangesAsync(badServiceId, "rep"));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.SynchronizeReplicaAsync(badServiceId, "rep"));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.UnRegisterReplicaAsync(badServiceId, "rep"));
+    }
+
+    [Theory]
     [InlineData("add", false)]
     [InlineData("update", false)]
     [InlineData("delete", false)]

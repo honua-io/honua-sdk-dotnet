@@ -28,4 +28,13 @@ public sealed record ApplyEditsRequest
 
     /// <summary>Whether to force writes that would otherwise be rejected by conflict detection.</summary>
     public bool ForceWrite { get; init; }
+
+    /// <summary>Optional client-generated idempotency key for retry deduplication.</summary>
+    public string? IdempotencyKey { get; init; }
+
+    /// <summary>Whether updates and deletes address features by global ID instead of integer object ID.</summary>
+    public bool UseGlobalIds { get; init; }
+
+    /// <summary>Global IDs of features to delete when UseGlobalIds is true.</summary>
+    public IReadOnlyList<string>? DeleteGlobalIds { get; init; }
 }
