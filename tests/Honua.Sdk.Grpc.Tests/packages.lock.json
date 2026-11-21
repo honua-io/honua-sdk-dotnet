@@ -65,8 +65,8 @@
       },
       "Grpc.Core.Api": {
         "type": "Transitive",
-        "resolved": "2.84.0",
-        "contentHash": "p2SOMl6q/GZ4/5MLkgboC/z55g4zKUEruRn/g46QgppjQBVnsLZVBU/9VO7n60ll38G3Eo8Zu9b7x+W01GKFVg=="
+        "resolved": "2.85.0",
+        "contentHash": "cpYu/nw/QhwHcRZMJbYD8lEllKrdwYMiDS4U3oH61nhYPUMNkcCcef4ulv11svHvTBThYV+ju332N9bCrfe7cQ=="
       },
       "Grpc.Net.Common": {
         "type": "Transitive",
@@ -358,10 +358,10 @@
         "type": "CentralTransitive",
         "requested": "[1.5.0, )",
         "resolved": "1.5.0",
-        "contentHash": "xXxmpWDkAK85oWbrNs/WhLNf2A7JsednfolO7TOaKIbX85ypSgek5ZI7GmRz7csL4WvMsiDSxk2cymIwmcyt9w==",
+        "contentHash": "sggyeiKXrOwEfMfM+EwSbwBMoPr0ir9oLKPOp0ZYco7hlp+H4TjUhHOeXZybEOd36uDWRIrK3PYZQmTOGMte+w==",
         "dependencies": {
           "Google.Protobuf": "3.36.2",
-          "Grpc.Core.Api": "2.84.0"
+          "Grpc.Core.Api": "2.85.0"
         }
       },
       "Google.Protobuf": {
