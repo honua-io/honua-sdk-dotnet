@@ -1,7 +1,7 @@
 # Capability coverage snapshot (`sdk-coverage.v1.json`)
 
 This SDK publishes a per-capability coverage snapshot,
-[`contracts/sdk-coverage.v1.json`](../contracts/sdk-coverage.v1.json), for the
+[`contracts/sdk-coverage.v1.json`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/contracts/sdk-coverage.v1.json), for the
 cross-repo capability matrix (honua-io/honua-server#2892). It is this SDK's
 answer to "which canonical capabilities does the .NET SDK's source actually
 implement, and how completely" -- generated from the SDK's own source, not

@@ -27,7 +27,7 @@ pipeline. Server-side plugin execution and policy enforcement is tracked in
 ## Types you'll touch
 
 All types live in `Honua.Sdk.Abstractions.Plugins`
-(see [src/Honua.Sdk.Abstractions/Plugins/HonuaPluginContracts.cs](../src/Honua.Sdk.Abstractions/Plugins/HonuaPluginContracts.cs)).
+(see [src/Honua.Sdk.Abstractions/Plugins/HonuaPluginContracts.cs](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Abstractions/Plugins/HonuaPluginContracts.cs)).
 
 | Type | Role |
 |---|---|
@@ -201,7 +201,7 @@ contract into your runtime adapter.
 
 ## See also
 
-- [src/Honua.Sdk.Abstractions/README.md](../src/Honua.Sdk.Abstractions/README.md)
+- [src/Honua.Sdk.Abstractions/README.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Abstractions/README.md)
   — package overview.
 - [authentication.md](authentication.md) — how hosts authenticate plugin
   manifest uploads.
