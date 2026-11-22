@@ -690,7 +690,7 @@ Acceptance criteria:
 
 Related dependencies:
 
-- https://github.com/honua-io/honua-server-admin/issues/25
+- Admin integration: private planning reference `honua-server-admin#25` (repository access required).
 - https://github.com/honua-io/geospatial-grpc/issues/12
 
 ## Display And Maps Approach

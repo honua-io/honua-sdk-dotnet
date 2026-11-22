@@ -104,8 +104,8 @@ machines, page composition, and operator copy.
 Move stable admin API clients/DTOs into SDK and consume them through NuGet:
 
 - SDK side: https://github.com/honua-io/honua-sdk-dotnet/issues/69
-- Admin side: https://github.com/honua-io/honua-server-admin/issues/66
-- WASM validation: https://github.com/honua-io/honua-server-admin/issues/67
+- Admin side: private planning reference `honua-server-admin#66` (repository access required).
+- WASM validation: private planning reference `honua-server-admin#67` (repository access required).
 
 ### Gate 5: Mobile Cutover
 
