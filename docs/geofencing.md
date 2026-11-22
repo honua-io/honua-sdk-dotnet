@@ -24,7 +24,7 @@ and web hosts.
 ## Types you'll touch
 
 All types live in `Honua.Sdk.Geometry` (file:
-[src/Honua.Sdk.Geometry/HonuaGeofenceEvaluator.cs](../src/Honua.Sdk.Geometry/HonuaGeofenceEvaluator.cs)).
+[src/Honua.Sdk.Geometry/HonuaGeofenceEvaluator.cs](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Geometry/HonuaGeofenceEvaluator.cs)).
 
 | Type | Role |
 |---|---|
@@ -248,7 +248,7 @@ selector function instead.
 
 ## See also
 
-- [src/Honua.Sdk.Geometry/README.md](../src/Honua.Sdk.Geometry/README.md)
+- [src/Honua.Sdk.Geometry/README.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Geometry/README.md)
   — package overview and install snippet.
 - [geometry-analysis.md](geometry-analysis.md) — the planar analyzer this
   evaluator is built on.

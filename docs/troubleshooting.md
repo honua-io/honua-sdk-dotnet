@@ -208,7 +208,7 @@ Every stable `Honua.Sdk*` package is on nuget.org, so a bare
   somewhere other than nuget.org, or a `<clear />` that removed nuget.org;
 - you asked for a **prerelease**, which publishes to the authenticated GitHub
   Packages feed only - see
-  [INSTALL.md](../INSTALL.md#prereleases-and-the-github-packages-mirror);
+  [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md#prereleases-and-the-github-packages-mirror);
 - a package that does not exist under that name. `dotnet package search Honua.Sdk`
   lists what is published.
 
@@ -224,7 +224,7 @@ means no credentials reached the feed (source added without
 `--username`/`--password`, or credentials stored under a different source URL);
 a `403` usually means the token is fine-grained, expired, or missing
 `read:packages`. Re-run the `dotnet nuget add source` / `update source` step in
-[INSTALL.md](../INSTALL.md#prereleases-and-the-github-packages-mirror) with a
+[INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md#prereleases-and-the-github-packages-mirror) with a
 classic PAT.
 
 ### Build fails with `TreatWarningsAsErrors`

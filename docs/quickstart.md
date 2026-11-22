@@ -65,9 +65,9 @@ dotnet add HonuaHello package Microsoft.Extensions.Hosting
 ```
 
 An unversioned `dotnet add package` resolves to the newest stable release on nuget.org (the
-current one is in the [README status table](../README.md#status)); pin `--version` when you want a
+current one is in the [README status table](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/README.md#status)); pin `--version` when you want a
 later release not to change what you built against. Prereleases are on GitHub Packages only - see
-[INSTALL.md](../INSTALL.md#prereleases-and-the-github-packages-mirror).
+[INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md#prereleases-and-the-github-packages-mirror).
 
 Replace `HonuaHello/Program.cs` with:
 
@@ -145,7 +145,7 @@ dotnet add package Microsoft.Extensions.Hosting
 > (step 4), `Honua.Sdk.OgcFeatures` (steps 6 and 7) and `Honua.Sdk.Abstractions` (step 7), and
 > register them one by one as shown in
 > [Register clients one by one](#register-clients-one-by-one-instead). The full package catalog is
-> in [INSTALL.md](../INSTALL.md).
+> in [INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md).
 
 ## Step 2: Register the clients with DI (60 seconds)
 
@@ -580,7 +580,7 @@ dotnet run
 
 ## What's Next
 
-- **[Admin Bootstrap Console](../examples/AdminBootstrapConsole/)** -- the
+- **[Admin Bootstrap Console](https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/examples/AdminBootstrapConsole)** -- the
   canonical sample app for this repo's operator/bootstrap flow; bootstrap a
   PostGIS table with `Honua.Sdk.Admin`, requiring geometry metadata and a
   single primary key; reuse or publish the layer safely, preserve existing
@@ -591,9 +591,9 @@ dotnet run
   read-only staging suite
 - **[Source facade](source-facade.md)** -- source descriptors, protocol
   aliases, capabilities, and native protocol escape hatches
-- **[INSTALL.md](../INSTALL.md)** -- package sources, GitHub Packages setup,
+- **[INSTALL.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md)** -- package sources, GitHub Packages setup,
   and version policy
-- **[Field Form Console](../examples/FieldFormConsole/)** -- form validation
+- **[Field Form Console](https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/examples/FieldFormConsole)** -- form validation
   and calculated fields using the current SDK
-- **[Offline Conflict Console](../examples/OfflineConflictConsole/)** --
+- **[Offline Conflict Console](https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/examples/OfflineConflictConsole)** --
   producing, detecting, and resolving offline sync conflicts

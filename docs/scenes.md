@@ -33,7 +33,7 @@ contracts. It deliberately does not render scenes or manage viewer caches.
 ## Unreal Integration Spike
 
 The Unreal path is documented in
-[`../.specifica/unreal-integration-path-honua-scenes-dotnet-tooling/README.md`](../.specifica/unreal-integration-path-honua-scenes-dotnet-tooling/README.md).
+[`../.specifica/unreal-integration-path-honua-scenes-dotnet-tooling/README.md`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/.specifica/unreal-integration-path-honua-scenes-dotnet-tooling/README.md).
 The current recommendation is:
 
 - keep the first 3D construction demo web/CesiumJS-first;

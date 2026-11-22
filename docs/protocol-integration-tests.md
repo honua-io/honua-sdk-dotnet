@@ -131,8 +131,8 @@ useful as a scaffold and opt-in smoke lane rather than a PR-blocking gate.
 conformance fixtures** against a **pinned `honua-server:nightly`** image and
 fails on contract drift. It is the `honua-sdk-dotnet` child (#181) of the
 Compatibility Train epic (`geospatial-grpc#18`), and the SDK-side answer to
-`honua-server#1238`. See [`conformance/README.md`](../conformance/README.md) and
-[`conformance/PINS.md`](../conformance/PINS.md) for the full design and pins.
+`honua-server#1238`. See [`conformance/README.md`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/conformance/README.md) and
+[`conformance/PINS.md`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/conformance/PINS.md) for the full design and pins.
 
 The fixtures are **consumed from `geospatial-grpc`**, never copied here: the CI
 job runs `conformance/fetch-fixtures.sh --version <X.Y.Z>` to pull and verify the

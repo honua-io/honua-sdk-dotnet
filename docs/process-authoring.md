@@ -28,7 +28,7 @@ Federation bridges the gap while that port is in progress.
 | Describe a process (id, inputs, outputs) for the catalog | `HonuaProcessAuthoring.DefineProcess(...)` -> `HonuaProcessDefinition` |
 | Build a multi-step analysis plan to submit | `HonuaProcessAuthoring.DefinePlan(...)` -> `HonuaProcessExecuteRequest` |
 | Write and unit-test executor logic locally | `IHonuaProcessExecutor` + `HonuaProcessTestHarness` |
-| Submit a job to a running server | `IHonuaProcessesClient` (see [README](../src/Honua.Sdk.Processes/README.md)) |
+| Submit a job to a running server | `IHonuaProcessesClient` (see [README](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Processes/README.md)) |
 
 ## Authoring a process definition
 
@@ -273,10 +273,10 @@ The original transport exception remains available as the inner exception.
 
 ## See also
 
-- [Buffer → clip console example](../examples/GeoprocessingBufferClipConsole/) —
+- [Buffer → clip console example](https://github.com/honua-io/honua-sdk-dotnet/tree/trunk/examples/GeoprocessingBufferClipConsole) —
   execute a real GeoJSON buffer, then clip an inline feature layer using the
   returned polygon with `ExecuteSyncAsync` and one bounded wait per stage.
 
-- [`Honua.Sdk.Processes` README](../src/Honua.Sdk.Processes/README.md) — REST
+- [`Honua.Sdk.Processes` README](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Processes/README.md) — REST
   client surface for submitting and polling jobs.
 - [Geometry analysis](geometry-analysis.md) — client-side geometry helpers.

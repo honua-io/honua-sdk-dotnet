@@ -40,7 +40,8 @@
       {
         "files": [
           "*.md",
-          "internal/*.md"
+          "internal/*.md",
+          "features/*.md"
         ],
         "src": ".",
         "exclude": ["api/**", "obj/**", "_site/**"]

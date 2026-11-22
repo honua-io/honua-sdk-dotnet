@@ -21,7 +21,7 @@ projection policy, and diagnostics: there is no custom geometry kernel.
 ## Types you'll touch
 
 All types live in `Honua.Sdk.Geometry`. See the
-[package README](../src/Honua.Sdk.Geometry/README.md) for install notes.
+[package README](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Geometry/README.md) for install notes.
 
 | Type | Role |
 |---|---|
@@ -183,7 +183,7 @@ Geometry projected = transformer.Transform(
 
 ## See also
 
-- [src/Honua.Sdk.Geometry/README.md](../src/Honua.Sdk.Geometry/README.md)
+- [src/Honua.Sdk.Geometry/README.md](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/src/Honua.Sdk.Geometry/README.md)
   — package overview and install snippet.
 - [geofencing.md](geofencing.md) — the geofence evaluator built on this
   package.
