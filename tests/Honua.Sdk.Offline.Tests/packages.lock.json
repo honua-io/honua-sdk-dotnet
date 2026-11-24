@@ -134,7 +134,7 @@
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )"
         }
       }
     }

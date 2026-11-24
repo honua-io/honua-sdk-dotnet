@@ -295,7 +295,7 @@
       "fieldformconsole": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Field": "[5.0.1, )"
+          "Honua.Sdk.Field": "[5.1.0, )"
         }
       },
       "honua.sdk.abstractions": {
@@ -304,14 +304,14 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )"
         }
       },
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
           "Geospatial.Grpc": "[1.5.0, )",
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -320,8 +320,8 @@
       "honua.sdk.geoservices": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.Geometry": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.Geometry": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -329,28 +329,28 @@
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )"
         }
       },
       "offlineconflictconsole": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.Offline": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.Offline": "[5.1.0, )"
         }
       },
       "realtimeworker": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )"
         }
       },
       "routinggeofenceconsole": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.GeoServices": "[5.0.1, )",
-          "Honua.Sdk.Geometry": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.GeoServices": "[5.1.0, )",
+          "Honua.Sdk.Geometry": "[5.1.0, )"
         }
       },
       "Geospatial.Grpc": {
