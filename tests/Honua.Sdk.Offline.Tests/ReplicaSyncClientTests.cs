@@ -569,6 +569,10 @@ public sealed class ReplicaSyncClientTests
         Assert.Contains("Uploaded replica edits failed to apply.", error.Message);
     }
 
+    private static Dictionary<string, string> ParseForm(string body)
+        => body.Split('&').Select(pair => pair.Split('=', 2))
+            .ToDictionary(pair => Uri.UnescapeDataString(pair[0]), pair => Uri.UnescapeDataString(pair[1]));
+
     // The returned message is owned and disposed by the HttpClient pipeline.
     private static HttpResponseMessage JsonResponse(string json) => new(HttpStatusCode.OK)
     {
