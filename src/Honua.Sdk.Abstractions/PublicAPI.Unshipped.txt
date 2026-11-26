@@ -102,3 +102,53 @@ Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Rejected = 7 -> Honua.Sdk
 Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Cancelled = 8 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
 Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Failed = 9 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
 Honua.Sdk.Abstractions.Operations.HonuaOperationStatus.Indeterminate = 10 -> Honua.Sdk.Abstractions.Operations.HonuaOperationStatus
+Honua.Sdk.Offline.Abstractions.IReplicaUploadClient
+Honua.Sdk.Offline.Abstractions.IReplicaUploadClient.UploadReplicaAsync(string! serviceId, string! replicaId, Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Offline.Abstractions.ReplicaUploadResult!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.Applied.get -> bool
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.Applied.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ConflictId.get -> string?
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ConflictId.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ConflictType.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ConflictType.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.EditIndex.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.EditIndex.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.LayerId.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.LayerId.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ObjectId.get -> long
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ObjectId.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict.ReplicaUploadConflict() -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.AddResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureEditResult!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.AddResults.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.DeleteResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureEditResult!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.DeleteResults.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.LayerId.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.LayerId.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.ReplicaUploadLayerResult() -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.UpdateResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Abstractions.Features.FeatureEditResult!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult.UpdateResults.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.Edits.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.LayerChangeSet!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.ManualReview.get -> bool
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.ManualReview.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.ReceivedServerGen.get -> long
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.ReplicaUploadRequest(long receivedServerGen, System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.LayerChangeSet!>! edits) -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.UploadId.get -> string?
+Honua.Sdk.Offline.Abstractions.ReplicaUploadRequest.UploadId.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.AppliedAdds.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.AppliedAdds.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.AppliedDeletes.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.AppliedDeletes.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.AppliedUpdates.get -> int
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.AppliedUpdates.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.Conflicts.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.ReplicaUploadConflict!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.Conflicts.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.EditResults.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Offline.Abstractions.ReplicaUploadLayerResult!>!
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.EditResults.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.ReplicaUploadResult() -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.ServerGen.get -> long
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.ServerGen.init -> void
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.Success.get -> bool
+Honua.Sdk.Offline.Abstractions.ReplicaUploadResult.Success.init -> void

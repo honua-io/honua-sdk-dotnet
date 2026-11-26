@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using Honua.Sdk.Offline;
 using Honua.Sdk.Offline.Abstractions;
 
@@ -479,6 +480,100 @@ public sealed class ReplicaSyncClientTests
     {
         Assert.Throws<ArgumentNullException>(() => new ReplicaSyncClient(null!));
     }
+
+    [Fact]
+    public async Task UploadReplicaAsync_SendsLayerEditsAndReadsAssignedIdsAndConflicts()
+    {
+        var handler = new StubHttpMessageHandler(async (request, cancellationToken) =>
+        {
+            Assert.Equal("/rest/services/assets/FeatureServer/synchronizeReplica", request.RequestUri!.AbsolutePath);
+            var parameters = ParseForm(await request.Content!.ReadAsStringAsync(cancellationToken));
+            Assert.Equal("r1", parameters["replicaID"]);
+            Assert.Equal("upload", parameters["syncDirection"]);
+            Assert.Equal("4294967296", parameters["replicaServerGen"]);
+            Assert.Equal("true", parameters["returnIdsForAdds"]);
+            Assert.Equal("manualReview", parameters["conflictHandling"]);
+            Assert.Equal("batch-r1-1", parameters["editsUploadID"]);
+            using var edits = JsonDocument.Parse(parameters["edits"]);
+            var layer = Assert.Single(edits.RootElement.EnumerateArray());
+            Assert.Equal(2, layer.GetProperty("id").GetInt32());
+            Assert.Equal("new", Assert.Single(layer.GetProperty("adds").EnumerateArray())
+                .GetProperty("attributes").GetProperty("name").GetString());
+            Assert.Equal(9, Assert.Single(layer.GetProperty("updates").EnumerateArray())
+                .GetProperty("attributes").GetProperty("objectid").GetInt64());
+            Assert.Equal(4294967297L, Assert.Single(layer.GetProperty("deletes").EnumerateArray()).GetInt64());
+            return JsonResponse("""
+                {
+                  "success":true,"replicaID":"r1","syncDirection":"upload","serverGen":4294967296,
+                  "appliedAdds":1,"appliedUpdates":0,"appliedDeletes":1,
+                  "editResults":[{"id":2,"addResults":[{"objectId":4294967300,"globalId":"g1","success":true}],
+                    "updateResults":null,"deleteResults":null}],
+                  "conflicts":[{"layerId":2,"objectId":9,"conflictType":1,"applied":false,"editIndex":1,"conflictId":"c1"}]
+                }
+                """);
+        });
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") };
+        IReplicaUploadClient client = new ReplicaSyncClient(http);
+
+        var result = await client.UploadReplicaAsync("assets", "r1", new ReplicaUploadRequest(4294967296L,
+            [new LayerChangeSet
+            {
+                LayerId = 2,
+                AddFeaturesJson = ["""{"attributes":{"name":"new"}}"""],
+                UpdateFeaturesJson = ["""{"attributes":{"objectid":9}}"""],
+                DeleteIds = [4294967297L],
+            }])
+        {
+            ManualReview = true,
+            UploadId = "batch-r1-1",
+        });
+
+        Assert.True(result.Success);
+        Assert.Equal(4294967296L, result.ServerGen);
+        Assert.Equal(1, result.AppliedAdds);
+        Assert.Equal(0, result.AppliedUpdates);
+        Assert.Equal(1, result.AppliedDeletes);
+        var layerResult = Assert.Single(result.EditResults);
+        Assert.Equal(2, layerResult.LayerId);
+        var added = Assert.Single(layerResult.AddResults);
+        Assert.True(added.Succeeded);
+        Assert.Equal(4294967300L, added.ObjectId);
+        Assert.Equal("g1", added.Id);
+        Assert.Empty(layerResult.UpdateResults);
+        Assert.Empty(layerResult.DeleteResults);
+        var conflict = Assert.Single(result.Conflicts);
+        Assert.Equal(2, conflict.LayerId);
+        Assert.Equal(9, conflict.ObjectId);
+        Assert.Equal(1, conflict.ConflictType);
+        Assert.Equal(1, conflict.EditIndex);
+        Assert.False(conflict.Applied);
+        Assert.Equal("c1", conflict.ConflictId);
+    }
+
+    [Fact]
+    public async Task UploadReplicaAsync_ReportsRecognizedNonSuccessEnvelope()
+    {
+        var handler = new StubHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("""{"error":{"code":400,"message":"Uploaded replica edits failed to apply.","details":[]}}""",
+                Encoding.UTF8, "application/json"),
+        }));
+        using var http = new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") };
+        var client = new ReplicaSyncClient(http);
+
+        var error = await Assert.ThrowsAsync<ReplicaSyncException>(
+            () => client.UploadReplicaAsync("assets", "r1", new ReplicaUploadRequest(0, [])));
+
+        Assert.Equal(HttpStatusCode.BadRequest, error.StatusCode);
+        Assert.Equal(400, error.ServerErrorCode);
+        Assert.Contains("Uploaded replica edits failed to apply.", error.Message);
+    }
+
+    // The returned message is owned and disposed by the HttpClient pipeline.
+    private static HttpResponseMessage JsonResponse(string json) => new(HttpStatusCode.OK)
+    {
+        Content = new StringContent(json, Encoding.UTF8, "application/json"),
+    };
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
     {
