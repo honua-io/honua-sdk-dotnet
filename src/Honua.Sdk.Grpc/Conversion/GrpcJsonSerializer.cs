@@ -9,39 +9,54 @@ using System.Text.Json.Serialization;
 
 namespace Honua.Sdk.Grpc.Conversion;
 
-/// <summary>
-/// Native AOT-safe JSON serialization helpers for gRPC feature attributes and GeoServices geometries.
-/// Avoids reflection-based <see cref="JsonSerializer.SerializeToElement{TValue}(TValue, JsonSerializerOptions?)"/>.
-/// </summary>
+internal enum NullPropertyHandling
+{
+    Include,
+    Omit
+}
+
+// Native AOT-safe JSON serialization helpers for gRPC feature attributes and GeoServices geometries.
 internal static class GrpcJsonSerializer
 {
-    public static JsonElement SerializeDictionaryToElement(
+    public static JsonElement SerializeDictionaryToElement(IReadOnlyDictionary<string, object?> dictionary)
+        => SerializeDictionary(dictionary, NullPropertyHandling.Include);
+
+    public static JsonElement SerializeDictionaryOmittingNulls(IReadOnlyDictionary<string, object?> dictionary)
+        => SerializeDictionary(dictionary, NullPropertyHandling.Omit);
+
+    public static JsonElement SerializeValueToElement(object? value)
+        => SerializeValue(value, NullPropertyHandling.Include);
+
+    public static JsonElement SerializeValueOmittingNulls(object? value)
+        => SerializeValue(value, NullPropertyHandling.Omit);
+
+    private static JsonElement SerializeDictionary(
         IReadOnlyDictionary<string, object?> dictionary,
-        bool skipNullProperties = false)
+        NullPropertyHandling nullHandling)
     {
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            WriteDictionary(writer, dictionary, skipNullProperties);
+            WriteDictionary(writer, dictionary, nullHandling);
         }
 
         using var document = JsonDocument.Parse(buffer.WrittenMemory);
         return document.RootElement.Clone();
     }
 
-    public static JsonElement SerializeValueToElement(object? value, bool skipNullProperties = false)
+    private static JsonElement SerializeValue(object? value, NullPropertyHandling nullHandling)
     {
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            WriteValue(writer, value, skipNullProperties);
+            WriteValue(writer, value, nullHandling);
         }
 
         using var document = JsonDocument.Parse(buffer.WrittenMemory);
         return document.RootElement.Clone();
     }
 
-    private static void WriteValue(Utf8JsonWriter writer, object? value, bool skipNullProperties)
+    private static void WriteValue(Utf8JsonWriter writer, object? value, NullPropertyHandling nullHandling)
     {
         if (value is null)
         {
@@ -54,7 +69,7 @@ internal static class GrpcJsonSerializer
             return;
         }
 
-        if (TryWriteCollection(writer, value, skipNullProperties))
+        if (TryWriteCollection(writer, value, nullHandling))
         {
             return;
         }
@@ -155,29 +170,32 @@ internal static class GrpcJsonSerializer
         }
     }
 
-    private static bool TryWriteCollection(Utf8JsonWriter writer, object value, bool skipNullProperties)
+    private static bool TryWriteCollection(
+        Utf8JsonWriter writer,
+        object value,
+        NullPropertyHandling nullHandling)
     {
         if (value is IReadOnlyDictionary<string, object?> readOnlyDict)
         {
-            WriteDictionary(writer, readOnlyDict, skipNullProperties);
+            WriteDictionary(writer, readOnlyDict, nullHandling);
             return true;
         }
 
         if (value is IDictionary<string, object?> mutableDict)
         {
-            WriteDictionary(writer, mutableDict, skipNullProperties);
+            WriteDictionary(writer, mutableDict, nullHandling);
             return true;
         }
 
         if (value is IDictionary nonGenericDict)
         {
-            WriteNonGenericDictionary(writer, nonGenericDict, skipNullProperties);
+            WriteNonGenericDictionary(writer, nonGenericDict, nullHandling);
             return true;
         }
 
         if (value is IEnumerable items)
         {
-            WriteArray(writer, items, skipNullProperties);
+            WriteArray(writer, items, nullHandling);
             return true;
         }
 
@@ -187,18 +205,18 @@ internal static class GrpcJsonSerializer
     private static void WriteDictionary(
         Utf8JsonWriter writer,
         IEnumerable<KeyValuePair<string, object?>> entries,
-        bool skipNullProperties)
+        NullPropertyHandling nullHandling)
     {
         writer.WriteStartObject();
         foreach (var entry in entries)
         {
-            if (skipNullProperties && entry.Value is null)
+            if (nullHandling == NullPropertyHandling.Omit && entry.Value is null)
             {
                 continue;
             }
 
             writer.WritePropertyName(entry.Key);
-            WriteValue(writer, entry.Value, skipNullProperties);
+            WriteValue(writer, entry.Value, nullHandling);
         }
 
         writer.WriteEndObject();
@@ -207,30 +225,30 @@ internal static class GrpcJsonSerializer
     private static void WriteNonGenericDictionary(
         Utf8JsonWriter writer,
         IDictionary entries,
-        bool skipNullProperties)
+        NullPropertyHandling nullHandling)
     {
         writer.WriteStartObject();
         foreach (DictionaryEntry entry in entries)
         {
-            if (skipNullProperties && entry.Value is null)
+            if (nullHandling == NullPropertyHandling.Omit && entry.Value is null)
             {
                 continue;
             }
 
             var key = Convert.ToString(entry.Key, CultureInfo.InvariantCulture) ?? string.Empty;
             writer.WritePropertyName(key);
-            WriteValue(writer, entry.Value, skipNullProperties);
+            WriteValue(writer, entry.Value, nullHandling);
         }
 
         writer.WriteEndObject();
     }
 
-    private static void WriteArray(Utf8JsonWriter writer, IEnumerable items, bool skipNullProperties)
+    private static void WriteArray(Utf8JsonWriter writer, IEnumerable items, NullPropertyHandling nullHandling)
     {
         writer.WriteStartArray();
         foreach (var item in items)
         {
-            WriteValue(writer, item, skipNullProperties);
+            WriteValue(writer, item, nullHandling);
         }
 
         writer.WriteEndArray();

@@ -151,8 +151,7 @@ public sealed class GeoServicesRetryPolicyTests
                     return Task.FromResult(CreateResponse(
                         HttpStatusCode.OK,
                         """{"error":{"code":429,"message":"Throttled"}}""",
-                        retryableHeader: "true",
-                        retryAfter: TimeSpan.Zero));
+                        new RetryResponseHeaders("true", TimeSpan.Zero)));
                 }
 
                 return Task.FromResult(CreateResponse(HttpStatusCode.OK, """{"features":[]}"""));
@@ -184,7 +183,7 @@ public sealed class GeoServicesRetryPolicyTests
                 return Task.FromResult(CreateResponse(
                     HttpStatusCode.ServiceUnavailable,
                     """{"code":"CAPABILITY_UNAVAILABLE","message":"Disabled"}""",
-                    retryableHeader: "false"));
+                    new RetryResponseHeaders("false")));
             });
         });
 
@@ -234,27 +233,83 @@ public sealed class GeoServicesRetryPolicyTests
         Assert.Equal(["Bearer geo-token-1", "Bearer geo-token-2"], seenAuth);
     }
 
+    [Fact]
+    public async Task ShouldRetryAsync_DoesNotBufferNormalFeatureStream()
+    {
+        var payload = """{"features":[""" + new string(' ', 4096) + "]}";
+        var trackingStream = new TrackingReadStream(Encoding.UTF8.GetBytes(payload));
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://host/rest/services/x/FeatureServer/0/query");
+        using var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(trackingStream)
+        };
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        var shouldRetry = await GeoServicesRetryPolicy.ShouldRetryAsync(Outcome.FromResult(response), request);
+
+        Assert.False(shouldRetry);
+        Assert.True(trackingStream.BytesRead <= 128, $"Expected bounded peek <= 128 bytes, read {trackingStream.BytesRead}.");
+        Assert.Equal(payload, await response.Content.ReadAsStringAsync());
+    }
+
+    private sealed record RetryResponseHeaders(string? Retryable = null, TimeSpan? RetryAfter = null);
+
     private static HttpResponseMessage CreateResponse(
         HttpStatusCode status,
         string json,
-        string? retryableHeader = null,
-        TimeSpan? retryAfter = null)
+        RetryResponseHeaders? headers = null)
     {
         var response = new HttpResponseMessage(status)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
-        if (retryableHeader is not null)
+        if (headers?.Retryable is not null)
         {
-            response.Headers.Add("Honua-Retryable", retryableHeader);
+            response.Headers.Add("Honua-Retryable", headers.Retryable);
         }
 
-        if (retryAfter.HasValue)
+        if (headers?.RetryAfter is { } retryAfter)
         {
-            response.Headers.RetryAfter = new RetryConditionHeaderValue(retryAfter.Value);
+            response.Headers.RetryAfter = new RetryConditionHeaderValue(retryAfter);
         }
 
         return response;
+    }
+
+    private sealed class TrackingReadStream(byte[] data) : Stream
+    {
+        private int _position;
+
+        public int BytesRead { get; private set; }
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var remaining = data.Length - _position;
+            var toRead = Math.Min(count, remaining);
+            Buffer.BlockCopy(data, _position, buffer, offset, toRead);
+            _position += toRead;
+            BytesRead += toRead;
+            return toRead;
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var remaining = data.Length - _position;
+            var toRead = Math.Min(buffer.Length, remaining);
+            data.AsSpan(_position, toRead).CopyTo(buffer.Span);
+            _position += toRead;
+            BytesRead += toRead;
+            return ValueTask.FromResult(toRead);
+        }
     }
 
     private sealed class SequencedTokenProvider(Func<string> nextToken) : IHonuaAccessTokenProvider

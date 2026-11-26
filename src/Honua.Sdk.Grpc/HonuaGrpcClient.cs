@@ -848,7 +848,7 @@ public sealed partial class HonuaGrpcClient :
     private static FeatureRecord ToFeatureRecord(Models.Feature feature)
     {
         JsonElement? geometry = feature.Geometry is not null
-            ? GrpcJsonSerializer.SerializeDictionaryToElement(feature.Geometry, skipNullProperties: true)
+            ? GrpcJsonSerializer.SerializeDictionaryOmittingNulls(feature.Geometry)
             : null;
 
         return new FeatureRecord
@@ -862,5 +862,5 @@ public sealed partial class HonuaGrpcClient :
     }
 
     private static JsonElement ToJsonElement(object? value)
-        => GrpcJsonSerializer.SerializeValueToElement(value, skipNullProperties: true);
+        => GrpcJsonSerializer.SerializeValueOmittingNulls(value);
 }

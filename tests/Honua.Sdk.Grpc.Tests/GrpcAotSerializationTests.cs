@@ -23,7 +23,7 @@ public sealed class GrpcAotSerializationTests
             ["unused"] = null
         };
 
-        var element = GrpcJsonSerializer.SerializeDictionaryToElement(geometry, skipNullProperties: true);
+        var element = GrpcJsonSerializer.SerializeDictionaryOmittingNulls(geometry);
 
         Assert.Equal(JsonValueKind.Object, element.ValueKind);
         Assert.False(element.TryGetProperty("unused", out _));

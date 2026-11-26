@@ -118,9 +118,7 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
 {
     private readonly HttpClient _httpClient;
     private readonly HonuaOAuthClientCredentialsTokenProviderOptions _options;
-    private readonly object _syncRoot = new();
-    private readonly Dictionary<string, HonuaAccessToken> _cachedTokens = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, Task<HonuaAccessToken?>> _refreshTasks = new(StringComparer.Ordinal);
+    private readonly HonuaOAuthTokenCache _cache;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HonuaOAuthClientCredentialsTokenProvider"/> class.
@@ -143,6 +141,7 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
 
         _httpClient = httpClient;
         _options = options;
+        _cache = new HonuaOAuthTokenCache(options.RefreshSkew);
     }
 
     /// <inheritdoc />
@@ -156,55 +155,9 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
             _options.Scopes,
             request.Scopes,
             request.Audience ?? _options.Audience);
-        if (!request.ForceRefresh)
-        {
-            lock (_syncRoot)
-            {
-                if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
-                    cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
-                {
-                    return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
-                }
-            }
-        }
-
-        return new ValueTask<HonuaAccessToken?>(GetOrRefreshAsync(request, cacheKey, cancellationToken));
-    }
-
-    private async Task<HonuaAccessToken?> GetOrRefreshAsync(
-        HonuaAuthenticationRequest request,
-        string cacheKey,
-        CancellationToken cancellationToken)
-    {
-        Task<HonuaAccessToken?> refreshTask;
-        lock (_syncRoot)
-        {
-            if (request.ForceRefresh)
-            {
-                _cachedTokens.Remove(cacheKey);
-            }
-            else if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
-                cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
-            {
-                return cachedToken;
-            }
-
-            if (!_refreshTasks.TryGetValue(cacheKey, out var existing) || existing.IsCompleted)
-            {
-                // Coalesce concurrent refreshes, but run the shared request under a
-                // non-cancellable token. Binding it to the first caller's token would let
-                // that caller's cancellation/timeout fault the refresh for every other
-                // waiter (the exact thundering-herd case this de-duplication exists for).
-                existing = RequestTokenAsync(request, cacheKey, CancellationToken.None);
-                _refreshTasks[cacheKey] = existing;
-            }
-
-            refreshTask = existing;
-        }
-
-        // Each caller observes the shared refresh but honors its own cancellation token,
-        // so an abandoned caller never propagates failure to unrelated concurrent callers.
-        return await refreshTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return request.ForceRefresh
+            ? _cache.ForceRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken)
+            : _cache.GetOrRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken);
     }
 
     private async Task<HonuaAccessToken?> RequestTokenAsync(
@@ -228,11 +181,7 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
             parameters,
             cancellationToken).ConfigureAwait(false);
 
-        lock (_syncRoot)
-        {
-            _cachedTokens[cacheKey] = response.AccessToken;
-        }
-
+        _cache.Store(cacheKey, response.AccessToken);
         return response.AccessToken;
     }
 }
@@ -244,9 +193,8 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
 {
     private readonly HttpClient _httpClient;
     private readonly HonuaOAuthAuthorizationCodeTokenProviderOptions _options;
-    private readonly object _syncRoot = new();
-    private readonly Dictionary<string, HonuaAccessToken> _cachedTokens = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, Task<HonuaAccessToken?>> _refreshTasks = new(StringComparer.Ordinal);
+    private readonly HonuaOAuthTokenCache _cache;
+    private readonly object _refreshTokenLock = new();
     private string? _refreshToken;
 
     /// <summary>
@@ -278,6 +226,7 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
 
         _httpClient = httpClient;
         _options = options;
+        _cache = new HonuaOAuthTokenCache(options.RefreshSkew);
         _refreshToken = options.RefreshToken;
     }
 
@@ -292,55 +241,9 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
             _options.Scopes,
             request.Scopes,
             request.Audience ?? _options.Audience);
-        if (!request.ForceRefresh)
-        {
-            lock (_syncRoot)
-            {
-                if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
-                    cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
-                {
-                    return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
-                }
-            }
-        }
-
-        return new ValueTask<HonuaAccessToken?>(GetOrRefreshAsync(request, cacheKey, cancellationToken));
-    }
-
-    private async Task<HonuaAccessToken?> GetOrRefreshAsync(
-        HonuaAuthenticationRequest request,
-        string cacheKey,
-        CancellationToken cancellationToken)
-    {
-        Task<HonuaAccessToken?> refreshTask;
-        lock (_syncRoot)
-        {
-            if (request.ForceRefresh)
-            {
-                _cachedTokens.Remove(cacheKey);
-            }
-            else if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
-                cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
-            {
-                return cachedToken;
-            }
-
-            if (!_refreshTasks.TryGetValue(cacheKey, out var existing) || existing.IsCompleted)
-            {
-                // Coalesce concurrent refreshes, but run the shared request under a
-                // non-cancellable token. Binding it to the first caller's token would let
-                // that caller's cancellation/timeout fault the refresh for every other
-                // waiter (the exact thundering-herd case this de-duplication exists for).
-                existing = RequestTokenAsync(request, cacheKey, CancellationToken.None);
-                _refreshTasks[cacheKey] = existing;
-            }
-
-            refreshTask = existing;
-        }
-
-        // Each caller observes the shared refresh but honors its own cancellation token,
-        // so an abandoned caller never propagates failure to unrelated concurrent callers.
-        return await refreshTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return request.ForceRefresh
+            ? _cache.ForceRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken)
+            : _cache.GetOrRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken);
     }
 
     private async Task<HonuaAccessToken?> RequestTokenAsync(
@@ -353,10 +256,16 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
             new("client_id", _options.ClientId)
         };
 
-        if (!string.IsNullOrWhiteSpace(_refreshToken))
+        string? currentRefreshToken;
+        lock (_refreshTokenLock)
+        {
+            currentRefreshToken = _refreshToken;
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentRefreshToken))
         {
             parameters.Add(new KeyValuePair<string, string>("grant_type", "refresh_token"));
-            HonuaOAuthTokenEndpoint.AddIfNotEmpty(parameters, "refresh_token", _refreshToken);
+            HonuaOAuthTokenEndpoint.AddIfNotEmpty(parameters, "refresh_token", currentRefreshToken);
         }
         else
         {
@@ -377,16 +286,89 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
             parameters,
             cancellationToken).ConfigureAwait(false);
 
-        lock (_syncRoot)
+        if (!string.IsNullOrWhiteSpace(response.RefreshToken))
         {
-            _cachedTokens[cacheKey] = response.AccessToken;
-            if (!string.IsNullOrWhiteSpace(response.RefreshToken))
+            lock (_refreshTokenLock)
             {
                 _refreshToken = response.RefreshToken;
             }
         }
 
+        _cache.Store(cacheKey, response.AccessToken);
         return response.AccessToken;
+    }
+}
+
+internal sealed class HonuaOAuthTokenCache(TimeSpan refreshSkew)
+{
+    private readonly object _syncRoot = new();
+    private readonly Dictionary<string, HonuaAccessToken> _cachedTokens = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Task<HonuaAccessToken?>> _refreshTasks = new(StringComparer.Ordinal);
+
+    public ValueTask<HonuaAccessToken?> GetOrRefreshAsync(
+        string cacheKey,
+        Func<CancellationToken, Task<HonuaAccessToken?>> fetchToken,
+        CancellationToken cancellationToken)
+    {
+        lock (_syncRoot)
+        {
+            if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
+                cachedToken.IsUsable(DateTimeOffset.UtcNow, refreshSkew))
+            {
+                return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
+            }
+        }
+
+        return new ValueTask<HonuaAccessToken?>(AwaitRefreshAsync(cacheKey, fetchToken, cancellationToken));
+    }
+
+    public ValueTask<HonuaAccessToken?> ForceRefreshAsync(
+        string cacheKey,
+        Func<CancellationToken, Task<HonuaAccessToken?>> fetchToken,
+        CancellationToken cancellationToken)
+    {
+        lock (_syncRoot)
+        {
+            _cachedTokens.Remove(cacheKey);
+        }
+
+        return new ValueTask<HonuaAccessToken?>(AwaitRefreshAsync(cacheKey, fetchToken, cancellationToken));
+    }
+
+    public void Store(string cacheKey, HonuaAccessToken token)
+    {
+        lock (_syncRoot)
+        {
+            _cachedTokens[cacheKey] = token;
+        }
+    }
+
+    private async Task<HonuaAccessToken?> AwaitRefreshAsync(
+        string cacheKey,
+        Func<CancellationToken, Task<HonuaAccessToken?>> fetchToken,
+        CancellationToken cancellationToken)
+    {
+        Task<HonuaAccessToken?> refreshTask;
+        lock (_syncRoot)
+        {
+            if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
+                cachedToken.IsUsable(DateTimeOffset.UtcNow, refreshSkew))
+            {
+                return cachedToken;
+            }
+
+            if (!_refreshTasks.TryGetValue(cacheKey, out var existing) || existing.IsCompleted)
+            {
+                // Coalesce concurrent refreshes under a non-cancellable token so an abandoned
+                // caller cannot fault the shared refresh for unrelated concurrent waiters.
+                existing = fetchToken(CancellationToken.None);
+                _refreshTasks[cacheKey] = existing;
+            }
+
+            refreshTask = existing;
+        }
+
+        return await refreshTask.WaitAsync(cancellationToken).ConfigureAwait(false);
     }
 }
 

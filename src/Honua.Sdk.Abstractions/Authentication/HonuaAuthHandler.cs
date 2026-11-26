@@ -3,7 +3,6 @@
 
 using System.Net;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using Honua.Sdk.Abstractions.Http;
 
 namespace Honua.Sdk.Abstractions.Authentication;
@@ -69,12 +68,31 @@ public abstract class HonuaAuthHandler<TOptions> : DelegatingHandler
             return response;
         }
 
-        if (!await TryRefreshAuthorizationAsync(request, cancellationToken).ConfigureAwait(false))
+        return await RetryWithRefreshedTokenAsync(request, response, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<HttpResponseMessage> RetryWithRefreshedTokenAsync(
+        HttpRequestMessage request,
+        HttpResponseMessage challengedResponse,
+        CancellationToken cancellationToken)
+    {
+        bool refreshed;
+        try
         {
-            return response;
+            refreshed = await TryRefreshAuthorizationAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            challengedResponse.Dispose();
+            throw;
         }
 
-        response.Dispose();
+        if (!refreshed)
+        {
+            return challengedResponse;
+        }
+
+        challengedResponse.Dispose();
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
@@ -136,50 +154,14 @@ public abstract class HonuaAuthHandler<TOptions> : DelegatingHandler
             return true;
         }
 
-        if (response.StatusCode != HttpStatusCode.OK || !IsJsonResponse(response))
+        if (response.StatusCode != HttpStatusCode.OK || !HonuaGeoServicesEnvelopeInspector.IsJsonResponse(response))
         {
             return false;
         }
 
-        await response.Content.LoadIntoBufferAsync(cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        return IsGeoServicesAuthChallengeBody(body);
-    }
-
-    private static bool IsJsonResponse(HttpResponseMessage response)
-    {
-        var mediaType = response.Content.Headers.ContentType?.MediaType;
-        if (string.IsNullOrWhiteSpace(mediaType))
-        {
-            return false;
-        }
-
-        return mediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase)
-            || mediaType.Equals("text/json", StringComparison.OrdinalIgnoreCase)
-            || mediaType.EndsWith("+json", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsGeoServicesAuthChallengeBody(string body)
-    {
-        if (string.IsNullOrWhiteSpace(body))
-        {
-            return false;
-        }
-
-        try
-        {
-            using var document = JsonDocument.Parse(body);
-            return document.RootElement.ValueKind == JsonValueKind.Object
-                && document.RootElement.TryGetProperty("error", out var error)
-                && error.ValueKind == JsonValueKind.Object
-                && error.TryGetProperty("code", out var codeProp)
-                && codeProp.TryGetInt32(out var code)
-                && code is 401 or 498 or 499;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
+        var envelope = await HonuaGeoServicesEnvelopeInspector.TryInspectAsync(response, cancellationToken)
+            .ConfigureAwait(false);
+        return envelope is { Code: 401 or 498 or 499 };
     }
 
     private static bool IsCredentialTargetAllowed(Uri? requestUri, Uri? baseAddress)

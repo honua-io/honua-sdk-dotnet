@@ -81,7 +81,7 @@ public sealed class ReactiveTokenRefreshTests
         var inner = new StubHandler((_, _) =>
         {
             attempts++;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
+            return Task.FromResult(JsonResponse(HttpStatusCode.Unauthorized, """{"title":"Unauthorized"}"""));
         });
 
         using var handler = new TestAuthHandler(new TestOptions { BearerToken = "static-token" }) { InnerHandler = inner };
@@ -91,6 +91,32 @@ public sealed class ReactiveTokenRefreshTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal(1, attempts);
+    }
+
+    [Fact]
+    public async Task AuthHandler_DisposesChallengedResponseWhenRefreshThrows()
+    {
+        var disposed = false;
+        var provider = new RecordingTokenProvider(req =>
+        {
+            if (req.ForceRefresh)
+            {
+                throw new InvalidOperationException("refresh failed");
+            }
+
+            return new HonuaAccessToken { Token = "stale-token" };
+        });
+
+        var inner = new StubHandler((_, _) => Task.FromResult<HttpResponseMessage>(
+            new TrackingDisposableResponse(HttpStatusCode.Unauthorized, () => disposed = true)));
+
+        using var handler = new TestAuthHandler(new TestOptions { AccessTokenProvider = provider }) { InnerHandler = inner };
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("https://example.test") };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => client.GetAsync("/rest/services/Parcels/FeatureServer/0/query"));
+
+        Assert.True(disposed);
     }
 
     [Fact]
@@ -215,5 +241,18 @@ public sealed class ReactiveTokenRefreshTests
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => _handler(request, cancellationToken);
+    }
+
+    private sealed class TrackingDisposableResponse(HttpStatusCode status, Action onDispose) : HttpResponseMessage(status)
+    {
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                onDispose();
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }
