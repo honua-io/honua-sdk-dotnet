@@ -13,7 +13,7 @@ namespace Honua.Sdk.Offline;
 /// FeatureServer replica sync endpoints (<c>createReplica</c>, <c>extractChanges</c>,
 /// <c>synchronizeReplica</c>, <c>unRegisterReplica</c>).
 /// </summary>
-public sealed class ReplicaSyncClient : IReplicaSyncClient
+public sealed partial class ReplicaSyncClient : IReplicaSyncClient, IReplicaUploadClient
 {
     private readonly HttpClient _httpClient;
 
@@ -182,29 +182,37 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         CancellationToken cancellationToken)
     {
         using var content = new FormUrlEncodedContent(parameters);
-        HttpResponseMessage? response = null;
-        try
+        var requestUri = new Uri(url, UriKind.Relative);
+        using var response = await _httpClient.PostAsync(requestUri, content, cancellationToken).ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
         {
-            var requestUri = new Uri(url, UriKind.Relative);
-            response = await _httpClient.PostAsync(requestUri, content, cancellationToken).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                throw new ReplicaSyncException(
-                    $"Replica sync HTTP request to '{url}' failed with status {(int)response.StatusCode} ({response.ReasonPhrase}).",
-                    response.StatusCode,
-                    serverErrorCode: null);
+                using var error = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                ThrowIfError(error.RootElement, response.StatusCode);
+            }
+            catch (JsonException)
+            {
+                // Some failures, such as proxy responses, do not carry a GeoServices error envelope.
             }
 
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            throw new ReplicaSyncException(
+                $"Replica sync HTTP request to '{url}' failed with status {(int)response.StatusCode} ({response.ReasonPhrase}).",
+                response.StatusCode,
+                serverErrorCode: null);
+        }
 
+        var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        try
+        {
             ThrowIfError(doc.RootElement, response.StatusCode);
             return doc;
         }
-        finally
+        catch
         {
-            response?.Dispose();
+            doc.Dispose();
+            throw;
         }
     }
 
@@ -290,7 +298,8 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
             ? msg.GetString()
             : "Unknown server error";
 
-        var code = error.TryGetProperty("code", out var codeElement) && codeElement.TryGetInt32(out var parsedCode)
+        var code = error.TryGetProperty("code", out var codeElement) && codeElement.ValueKind == JsonValueKind.Number
+            && codeElement.TryGetInt32(out var parsedCode)
             ? parsedCode
             : (int?)null;
 
