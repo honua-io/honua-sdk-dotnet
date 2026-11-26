@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using Honua.Sdk.Abstractions;
 using Honua.Sdk.Abstractions.Features;
 using Honua.Sdk.Offline.Abstractions;
 
@@ -44,7 +43,7 @@ public sealed partial class ReplicaSyncClient
             parameters["editsUploadID"] = uploadId;
         }
 
-        var url = $"rest/services/{HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/FeatureServer/synchronizeReplica";
+        var url = $"rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer/synchronizeReplica";
         using var doc = await PostAsync(url, parameters, cancellationToken).ConfigureAwait(false);
         var root = doc.RootElement;
 
