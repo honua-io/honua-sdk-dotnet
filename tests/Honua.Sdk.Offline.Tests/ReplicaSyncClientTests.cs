@@ -11,24 +11,24 @@ namespace Honua.Sdk.Offline.Tests;
 public sealed class ReplicaSyncClientTests
 {
     [Fact]
-    public async Task CreateReplicaAsync_Success_ReturnsReplicaIdAndServerGen()
+    public async Task CreateReplicaAsync_RequestsPerReplicaAndReturnsScalarServerGen()
     {
         var responseJson = """
         {
             "replicaID": "replica-abc-123",
-            "serverGen": 42
+            "syncModel": "perReplica",
+            "serverGen": 4294967296
         }
         """;
 
         Uri? capturedUri = null;
-        var handler = new StubHttpMessageHandler((request, _) =>
+        var handler = new StubHttpMessageHandler(async (request, cancellationToken) =>
         {
+            var parameters = ParseForm(await request.Content!.ReadAsStringAsync(cancellationToken));
+            Assert.Equal("perReplica", parameters["syncModel"]);
             capturedUri = request.RequestUri;
             Assert.Equal(HttpMethod.Post, request.Method);
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(responseJson, Encoding.UTF8, "application/json"),
-            });
+            return JsonResponse(responseJson);
         });
 
         var client = new ReplicaSyncClient(new HttpClient(handler) { BaseAddress = new Uri("https://api.honua.test") });
@@ -36,7 +36,7 @@ public sealed class ReplicaSyncClientTests
         var result = await client.CreateReplicaAsync("assets", "test-replica");
 
         Assert.Equal("replica-abc-123", result.ReplicaId);
-        Assert.Equal(42, result.ServerGen);
+        Assert.Equal(4294967296L, result.ServerGen);
         Assert.NotNull(capturedUri);
         Assert.Contains("rest/services/assets/FeatureServer/createReplica", capturedUri!.PathAndQuery);
     }
