@@ -141,24 +141,14 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
 
         _httpClient = httpClient;
         _options = options;
-        _cache = new HonuaOAuthTokenCache(options.RefreshSkew);
+        _cache = new HonuaOAuthTokenCache(options.Scopes, options.Audience, options.RefreshSkew);
     }
 
     /// <inheritdoc />
     public ValueTask<HonuaAccessToken?> GetAccessTokenAsync(
         HonuaAuthenticationRequest request,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var cacheKey = HonuaOAuthTokenEndpoint.CreateCacheKey(
-            _options.Scopes,
-            request.Scopes,
-            request.Audience ?? _options.Audience);
-        return request.ForceRefresh
-            ? _cache.ForceRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken)
-            : _cache.GetOrRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken);
-    }
+        => _cache.GetAccessTokenAsync(request, (key, ct) => RequestTokenAsync(request, key, ct), cancellationToken);
 
     private async Task<HonuaAccessToken?> RequestTokenAsync(
         HonuaAuthenticationRequest request,
@@ -226,7 +216,7 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
 
         _httpClient = httpClient;
         _options = options;
-        _cache = new HonuaOAuthTokenCache(options.RefreshSkew);
+        _cache = new HonuaOAuthTokenCache(options.Scopes, options.Audience, options.RefreshSkew);
         _refreshToken = options.RefreshToken;
     }
 
@@ -234,17 +224,7 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
     public ValueTask<HonuaAccessToken?> GetAccessTokenAsync(
         HonuaAuthenticationRequest request,
         CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var cacheKey = HonuaOAuthTokenEndpoint.CreateCacheKey(
-            _options.Scopes,
-            request.Scopes,
-            request.Audience ?? _options.Audience);
-        return request.ForceRefresh
-            ? _cache.ForceRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken)
-            : _cache.GetOrRefreshAsync(cacheKey, ct => RequestTokenAsync(request, cacheKey, ct), cancellationToken);
-    }
+        => _cache.GetAccessTokenAsync(request, (key, ct) => RequestTokenAsync(request, key, ct), cancellationToken);
 
     private async Task<HonuaAccessToken?> RequestTokenAsync(
         HonuaAuthenticationRequest request,
@@ -299,13 +279,32 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
     }
 }
 
-internal sealed class HonuaOAuthTokenCache(TimeSpan refreshSkew)
+internal sealed class HonuaOAuthTokenCache(
+    IReadOnlyList<string> defaultScopes,
+    string? defaultAudience,
+    TimeSpan refreshSkew)
 {
     private readonly object _syncRoot = new();
     private readonly Dictionary<string, HonuaAccessToken> _cachedTokens = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Task<HonuaAccessToken?>> _refreshTasks = new(StringComparer.Ordinal);
 
-    public ValueTask<HonuaAccessToken?> GetOrRefreshAsync(
+    public ValueTask<HonuaAccessToken?> GetAccessTokenAsync(
+        HonuaAuthenticationRequest request,
+        Func<string, CancellationToken, Task<HonuaAccessToken?>> fetchToken,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var cacheKey = HonuaOAuthTokenEndpoint.CreateCacheKey(
+            defaultScopes,
+            request.Scopes,
+            request.Audience ?? defaultAudience);
+        return request.ForceRefresh
+            ? ForceRefreshAsync(cacheKey, ct => fetchToken(cacheKey, ct), cancellationToken)
+            : GetOrRefreshAsync(cacheKey, ct => fetchToken(cacheKey, ct), cancellationToken);
+    }
+
+    private ValueTask<HonuaAccessToken?> GetOrRefreshAsync(
         string cacheKey,
         Func<CancellationToken, Task<HonuaAccessToken?>> fetchToken,
         CancellationToken cancellationToken)
@@ -322,7 +321,7 @@ internal sealed class HonuaOAuthTokenCache(TimeSpan refreshSkew)
         return new ValueTask<HonuaAccessToken?>(AwaitRefreshAsync(cacheKey, fetchToken, cancellationToken));
     }
 
-    public ValueTask<HonuaAccessToken?> ForceRefreshAsync(
+    private ValueTask<HonuaAccessToken?> ForceRefreshAsync(
         string cacheKey,
         Func<CancellationToken, Task<HonuaAccessToken?>> fetchToken,
         CancellationToken cancellationToken)

@@ -126,12 +126,8 @@ internal static class HonuaGeoServicesEnvelopeInspector
 
         index = SkipWhitespace(bytes, index + 1);
         var remaining = bytes[index..];
-        if (remaining.Length < ErrorPropertyBytes.Length)
-        {
-            return false;
-        }
-
-        return remaining[..ErrorPropertyBytes.Length].SequenceEqual(ErrorPropertyBytes);
+        return remaining.Length >= ErrorPropertyBytes.Length
+            && remaining[..ErrorPropertyBytes.Length].SequenceEqual(ErrorPropertyBytes);
     }
 
     private static int SkipBomAndWhitespace(ReadOnlySpan<byte> bytes, int index)
@@ -252,7 +248,9 @@ internal static class HonuaGeoServicesEnvelopeInspector
             return CreateBufferedContent(original, chunk.Bytes);
         }
 
-        return new PrefixedHttpContent(original, chunk.Bytes, remainder);
+        var replacement = new StreamContent(new PrefixedStream(chunk.Bytes, remainder, original));
+        CopyHeaders(original, replacement);
+        return replacement;
     }
 
     private static ByteArrayContent CreateBufferedContent(HttpContent original, byte[] bytes)
@@ -280,85 +278,10 @@ internal static class HonuaGeoServicesEnvelopeInspector
     private readonly record struct StreamReadChunk(byte[] Bytes, StreamReadStatus Status);
     private readonly record struct StreamProbe(StreamReadChunk Chunk, Stream Remainder);
 
-    private sealed class PrefixedHttpContent : HttpContent
+    private sealed class PrefixedStream(byte[] prefix, Stream remainder, HttpContent owner) : Stream
     {
-        private readonly HttpContent _original;
-        private readonly byte[] _prefix;
-        private readonly Stream _remainder;
-        private bool _disposed;
-
-        public PrefixedHttpContent(HttpContent original, byte[] prefix, Stream remainder)
-        {
-            _original = original;
-            _prefix = prefix;
-            _remainder = remainder;
-            CopyHeaders(original, this);
-        }
-
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
-            => SerializeToStreamAsync(stream, context, CancellationToken.None);
-
-        protected override async Task SerializeToStreamAsync(
-            Stream stream,
-            TransportContext? context,
-            CancellationToken cancellationToken)
-        {
-            await stream.WriteAsync(_prefix, cancellationToken).ConfigureAwait(false);
-            await _remainder.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-        }
-
-        protected override void SerializeToStream(
-            Stream stream,
-            TransportContext? context,
-            CancellationToken cancellationToken)
-        {
-            stream.Write(_prefix, 0, _prefix.Length);
-            _remainder.CopyTo(stream);
-        }
-
-        protected override bool TryComputeLength(out long length)
-        {
-            if (_original.Headers.ContentLength is { } knownLength)
-            {
-                length = knownLength;
-                return true;
-            }
-
-            length = 0;
-            return false;
-        }
-
-        protected override Stream CreateContentReadStream(CancellationToken cancellationToken)
-            => new PrefixedStream(_prefix, _remainder);
-
-        protected override Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken)
-            => Task.FromResult<Stream>(new PrefixedStream(_prefix, _remainder));
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                _disposed = true;
-                _remainder.Dispose();
-                _original.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
-    }
-
-    private sealed class PrefixedStream : Stream
-    {
-        private readonly byte[] _prefix;
-        private readonly Stream _remainder;
         private int _prefixOffset;
-        private bool _disposed;
-
-        public PrefixedStream(byte[] prefix, Stream remainder)
-        {
-            _prefix = prefix;
-            _remainder = remainder;
-        }
+        private bool _closed;
 
         public override bool CanRead => true;
         public override bool CanSeek => false;
@@ -370,32 +293,32 @@ internal static class HonuaGeoServicesEnvelopeInspector
             set => throw new NotSupportedException();
         }
 
-        public override void Flush() => _remainder.Flush();
+        public override void Flush() => remainder.Flush();
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (_prefixOffset < _prefix.Length)
+            if (_prefixOffset < prefix.Length)
             {
-                var toCopy = Math.Min(count, _prefix.Length - _prefixOffset);
-                Buffer.BlockCopy(_prefix, _prefixOffset, buffer, offset, toCopy);
+                var toCopy = Math.Min(count, prefix.Length - _prefixOffset);
+                Buffer.BlockCopy(prefix, _prefixOffset, buffer, offset, toCopy);
                 _prefixOffset += toCopy;
                 return toCopy;
             }
 
-            return _remainder.Read(buffer, offset, count);
+            return remainder.Read(buffer, offset, count);
         }
 
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            if (_prefixOffset < _prefix.Length)
+            if (_prefixOffset < prefix.Length)
             {
-                var toCopy = Math.Min(buffer.Length, _prefix.Length - _prefixOffset);
-                _prefix.AsSpan(_prefixOffset, toCopy).CopyTo(buffer.Span);
+                var toCopy = Math.Min(buffer.Length, prefix.Length - _prefixOffset);
+                prefix.AsSpan(_prefixOffset, toCopy).CopyTo(buffer.Span);
                 _prefixOffset += toCopy;
                 return ValueTask.FromResult(toCopy);
             }
 
-            return _remainder.ReadAsync(buffer, cancellationToken);
+            return remainder.ReadAsync(buffer, cancellationToken);
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -405,23 +328,25 @@ internal static class HonuaGeoServicesEnvelopeInspector
         public override void SetLength(long value) => throw new NotSupportedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
-        protected override void Dispose(bool disposing)
+        public override void Close()
         {
-            if (disposing && !_disposed)
+            if (!_closed)
             {
-                _disposed = true;
-                _remainder.Dispose();
+                _closed = true;
+                remainder.Dispose();
+                owner.Dispose();
             }
 
-            base.Dispose(disposing);
+            base.Close();
         }
 
         public override async ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (!_closed)
             {
-                _disposed = true;
-                await _remainder.DisposeAsync().ConfigureAwait(false);
+                _closed = true;
+                await remainder.DisposeAsync().ConfigureAwait(false);
+                owner.Dispose();
             }
 
             await base.DisposeAsync().ConfigureAwait(false);
