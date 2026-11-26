@@ -109,8 +109,11 @@ public static class HonuaFailureReceiptFactory
         int classificationStatus = protocolCode ?? (int)response.StatusCode;
         HonuaFailureKind kind = ParseKind(GetString(source, "kind")) ?? ClassifyHttp(classificationStatus, (int)response.StatusCode);
         string code = GetString(source, "machineCode") ?? GetString(source, "code") ?? DefaultCode(kind);
-        bool retryable = GetBoolean(source, "retryable") ??
-            (IsHttpRetryable(classificationStatus) || IsHttpRetryable((int)response.StatusCode));
+        bool? headerRetryable = ParseBoolean(FirstHeader(response.Headers, "Honua-Retryable", "Honua-Error-Retryable"));
+        bool retryable = headerRetryable != false
+            && (GetBoolean(source, "retryable")
+                ?? headerRetryable
+                ?? (IsHttpRetryable(classificationStatus) || IsHttpRetryable((int)response.StatusCode)));
         TimeSpan? retryAfter = GetSeconds(source, "retryAfterSeconds") ?? ParseRetryAfter(response.Headers.RetryAfter);
         string? correlationId = GetString(source, "correlationId") ?? GetString(root, "correlationId") ??
             FirstHeader(response.Headers, "X-Correlation-ID", "Honua-Request-Id", "X-Request-Id");
@@ -332,7 +335,16 @@ public static class HonuaFailureReceiptFactory
 
     private static TimeSpan Max(TimeSpan left, TimeSpan right) => left >= right ? left : right;
 
-    private static bool? ParseBoolean(string? value) => value switch { "true" => true, "false" => false, _ => null };
+    private static bool? ParseBoolean(string? value)
+    {
+        var trimmed = value?.Trim();
+        if (string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return string.Equals(trimmed, "false", StringComparison.OrdinalIgnoreCase) ? false : null;
+    }
 
     private static HonuaFailureKind? ParseKind(string? value) => value switch
     {
@@ -349,8 +361,8 @@ public static class HonuaFailureReceiptFactory
 
     private static HonuaFailureKind ClassifyHttp(int code, int transportStatus) => code switch
     {
-        401 => HonuaFailureKind.Authentication,
-        403 or 498 or 499 => HonuaFailureKind.Authorization,
+        401 or 498 or 499 => HonuaFailureKind.Authentication,
+        403 => HonuaFailureKind.Authorization,
         404 => HonuaFailureKind.NotFound,
         400 or 422 => HonuaFailureKind.Validation,
         409 or 412 or 428 => HonuaFailureKind.Conflict,

@@ -39,7 +39,7 @@ public sealed class Feature
             return null;
         }
 
-        var json = System.Text.Json.JsonSerializer.SerializeToElement(Geometry);
+        var json = Conversion.GrpcJsonSerializer.SerializeDictionaryToElement(Geometry);
         return GeoServicesGeometryConverter.ReadGeometry(json);
     }
 

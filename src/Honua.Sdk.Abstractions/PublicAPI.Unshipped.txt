@@ -1,4 +1,6 @@
 #nullable enable
+Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationRequest.ForceRefresh.get -> bool
+Honua.Sdk.Abstractions.Authentication.HonuaAuthenticationRequest.ForceRefresh.init -> void
 Honua.Sdk.Abstractions.HonuaTransportException
 Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException() -> void
 Honua.Sdk.Abstractions.HonuaTransportException.HonuaTransportException(string! message) -> void
