@@ -156,12 +156,15 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
             _options.Scopes,
             request.Scopes,
             request.Audience ?? _options.Audience);
-        lock (_syncRoot)
+        if (!request.ForceRefresh)
         {
-            if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
-                cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
+            lock (_syncRoot)
             {
-                return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
+                if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
+                    cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
+                {
+                    return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
+                }
             }
         }
 
@@ -176,7 +179,11 @@ public sealed class HonuaOAuthClientCredentialsTokenProvider : IHonuaAccessToken
         Task<HonuaAccessToken?> refreshTask;
         lock (_syncRoot)
         {
-            if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
+            if (request.ForceRefresh)
+            {
+                _cachedTokens.Remove(cacheKey);
+            }
+            else if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
                 cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
             {
                 return cachedToken;
@@ -285,12 +292,15 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
             _options.Scopes,
             request.Scopes,
             request.Audience ?? _options.Audience);
-        lock (_syncRoot)
+        if (!request.ForceRefresh)
         {
-            if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
-                cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
+            lock (_syncRoot)
             {
-                return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
+                if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
+                    cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
+                {
+                    return ValueTask.FromResult<HonuaAccessToken?>(cachedToken);
+                }
             }
         }
 
@@ -305,7 +315,11 @@ public sealed class HonuaOAuthAuthorizationCodeTokenProvider : IHonuaAccessToken
         Task<HonuaAccessToken?> refreshTask;
         lock (_syncRoot)
         {
-            if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
+            if (request.ForceRefresh)
+            {
+                _cachedTokens.Remove(cacheKey);
+            }
+            else if (_cachedTokens.TryGetValue(cacheKey, out var cachedToken) &&
                 cachedToken.IsUsable(DateTimeOffset.UtcNow, _options.RefreshSkew))
             {
                 return cachedToken;

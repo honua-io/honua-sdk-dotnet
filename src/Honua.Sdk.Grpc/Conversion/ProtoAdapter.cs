@@ -430,7 +430,7 @@ internal static partial class ProtoAdapter
         IReadOnlyDictionary<string, object?> geometry)
     {
         var spatialReference = TryGetSpatialReference(geometry);
-        var geometryJson = JsonSerializer.SerializeToElement(geometry);
+        var geometryJson = GrpcJsonSerializer.SerializeDictionaryToElement(geometry);
         var ntsGeometry = GeoServicesGeometryConverter.ReadGeometry(geometryJson);
         return (GrpcGeometryConverter.WriteGeometry(ntsGeometry), spatialReference);
     }

@@ -1,6 +1,9 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using Honua.Sdk.Abstractions.Http;
 
 namespace Honua.Sdk.Abstractions.Authentication;
@@ -47,25 +50,136 @@ public abstract class HonuaAuthHandler<TOptions> : DelegatingHandler
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
-        var effectiveUri = ResolveEffectiveUri(request.RequestUri, _options.BaseAddress);
-        if (HonuaAuthenticationSupport.HasCredentialSource(_options) &&
-            HonuaAuthenticationSupport.RequiresHttpsForAuthentication(effectiveUri))
-        {
-            var context = HonuaAuthenticationSupport.CreateHttpRequest(request, _options, _serviceName);
-            await HonuaAuthenticationSupport.EmitInsecureTransportRejectedDiagnosticAsync(
-                _options,
-                context,
-                cancellationToken).ConfigureAwait(false);
-            throw new InvalidOperationException(HonuaAuthenticationSupport.InsecureTransportRejectedMessage);
-        }
-
+        await EnsureSecureTransportAsync(request, cancellationToken).ConfigureAwait(false);
         await HonuaAuthenticationSupport.ApplyHttpCredentialsAsync(
             request,
             _options,
             _serviceName,
             cancellationToken).ConfigureAwait(false);
 
+        var canRefresh = HasRefreshableTokenProvider(_options);
+        if (canRefresh && request.Content is not null)
+        {
+            await request.Content.LoadIntoBufferAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        if (!canRefresh || !await IsAuthChallengeResponseAsync(response, cancellationToken).ConfigureAwait(false))
+        {
+            return response;
+        }
+
+        if (!await TryRefreshAuthorizationAsync(request, cancellationToken).ConfigureAwait(false))
+        {
+            return response;
+        }
+
+        response.Dispose();
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task EnsureSecureTransportAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var effectiveUri = ResolveEffectiveUri(request.RequestUri, _options.BaseAddress);
+        if (!HonuaAuthenticationSupport.HasCredentialSource(_options) ||
+            !HonuaAuthenticationSupport.RequiresHttpsForAuthentication(effectiveUri))
+        {
+            return;
+        }
+
+        var context = HonuaAuthenticationSupport.CreateHttpRequest(request, _options, _serviceName);
+        await HonuaAuthenticationSupport.EmitInsecureTransportRejectedDiagnosticAsync(
+            _options,
+            context,
+            cancellationToken).ConfigureAwait(false);
+        throw new InvalidOperationException(HonuaAuthenticationSupport.InsecureTransportRejectedMessage);
+    }
+
+    private async Task<bool> TryRefreshAuthorizationAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        var refreshContext = HonuaAuthenticationSupport.CreateHttpRequest(request, _options, _serviceName) with
+        {
+            ForceRefresh = true
+        };
+        var refreshedToken = await HonuaAuthenticationSupport.ResolveAccessTokenAsync(
+            _options,
+            refreshContext,
+            cancellationToken).ConfigureAwait(false);
+        if (refreshedToken is null || string.IsNullOrWhiteSpace(refreshedToken.Token))
+        {
+            return false;
+        }
+
+        var tokenType = string.IsNullOrWhiteSpace(refreshedToken.TokenType) ? "Bearer" : refreshedToken.TokenType;
+        request.Headers.Authorization = new AuthenticationHeaderValue(tokenType, refreshedToken.Token);
+        await HonuaAuthenticationSupport.EmitCredentialAppliedDiagnosticAsync(
+            _options,
+            refreshContext,
+            hasApiKey: request.Headers.Contains("X-API-Key"),
+            authorizationScheme: tokenType,
+            hasAuthorization: true,
+            cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    private static bool HasRefreshableTokenProvider(IHonuaAuthenticationOptions options)
+        => options.AccessTokenProvider is not null || options.BearerTokenProvider is not null;
+
+    private static async Task<bool> IsAuthChallengeResponseAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return true;
+        }
+
+        if (response.StatusCode != HttpStatusCode.OK || !IsJsonResponse(response))
+        {
+            return false;
+        }
+
+        await response.Content.LoadIntoBufferAsync(cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        return IsGeoServicesAuthChallengeBody(body);
+    }
+
+    private static bool IsJsonResponse(HttpResponseMessage response)
+    {
+        var mediaType = response.Content.Headers.ContentType?.MediaType;
+        if (string.IsNullOrWhiteSpace(mediaType))
+        {
+            return false;
+        }
+
+        return mediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase)
+            || mediaType.Equals("text/json", StringComparison.OrdinalIgnoreCase)
+            || mediaType.EndsWith("+json", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsGeoServicesAuthChallengeBody(string body)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("error", out var error)
+                && error.ValueKind == JsonValueKind.Object
+                && error.TryGetProperty("code", out var codeProp)
+                && codeProp.TryGetInt32(out var code)
+                && code is 401 or 498 or 499;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     private static bool IsCredentialTargetAllowed(Uri? requestUri, Uri? baseAddress)

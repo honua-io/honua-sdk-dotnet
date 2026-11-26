@@ -144,19 +144,16 @@ public static class ServiceCollectionExtensions
 
     private static void ConfigureGeoServicesRetry(HttpRetryStrategyOptions retry)
     {
-        retry.ShouldHandle = args =>
-        {
-            if (!HttpClientResiliencePredicates.IsTransient(args.Outcome))
-            {
-                return ValueTask.FromResult(false);
-            }
-
-            // Retry idempotent methods plus the idempotent /query POST fallback, so that a
-            // long filter string (which forces GET->POST) does not silently lose retry.
-            // Genuine mutations (applyEdits, attachment edits) remain excluded. Replaces
-            // DisableForUnsafeHttpMethods(), which would drop the /query POST.
-            return ValueTask.FromResult(GeoServicesRetryPolicy.IsRetryableRequest(args.Context.GetRequestMessage()));
-        };
+        // Retry idempotent methods plus the idempotent /query POST fallback, honor
+        // Honua-Retryable: false on 503 responses, and retry HTTP 200 GeoServices error
+        // envelopes carrying 429/503 or Honua-Retryable: true (honoring Retry-After).
+        retry.ShouldHandle = args => GeoServicesRetryPolicy.ShouldRetryAsync(
+            args.Outcome,
+            args.Context.GetRequestMessage(),
+            args.Context.CancellationToken);
+        retry.DelayGenerator = args => GeoServicesRetryPolicy.TryGetRetryDelayAsync(
+            args.Outcome.Result,
+            args.Context.CancellationToken);
     }
 
     private static HonuaGeoServicesClientOptions CaptureSnapshot(Action<HonuaGeoServicesClientOptions> configure)

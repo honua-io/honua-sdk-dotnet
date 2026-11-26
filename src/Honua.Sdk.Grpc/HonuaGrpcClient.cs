@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Honua.Sdk.Abstractions.Features;
@@ -31,10 +30,6 @@ public sealed partial class HonuaGrpcClient :
         "route these queries through an attachment/query-capable provider (for example GeoServices FeatureServer) " +
         "or the GP feature gateway.";
 
-    private static readonly JsonSerializerOptions FeatureJsonOptions = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
     private static readonly FeatureEditCapabilities GrpcEditCapabilities = new()
     {
         SupportsAdds = true,
@@ -853,7 +848,7 @@ public sealed partial class HonuaGrpcClient :
     private static FeatureRecord ToFeatureRecord(Models.Feature feature)
     {
         JsonElement? geometry = feature.Geometry is not null
-            ? JsonSerializer.SerializeToElement(feature.Geometry, FeatureJsonOptions)
+            ? GrpcJsonSerializer.SerializeDictionaryToElement(feature.Geometry, skipNullProperties: true)
             : null;
 
         return new FeatureRecord
@@ -867,9 +862,5 @@ public sealed partial class HonuaGrpcClient :
     }
 
     private static JsonElement ToJsonElement(object? value)
-    {
-        return value is null
-            ? JsonSerializer.SerializeToElement<object?>(null, FeatureJsonOptions)
-            : JsonSerializer.SerializeToElement(value, value.GetType(), FeatureJsonOptions);
-    }
+        => GrpcJsonSerializer.SerializeValueToElement(value, skipNullProperties: true);
 }
