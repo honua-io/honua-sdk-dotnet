@@ -152,7 +152,7 @@ internal static class ExpressionFunctions
         }
 
         var choice = UnwrapJsonString(values[1]) as string;
-        if (string.IsNullOrWhiteSpace(choice))
+        if (string.IsNullOrEmpty(choice) || choice.Any(char.IsWhiteSpace))
         {
             return false;
         }

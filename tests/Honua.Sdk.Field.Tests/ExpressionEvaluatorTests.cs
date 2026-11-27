@@ -216,6 +216,7 @@ public sealed class ExpressionEvaluatorTests
     [InlineData("wildfire flood", "fire", false)]
     [InlineData("fire flood", "Fire", false)]
     [InlineData("fire flood", "", false)]
+    [InlineData("fire flood", "fire flood", false)]
     [InlineData(null, "fire", false)]
     public void Selected_MatchesWholeChoiceCodes(string? answer, string code, bool expected)
     {
