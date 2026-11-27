@@ -2,6 +2,12 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [1.10.5](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.4...dotnet-sdk-v1.10.5)
+
+### Bug Fixes
+
+* Request per-replica synchronization when creating GeoServices offline replicas so Scalar replicas can replay queued edits.
+
 ## [1.10.4](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v1.10.3...dotnet-sdk-v1.10.4) (2026-10-06)
 
 
