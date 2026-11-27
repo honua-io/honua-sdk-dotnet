@@ -5,25 +5,7 @@ using System.Globalization;
 
 namespace Honua.Sdk.Field.Forms.Expressions;
 
-/// <summary>
-/// Evaluates portable form expressions against a context of field values.
-/// </summary>
-/// <remarks>
-/// <para>
-/// The engine supports literals (numbers, single- or double-quoted strings, <c>true</c>,
-/// <c>false</c>, <c>null</c>), field references (<c>$fieldId</c> and
-/// <c>${fieldId}</c>), arithmetic, comparison and logical operators, and a small
-/// library of functions. It is deliberately tolerant: a malformed expression,
-/// an unknown function, or a type mismatch never throws — the evaluator returns
-/// <see langword="null"/> and records a diagnostic on the
-/// <see cref="ExpressionResult"/>.
-/// </para>
-/// <para>
-/// Date helpers operate on <see cref="DateTimeOffset"/>. <c>today()</c> and
-/// <c>now()</c> read the current clock; tests that need determinism should pass
-/// fixed dates as field values rather than relying on those functions.
-/// </para>
-/// </remarks>
+/// <summary>Evaluates portable form expressions against a context of field values.</summary>
 public static class ExpressionEvaluator
 {
     /// <summary>Maximum supported expression length, guarding against runaway input.</summary>
