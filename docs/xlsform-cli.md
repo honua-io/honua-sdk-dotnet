@@ -18,6 +18,15 @@ dotnet tool install --global Honua.Sdk.Cli
 honua forms --help
 ```
 
+## Form expressions
+
+Field expressions can read a field with `$fieldId` or `${fieldId}`. The evaluator
+accepts numbers, single- or double-quoted strings, booleans and null. It supports
+arithmetic, comparisons, logical operators and functions such as `selected()`.
+A malformed expression, unknown function or type mismatch returns null with a
+diagnostic. The date helpers `today()` and `now()` read the current clock.
+Supply a fixed date as a field value when a repeatable result is required.
+
 ## Server commands
 
 The server URL comes from `--base-url` or `HONUA_BASE_URL` and must use HTTPS

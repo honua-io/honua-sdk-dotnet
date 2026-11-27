@@ -76,6 +76,7 @@ internal static class Tokenizer
                     tokens.Add(new Token(TokenType.Comma, ","));
                     i++;
                     continue;
+                case '"':
                 case '\'':
                     tokens.Add(ReadString(source, ref i));
                     continue;
@@ -120,18 +121,16 @@ internal static class Tokenizer
 
     private static Token ReadString(string source, ref int i)
     {
-        // i points at the opening quote.
         var sb = new StringBuilder();
-        i++;
+        var delimiter = source[i++];
         while (i < source.Length)
         {
             var c = source[i];
-            if (c == '\'')
+            if (c == delimiter)
             {
-                // Doubled single-quote is an escaped quote.
-                if (i + 1 < source.Length && source[i + 1] == '\'')
+                if (i + 1 < source.Length && source[i + 1] == delimiter)
                 {
-                    sb.Append('\'');
+                    sb.Append(delimiter);
                     i += 2;
                     continue;
                 }
