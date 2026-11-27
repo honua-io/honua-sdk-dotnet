@@ -66,8 +66,15 @@ public sealed class WorkTaskClient
         ArgumentException.ThrowIfNullOrWhiteSpace(request.AssetId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Title);
 
-        var body = new WorkTaskAssetRequestBody(request.CommandId, request.TaskId, request.ServiceId.Trim(),
-            request.ProfileId, request.AssetId.Trim(), request.Title.Trim(), "request");
+        var body = new WorkTaskAssetRequestBody
+        {
+            CommandId = request.CommandId,
+            TaskId = request.TaskId,
+            ServiceId = request.ServiceId.Trim(),
+            ProfileId = request.ProfileId,
+            AssetId = request.AssetId.Trim(),
+            Title = request.Title.Trim(),
+        };
         return await PostAsync((body.TaskId, body.CommandId, TaskRoute, body),
             JsonContent.Create(body, WorkTaskJsonContext.Default.WorkTaskAssetRequestBody),
             cancellationToken).ConfigureAwait(false);
@@ -223,8 +230,16 @@ public sealed class WorkTaskVersionConflictException : HonuaException
     public override int? HttpStatus => (int)HttpStatusCode.Conflict;
 }
 
-internal sealed record WorkTaskAssetRequestBody(
-    Guid CommandId, Guid TaskId, string ServiceId, Guid ProfileId, string AssetId, string Title, string Type);
+internal sealed record WorkTaskAssetRequestBody
+{
+    public required Guid CommandId { get; init; }
+    public required Guid TaskId { get; init; }
+    public required string ServiceId { get; init; }
+    public required Guid ProfileId { get; init; }
+    public required string AssetId { get; init; }
+    public required string Title { get; init; }
+    public string Type { get; } = "request";
+}
 
 internal sealed record WorkTaskConflict(Guid CommandId, string Reason, long? CurrentVersion);
 
