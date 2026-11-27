@@ -161,3 +161,4 @@ Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.SavedMap = 2 -> Hon
 Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind.Service = 0 -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
 *REMOVED*Honua.Sdk.Abstractions.Console.Share.HonuaOpenDataEligibility.ItemType.get -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentItemType
 Honua.Sdk.Abstractions.Console.Share.HonuaOpenDataEligibility.ItemType.get -> Honua.Sdk.Abstractions.Console.Share.HonuaConsoleContentKind
+Honua.Sdk.Offline.Abstractions.IOfflineChangeJournal.MarkUploadedAsync(string! operationId, Honua.Sdk.Abstractions.Features.FeatureEditResponse! response, System.Threading.CancellationToken cancellationToken = default) -> System.Threading.Tasks.Task!
