@@ -31,8 +31,11 @@ public sealed class PublishedFormSubmissionClient
         ArgumentException.ThrowIfNullOrWhiteSpace(submission.RequestJson);
         ArgumentNullException.ThrowIfNull(submission.Files);
         var formVersion = ReadSavedVersion(submission.RequestJson);
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post, new Uri($"api/v1/forms/{Uri.EscapeDataString(submission.FormId)}/submissions", UriKind.Relative));
+        var route = $"api/v1/forms/{Uri.EscapeDataString(submission.FormId)}/submissions";
+        var uri = _httpClient.BaseAddress is { } server
+            ? new Uri(server.GetLeftPart(UriPartial.Path).TrimEnd('/') + "/" + route, UriKind.Absolute)
+            : new Uri(route, UriKind.Relative);
+        using var request = new HttpRequestMessage(HttpMethod.Post, uri);
         SetRequestContent(request, submission);
 
         using var deadline = submission.Files.Count > 0 && submission.CreateUploadDeadline is not null
