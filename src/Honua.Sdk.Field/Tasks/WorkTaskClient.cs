@@ -126,12 +126,21 @@ public sealed class WorkTaskClient
 
         if (assetRequest is not null
             && (receipt.Task.ServiceId != assetRequest.ServiceId || receipt.Task.ProfileId != assetRequest.ProfileId
-                || receipt.Task.AssetId != assetRequest.AssetId || receipt.Task.Type != assetRequest.Type))
+                || !MatchesAssetId(assetRequest.AssetId, receipt.Task.AssetId) || receipt.Task.Type != assetRequest.Type))
         {
             throw InvalidResponse(response, "The task receipt does not match the asset-linked request.");
         }
 
         return receipt;
+    }
+
+    private static bool MatchesAssetId(string requested, string? returned)
+    {
+        // The Server preserves text IDs and canonicalizes integer and UUID identity fields.
+        return requested == returned
+            || (long.TryParse(requested, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number)
+                && number.ToString(CultureInfo.InvariantCulture) == returned)
+            || (Guid.TryParse(requested, out var id) && id.ToString("D") == returned);
     }
 
     private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

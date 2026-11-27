@@ -65,6 +65,16 @@ public sealed class WorkTaskClientTests
         Assert.Equal("request", body.GetProperty("type").GetString());
     }
 
+    [Theory]
+    [InlineData("007", "7")]
+    [InlineData("{3B5E740A-4EBC-476D-961A-C1AF073301E9}", "3b5e740a-4ebc-476d-961a-c1af073301e9")]
+    public async Task CreateAssetRequestAsync_AcceptsServerCanonicalAssetId(string suppliedId, string canonicalId)
+    {
+        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", canonicalId), HttpStatusCode.Created));
+        var receipt = await new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest with { AssetId = suppliedId });
+        Assert.Equal(canonicalId, receipt.Task.AssetId);
+    }
+
     [Fact]
     public async Task CreateAssetRequestAsync_RejectsReceiptForAnotherAsset()
     {
