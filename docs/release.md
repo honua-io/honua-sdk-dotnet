@@ -55,10 +55,10 @@ credential. Account/package scope is finally proven by the first push.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
 projects, the tag commit must be contained in `origin/trunk` or satisfy the
-.NET 10 maintenance rule below, and required staging integration must pass. The workflow fails before publishing if any of
-those bindings fail. Library packages contain only `net11.0` assets. CI runs the test
-projects, CLI, and browser sample on .NET 11. Release build and publish jobs use the exact .NET SDK
-`11.0.100` so a rerun cannot silently select a newer feature-band SDK.
+.NET 10 maintenance rule below. Required staging integration must pass. On
+`trunk`, library packages contain only `net11.0` assets. CI runs the tests, CLI,
+and browser sample on .NET 11. Release build and publish jobs use the exact
+.NET SDK `11.0.100` so a rerun cannot select a newer feature-band SDK.
 
 ## .NET 10 maintenance release
 
@@ -67,8 +67,11 @@ release line. Only the tip of `release/dotnet-sdk-1.10` is eligible, and the
 annotated tag must carry a GitHub-verified signature.
 
 1. Confirm the active `release/*` branch rules and the immutable
-   `dotnet-sdk-v*` tag rules apply. Bootstrap `release/dotnet-sdk-1.10` from
-   the `dotnet-sdk-v1.10.4` commit through the existing branch rules.
+   `dotnet-sdk-v*` tag rules apply. A repository maintainer must configure
+   the required checks for `release/dotnet-sdk-1.10` and bootstrap it from
+   `dotnet-sdk-v1.10.4`. The historical CI targets `trunk`, and that tag
+   lacks most of the check names required by the current release branch
+   rules. Keep the branch and tag protections in force during the release.
 2. Apply the reviewed replica fix and this workflow's source-binding change
    to the maintenance line. Keep the historical .NET 10 build and staging
    configuration. Set the package version to `1.10.5`.
