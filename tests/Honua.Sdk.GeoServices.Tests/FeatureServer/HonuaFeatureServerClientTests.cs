@@ -527,6 +527,7 @@ public class HonuaFeatureServerClientTests
         Assert.Equal("json", capturedForm!["f"]);
         Assert.Equal("false", capturedForm["rollbackOnFailure"]);
         Assert.Equal("true", capturedForm["forceWrite"]);
+        Assert.DoesNotContain("useGlobalIds", capturedForm.Keys);
         Assert.Equal("103", capturedForm["deletes"]);
 
         using var adds = JsonDocument.Parse(capturedForm["adds"]!);
@@ -544,6 +545,38 @@ public class HonuaFeatureServerClientTests
         Assert.Equal(400, response.UpdateResults[0].Error?.Code);
         Assert.Equal("Update rejected", response.UpdateResults[0].Error?.Description);
         Assert.Equal(103, response.DeleteResults[0].ObjectId);
+    }
+
+    [Fact]
+    public async Task ApplyEditsAsync_UseGlobalIds_SendsOptInAndPreservesGlobalId()
+    {
+        const string globalId = "{8a50fa9b-ab44-459a-9719-d68abdd83c95}";
+        Dictionary<string, string?>? capturedForm = null;
+        var client = TestHelpers.CreateFeatureServerClient(async req =>
+        {
+            capturedForm = await ParseFormAsync(req).ConfigureAwait(false);
+            return TestHelpers.CreateRawJsonResponse("{}");
+        });
+
+        await client.ApplyEditsAsync("svc", 0, new FeatureServerEditRequest
+        {
+            Adds =
+            [
+                new FeatureServerFeature
+                {
+                    Attributes = new Dictionary<string, JsonElement>
+                    {
+                        ["GLOBALID"] = JsonValue(globalId),
+                    },
+                },
+            ],
+            UseGlobalIds = true,
+        });
+
+        Assert.NotNull(capturedForm);
+        Assert.Equal("true", capturedForm["useGlobalIds"]);
+        using var adds = JsonDocument.Parse(capturedForm["adds"]!);
+        Assert.Equal(globalId, adds.RootElement[0].GetProperty("attributes").GetProperty("GLOBALID").GetString());
     }
 
     [Fact]

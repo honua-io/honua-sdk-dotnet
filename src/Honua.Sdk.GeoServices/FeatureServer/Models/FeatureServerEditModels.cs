@@ -13,7 +13,7 @@ public sealed record FeatureServerEditRequest
     /// <summary>Features to add.</summary>
     public IReadOnlyList<FeatureServerFeature>? Adds { get; init; }
 
-    /// <summary>Features to update. Each feature must include the layer object ID field.</summary>
+    /// <summary>Features to update. Include the layer object ID unless using global IDs.</summary>
     public IReadOnlyList<FeatureServerFeature>? Updates { get; init; }
 
     /// <summary>Object IDs of features to delete.</summary>
@@ -24,6 +24,9 @@ public sealed record FeatureServerEditRequest
 
     /// <summary>Whether the server should force conflict-overriding writes when supported.</summary>
     public bool ForceWrite { get; init; }
+
+    /// <summary>Whether to use global IDs for edits on layers that advertise support.</summary>
+    public bool UseGlobalIds { get; init; }
 }
 
 /// <summary>
