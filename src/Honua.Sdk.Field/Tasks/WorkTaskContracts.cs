@@ -8,7 +8,7 @@ namespace Honua.Sdk.Field.Tasks;
 /// <summary>Filters one page by service and exact assignee.</summary>
 public sealed record AssignedWorkTaskQuery
 {
-    /// <summary>Service identifier.</summary>
+    /// <summary>Canonical service identifier from Server metadata.</summary>
     public required string ServiceId { get; init; }
 
     /// <summary>Exact assignee handle established for the signed-in viewer.</summary>
@@ -54,6 +54,9 @@ public sealed record WorkTask
 
     /// <summary>Assigned user handle.</summary>
     public string? Assignee { get; init; }
+
+    /// <summary>Associated asset profile identifier.</summary>
+    public Guid? ProfileId { get; init; }
 
     /// <summary>Associated asset identifier.</summary>
     public string? AssetId { get; init; }

@@ -92,6 +92,8 @@ Honua.Sdk.Field.Tasks.WorkTask.PermittedActions.get -> System.Collections.Generi
 Honua.Sdk.Field.Tasks.WorkTask.PermittedActions.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.Priority.get -> string?
 Honua.Sdk.Field.Tasks.WorkTask.Priority.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.ProfileId.get -> System.Guid?
+Honua.Sdk.Field.Tasks.WorkTask.ProfileId.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.ServiceId.get -> string!
 Honua.Sdk.Field.Tasks.WorkTask.ServiceId.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.Status.get -> string!
@@ -105,6 +107,7 @@ Honua.Sdk.Field.Tasks.WorkTask.Type.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.Version.get -> long
 Honua.Sdk.Field.Tasks.WorkTask.Version.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.WorkTask() -> void
+Honua.Sdk.Field.Tasks.WorkTaskApiException
 Honua.Sdk.Field.Tasks.WorkTaskClient
 Honua.Sdk.Field.Tasks.WorkTaskClient.CompleteAsync(System.Guid taskId, Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskReceipt!>!
 Honua.Sdk.Field.Tasks.WorkTaskClient.ListAssignedAsync(Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskPage!>!
@@ -178,6 +181,7 @@ Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Reason.init -> void
 Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.WorkTaskTransitionRequest() -> void
 Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException
 Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException.CurrentVersion.get -> long?
+override Honua.Sdk.Field.Tasks.WorkTaskApiException.HttpStatus.get -> int?
 override Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException.HttpStatus.get -> int?
 override Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.ToString() -> string!
 override Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.GetHashCode() -> int
