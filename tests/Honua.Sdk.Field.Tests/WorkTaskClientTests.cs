@@ -15,7 +15,7 @@ public sealed class WorkTaskClientTests
 
     private static string TaskJson => $$"""
         {"taskId":"{{TaskId:D}}","serviceId":"inspection","title":"Inspect","type":"inspection",
-         "status":"in_progress","version":3,"assignee":"worker+1","dueAt":"2026-11-26T05:00:00-10:00",
+         "status":"in_progress","version":3,"profileId":"3b5e740a-4ebc-476d-961a-c1af073301e9","assignee":"worker+1","dueAt":"2026-11-26T05:00:00-10:00",
          "form":{"formId":"inspection","version":2},"permittedActions":["complete"]}
         """;
 
@@ -34,6 +34,7 @@ public sealed class WorkTaskClientTests
         var task = Assert.Single(page.Items);
         Assert.Equal("opaque", page.NextCursor);
         Assert.Equal(2, task.Form!.Version);
+        Assert.Equal(Guid.Parse("3b5e740a-4ebc-476d-961a-c1af073301e9"), task.ProfileId);
         Assert.Equal(TimeSpan.FromHours(-10), task.DueAt!.Value.Offset);
     }
 
@@ -43,8 +44,10 @@ public sealed class WorkTaskClientTests
         using var http = CreateHttp(_ => Response($$"""{"items":[{{TaskJson}}]}"""));
         var client = new WorkTaskClient(http);
 
-        await Assert.ThrowsAsync<JsonException>(() => client.ListAssignedAsync(
+        var error = await Assert.ThrowsAsync<WorkTaskApiException>(() => client.ListAssignedAsync(
             new AssignedWorkTaskQuery { ServiceId = "inspection", Assignee = "other" }));
+        Assert.Equal(200, error.HttpStatus);
+        Assert.IsType<JsonException>(error.InnerException);
         await Assert.ThrowsAsync<ArgumentException>(() => client.ListAssignedAsync(
             new AssignedWorkTaskQuery { ServiceId = "inspection", Assignee = " " }));
     }
@@ -92,6 +95,61 @@ public sealed class WorkTaskClientTests
             TaskId, new WorkTaskTransitionRequest { CommandId = CommandId, ExpectedVersion = 2, Action = "start" }));
         Assert.Equal(CommandId, ex.CommandId);
         Assert.Equal(3, ex.CurrentVersion);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.Conflict)]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    public async Task TransitionAsync_PreservesOrdinaryHttpFailure(HttpStatusCode status)
+    {
+        using var http = CreateHttp(_ => Response("{}", status));
+        var error = await Assert.ThrowsAsync<WorkTaskApiException>(() => new WorkTaskClient(http).TransitionAsync(
+            TaskId, new WorkTaskTransitionRequest { CommandId = CommandId, ExpectedVersion = 2, Action = "start" }));
+
+        Assert.Equal((int)status, error.HttpStatus);
+        Assert.Equal(status, Assert.IsType<HttpRequestException>(error.InnerException).StatusCode);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, "null")]
+    [InlineData(HttpStatusCode.OK, "{")]
+    [InlineData(HttpStatusCode.Conflict, "{}")]
+    public async Task TransitionAsync_WrapsInvalidResponseWithoutReportingConflict(HttpStatusCode status, string body)
+    {
+        using var http = CreateHttp(_ =>
+        {
+            var response = Response(body, status);
+            response.Headers.Add("Honua-Command-Outcome", "conflict");
+            return response;
+        });
+        var error = await Assert.ThrowsAsync<WorkTaskApiException>(() => new WorkTaskClient(http).TransitionAsync(
+            TaskId, new WorkTaskTransitionRequest { CommandId = CommandId, ExpectedVersion = 2, Action = "start" }));
+
+        Assert.Equal((int)status, error.HttpStatus);
+        Assert.IsType<JsonException>(error.InnerException);
+    }
+
+    [Fact]
+    public async Task ListAssignedAsync_PreservesTransportFailureAndCancellation()
+    {
+        var transportError = new HttpRequestException("Request interrupted.");
+        var query = new AssignedWorkTaskQuery { ServiceId = "inspection", Assignee = "worker+1" };
+        using var unavailable = CreateHttp(_ => throw transportError);
+        var error = await Assert.ThrowsAsync<WorkTaskApiException>(() => new WorkTaskClient(unavailable).ListAssignedAsync(query));
+        Assert.Null(error.HttpStatus);
+        Assert.Same(transportError, error.InnerException);
+
+        using var cancelled = new CancellationTokenSource();
+        using var http = CreateHttp(_ =>
+        {
+            cancelled.Cancel();
+            cancelled.Token.ThrowIfCancellationRequested();
+            return Response("{}");
+        });
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => new WorkTaskClient(http).ListAssignedAsync(query, cancelled.Token));
     }
 
     private static HttpResponseMessage Response(string json, HttpStatusCode status = HttpStatusCode.OK)

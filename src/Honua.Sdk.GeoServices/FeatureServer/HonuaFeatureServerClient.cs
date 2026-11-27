@@ -1012,6 +1012,11 @@ public sealed class HonuaFeatureServerClient :
             parameters.Add(("forceWrite", "true"));
         }
 
+        if (request.UseGlobalIds)
+        {
+            parameters.Add(("useGlobalIds", "true"));
+        }
+
         if (request.Adds is { Count: > 0 })
         {
             parameters.Add(("adds", SerializeFeatures(request.Adds)));
