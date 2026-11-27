@@ -48,33 +48,14 @@ public sealed class PublishedFormSubmissionReceipt
 }
 
 /// <summary>The outcome of the requested feature edit.</summary>
-/// <param name="Succeeded">Whether the edit succeeded.</param>
-/// <param name="Created">Number of created features.</param>
-/// <param name="Updated">Number of updated features.</param>
-/// <param name="Deleted">Number of deleted features.</param>
-/// <param name="Error">Server message for an unsuccessful edit.</param>
 public sealed record PublishedFormEditOutcome(bool Succeeded, int Created, int Updated, int Deleted, string? Error);
 
 /// <summary>The outcome for one evidence part.</summary>
-/// <param name="ClientAttachmentId">The saved client reference.</param>
-/// <param name="FieldId">The associated form field.</param>
-/// <param name="Status">Server attachment status.</param>
-/// <param name="AttachmentId">Identifier assigned to accepted evidence.</param>
-/// <param name="Reason">Server explanation, when provided.</param>
-/// <param name="PrivacyApplied">Whether the server applied privacy processing.</param>
 public sealed record PublishedFormAttachmentOutcome(
     string? ClientAttachmentId, string? FieldId, string? Status, long? AttachmentId, string? Reason, bool PrivacyApplied);
 
 /// <summary>A validation issue for the submitted form data.</summary>
-/// <param name="Code">Issue code.</param>
-/// <param name="Severity">Issue severity.</param>
-/// <param name="FieldId">The associated form field.</param>
-/// <param name="Path">The location in the submitted data.</param>
-/// <param name="Message">The server explanation.</param>
 public sealed record PublishedFormValidationIssue(string? Code, string? Severity, string? FieldId, string? Path, string? Message);
 
 /// <summary>Guidance about retrying a submission.</summary>
-/// <param name="Retryable">Whether the server recommends retrying, if explicitly stated.</param>
-/// <param name="RetryAfterSeconds">Suggested wait in seconds, if specified.</param>
-/// <param name="Reason">The server explanation, when provided.</param>
 public sealed record PublishedFormRetryGuidance(bool? Retryable, int? RetryAfterSeconds, string? Reason);

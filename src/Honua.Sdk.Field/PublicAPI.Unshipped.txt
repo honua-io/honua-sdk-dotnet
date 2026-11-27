@@ -273,7 +273,17 @@ Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Retryable.get -> bool?
 Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Retryable.init -> void
 Honua.Sdk.Field.Forms.PublishedFormSubmissionClient
 Honua.Sdk.Field.Forms.PublishedFormSubmissionClient.PublishedFormSubmissionClient(System.Net.Http.HttpClient! httpClient) -> void
-Honua.Sdk.Field.Forms.PublishedFormSubmissionClient.SubmitAsync(string! formId, string! requestJson, System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.PublishedFormPart!>! files, System.Func<long, System.Threading.CancellationTokenSource!>? createUploadDeadline = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt!>!
+Honua.Sdk.Field.Forms.PublishedFormSubmission
+Honua.Sdk.Field.Forms.PublishedFormSubmission.CreateUploadDeadline.get -> System.Func<long, System.Threading.CancellationTokenSource!>?
+Honua.Sdk.Field.Forms.PublishedFormSubmission.CreateUploadDeadline.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.Files.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.PublishedFormPart!>!
+Honua.Sdk.Field.Forms.PublishedFormSubmission.Files.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.FormId.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormSubmission.FormId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.PublishedFormSubmission() -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.RequestJson.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormSubmission.RequestJson.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionClient.SubmitAsync(Honua.Sdk.Field.Forms.PublishedFormSubmission! submission, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt!>!
 Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt
 Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.AttachmentOutcomes.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome!>?
 Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.AttachmentOutcomes.init -> void

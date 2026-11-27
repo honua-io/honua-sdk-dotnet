@@ -66,8 +66,15 @@ public sealed class PublishedFormSubmissionClientTests
             return new CancellationTokenSource();
         }
 
-        var first = await client.SubmitAsync("bridge check", Frozen, evidence, Deadline);
-        var replay = await client.SubmitAsync("bridge check", Frozen, evidence, Deadline);
+        var submission = new PublishedFormSubmission
+        {
+            FormId = "bridge check",
+            RequestJson = Frozen,
+            Files = evidence,
+            CreateUploadDeadline = Deadline
+        };
+        var first = await client.SubmitAsync(submission);
+        var replay = await client.SubmitAsync(submission);
 
         Assert.Equal(2, requests);
         Assert.Equal(2, opened.Count);
@@ -94,7 +101,7 @@ public sealed class PublishedFormSubmissionClientTests
                 """);
         });
 
-        var result = await new PublishedFormSubmissionClient(http).SubmitAsync("bridge", Frozen, []);
+        var result = await new PublishedFormSubmissionClient(http).SubmitAsync(new() { FormId = "bridge", RequestJson = Frozen });
 
         Assert.Equal(HttpStatusCode.BadRequest, result.HttpStatusCode);
         Assert.Equal("rejected", result.Status);
@@ -111,7 +118,7 @@ public sealed class PublishedFormSubmissionClientTests
     public async Task SubmitAsync_UnconfirmedReceiptFails(string body)
     {
         using var http = CreateHttp((_, _) => Task.FromResult(Response(HttpStatusCode.OK, body)));
-        await Assert.ThrowsAsync<JsonException>(() => new PublishedFormSubmissionClient(http).SubmitAsync("bridge", Frozen, []));
+        await Assert.ThrowsAsync<JsonException>(() => new PublishedFormSubmissionClient(http).SubmitAsync(new() { FormId = "bridge", RequestJson = Frozen }));
     }
 
     [Fact]
@@ -119,7 +126,7 @@ public sealed class PublishedFormSubmissionClientTests
     {
         using var http = CreateHttp((_, _) => Task.FromResult(Response(HttpStatusCode.Conflict, "{}")));
         var error = await Assert.ThrowsAsync<HttpRequestException>(
-            () => new PublishedFormSubmissionClient(http).SubmitAsync("bridge", Frozen, []));
+            () => new PublishedFormSubmissionClient(http).SubmitAsync(new() { FormId = "bridge", RequestJson = Frozen }));
         Assert.Equal(HttpStatusCode.Conflict, error.StatusCode);
     }
 
@@ -128,7 +135,7 @@ public sealed class PublishedFormSubmissionClientTests
     {
         using var http = CreateHttp((_, _) => throw new InvalidOperationException("Unexpected send."));
         await Assert.ThrowsAsync<JsonException>(() =>
-            new PublishedFormSubmissionClient(http).SubmitAsync("bridge", """{"formVersion":3}""", []));
+            new PublishedFormSubmissionClient(http).SubmitAsync(new() { FormId = "bridge", RequestJson = """{"formVersion":3}""" }));
     }
 
     private static HttpClient CreateHttp(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send)

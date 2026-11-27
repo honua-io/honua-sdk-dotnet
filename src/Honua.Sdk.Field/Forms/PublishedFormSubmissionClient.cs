@@ -21,23 +21,49 @@ public sealed class PublishedFormSubmissionClient
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
-    /// <summary>Submits the original JSON and opens fresh streams for each supplied evidence part.</summary>
-    /// <param name="formId">The published form identifier.</param>
-    /// <param name="requestJson">The saved JSON envelope with a positive form version and stable idempotency key.</param>
-    /// <param name="files">Named evidence parts. Replays must reference the same bytes.</param>
-    /// <param name="createUploadDeadline">Optional multipart deadline factory receiving the complete length in bytes.
-    /// Link the caller cancellation token when creating the deadline. Streams must be seekable when supplied.</param>
-    /// <param name="cancellationToken">Cancellation for sending and reading the receipt.</param>
+    /// <summary>Submits the original JSON and opens fresh streams for each evidence part.</summary>
     public async Task<PublishedFormSubmissionReceipt> SubmitAsync(
-        string formId,
-        string requestJson,
-        IReadOnlyList<PublishedFormPart> files,
-        Func<long, CancellationTokenSource>? createUploadDeadline = null,
+        PublishedFormSubmission submission,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(formId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(requestJson);
-        ArgumentNullException.ThrowIfNull(files);
+        ArgumentNullException.ThrowIfNull(submission);
+        ArgumentException.ThrowIfNullOrWhiteSpace(submission.FormId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(submission.RequestJson);
+        ArgumentNullException.ThrowIfNull(submission.Files);
+        var formVersion = ReadSavedVersion(submission.RequestJson);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/v1/forms/{Uri.EscapeDataString(submission.FormId)}/submissions");
+        SetRequestContent(request, submission);
+
+        using var deadline = submission.Files.Count > 0 && submission.CreateUploadDeadline is not null
+            ? submission.CreateUploadDeadline(request.Content!.Headers.ContentLength
+                ?? throw new ArgumentException("Multipart length is required to create an upload deadline.", nameof(submission)))
+            : null;
+        using var linkedCancellation = deadline is null
+            ? null
+            : CancellationTokenSource.CreateLinkedTokenSource(deadline.Token, cancellationToken);
+        var requestToken = linkedCancellation?.Token ?? cancellationToken;
+        using var response = await _httpClient.SendAsync(request, requestToken).ConfigureAwait(false);
+        if (response.StatusCode != HttpStatusCode.BadRequest)
+        {
+            response.EnsureSuccessStatusCode();
+        }
+
+        var receipt = await response.Content.ReadFromJsonAsync(
+            PublishedFormReceiptJsonContext.Default.PublishedFormSubmissionReceipt, requestToken).ConfigureAwait(false);
+        if (receipt is null || receipt.FormId != submission.FormId || receipt.FormVersion != formVersion
+            || receipt.Status is not ("accepted" or "rejected" or "failed")
+            || (response.StatusCode == HttpStatusCode.BadRequest && receipt.Status == "accepted"))
+        {
+            throw new JsonException("The response is not a receipt for the submitted form version.");
+        }
+
+        receipt.HttpStatusCode = response.StatusCode;
+        return receipt;
+    }
+
+    private static int ReadSavedVersion(string requestJson)
+    {
         using var envelope = JsonDocument.Parse(requestJson);
         var body = envelope.RootElement;
         if (body.ValueKind != JsonValueKind.Object
@@ -49,15 +75,19 @@ public sealed class PublishedFormSubmissionClient
             throw new JsonException("The saved form submission must specify its form version and idempotency key.");
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/forms/{Uri.EscapeDataString(formId)}/submissions");
-        var json = new StringContent(requestJson, Encoding.UTF8, "application/json");
+        return formVersion;
+    }
+
+    private static void SetRequestContent(HttpRequestMessage request, PublishedFormSubmission submission)
+    {
+        var json = new StringContent(submission.RequestJson, Encoding.UTF8, "application/json");
         request.Content = json;
-        if (files.Count > 0)
+        if (submission.Files.Count > 0)
         {
             var multipart = new MultipartFormDataContent();
             multipart.Add(json, "submission");
             request.Content = multipart;
-            foreach (var file in files)
+            foreach (var file in submission.Files)
             {
                 ArgumentNullException.ThrowIfNull(file);
                 var contentType = MediaTypeHeaderValue.Parse(file.ContentType);
@@ -77,37 +107,26 @@ public sealed class PublishedFormSubmissionClient
                 }
             }
         }
-
-        using var deadline = files.Count > 0 && createUploadDeadline is not null
-            ? createUploadDeadline(request.Content.Headers.ContentLength
-                ?? throw new ArgumentException("Multipart length is required to create an upload deadline.", nameof(files)))
-            : null;
-        var requestToken = deadline?.Token ?? cancellationToken;
-        using var response = await _httpClient.SendAsync(request, requestToken).ConfigureAwait(false);
-        if (response.StatusCode != HttpStatusCode.BadRequest)
-        {
-            response.EnsureSuccessStatusCode();
-        }
-
-        var receipt = await response.Content.ReadFromJsonAsync(
-            PublishedFormReceiptJsonContext.Default.PublishedFormSubmissionReceipt, requestToken).ConfigureAwait(false);
-        if (receipt is null || receipt.FormId != formId || receipt.FormVersion != formVersion
-            || receipt.Status is not ("accepted" or "rejected" or "failed")
-            || (response.StatusCode == HttpStatusCode.BadRequest && receipt.Status == "accepted"))
-        {
-            throw new JsonException("The response is not a receipt for the submitted form version.");
-        }
-
-        receipt.HttpStatusCode = response.StatusCode;
-        return receipt;
     }
 }
 
-/// <summary>An evidence part with an opener that returns a new readable stream for every request.</summary>
-/// <param name="PartName">The multipart name referenced by the saved submission envelope.</param>
-/// <param name="FileName">The filename sent with this part.</param>
-/// <param name="ContentType">The media type sent with this part.</param>
-/// <param name="OpenRead">Opens a fresh stream that the submission client disposes.</param>
+/// <summary>A saved submission and its replayable evidence.</summary>
+public sealed class PublishedFormSubmission
+{
+    /// <summary>The published form identifier.</summary>
+    public required string FormId { get; init; }
+
+    /// <summary>The unchanged saved JSON envelope with its positive version and stable idempotency key.</summary>
+    public required string RequestJson { get; init; }
+
+    /// <summary>Named evidence parts whose bytes must remain unchanged across retries.</summary>
+    public IReadOnlyList<PublishedFormPart> Files { get; init; } = [];
+
+    /// <summary>Creates an optional upload deadline from the complete multipart length, requiring seekable streams.</summary>
+    public Func<long, CancellationTokenSource>? CreateUploadDeadline { get; init; }
+}
+
+/// <summary>An evidence part whose opener returns a fresh stream owned and disposed by the client.</summary>
 public sealed record PublishedFormPart(string PartName, string FileName, string ContentType, Func<Stream> OpenRead);
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
