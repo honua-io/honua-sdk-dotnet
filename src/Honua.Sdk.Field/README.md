@@ -136,7 +136,8 @@ required values, labels, hints, choice lists, relevance, constraints and
 calculations are preserved. Expressions use the field expression syntax,
 including `${field_name}` references and the `concat`, `if`, `floor` and
 `selected` functions. For example, `selected(${hazards}, 'fire')` matches
-the exact, case-sensitive choice code in a multi-select answer. Integer
+the exact, case-sensitive choice code in a multi-select answer. Expressions also accept
+XLSForm `div` and `mod`, `true()` and `false()`, and either quote style for string literals. Integer
 questions retain an integer constraint when exported as
 decimal questions.
 

@@ -42,10 +42,29 @@ public sealed class ExpressionEvaluatorTests
         => Assert.Equal("it's", ExpressionEvaluator.Evaluate("'it''s'", null));
 
     [Theory]
+    [InlineData("true()", true)]
+    [InlineData("false ( )", false)]
     [InlineData("true", true)]
     [InlineData("false", false)]
     public void Evaluate_BooleanLiterals(string expr, bool expected)
         => Assert.Equal(expected, ExpressionEvaluator.Evaluate(expr, null));
+
+    [Theory]
+    [InlineData("\"crew's div mod true()\"", "crew's div mod true()")]
+    [InlineData("\"say \"\"yes\"\"\"", "say \"yes\"")]
+    public void Evaluate_DoubleQuotedText(string expression, string expected)
+        => Assert.Equal(expected, ExpressionEvaluator.Evaluate(expression, null));
+
+    [Theory]
+    [InlineData("true(1)")]
+    [InlineData("false(false())")]
+    [InlineData("\"unclosed'")]
+    public void Evaluate_InvalidXlsFormSyntaxReportsFailure(string expression)
+        => Assert.False(ExpressionEvaluator.EvaluateDetailed(expression, null).Succeeded);
+
+    [Fact]
+    public void Evaluate_DivAndModRemainValidFieldNames()
+        => Assert.Equal(3d, ExpressionEvaluator.Evaluate("div mod ${mod}", Ctx(("div", 7), ("mod", 4))));
 
     [Fact]
     public void Evaluate_NullLiteral()
@@ -86,6 +105,8 @@ public sealed class ExpressionEvaluatorTests
     [InlineData("6 * 7", 42d)]
     [InlineData("20 / 5", 4d)]
     [InlineData("17 % 5", 2d)]
+    [InlineData("2 + 18 div 3 mod 4", 4d)]
+    [InlineData("18 mod 5 * 2", 6d)]
     [InlineData("2 + 3 * 4", 14d)]
     [InlineData("(2 + 3) * 4", 20d)]
     [InlineData("-3 + 5", 2d)]

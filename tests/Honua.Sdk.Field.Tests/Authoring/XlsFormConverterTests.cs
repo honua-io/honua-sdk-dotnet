@@ -49,6 +49,9 @@ public sealed class XlsFormConverterTests
     [InlineData("relevant", "if(true, true, unsupported())")]
     [InlineData("relevant", "selected(${answer})")]
     [InlineData("relevant", "selected(${answer}, 'x', 'y')")]
+    [InlineData("relevant", "true(1)")]
+    [InlineData("relevant", "div = 1")]
+    [InlineData("relevant", "1 mod mod")]
     [InlineData("constraint", ". >=")]
     [InlineData("relevant", "${missing} = 1")]
     [InlineData("relevant", ". = 1")]
@@ -188,6 +191,30 @@ public sealed class XlsFormConverterTests
             record.Values["hazards"] = new[] { "fire", "wildfire" };
             Assert.False(FormValidator.Validate(form, record).IsValid);
             record.Values["details"] = "Observed";
+            Assert.True(FormValidator.Validate(form, record).IsValid);
+        }
+    }
+
+    [Fact]
+    public void ImportExportImport_PreservesXlsFormOperatorsAndQuotedText()
+    {
+        const string rule = "if(${div} div 3 mod 2 = 1 and ${crew} = \"O'Brien mod true()\", true(), false())";
+        var workbook = Workbook(
+            Row(2, ("type", "decimal"), ("name", "div")),
+            Row(3, ("type", "text"), ("name", "crew")),
+            Row(4, ("type", "text"), ("name", "details"), ("required", "yes"), ("relevant", rule)));
+        var imported = Assert.IsType<FormDefinition>(XlsFormConverter.Import(workbook).Value);
+        var exported = Assert.IsType<XlsFormWorkbook>(XlsFormConverter.Export(imported).Value);
+        Assert.Equal(rule, exported.Survey.Single(row => row.Cells.GetValueOrDefault("name") == "details").Cells["relevant"]);
+        var reimported = Assert.IsType<FormDefinition>(XlsFormConverter.Import(exported).Value);
+
+        foreach (var form in new[] { imported, reimported })
+        {
+            var record = new FieldRecord { RecordId = "inspection", FormId = form.FormId };
+            record.Values["div"] = 9;
+            record.Values["crew"] = "O'Brien mod true()";
+            Assert.False(FormValidator.Validate(form, record).IsValid);
+            record.Values["div"] = 6;
             Assert.True(FormValidator.Validate(form, record).IsValid);
         }
     }

@@ -10,7 +10,7 @@ namespace Honua.Sdk.Field.Forms.Expressions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The engine supports literals (numbers, single-quoted strings, <c>true</c>,
+/// The engine supports literals (numbers, single- or double-quoted strings, <c>true</c>,
 /// <c>false</c>, <c>null</c>), field references (<c>$fieldId</c> and
 /// <c>${fieldId}</c>), arithmetic, comparison and logical operators, and a small
 /// library of functions. It is deliberately tolerant: a malformed expression,
