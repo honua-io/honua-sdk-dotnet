@@ -70,8 +70,8 @@ The certification server starts with `Licensing__Mode=Disabled`, the supported
 `FeatureServerApplyEdits_AddUpdateDelete_RoundTrips` adds, updates, and deletes
 on that target. Cleanup is fail-closed. A 402 is a failed edit, not a skip.
 The pinned server image and published `Honua.Sdk` package are recorded in
-[`certification/candidate-pins.json`](../certification/candidate-pins.json); see
-[`certification/README.md`](../certification/README.md) to advance them.
+[`certification/candidate-pins.json`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/certification/candidate-pins.json); see
+[`certification/README.md`](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/certification/README.md) to advance them.
 A scheduled workflow follows the published honua-release package coordinate,
 and advances a server pin that has fallen behind the manifest snapshot, so
 that pin does not wait on a hand bump. A newer server pin is left in place.

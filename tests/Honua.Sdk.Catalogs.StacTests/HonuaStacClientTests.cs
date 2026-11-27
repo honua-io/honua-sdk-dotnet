@@ -751,4 +751,191 @@ public sealed class HonuaStacClientTests
         Assert.Contains("bbox parameter", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(json, ex.ResponseBody);
     }
+
+    [Fact]
+    public async Task PostSearchPagesAsync_ThreePagesWithSameHrefAndDistinctBodies_FetchesAllPages()
+    {
+        var calls = 0;
+        var seenTokens = new List<string?>();
+        var client = TestHelpers.CreateStacClient(async req =>
+        {
+            calls++;
+            var body = req.Content is null ? string.Empty : await req.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(body);
+            seenTokens.Add(doc.RootElement.TryGetProperty("token", out var tok) ? tok.GetString() : null);
+
+            var json = calls switch
+            {
+                1 => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "scene-001" }],
+                         "links": [
+                             { "href": "https://honua.example.test/stac/search", "rel": "next", "method": "POST", "body": { "token": "page-2" } }
+                         ]
+                     }
+                     """,
+                2 => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "scene-002" }],
+                         "links": [
+                             { "href": "https://honua.example.test/stac/search", "rel": "next", "method": "POST", "body": { "token": "page-3" } }
+                         ]
+                     }
+                     """,
+                _ => """
+                     {
+                         "type": "FeatureCollection",
+                         "features": [{ "type": "Feature", "id": "scene-003" }]
+                     }
+                     """
+            };
+            return TestHelpers.CreateRawJsonResponse(json);
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.PostSearchPagesAsync(new StacSearchRequest { Collections = ["imagery"], Limit = 1 }))
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(3, calls);
+        Assert.Equal(3, pages.Count);
+        Assert.Equal([null, "page-2", "page-3"], seenTokens);
+        Assert.Equal(["scene-001", "scene-002", "scene-003"], pages.Select(p => p.Features![0].Id).ToArray());
+    }
+
+    [Fact]
+    public async Task PostSearchPagesAsync_RepeatedPostBody_StopsCycle()
+    {
+        var calls = 0;
+        var client = TestHelpers.CreateStacClient(_ =>
+        {
+            calls++;
+            var json = """
+            {
+                "type": "FeatureCollection",
+                "features": [{ "type": "Feature", "id": "scene-001" }],
+                "links": [
+                    { "href": "https://honua.example.test/stac/search", "rel": "next", "method": "POST", "body": { "token": "stuck-token" } }
+                ]
+            }
+            """;
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.PostSearchPagesAsync(new StacSearchRequest { Limit = 1 }))
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, calls);
+        Assert.Equal(2, pages.Count);
+    }
+
+    [Fact]
+    public async Task PostSearchPagesAsync_DoesNotForwardRestrictedNextLinkHeaders()
+    {
+        var calls = 0;
+        HttpRequestMessage? secondRequest = null;
+        var client = TestHelpers.CreateStacClient(req =>
+        {
+            calls++;
+            if (calls == 2)
+            {
+                secondRequest = req;
+            }
+
+            var json = calls == 1
+                ? """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-001" }],
+                      "links": [
+                          {
+                              "href": "https://honua.example.test/stac/search",
+                              "rel": "next",
+                              "method": "POST",
+                              "body": { "token": "page-2" },
+                              "headers": {
+                                  "Authorization": "Bearer attacker",
+                                  "X-API-Key": "attacker-key",
+                                  "Cookie": "session=hijack",
+                                  "Host": "evil.example",
+                                  "Proxy-Authorization": "Basic hijack",
+                                  "X-Custom-Cursor": "allowed-value"
+                              }
+                          }
+                      ]
+                  }
+                  """
+                : """{ "type": "FeatureCollection", "features": [{ "type": "Feature", "id": "scene-002" }] }""";
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        await foreach (var _ in client.PostSearchPagesAsync(new StacSearchRequest { Limit = 1 }))
+        {
+            // Drain every page so the follow-up request is sent.
+        }
+
+        Assert.NotNull(secondRequest);
+        Assert.Null(secondRequest!.Headers.Authorization);
+        Assert.False(secondRequest.Headers.Contains("X-API-Key"));
+        Assert.False(secondRequest.Headers.Contains("Cookie"));
+        Assert.Null(secondRequest.Headers.Host);
+        Assert.Null(secondRequest.Headers.ProxyAuthorization);
+        Assert.Equal("allowed-value", secondRequest.Headers.GetValues("X-Custom-Cursor").Single());
+    }
+
+    [Fact]
+    public async Task SearchPagesAsync_WithIntersects_UsesPostAndFollowsPostNextLinks()
+    {
+        var calls = 0;
+        var methods = new List<HttpMethod>();
+        using var intersects = JsonDocument.Parse("""{ "type": "Point", "coordinates": [-158, 21] }""");
+        var client = TestHelpers.CreateStacClient(req =>
+        {
+            calls++;
+            methods.Add(req.Method);
+            var json = calls == 1
+                ? """
+                  {
+                      "type": "FeatureCollection",
+                      "features": [{ "type": "Feature", "id": "scene-001" }],
+                      "links": [
+                          { "href": "https://honua.example.test/stac/search", "rel": "next", "method": "POST", "body": { "token": "p2" } }
+                      ]
+                  }
+                  """
+                : """{ "type": "FeatureCollection", "features": [{ "type": "Feature", "id": "scene-002" }] }""";
+            return Task.FromResult(TestHelpers.CreateRawJsonResponse(json));
+        });
+
+        var pages = new List<StacItemCollection>();
+        await foreach (var page in client.SearchPagesAsync(new StacSearchQuery
+        {
+            Collections = ["imagery"],
+            Intersects = intersects.RootElement,
+            Limit = 1,
+        }))
+        {
+            pages.Add(page);
+        }
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal([HttpMethod.Post, HttpMethod.Post], methods);
+    }
+
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task GetCollectionAsync_RejectsDotSegmentPathTraversal(string badId)
+    {
+        var client = TestHelpers.CreateStacClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetCollectionAsync(badId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetItemAsync("imagery", badId));
+    }
 }

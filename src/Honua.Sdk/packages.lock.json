@@ -14,6 +14,12 @@
         "resolved": "10.0.7",
         "contentHash": "91F/o3emPV/+xY/ip3s2LqDNF14kjttlVtq0BXgg6p4MnCzeSZxnUJm+t6WRrtD3JdGo88/oX+z7OwK4y8PZuw=="
       },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "gK2aq4XvChj5kvozpPHrkfKkr7zc5Z4xoTrJb4GPZzDEPMlCk0TX632bwY3LsWcX2UVcVRQBBGzsBGC2lq6YhA=="
+      },
       "Microsoft.SourceLink.GitHub": {
         "type": "Direct",
         "requested": "[10.0.401, )",
@@ -27,8 +33,8 @@
       },
       "Grpc.Core.Api": {
         "type": "Transitive",
-        "resolved": "2.84.0",
-        "contentHash": "p2SOMl6q/GZ4/5MLkgboC/z55g4zKUEruRn/g46QgppjQBVnsLZVBU/9VO7n60ll38G3Eo8Zu9b7x+W01GKFVg=="
+        "resolved": "2.85.0",
+        "contentHash": "cpYu/nw/QhwHcRZMJbYD8lEllKrdwYMiDS4U3oH61nhYPUMNkcCcef4ulv11svHvTBThYV+ju332N9bCrfe7cQ=="
       },
       "Grpc.Net.Common": {
         "type": "Transitive",
@@ -221,7 +227,7 @@
       "honua.sdk.admin": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -229,7 +235,7 @@
       "honua.sdk.catalogs": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -237,7 +243,7 @@
       "honua.sdk.consoleshare": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -245,14 +251,14 @@
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )"
         }
       },
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
-          "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Geospatial.Grpc": "[1.5.0, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -261,8 +267,8 @@
       "honua.sdk.geoservices": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.Geometry": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.Geometry": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -270,25 +276,25 @@
       "honua.sdk.grpc": {
         "type": "Project",
         "dependencies": {
-          "Geospatial.Grpc": "[1.0.2, )",
+          "Geospatial.Grpc": "[1.5.0, )",
           "Google.Protobuf": "[3.36.2, )",
           "Grpc.Net.Client": "[2.76.0, )",
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.Geometry": "[5.0.1, )",
-          "Honua.Sdk.Processes": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.Geometry": "[5.1.0, )",
+          "Honua.Sdk.Processes": "[5.1.0, )"
         }
       },
       "honua.sdk.offline": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )"
+          "Honua.Sdk.Abstractions": "[5.1.0, )"
         }
       },
       "honua.sdk.ogcfeatures": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.Geometry": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.Geometry": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -296,7 +302,7 @@
       "honua.sdk.processes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -304,7 +310,7 @@
       "honua.sdk.scenes": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -312,7 +318,7 @@
       "honua.sdk.spec": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
@@ -320,19 +326,19 @@
       "honua.sdk.studio": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
       },
       "Geospatial.Grpc": {
         "type": "CentralTransitive",
-        "requested": "[1.0.2, )",
-        "resolved": "1.0.2",
-        "contentHash": "kR3TThy8DUzHiL3ad/76gsx+GbqyXse5JWus17CXA/7KPzqFEzAcBjacxsHoDF8J5oZTH6n0vgoU01gv5DwxrQ==",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "sggyeiKXrOwEfMfM+EwSbwBMoPr0ir9oLKPOp0ZYco7hlp+H4TjUhHOeXZybEOd36uDWRIrK3PYZQmTOGMte+w==",
         "dependencies": {
           "Google.Protobuf": "3.36.2",
-          "Grpc.Core.Api": "2.84.0"
+          "Grpc.Core.Api": "2.85.0"
         }
       },
       "Google.Protobuf": {

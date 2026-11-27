@@ -31,7 +31,7 @@ public static class GeometryText
     {
         ArgumentNullException.ThrowIfNull(geometry);
 
-        return new WKTWriter().Write(geometry);
+        return new WKTWriter(4).Write(geometry);
     }
 
     /// <summary>
@@ -60,6 +60,6 @@ public static class GeometryText
     {
         ArgumentNullException.ThrowIfNull(geometry);
 
-        return new WKBWriter(byteOrder, includeSrid).Write(geometry);
+        return new WKBWriter(byteOrder, includeSrid, emitZ: true, emitM: true).Write(geometry);
     }
 }

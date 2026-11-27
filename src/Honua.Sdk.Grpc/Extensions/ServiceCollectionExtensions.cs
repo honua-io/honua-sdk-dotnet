@@ -44,10 +44,12 @@ public static class ServiceCollectionExtensions
         // share that one instance.
         services.AddSingleton<IHonuaGrpcClient>(sp =>
             new HonuaGrpcClient(sp.GetRequiredService<IOptions<HonuaGrpcClientOptions>>()));
+        services.AddSingleton<IHonuaGrpcFeatureClient>(sp => (IHonuaGrpcFeatureClient)sp.GetRequiredService<IHonuaGrpcClient>());
         services.AddSingleton<IHonuaProcessGrpcClient>(sp =>
             new HonuaProcessGrpcClient(sp.GetRequiredService<IOptions<HonuaGrpcClientOptions>>()));
         services.AddSingleton<IHonuaFeatureQueryClient>(sp => (IHonuaFeatureQueryClient)sp.GetRequiredService<IHonuaGrpcClient>());
         services.AddSingleton<IHonuaFeatureEditClient>(sp => (IHonuaFeatureEditClient)sp.GetRequiredService<IHonuaGrpcClient>());
+        services.AddSingleton<IHonuaFeatureDescriptorClient>(sp => (IHonuaFeatureDescriptorClient)sp.GetRequiredService<IHonuaGrpcClient>());
         services.AddSingleton<IHonuaFeatureAttachmentClient>(sp => (IHonuaFeatureAttachmentClient)sp.GetRequiredService<IHonuaGrpcClient>());
         return services;
     }

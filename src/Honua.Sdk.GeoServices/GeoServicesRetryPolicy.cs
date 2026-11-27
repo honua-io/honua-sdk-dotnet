@@ -1,30 +1,21 @@
 // Copyright (c) Honua. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
+using System.Net;
+using Honua.Sdk.Abstractions.Http;
+using Honua.Sdk.Internal.Http;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
+
 namespace Honua.Sdk.GeoServices;
 
-/// <summary>
-/// Decides whether a GeoServices request is safe to retry on a transient failure.
-/// </summary>
-/// <remarks>
-/// The standard resilience handler's <c>DisableForUnsafeHttpMethods</c> retries only idempotent
-/// HTTP methods. That rule alone silently drops transient-retry protection from the FeatureServer
-/// <c>/query</c> read whenever its URL exceeds the POST fallback threshold (long <c>where</c>
-/// filters), because the read is then issued as a POST. This policy restores that protection:
-/// it retries the idempotent methods <em>plus</em> the idempotent <c>/query</c> POST, while still
-/// excluding genuine mutations such as <c>applyEdits</c>. Retry behaviour therefore no longer
-/// changes with filter length.
-/// </remarks>
+// Retries idempotent HTTP methods plus the idempotent /query POST fallback, honors
+// Honua-Retryable: false on 503 responses, and retries HTTP 200 GeoServices error
+// envelopes carrying 429/503 or Honua-Retryable: true.
 internal static class GeoServicesRetryPolicy
 {
-    /// <summary>
-    /// Returns <see langword="true"/> when a transient failure for <paramref name="request"/> may
-    /// be safely retried.
-    /// </summary>
-    /// <param name="request">The outgoing request, or <see langword="null"/> when unavailable.</param>
     public static bool IsRetryableRequest(HttpRequestMessage? request)
     {
-        // When the method cannot be determined, defer to the default transient policy (retry).
         if (request is null)
         {
             return true;
@@ -41,10 +32,116 @@ internal static class GeoServicesRetryPolicy
             return true;
         }
 
-        // The GeoServices /query read falls back to POST for long filter strings; it is
-        // idempotent and must remain retry-eligible. Mutations (applyEdits, attachments) do not
-        // target /query and are correctly excluded.
         return method == HttpMethod.Post && IsQueryRequest(request);
+    }
+
+    public static async ValueTask<bool> ShouldRetryAsync(
+        Outcome<HttpResponseMessage> outcome,
+        HttpRequestMessage? request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsRetryableRequest(request))
+        {
+            return false;
+        }
+
+        if (outcome.Exception is not null)
+        {
+            return IsTransientOutcome(outcome);
+        }
+
+        if (outcome.Result is not { } response)
+        {
+            return false;
+        }
+
+        var headerRetryable = HonuaRestHttpClientRegistration.TryParseRetryableHeader(response);
+        if (headerRetryable == false)
+        {
+            return false;
+        }
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            return IsTransientOutcome(outcome);
+        }
+
+        return await ShouldRetryGeoServicesEnvelopeAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    public static async ValueTask<TimeSpan?> TryGetRetryDelayAsync(
+        HttpResponseMessage? response,
+        CancellationToken cancellationToken = default)
+    {
+        if (response is null)
+        {
+            return null;
+        }
+
+        var headerDelay = TryGetRetryAfterHeader(response);
+        if (headerDelay.HasValue)
+        {
+            return headerDelay.Value;
+        }
+
+        if (response.StatusCode != HttpStatusCode.OK || !HonuaGeoServicesEnvelopeInspector.IsJsonResponse(response))
+        {
+            return null;
+        }
+
+        var envelope = await HonuaGeoServicesEnvelopeInspector.TryInspectAsync(response, cancellationToken)
+            .ConfigureAwait(false);
+        return envelope?.RetryAfter;
+    }
+
+    private static bool IsTransientOutcome(Outcome<HttpResponseMessage> outcome)
+        => HttpClientResiliencePredicates.IsTransient(outcome);
+
+    private static async ValueTask<bool> ShouldRetryGeoServicesEnvelopeAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        var headerAllowsRetry = HonuaRestHttpClientRegistration.TryParseRetryableHeader(response) == true;
+        if (!headerAllowsRetry && !HonuaGeoServicesEnvelopeInspector.IsJsonResponse(response))
+        {
+            return false;
+        }
+
+        var envelope = await HonuaGeoServicesEnvelopeInspector.TryInspectAsync(response, cancellationToken)
+            .ConfigureAwait(false);
+        if (envelope is null)
+        {
+            return false;
+        }
+
+        if (envelope.Retryable is { } bodyRetryable)
+        {
+            return bodyRetryable;
+        }
+
+        return headerAllowsRetry || envelope.Code is 429 or 503;
+    }
+
+    private static TimeSpan? TryGetRetryAfterHeader(HttpResponseMessage response)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        if (retryAfter is null)
+        {
+            return null;
+        }
+
+        if (retryAfter.Delta is TimeSpan delta)
+        {
+            return delta > TimeSpan.Zero ? delta : TimeSpan.Zero;
+        }
+
+        if (retryAfter.Date is DateTimeOffset date)
+        {
+            var remaining = date - DateTimeOffset.UtcNow;
+            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+        }
+
+        return null;
     }
 
     private static bool IsQueryRequest(HttpRequestMessage request)

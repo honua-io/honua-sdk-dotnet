@@ -64,4 +64,16 @@ public sealed record QueryFeaturesRequest
 
     /// <summary>Optional spatial filter for geometry-constrained queries.</summary>
     public SpatialFilter? SpatialFilter { get; init; }
+
+    /// <summary>Specific global UUIDs to return; mutually exclusive with ObjectIds.</summary>
+    public IReadOnlyList<string>? GlobalIds { get; init; }
+
+    /// <summary>Optional explicit datum transformation WKID when reprojecting via OutSr.</summary>
+    public int DatumTransformationWkid { get; init; }
+
+    /// <summary>Request positional attribute values aligned with response fields instead of attribute maps.</summary>
+    public bool UsePositionalAttributes { get; init; }
+
+    /// <summary>Request packed or quantized coordinate sequences instead of per-vertex Coordinate submessages.</summary>
+    public bool UsePackedCoordinates { get; init; }
 }

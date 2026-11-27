@@ -218,4 +218,51 @@ public sealed class AdminCatalogListTests
         Assert.Equal(101, layers.Count);
         Assert.Equal("layer-2-0", layers[100].LayerName);
     }
+
+    [Fact]
+    public async Task ListServicesAsync_ThrowsWhenServerDoesNotAdvancePage()
+    {
+        var calls = 0;
+        var client = TestHelpers.CreateClient(_ =>
+        {
+            calls++;
+            return Task.FromResult(TestHelpers.CreateJsonResponse(new
+            {
+                items = Enumerable.Range(0, 100).Select(index => new
+                {
+                    serviceName = $"svc-{index}",
+                    layerCount = 1,
+                    enabledProtocols = Array.Empty<string>()
+                }).ToArray(),
+                page = 0,
+                pageSize = 100,
+                total = 500,
+                layerTotal = 500
+            }));
+        });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.ListServicesAsync());
+
+        Assert.Equal(1, calls);
+        Assert.Contains("did not advance", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AdminCatalogWalker_ThrowsWhenMaxPageLimitExceeded()
+    {
+        var calls = 0;
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            AdminCatalogWalker.ReadAllAsync(
+                (page, _) =>
+                {
+                    calls++;
+                    return Task.FromResult(new AdminCatalogWalker.Slice<int>([page], page, PageSize: 1, Total: 100));
+                },
+                CancellationToken.None,
+                maxPages: 3));
+
+        Assert.Equal(3, calls);
+        Assert.Contains("safety limit", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

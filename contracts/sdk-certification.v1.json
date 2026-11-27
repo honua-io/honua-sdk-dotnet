@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
   "complete": false,
   "summary": {
-    "total": 340,
+    "total": 352,
     "exercised": 60,
-    "gap": 262,
+    "gap": 274,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 322,
+    "denominator": 334,
     "excluded": []
   },
   "operations": [
@@ -7213,6 +7213,342 @@
       ],
       "scenarioFacets": [
         "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.AbortAttachmentUploadAsync(AbortAttachmentUploadRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "AbortAttachmentUploadAsync",
+      "signature": "AbortAttachmentUploadAsync(AbortAttachmentUploadRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.ApplyServiceEditsAsync(ApplyServiceEditsRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "ApplyServiceEditsAsync",
+      "signature": "ApplyServiceEditsAsync(ApplyServiceEditsRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.BeginAttachmentUploadAsync(BeginAttachmentUploadRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "BeginAttachmentUploadAsync",
+      "signature": "BeginAttachmentUploadAsync(BeginAttachmentUploadRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.CommitAttachmentUploadAsync(CommitAttachmentUploadRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "CommitAttachmentUploadAsync",
+      "signature": "CommitAttachmentUploadAsync(CommitAttachmentUploadRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.DeleteAttachmentAsync(DeleteAttachmentRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "DeleteAttachmentAsync",
+      "signature": "DeleteAttachmentAsync(DeleteAttachmentRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.DescribeLayerAsync(DescribeLayerRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "DescribeLayerAsync",
+      "signature": "DescribeLayerAsync(DescribeLayerRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.DescribeServiceAsync(DescribeServiceRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "DescribeServiceAsync",
+      "signature": "DescribeServiceAsync(DescribeServiceRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.GetAttachmentUrlAsync(GetAttachmentUrlRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "GetAttachmentUrlAsync",
+      "signature": "GetAttachmentUrlAsync(GetAttachmentUrlRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.ListAttachmentsAsync(ListAttachmentsRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "ListAttachmentsAsync",
+      "signature": "ListAttachmentsAsync(ListAttachmentsRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.QueryRelatedRecordsAsync(QueryRelatedRecordsRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "QueryRelatedRecordsAsync",
+      "signature": "QueryRelatedRecordsAsync(QueryRelatedRecordsRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "read-only"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.UploadAttachmentAsync(UploadAttachmentRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "UploadAttachmentAsync",
+      "signature": "UploadAttachmentAsync(UploadAttachmentRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Grpc.HonuaGrpcClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Grpc.HonuaGrpcClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient.UploadAttachmentChunkAsync(UploadAttachmentChunkRequest,CancellationToken)",
+      "surface": "grpc",
+      "client": "Honua.Sdk.Grpc.IHonuaGrpcFeatureClient",
+      "operation": "UploadAttachmentChunkAsync",
+      "signature": "UploadAttachmentChunkAsync(UploadAttachmentChunkRequest,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
       ],
       "tests": [],
       "implementations": [

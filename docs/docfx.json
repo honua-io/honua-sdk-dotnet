@@ -40,7 +40,8 @@
       {
         "files": [
           "*.md",
-          "internal/*.md"
+          "internal/*.md",
+          "features/*.md"
         ],
         "src": ".",
         "exclude": ["api/**", "obj/**", "_site/**"]
@@ -57,7 +58,7 @@
       "_enableSearch": true,
       "pdf": false
     },
-    "template": ["default", "modern"],
+    "template": ["default", "modern", "templates/honua"],
     "xref": ["https://learn.microsoft.com/en-us/dotnet/.xrefmap.json"]
   }
 }

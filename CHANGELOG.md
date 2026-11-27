@@ -2,6 +2,31 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [5.1.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v5.0.1...dotnet-sdk-v5.1.0) (2026-11-23)
+
+
+### Features
+
+* **cli:** import and export XLSForm workbooks ([#570](https://github.com/honua-io/honua-sdk-dotnet/issues/570)) ([828d8dd](https://github.com/honua-io/honua-sdk-dotnet/commit/828d8dd882f683fcfc5d9972481b5e6090ef3eac)), closes [#564](https://github.com/honua-io/honua-sdk-dotnet/issues/564)
+* **sdk:** add gRPC v1 feature/admin parity and harden path, credential, 3D geometry, and pagination safety ([#578](https://github.com/honua-io/honua-sdk-dotnet/issues/578)) ([ca04397](https://github.com/honua-io/honua-sdk-dotnet/commit/ca04397608f86e352387ed433b7e38a30ee423c2))
+
+
+### Bug Fixes
+
+* **admin:** read the publish reply's storageLayerId ([#566](https://github.com/honua-io/honua-sdk-dotnet/issues/566)) ([bd16ca6](https://github.com/honua-io/honua-sdk-dotnet/commit/bd16ca68bb37b35d2e67c038a2b72d269a01f7f9))
+* **certification:** pin the current release catalog and retain the consumer's digests helper ([#574](https://github.com/honua-io/honua-sdk-dotnet/issues/574)) ([e959224](https://github.com/honua-io/honua-sdk-dotnet/commit/e95922412c881c913d51efe703b603a0dfab8f4c))
+* **ci:** advance certification server pin to the published manifest ([#568](https://github.com/honua-io/honua-sdk-dotnet/issues/568)) ([4873ea7](https://github.com/honua-io/honua-sdk-dotnet/commit/4873ea726b68bfc1c36a83072c88681af540158a))
+* **ci:** advance certification server pin to the published manifest ([#575](https://github.com/honua-io/honua-sdk-dotnet/issues/575)) ([e4a5f5f](https://github.com/honua-io/honua-sdk-dotnet/commit/e4a5f5fd9401db28bf99b4ab820f7313f85de529))
+* **ci:** dispatch pin-follow certification on the pin branch ([#572](https://github.com/honua-io/honua-sdk-dotnet/issues/572)) ([f23ddad](https://github.com/honua-io/honua-sdk-dotnet/commit/f23ddad6a9cda12a20fc0232d27ba6d7f76375fc))
+* **ci:** open the certification pin pull request with the app token ([#576](https://github.com/honua-io/honua-sdk-dotnet/issues/576)) ([a14b8cc](https://github.com/honua-io/honua-sdk-dotnet/commit/a14b8ccf9e8a85139c7c28dd66a435393ebd517b))
+* **docs:** repair published guide and install links ([#581](https://github.com/honua-io/honua-sdk-dotnet/issues/581)) ([ecf88a0](https://github.com/honua-io/honua-sdk-dotnet/commit/ecf88a09b35a6089c2f1bfed3cb4969530dd7b0f))
+* **docs:** wrap long API links in narrow guides ([#583](https://github.com/honua-io/honua-sdk-dotnet/issues/583)) ([365ddde](https://github.com/honua-io/honua-sdk-dotnet/commit/365ddde936505537594035f77bda85c4754aceaf))
+
+
+### Documentation
+
+* label private planning references ([#584](https://github.com/honua-io/honua-sdk-dotnet/issues/584)) ([#585](https://github.com/honua-io/honua-sdk-dotnet/issues/585)) ([b43e0e0](https://github.com/honua-io/honua-sdk-dotnet/commit/b43e0e015d2f6a4644498033bf15743020793b4a))
+
 ## [5.0.1](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v5.0.0...dotnet-sdk-v5.0.1) (2026-11-16)
 
 

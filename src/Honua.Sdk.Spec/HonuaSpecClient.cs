@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Spec.Models;
 
 namespace Honua.Sdk.Spec;
@@ -119,7 +120,7 @@ public sealed class HonuaSpecClient : IHonuaSpecClient
         }
 
         using var response = await _http.GetAsync(
-            CreateRequestUri($"{SpecPrefix}/artifact/{Uri.EscapeDataString(hash)}"),
+            CreateRequestUri($"{SpecPrefix}/artifact/{HonuaPathSegment.Escape(hash, nameof(hash))}"),
             cancellationToken).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)

@@ -7,7 +7,7 @@
     - name: Quickstart
       href: quickstart.md
     - name: Install
-      href: ../INSTALL.md
+      href: https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/INSTALL.md
     - name: Authentication
       href: authentication.md
     - name: Console client contracts

@@ -41,7 +41,7 @@ public sealed class HonuaSpecClientTests
 
         using var http = new HttpClient(authHandler)
         {
-            BaseAddress = new Uri("http://localhost:5000")
+            BaseAddress = new Uri("https://localhost:5001")
         };
         var client = new HonuaSpecClient(http);
 
@@ -110,6 +110,17 @@ public sealed class HonuaSpecClientTests
         Assert.Equal(2, response.Nodes.Count);
         Assert.Equal(SpecResourceKind.Compute, response.Nodes[1].Kind);
         Assert.Equal(12.5, response.Nodes[1].Cost.EstimatedDurationMs);
+    }
+
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task GetArtifactAsync_RejectsDotSegmentPathTraversal(string badHash)
+    {
+        using var http = CreateHttpClient(_ => throw new InvalidOperationException("HTTP should not be called."));
+        var client = new HonuaSpecClient(http);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetArtifactAsync(badHash));
     }
 
     [Fact]

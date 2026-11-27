@@ -34,4 +34,10 @@ public sealed class QueryFeaturesResponse
 
     /// <summary>Extent (for extent-only queries).</summary>
     public Extent? Extent { get; init; }
+
+    /// <summary>Name of the global ID field when available.</summary>
+    public string GlobalIdFieldName { get; init; } = string.Empty;
+
+    /// <summary>Optional quantization transform when delta-encoded coordinates are returned.</summary>
+    public CoordinateTransform? CoordinateTransform { get; init; }
 }

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Processes.Exceptions;
 using Honua.Sdk.Processes.Models;
 
@@ -44,7 +45,7 @@ public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
     {
         EnsureId(processId, nameof(processId));
         return GetAsync(
-            $"{BasePath}/processes/{Uri.EscapeDataString(processId)}",
+            $"{BasePath}/processes/{HonuaPathSegment.Escape(processId, nameof(processId))}",
             ProcessesJsonContext.Default.HonuaProcessDescription,
             cancellationToken);
     }
@@ -77,7 +78,7 @@ public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
 
         using var message = new HttpRequestMessage(
             HttpMethod.Post,
-            CreateRequestUri($"{BasePath}/processes/{Uri.EscapeDataString(processId)}/execution"))
+            CreateRequestUri($"{BasePath}/processes/{HonuaPathSegment.Escape(processId, nameof(processId))}/execution"))
         {
             Content = JsonContent.Create(request, ProcessesJsonContext.Default.HonuaProcessExecuteRequest)
         };
@@ -104,7 +105,7 @@ public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
     {
         EnsureId(jobId, nameof(jobId));
         return GetAsync(
-            $"{BasePath}/jobs/{Uri.EscapeDataString(jobId)}",
+            $"{BasePath}/jobs/{HonuaPathSegment.Escape(jobId, nameof(jobId))}",
             ProcessesJsonContext.Default.HonuaProcessJobStatus,
             cancellationToken);
     }
@@ -114,7 +115,7 @@ public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
     {
         EnsureId(jobId, nameof(jobId));
         using var response = await _http.DeleteAsync(
-            CreateRequestUri($"{BasePath}/jobs/{Uri.EscapeDataString(jobId)}"), cancellationToken).ConfigureAwait(false);
+            CreateRequestUri($"{BasePath}/jobs/{HonuaPathSegment.Escape(jobId, nameof(jobId))}"), cancellationToken).ConfigureAwait(false);
         return await ReadAsync(
             response,
             ProcessesJsonContext.Default.HonuaProcessJobStatus,
@@ -126,7 +127,7 @@ public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
     {
         EnsureId(jobId, nameof(jobId));
         return GetAsync(
-            $"{BasePath}/jobs/{Uri.EscapeDataString(jobId)}/results",
+            $"{BasePath}/jobs/{HonuaPathSegment.Escape(jobId, nameof(jobId))}/results",
             ProcessesJsonContext.Default.HonuaProcessResults,
             cancellationToken);
     }
@@ -179,10 +180,5 @@ public sealed partial class HonuaProcessesClient : IHonuaProcessesClient
     private static Uri CreateRequestUri(string url) => new(url, UriKind.RelativeOrAbsolute);
 
     private static void EnsureId(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Identifier must be supplied.", parameterName);
-        }
-    }
+        => _ = HonuaPathSegment.Escape(value, parameterName);
 }

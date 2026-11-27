@@ -4,6 +4,8 @@
     <TargetFrameworks>net11.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Honua.Sdk.Abstractions</PackageId>
@@ -18,6 +20,11 @@
     <PackageTags>geospatial;mobile;gis;offline;sync;honua;abstractions</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Honua.Sdk.GeoServices" />
+    <InternalsVisibleTo Include="Honua.Sdk.Abstractions.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />

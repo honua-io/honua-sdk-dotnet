@@ -11,11 +11,13 @@ namespace Honua.Sdk.Grpc.Conversion;
 /// <summary>
 /// Converts between proto-generated types and SDK domain models.
 /// </summary>
-internal static class ProtoAdapter
+internal static partial class ProtoAdapter
 {
-    /// <summary>
-    /// Converts a domain query request to a proto request.
-    /// </summary>
+    internal sealed record FeatureDecodeContext(
+        IReadOnlyList<Proto.FieldDefinition>? Fields,
+        Proto.CoordinateTransform? CoordinateTransform,
+        HonuaSpatialReference? SpatialReference = null);
+
     public static Proto.QueryFeaturesRequest ToProtoRequest(Models.QueryFeaturesRequest request)
     {
         var proto = new Proto.QueryFeaturesRequest
@@ -33,11 +35,19 @@ internal static class ProtoAdapter
             ReturnExtentOnly = request.ReturnExtentOnly,
             GeometryPrecision = request.GeometryPrecision,
             MaxAllowableOffset = request.MaxAllowableOffset,
+            DatumTransformationWkid = request.DatumTransformationWkid,
+            UsePositionalAttributes = request.UsePositionalAttributes,
+            UsePackedCoordinates = request.UsePackedCoordinates,
         };
 
         if (request.ObjectIds is not null)
         {
             proto.ObjectIds.AddRange(request.ObjectIds);
+        }
+
+        if (request.GlobalIds is not null)
+        {
+            proto.GlobalIds.AddRange(request.GlobalIds);
         }
 
         if (request.OutFields is not null)
@@ -47,12 +57,7 @@ internal static class ProtoAdapter
 
         if (request.OutSr is not null)
         {
-            proto.OutSr = new Proto.SpatialReference
-            {
-                Wkid = request.OutSr.Wkid,
-                LatestWkid = request.OutSr.LatestWkid,
-                Wkt = request.OutSr.Wkt,
-            };
+            proto.OutSr = ToProtoSpatialReference(request.OutSr);
         }
 
         if (request.OutStatistics is not null)
@@ -81,44 +86,50 @@ internal static class ProtoAdapter
         return proto;
     }
 
-    /// <summary>
-    /// Converts a proto query response to a domain response.
-    /// </summary>
     public static Models.QueryFeaturesResponse FromProtoResponse(Proto.QueryFeaturesResponse response)
     {
+        var spatialReference = GrpcGeometryConverter.ReadSpatialReference(response.SpatialReference);
+        var context = new FeatureDecodeContext(response.Fields, response.CoordinateTransform, spatialReference);
         return new Models.QueryFeaturesResponse
         {
             ObjectIdFieldName = response.ObjectIdFieldName,
             GeometryType = (Models.GeometryType)response.GeometryType,
             SpatialReference = response.SpatialReference is not null ? ConvertSpatialReference(response.SpatialReference) : null,
             Fields = response.Fields.Select(ConvertField).ToList(),
-            Features = response.Features.Select(ConvertFeature).ToList(),
+            Features = response.Features.Select(feature => ConvertFeature(feature, context)).ToList(),
             ExceededTransferLimit = response.ExceededTransferLimit,
             Count = response.Count,
             ObjectIds = response.ObjectIds.ToList(),
             Extent = response.Extent is not null ? ConvertExtent(response.Extent) : null,
+            GlobalIdFieldName = response.GlobalIdFieldName,
+            CoordinateTransform = response.CoordinateTransform is not null
+                ? ConvertCoordinateTransform(response.CoordinateTransform)
+                : null,
         };
     }
 
-    /// <summary>
-    /// Converts a proto feature page to a domain feature page.
-    /// </summary>
-    public static Models.FeaturePage FromProtoPage(Proto.FeaturePage page)
+    public static Models.FeaturePage FromProtoPage(Proto.FeaturePage page, FeatureDecodeContext? inheritedContext = null)
     {
+        var fields = page.Fields.Count > 0 ? page.Fields : inheritedContext?.Fields;
+        var transform = page.CoordinateTransform ?? inheritedContext?.CoordinateTransform;
+        var spatialReference = GrpcGeometryConverter.ReadSpatialReference(page.SpatialReference)
+            ?? inheritedContext?.SpatialReference;
+        var context = new FeatureDecodeContext(fields, transform, spatialReference);
         return new Models.FeaturePage
         {
             ObjectIdFieldName = page.ObjectIdFieldName,
             GeometryType = (Models.GeometryType)page.GeometryType,
             SpatialReference = page.SpatialReference is not null ? ConvertSpatialReference(page.SpatialReference) : null,
             Fields = page.Fields.Select(ConvertField).ToList(),
-            Features = page.Features.Select(ConvertFeature).ToList(),
+            Features = page.Features.Select(feature => ConvertFeature(feature, context)).ToList(),
             IsLastPage = page.IsLastPage,
+            GlobalIdFieldName = page.GlobalIdFieldName,
+            CoordinateTransform = page.CoordinateTransform is not null
+                ? ConvertCoordinateTransform(page.CoordinateTransform)
+                : null,
         };
     }
 
-    /// <summary>
-    /// Converts a domain apply-edits request to a proto request.
-    /// </summary>
     public static Proto.ApplyEditsRequest ToProtoApplyEditsRequest(Models.ApplyEditsRequest request)
     {
         var proto = new Proto.ApplyEditsRequest
@@ -127,6 +138,8 @@ internal static class ProtoAdapter
             LayerId = request.LayerId,
             RollbackOnFailure = request.RollbackOnFailure,
             ForceWrite = request.ForceWrite,
+            IdempotencyKey = request.IdempotencyKey ?? string.Empty,
+            UseGlobalIds = request.UseGlobalIds,
         };
 
         if (request.Adds is not null)
@@ -150,6 +163,11 @@ internal static class ProtoAdapter
             proto.Deletes.AddRange(request.Deletes);
         }
 
+        if (request.DeleteGlobalIds is not null)
+        {
+            proto.DeleteGlobalIds.AddRange(request.DeleteGlobalIds);
+        }
+
         return proto;
     }
 
@@ -169,7 +187,11 @@ internal static class ProtoAdapter
 
     internal static Proto.Feature ConvertFeatureToProto(Models.Feature feature)
     {
-        var proto = new Proto.Feature { Id = feature.Id };
+        var proto = new Proto.Feature
+        {
+            Id = feature.Id,
+            GlobalId = feature.GlobalId ?? string.Empty,
+        };
 
         foreach (var kvp in feature.Attributes)
         {
@@ -178,7 +200,6 @@ internal static class ProtoAdapter
 
         if (feature.NtsGeometry is not null)
         {
-            // NTS-native write path: convert straight to the proto with no GeoServices JSON round-trip.
             proto.Geometry = GrpcGeometryConverter.WriteGeometry(feature.NtsGeometry);
         }
         else if (feature.Geometry is not null)
@@ -217,10 +238,6 @@ internal static class ProtoAdapter
                 attr.BoolValue = b;
                 break;
             case DateTime dateTime:
-                // Treat Unspecified as UTC rather than local time. new DateTimeOffset(dateTime)
-                // interprets Kind=Unspecified using the host timezone, so the same instant would
-                // serialize to different wire values per machine. Normalize to UTC for a stable,
-                // timezone-independent round-trip (the read path returns Kind=Utc).
                 var utcDateTime = dateTime.Kind == DateTimeKind.Unspecified
                     ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
                     : dateTime;
@@ -228,6 +245,18 @@ internal static class ProtoAdapter
                 break;
             case DateTimeOffset dateTimeOffset:
                 attr.DatetimeValue = dateTimeOffset.ToUnixTimeMilliseconds();
+                break;
+            case DateOnly dateOnly:
+                attr.DateValue = dateOnly.ToString("yyyy'-'MM'-'dd", CultureInfo.InvariantCulture);
+                break;
+            case TimeOnly timeOnly:
+                attr.TimeValue = timeOnly.ToString("HH':'mm':'ss.FFFFFFF", CultureInfo.InvariantCulture);
+                break;
+            case Models.TimestampOffsetValue timestampOffset:
+                attr.TimestampOffsetValue = timestampOffset.ToRfc3339String();
+                break;
+            case decimal decimalValue:
+                attr.DecimalValue = decimalValue.ToString(CultureInfo.InvariantCulture);
                 break;
             case byte[] bytes:
                 attr.BytesValue = Google.Protobuf.ByteString.CopyFrom(bytes);
@@ -247,6 +276,7 @@ internal static class ProtoAdapter
             ObjectId = result.ObjectId,
             Success = result.Success,
             Error = result.Error is not null ? ConvertEditError(result.Error) : null,
+            GlobalId = result.GlobalId,
         };
     }
 
@@ -259,32 +289,70 @@ internal static class ProtoAdapter
         };
     }
 
-    internal static Models.Feature ConvertFeature(Proto.Feature feature)
+    internal static Models.Feature ConvertFeature(Proto.Feature feature, FeatureDecodeContext? context = null)
     {
-        var attributes = new Dictionary<string, object?>();
-        foreach (var kvp in feature.Attributes)
-        {
-            attributes[kvp.Key] = ConvertAttribute(kvp.Value);
-        }
+        var attributes = DecodeFeatureAttributes(feature, context?.Fields);
 
         NetTopologySuite.Geometries.Geometry? ntsGeometry = null;
         IReadOnlyDictionary<string, object?>? geoServicesGeometry = null;
         if (feature.Geometry is not null && feature.Geometry.ShapeCase != Proto.Geometry.ShapeOneofCase.None)
         {
-            // Read the proto geometry once into NTS (the proto-native shape) and derive the GeoServices
-            // JSON dictionary from that same instance, so there is no serialize-then-reparse and the
-            // existing proto->NTS converter is the source of truth for SDK query results.
-            ntsGeometry = GrpcGeometryConverter.ReadGeometry(feature.Geometry);
-            geoServicesGeometry = ConvertGeometry(ntsGeometry);
+            var readOptions = new HonuaGrpcGeometryReadOptions
+            {
+                SpatialReference = context?.SpatialReference,
+                CoordinateTransform = context?.CoordinateTransform,
+            };
+            ntsGeometry = GrpcGeometryConverter.ReadGeometry(feature.Geometry, readOptions);
+            if (ntsGeometry.SRID <= 0)
+            {
+                var fallbackSrid = context?.SpatialReference?.Wkid is int wkid && wkid > 0
+                    ? wkid
+                    : context?.SpatialReference?.LatestWkid;
+                if (fallbackSrid is int resolvedSrid && resolvedSrid > 0)
+                {
+                    ntsGeometry.SRID = resolvedSrid;
+                }
+            }
+
+            geoServicesGeometry = ConvertGeometry(ntsGeometry, context?.SpatialReference);
         }
 
         return new Models.Feature
         {
             Id = feature.Id,
+            GlobalId = feature.GlobalId,
             Attributes = attributes,
             NtsGeometry = ntsGeometry,
             Geometry = geoServicesGeometry,
         };
+    }
+
+    private static Dictionary<string, object?> DecodeFeatureAttributes(
+        Proto.Feature feature,
+        IReadOnlyList<Proto.FieldDefinition>? fields)
+    {
+        var attributes = new Dictionary<string, object?>();
+        if (feature.AttributeValues.Count > 0)
+        {
+            if (fields is null || fields.Count < feature.AttributeValues.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Feature carries {feature.AttributeValues.Count} positional attribute values, " +
+                    $"but only {fields?.Count ?? 0} field definitions were provided.");
+            }
+
+            for (var i = 0; i < feature.AttributeValues.Count; i++)
+            {
+                attributes[fields[i].Name] = ConvertAttribute(feature.AttributeValues[i]);
+            }
+        }
+
+        foreach (var kvp in feature.Attributes)
+        {
+            attributes[kvp.Key] = ConvertAttribute(kvp.Value);
+        }
+
+        return attributes;
     }
 
     internal static object? ConvertAttribute(Proto.AttributeValue attr)
@@ -299,6 +367,10 @@ internal static class ProtoAdapter
             Proto.AttributeValue.ValueOneofCase.BoolValue => attr.BoolValue,
             Proto.AttributeValue.ValueOneofCase.DatetimeValue => DateTimeOffset.FromUnixTimeMilliseconds(attr.DatetimeValue).UtcDateTime,
             Proto.AttributeValue.ValueOneofCase.BytesValue => attr.BytesValue.ToByteArray(),
+            Proto.AttributeValue.ValueOneofCase.DateValue => DateOnly.ParseExact(attr.DateValue, "yyyy'-'MM'-'dd", CultureInfo.InvariantCulture),
+            Proto.AttributeValue.ValueOneofCase.TimeValue => TimeOnly.Parse(attr.TimeValue, CultureInfo.InvariantCulture),
+            Proto.AttributeValue.ValueOneofCase.TimestampOffsetValue => DateTimeOffset.Parse(attr.TimestampOffsetValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+            Proto.AttributeValue.ValueOneofCase.DecimalValue => decimal.Parse(attr.DecimalValue, NumberStyles.Number, CultureInfo.InvariantCulture),
             Proto.AttributeValue.ValueOneofCase.NullValue => null,
             Proto.AttributeValue.ValueOneofCase.None => null,
             _ => null,
@@ -316,9 +388,10 @@ internal static class ProtoAdapter
     }
 
     private static IReadOnlyDictionary<string, object?>? ConvertGeometry(
-        NetTopologySuite.Geometries.Geometry ntsGeometry)
+        NetTopologySuite.Geometries.Geometry ntsGeometry,
+        HonuaSpatialReference? spatialReference = null)
     {
-        var geoServicesJson = GeoServicesGeometryConverter.WriteGeometry(ntsGeometry);
+        var geoServicesJson = GeoServicesGeometryConverter.WriteGeometry(ntsGeometry, spatialReference);
         return UnwrapGeometryJsonValue(geoServicesJson) as IReadOnlyDictionary<string, object?>;
     }
 
@@ -343,12 +416,7 @@ internal static class ProtoAdapter
 
         if (spatialFilter.SpatialReference is not null)
         {
-            proto.SpatialReference = new Proto.SpatialReference
-            {
-                Wkid = spatialFilter.SpatialReference.Wkid,
-                LatestWkid = spatialFilter.SpatialReference.LatestWkid,
-                Wkt = spatialFilter.SpatialReference.Wkt ?? string.Empty
-            };
+            proto.SpatialReference = ToProtoSpatialReference(spatialFilter.SpatialReference);
         }
         else if (geometrySpatialReference is not null)
         {
@@ -362,7 +430,7 @@ internal static class ProtoAdapter
         IReadOnlyDictionary<string, object?> geometry)
     {
         var spatialReference = TryGetSpatialReference(geometry);
-        var geometryJson = JsonSerializer.SerializeToElement(geometry);
+        var geometryJson = GrpcJsonSerializer.SerializeDictionaryToElement(geometry);
         var ntsGeometry = GeoServicesGeometryConverter.ReadGeometry(geometryJson);
         return (GrpcGeometryConverter.WriteGeometry(ntsGeometry), spatialReference);
     }
@@ -392,9 +460,23 @@ internal static class ProtoAdapter
             proto.Wkt = wktText;
         }
 
-        return proto.Wkid == 0 && proto.LatestWkid == 0 && string.IsNullOrWhiteSpace(proto.Wkt)
-            ? null
-            : proto;
+        if (TryGetNumber(sr, "vcsWkid", out var vcsWkid))
+        {
+            proto.VcsWkid = (int)vcsWkid;
+        }
+
+        if (TryGetNumber(sr, "latestVcsWkid", out var latestVcsWkid))
+        {
+            proto.LatestVcsWkid = (int)latestVcsWkid;
+        }
+
+        return proto.Wkid == 0 &&
+            proto.LatestWkid == 0 &&
+            string.IsNullOrWhiteSpace(proto.Wkt) &&
+            proto.VcsWkid == 0 &&
+            proto.LatestVcsWkid == 0
+                ? null
+                : proto;
     }
 
     private static bool TryGetValue(IReadOnlyDictionary<string, object?> values, string key, out object? value)
@@ -563,6 +645,18 @@ internal static class ProtoAdapter
         };
     }
 
+    private static Proto.SpatialReference ToProtoSpatialReference(Models.SpatialReference sr)
+    {
+        return new Proto.SpatialReference
+        {
+            Wkid = sr.Wkid,
+            LatestWkid = sr.LatestWkid,
+            Wkt = sr.Wkt ?? string.Empty,
+            VcsWkid = sr.VcsWkid,
+            LatestVcsWkid = sr.LatestVcsWkid,
+        };
+    }
+
     private static Models.SpatialReference ConvertSpatialReference(Proto.SpatialReference sr)
     {
         var spatialReference = GrpcGeometryConverter.ReadSpatialReference(sr);
@@ -571,6 +665,23 @@ internal static class ProtoAdapter
             Wkid = spatialReference?.Wkid ?? sr.Wkid,
             LatestWkid = spatialReference?.LatestWkid ?? sr.LatestWkid,
             Wkt = spatialReference?.Wkt ?? sr.Wkt,
+            VcsWkid = spatialReference?.VcsWkid ?? sr.VcsWkid,
+            LatestVcsWkid = spatialReference?.LatestVcsWkid ?? sr.LatestVcsWkid,
+        };
+    }
+
+    private static Models.CoordinateTransform ConvertCoordinateTransform(Proto.CoordinateTransform transform)
+    {
+        return new Models.CoordinateTransform
+        {
+            ScaleX = transform.ScaleX,
+            ScaleY = transform.ScaleY,
+            ScaleZ = transform.HasScaleZ ? transform.ScaleZ : null,
+            ScaleM = transform.HasScaleM ? transform.ScaleM : null,
+            TranslateX = transform.TranslateX,
+            TranslateY = transform.TranslateY,
+            TranslateZ = transform.HasTranslateZ ? transform.TranslateZ : null,
+            TranslateM = transform.HasTranslateM ? transform.TranslateM : null,
         };
     }
 
@@ -594,6 +705,7 @@ internal static class ProtoAdapter
             FieldType = (Models.FieldType)field.FieldType,
             Length = field.Length,
             Nullable = field.Nullable,
+            Alias = field.Alias,
         };
     }
 }

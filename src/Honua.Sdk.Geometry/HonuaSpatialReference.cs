@@ -60,6 +60,12 @@ public sealed record HonuaSpatialReference
     /// </summary>
     public string? Wkt { get; }
 
+    /// <summary>Gets the vertical coordinate system WKID when one is available.</summary>
+    public int? VcsWkid { get; private init; }
+
+    /// <summary>Gets the latest vertical coordinate system WKID when one is available.</summary>
+    public int? LatestVcsWkid { get; private init; }
+
     /// <summary>
     /// Gets the stable display identifier for the spatial reference.
     /// </summary>
@@ -171,6 +177,29 @@ public sealed record HonuaSpatialReference
             ? code
             : null;
         return new HonuaSpatialReference(normalizedAuthority, code, wkid, latestWkid ?? wkid, wkt.Trim());
+    }
+
+    /// <summary>Returns a copy of this spatial reference with the specified vertical coordinate system WKID.</summary>
+    public HonuaSpatialReference WithVerticalWkid(int vcsWkid, int? latestVcsWkid = null)
+    {
+        if (vcsWkid <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(vcsWkid), vcsWkid, "Vertical WKID must be greater than zero.");
+        }
+
+        if (latestVcsWkid is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(latestVcsWkid),
+                latestVcsWkid,
+                "Latest vertical WKID must be greater than zero.");
+        }
+
+        return this with
+        {
+            VcsWkid = vcsWkid,
+            LatestVcsWkid = latestVcsWkid ?? vcsWkid,
+        };
     }
 
     /// <summary>

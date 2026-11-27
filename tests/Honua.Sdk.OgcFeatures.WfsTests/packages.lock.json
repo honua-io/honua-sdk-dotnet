@@ -42,8 +42,8 @@
       },
       "Grpc.Core.Api": {
         "type": "Transitive",
-        "resolved": "2.84.0",
-        "contentHash": "p2SOMl6q/GZ4/5MLkgboC/z55g4zKUEruRn/g46QgppjQBVnsLZVBU/9VO7n60ll38G3Eo8Zu9b7x+W01GKFVg=="
+        "resolved": "2.85.0",
+        "contentHash": "cpYu/nw/QhwHcRZMJbYD8lEllKrdwYMiDS4U3oH61nhYPUMNkcCcef4ulv11svHvTBThYV+ju332N9bCrfe7cQ=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
@@ -292,8 +292,8 @@
       "honua.sdk.geometry": {
         "type": "Project",
         "dependencies": {
-          "Geospatial.Grpc": "[1.0.2, )",
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
+          "Geospatial.Grpc": "[1.5.0, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
           "NetTopologySuite": "[2.6.0, )",
           "NetTopologySuite.IO.GeoJSON4STJ": "[4.0.0, )",
           "ProjNET": "[2.1.0, )"
@@ -302,20 +302,20 @@
       "honua.sdk.ogcfeatures": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.0.1, )",
-          "Honua.Sdk.Geometry": "[5.0.1, )",
+          "Honua.Sdk.Abstractions": "[5.1.0, )",
+          "Honua.Sdk.Geometry": "[5.1.0, )",
           "Microsoft.Extensions.Http": "[10.0.7, )",
           "Microsoft.Extensions.Http.Resilience": "[10.5.0, )"
         }
       },
       "Geospatial.Grpc": {
         "type": "CentralTransitive",
-        "requested": "[1.0.2, )",
-        "resolved": "1.0.2",
-        "contentHash": "kR3TThy8DUzHiL3ad/76gsx+GbqyXse5JWus17CXA/7KPzqFEzAcBjacxsHoDF8J5oZTH6n0vgoU01gv5DwxrQ==",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "sggyeiKXrOwEfMfM+EwSbwBMoPr0ir9oLKPOp0ZYco7hlp+H4TjUhHOeXZybEOd36uDWRIrK3PYZQmTOGMte+w==",
         "dependencies": {
           "Google.Protobuf": "3.36.2",
-          "Grpc.Core.Api": "2.84.0"
+          "Grpc.Core.Api": "2.85.0"
         }
       },
       "Google.Protobuf": {

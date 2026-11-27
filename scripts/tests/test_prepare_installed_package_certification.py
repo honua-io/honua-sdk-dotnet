@@ -430,6 +430,12 @@ class InstalledPackageCertificationTests(unittest.TestCase):
         self.assertIn('--ref "${branch}"', follow)
         self.assertNotIn('--ref "${sha}"', follow)
         self.assertNotIn("gh pr merge", follow)
+        # GitHub Actions may not create pull requests with GITHUB_TOKEN here;
+        # the pull request calls use the release automation app token.
+        self.assertIn("actions/create-github-app-token@", follow)
+        self.assertIn("PR_TOKEN: ${{ steps.app-token.outputs.token }}", follow)
+        self.assertIn('GH_TOKEN="${PR_TOKEN}" gh pr create', follow)
+        self.assertIn('GH_TOKEN="${PR_TOKEN}" gh pr edit', follow)
         for value in (
             PINS["sdkPackageVersion"], PINS["sdkPackageSha512"], PINS["sdkPackageDigest"],
             PINS["sdkSourceSha"], PINS["serverSourceSha"], PINS["serverImageDigest"], PINS["fixtureRevision"],

@@ -19,24 +19,36 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      # contents: write pushes the pin branch. pull-requests: write opens or
-      # updates that one pull request. actions: write dispatches
-      # sdk-certification.yml. A GITHUB_TOKEN push or pull request does not
-      # start pull_request workflows; workflow_dispatch is the documented
+      # contents: write pushes the pin branch. pull-requests: read finds the
+      # open pin pull request; the app token opens or edits it. actions: write dispatches
+      # sdk-certification.yml after a push to an open pin pull request: a
+      # GITHUB_TOKEN push does not start pull_request workflows; workflow_dispatch is the documented
       # exception, same as the publish job in release-please.yml. Job-level
       # write is the least privilege that still lets this job publish the pin.
       actions: write
       contents: write
-      pull-requests: write
+      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: trunk
           fetch-depth: 0
 
+      # Repository settings do not let GITHUB_TOKEN create pull requests, so
+      # only the pull request calls use the release automation app token.
+      - name: Mint pull request token
+        id: app-token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-pull-requests: write
+
       - name: Open or update one pin pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TOKEN: ${{ steps.app-token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -104,19 +116,21 @@ jobs:
 
           This pull request does not merge itself.
 
-          Certification is dispatched on this commit with tier pr. A repository-token push does not start pull_request workflows.
+          Certification runs on this commit with tier pr: the pull_request event starts it when this pull request opens, and a later update dispatches it because a repository-token push does not start pull_request workflows.
           EOF
           )"
           existing="$(gh pr list --repo "${GITHUB_REPOSITORY}" --head "${branch}" --base trunk --state open --json number --jq '.[0].number')"
           if [[ -z "${existing}" || "${existing}" == "null" ]]; then
-            gh pr create \
+            GH_TOKEN="${PR_TOKEN}" gh pr create \
               --repo "${GITHUB_REPOSITORY}" \
               --base trunk \
               --head "${branch}" \
               --title "chore(certification): follow the published Honua.Sdk pin" \
               --body "${body}"
+            # An app-token pull request starts pull_request workflows itself.
+            echo "Opened the pin pull request; its pull_request event runs certification."
           else
-            gh pr edit "${existing}" --repo "${GITHUB_REPOSITORY}" --body "${body}"
+            GH_TOKEN="${PR_TOKEN}" gh pr edit "${existing}" --repo "${GITHUB_REPOSITORY}" --body "${body}"
             echo "Updated pull request #${existing}"
+            dispatch_certification "$(git rev-parse HEAD)"
           fi
-          dispatch_certification "$(git rev-parse HEAD)"

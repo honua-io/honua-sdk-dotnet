@@ -78,6 +78,9 @@ internal static class HonuaRestHttpClientRegistration
                 resilience.TotalRequestTimeout.Timeout = HonuaResilienceTimeouts.TotalRequestTimeout(options.Timeout);
                 resilience.AttemptTimeout.Timeout = attemptTimeout;
                 resilience.CircuitBreaker.SamplingDuration = HonuaResilienceTimeouts.SamplingDuration(options.Timeout);
+                resilience.CircuitBreaker.ShouldHandle = args => ValueTask.FromResult(
+                    !IsExplicitlyNonRetryable(args.Outcome.Result)
+                    && HttpClientResiliencePredicates.IsTransient(args.Outcome));
                 // The SDK option counts the initial send, while Polly counts only
                 // retries after that send. Convert the public total-attempt contract
                 // to Polly's retry-count contract so REST and gRPC behave alike.
@@ -86,7 +89,9 @@ internal static class HonuaRestHttpClientRegistration
 
                 if (configureRetry is null)
                 {
-                    resilience.Retry.ShouldHandle = args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome));
+                    resilience.Retry.ShouldHandle = args => ValueTask.FromResult(
+                        !IsExplicitlyNonRetryable(args.Outcome.Result)
+                        && HttpClientResiliencePredicates.IsTransient(args.Outcome));
                     resilience.Retry.DisableForUnsafeHttpMethods();
                 }
                 else
@@ -102,6 +107,44 @@ internal static class HonuaRestHttpClientRegistration
         }
 
         return httpBuilder;
+    }
+
+    internal static bool IsExplicitlyNonRetryable(HttpResponseMessage? response)
+        => TryParseRetryableHeader(response) == false;
+
+    internal static bool? TryParseRetryableHeader(HttpResponseMessage? response)
+    {
+        if (response is null)
+        {
+            return null;
+        }
+
+        var raw = (GetFirstHeaderValue(response, "Honua-Retryable")
+            ?? GetFirstHeaderValue(response, "Honua-Error-Retryable"))?.Trim();
+        if (string.Equals(raw, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return string.Equals(raw, "false", StringComparison.OrdinalIgnoreCase) ? false : null;
+    }
+
+    private static string? GetFirstHeaderValue(HttpResponseMessage response, string name)
+    {
+        if (!response.Headers.TryGetValues(name, out var values))
+        {
+            return null;
+        }
+
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private sealed class HonuaTransportExceptionHandler : DelegatingHandler

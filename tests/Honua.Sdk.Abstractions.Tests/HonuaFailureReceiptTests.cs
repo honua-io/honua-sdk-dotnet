@@ -25,4 +25,41 @@ public sealed class HonuaFailureReceiptTests
         Assert.Equal(HonuaFailureKind.Unavailable, receipt.Kind);
         Assert.True(receipt.Retryable);
     }
+
+    [Theory]
+    [InlineData(498, "Invalid Token")]
+    [InlineData(499, "Token Required")]
+    public void FromHttpResponse_ClassifiesGeoServicesTokenCodesAsAuthentication(int errorCode, string message)
+    {
+        var body = $$$"""{"error":{"code":{{{errorCode}}},"message":"{{{message}}}"}}""";
+        using var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(body)
+        };
+
+        var receipt = HonuaFailureReceiptFactory.FromHttpResponse(response, body, protocolCode: errorCode);
+
+        Assert.Equal(200, receipt.TransportStatus);
+        Assert.Equal(errorCode.ToString(System.Globalization.CultureInfo.InvariantCulture), receipt.ProtocolCode);
+        Assert.Equal(HonuaFailureKind.Authentication, receipt.Kind);
+        Assert.Equal("authentication_required", receipt.Code);
+        Assert.NotEqual(HonuaFailureKind.Authorization, receipt.Kind);
+    }
+
+    [Fact]
+    public void FromHttpResponse_HonorsHonuaRetryableFalseHeaderOn503()
+    {
+        const string body = """{"code":"CAPABILITY_UNAVAILABLE","title":"Capability unavailable"}""";
+        using var response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+        {
+            Content = new StringContent(body)
+        };
+        response.Headers.Add("Honua-Retryable", "false");
+
+        var receipt = HonuaFailureReceiptFactory.FromHttpResponse(response, body);
+
+        Assert.Equal(503, receipt.TransportStatus);
+        Assert.Equal(HonuaFailureKind.Unavailable, receipt.Kind);
+        Assert.False(receipt.Retryable);
+    }
 }

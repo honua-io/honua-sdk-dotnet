@@ -58,6 +58,9 @@ public sealed record HonuaAuthenticationRequest
     /// Requested OAuth/OIDC audience or resource value for this SDK request.
     /// </summary>
     public string? Audience { get; init; }
+
+    /// <summary>Instructs caching token providers to bypass cached tokens and fetch a fresh credential.</summary>
+    public bool ForceRefresh { get; init; }
 }
 
 /// <summary>

@@ -77,6 +77,13 @@ public class HonuaGrpcClientTests
         };
         var mockClient = new Mock<Proto.FeatureService.FeatureServiceClient>();
         mockClient
+            .Setup(c => c.DescribeLayerAsync(
+                It.IsAny<Proto.DescribeLayerRequest>(),
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new RpcException(new Status(StatusCode.Unimplemented, "DescribeLayer not supported")));
+        mockClient
             .Setup(c => c.QueryFeaturesAsync(
                 It.IsAny<Proto.QueryFeaturesRequest>(),
                 It.IsAny<Metadata>(),
@@ -540,17 +547,28 @@ public class HonuaGrpcClientTests
         services.AddHonuaGrpc(options => options.BaseAddress = new Uri("http://localhost:5000"));
 
         using var provider = services.BuildServiceProvider();
+        var grpcClient = provider.GetRequiredService<IHonuaGrpcClient>();
+        var featureClient = provider.GetRequiredService<IHonuaGrpcFeatureClient>();
+        var descriptorClient = provider.GetRequiredService<IHonuaFeatureDescriptorClient>();
         var editClient = Assert.Single(provider.GetServices<IHonuaFeatureEditClient>());
         var attachmentClient = Assert.Single(provider.GetServices<IHonuaFeatureAttachmentClient>());
 
+        Assert.Same(grpcClient, featureClient);
+        Assert.Same(grpcClient, descriptorClient);
+        Assert.Same(grpcClient, editClient);
+        Assert.Same(grpcClient, attachmentClient);
         Assert.Equal("grpc", editClient.ProviderName);
         Assert.True(editClient.EditCapabilities.SupportsAdds);
         Assert.True(editClient.EditCapabilities.SupportsUpdates);
         Assert.False(editClient.EditCapabilities.SupportsPatches);
         Assert.True(editClient.EditCapabilities.SupportsDeletes);
         Assert.Equal("grpc", attachmentClient.ProviderName);
-        Assert.False(attachmentClient.AttachmentCapabilities.SupportsList);
-        Assert.Contains("attachment RPCs", attachmentClient.AttachmentCapabilities.UnsupportedReason);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsList);
+        Assert.False(attachmentClient.AttachmentCapabilities.SupportsDownload);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsAdd);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsUpdate);
+        Assert.True(attachmentClient.AttachmentCapabilities.SupportsDelete);
+        Assert.Null(attachmentClient.AttachmentCapabilities.UnsupportedReason);
     }
 
     [Fact]

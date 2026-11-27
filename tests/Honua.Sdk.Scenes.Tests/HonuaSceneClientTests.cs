@@ -378,6 +378,18 @@ public sealed class HonuaSceneClientTests
         Assert.Contains("invalid JSON", ex.Message);
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task GetAndResolveSceneAsync_RejectDotSegmentPathTraversal(string badSceneId)
+    {
+        var handler = new RecordingHandler((_, _) => throw new InvalidOperationException("HTTP should not be called."));
+        var client = CreateClient(handler);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetSceneAsync(badSceneId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.ResolveSceneAsync(badSceneId));
+    }
+
     private static HonuaSceneClient CreateClient(
         HttpMessageHandler handler,
         HonuaSceneClientOptions? options = null)

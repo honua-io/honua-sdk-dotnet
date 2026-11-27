@@ -14,6 +14,9 @@ public sealed class Feature
     /// <summary>Feature ID.</summary>
     public long Id { get; init; }
 
+    /// <summary>Stable UUID identity independent of the integer feature ID.</summary>
+    public string GlobalId { get; init; } = string.Empty;
+
     /// <summary>Feature attributes as key-value pairs.</summary>
     public IReadOnlyDictionary<string, object?> Attributes { get; init; } = new Dictionary<string, object?>();
 
@@ -36,7 +39,7 @@ public sealed class Feature
             return null;
         }
 
-        var json = System.Text.Json.JsonSerializer.SerializeToElement(Geometry);
+        var json = Conversion.GrpcJsonSerializer.SerializeDictionaryToElement(Geometry);
         return GeoServicesGeometryConverter.ReadGeometry(json);
     }
 

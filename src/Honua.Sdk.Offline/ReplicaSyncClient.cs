@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json;
+using Honua.Sdk.Abstractions;
 using Honua.Sdk.Offline.Abstractions;
 
 namespace Honua.Sdk.Offline;
@@ -34,7 +35,7 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         CancellationToken cancellationToken = default)
     {
         ValidateServiceId(serviceId);
-        var url = $"rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer/createReplica";
+        var url = $"rest/services/{HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/FeatureServer/createReplica";
         var parameters = new Dictionary<string, string>
         {
             ["replicaName"] = replicaName,
@@ -74,7 +75,7 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         CancellationToken cancellationToken = default)
     {
         ValidateServiceId(serviceId);
-        var url = $"rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer/extractChanges";
+        var url = $"rest/services/{HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/FeatureServer/extractChanges";
         var parameters = new Dictionary<string, string>
         {
             ["replicaID"] = replicaId,
@@ -132,7 +133,7 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         CancellationToken cancellationToken)
     {
         ValidateServiceId(serviceId);
-        var url = $"rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer/synchronizeReplica";
+        var url = $"rest/services/{HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/FeatureServer/synchronizeReplica";
         var parameters = new Dictionary<string, string>
         {
             ["replicaID"] = replicaId,
@@ -164,7 +165,7 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         CancellationToken cancellationToken = default)
     {
         ValidateServiceId(serviceId);
-        var url = $"rest/services/{Uri.EscapeDataString(serviceId)}/FeatureServer/unRegisterReplica";
+        var url = $"rest/services/{HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/FeatureServer/unRegisterReplica";
         var parameters = new Dictionary<string, string>
         {
             ["replicaID"] = replicaId,

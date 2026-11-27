@@ -405,7 +405,7 @@ public sealed class HonuaRoutingClient : IHonuaRoutingClient
     }
 
     private static string BuildNasLayerPath(string serviceId, string layerName)
-        => $"/rest/services/{Uri.EscapeDataString(serviceId)}/NAServer/{Uri.EscapeDataString(layerName)}";
+        => $"/rest/services/{Honua.Sdk.Abstractions.HonuaPathSegment.Escape(serviceId, nameof(serviceId))}/NAServer/{Honua.Sdk.Abstractions.HonuaPathSegment.Escape(layerName, nameof(layerName))}";
 
     private string ResolveServiceId(string? serviceId)
     {
