@@ -2,6 +2,27 @@
 
 All notable changes to the Honua .NET SDK will be documented in this file.
 
+## [5.2.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v5.1.0...dotnet-sdk-v5.2.0) (2026-11-27)
+
+
+### Features
+
+* **field:** add a published form submission client ([#597](https://github.com/honua-io/honua-sdk-dotnet/issues/597)) ([04d7d4e](https://github.com/honua-io/honua-sdk-dotnet/commit/04d7d4e8434908f9b01d6e038f1a817ae039c4f5))
+* **field:** add a scoped assigned work-task client ([af427e1](https://github.com/honua-io/honua-sdk-dotnet/commit/af427e1388fea45104cb2b26c4f172c8ba7a37bc))
+* **field:** add typed asset-linked work requests ([d0238a1](https://github.com/honua-io/honua-sdk-dotnet/commit/d0238a124a3d68bc9d5bf961f2535cf91040ac8b))
+* **field:** evaluate XLSForm choices, literals and operators in the SDK ([#603](https://github.com/honua-io/honua-sdk-dotnet/issues/603)) ([8556211](https://github.com/honua-io/honua-sdk-dotnet/commit/855621193ab011d0c31dcb492469abe7d2cd2f69))
+* **geoservices:** opt in to GlobalID feature edits ([#601](https://github.com/honua-io/honua-sdk-dotnet/issues/601)) ([7048674](https://github.com/honua-io/honua-sdk-dotnet/commit/7048674515d7d19e160b25d04c8c3411c56fb8ee))
+
+
+### Bug Fixes
+
+* **field:** name asset request wire fields explicitly ([ca3f516](https://github.com/honua-io/honua-sdk-dotnet/commit/ca3f516ab9c3dc24bdd9bc96a39b336c98ecc3df))
+* **offline:** match the API baseline default value format ([cb32245](https://github.com/honua-io/honua-sdk-dotnet/commit/cb32245be8608a043e5f522846423ca3ce5103d0))
+* **offline:** register scalar-cursor replicas in per-replica mode ([#598](https://github.com/honua-io/honua-sdk-dotnet/issues/598)) ([002df36](https://github.com/honua-io/honua-sdk-dotnet/commit/002df3623e3ea6b8a2a53f0e0846b28e5bec22a3))
+* **offline:** retain successful edit receipts in the journal ([186d403](https://github.com/honua-io/honua-sdk-dotnet/commit/186d403f3189fa5e5e768db248f27eb8844b2b1c))
+* **offline:** retain successful edit receipts in the journal ([850e9cf](https://github.com/honua-io/honua-sdk-dotnet/commit/850e9cf1a865275833dbbd4c7321177c5227fd61))
+* **sdk:** enable AOT/trim compatibility and harden GeoServices retry and auth refresh ([#592](https://github.com/honua-io/honua-sdk-dotnet/issues/592)) ([df1be65](https://github.com/honua-io/honua-sdk-dotnet/commit/df1be65652d54759789f661a2786b9472fcef773))
+
 ## [5.1.0](https://github.com/honua-io/honua-sdk-dotnet/compare/dotnet-sdk-v5.0.1...dotnet-sdk-v5.1.0) (2026-11-23)
 
 
