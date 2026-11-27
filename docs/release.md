@@ -54,11 +54,32 @@ is validated before any registry mutation. The workflow never prints the
 credential. Account/package scope is finally proven by the first push.
 
 The tag version must match the MSBuild `PackageVersion` resolved from the SDK
-projects, the tag commit must be contained in `origin/trunk`, and required
-staging integration must pass. The workflow fails before publishing if any of
+projects, the tag commit must be contained in `origin/trunk` or satisfy the
+.NET 10 maintenance rule below, and required staging integration must pass. The workflow fails before publishing if any of
 those bindings fail. Library packages contain only `net11.0` assets. CI runs the test
 projects, CLI, and browser sample on .NET 11. Release build and publish jobs use the exact .NET SDK
 `11.0.100` so a rerun cannot silently select a newer feature-band SDK.
+
+## .NET 10 maintenance release
+
+`dotnet-sdk-v1.10.5` is reserved for the replica sync fix on the .NET 10
+release line. Only the tip of `release/dotnet-sdk-1.10` is eligible, and the
+annotated tag must carry a GitHub-verified signature.
+
+1. Confirm the active `release/*` branch rules and the immutable
+   `dotnet-sdk-v*` tag rules apply. Bootstrap `release/dotnet-sdk-1.10` from
+   the `dotnet-sdk-v1.10.4` commit through the existing branch rules.
+2. Apply the reviewed replica fix and this workflow's source-binding change
+   to the maintenance line. Keep the historical .NET 10 build and staging
+   configuration. Set the package version to `1.10.5`.
+3. Run Publish .NET SDK Packages with `dry_run=true` and `run_staging=true`
+   against the release candidate. Verify the exact Mobile revision against
+   those packages.
+4. After review and required branch checks, create the signed
+   `dotnet-sdk-v1.10.5` tag at the maintenance branch tip. The workflow still
+   requires staging, the protected `public-nuget` environment, Trusted
+   Publishing, and preflight for both registries. Keep the branch tip at the
+   release commit until publication receipts confirm both registries.
 
 ## Version bumps
 
