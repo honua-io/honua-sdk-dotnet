@@ -63,3 +63,159 @@ static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.operator !=(Honua.Sdk.Fie
 static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook.operator ==(Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? left, Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook? right) -> bool
 static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbookIO.Read(System.IO.Stream! input) -> Honua.Sdk.Field.Forms.Authoring.XlsFormResult<Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook!>!
 static Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbookIO.Write(System.IO.Stream! output, Honua.Sdk.Field.Forms.Authoring.XlsFormWorkbook! workbook) -> void
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.<Clone>$() -> Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery!
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.AssignedWorkTaskQuery() -> void
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Assignee.get -> string!
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Assignee.init -> void
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Cursor.get -> string?
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Cursor.init -> void
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Equals(Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery? other) -> bool
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Limit.get -> int?
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Limit.init -> void
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.ServiceId.get -> string!
+Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.ServiceId.init -> void
+Honua.Sdk.Field.Tasks.WorkTask
+Honua.Sdk.Field.Tasks.WorkTask.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTask!
+Honua.Sdk.Field.Tasks.WorkTask.AssetId.get -> string?
+Honua.Sdk.Field.Tasks.WorkTask.AssetId.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Assignee.get -> string?
+Honua.Sdk.Field.Tasks.WorkTask.Assignee.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.DueAt.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Tasks.WorkTask.DueAt.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Equals(Honua.Sdk.Field.Tasks.WorkTask? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTask.Form.get -> Honua.Sdk.Field.Tasks.WorkTaskFormReference?
+Honua.Sdk.Field.Tasks.WorkTask.Form.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Geometry.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Field.Tasks.WorkTask.Geometry.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.PermittedActions.get -> System.Collections.Generic.IReadOnlyList<string!>?
+Honua.Sdk.Field.Tasks.WorkTask.PermittedActions.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Priority.get -> string?
+Honua.Sdk.Field.Tasks.WorkTask.Priority.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.ProfileId.get -> System.Guid?
+Honua.Sdk.Field.Tasks.WorkTask.ProfileId.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.ServiceId.get -> string!
+Honua.Sdk.Field.Tasks.WorkTask.ServiceId.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Status.get -> string!
+Honua.Sdk.Field.Tasks.WorkTask.Status.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.TaskId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTask.TaskId.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Title.get -> string!
+Honua.Sdk.Field.Tasks.WorkTask.Title.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Type.get -> string!
+Honua.Sdk.Field.Tasks.WorkTask.Type.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.Version.get -> long
+Honua.Sdk.Field.Tasks.WorkTask.Version.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.WorkTask() -> void
+Honua.Sdk.Field.Tasks.WorkTaskApiException
+Honua.Sdk.Field.Tasks.WorkTaskClient
+Honua.Sdk.Field.Tasks.WorkTaskClient.CompleteAsync(System.Guid taskId, Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskReceipt!>!
+Honua.Sdk.Field.Tasks.WorkTaskClient.ListAssignedAsync(Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskPage!>!
+Honua.Sdk.Field.Tasks.WorkTaskClient.TransitionAsync(System.Guid taskId, Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskReceipt!>!
+Honua.Sdk.Field.Tasks.WorkTaskClient.WorkTaskClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest!
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Answers.get -> System.Text.Json.JsonElement?
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Answers.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.CommandId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.CommandId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Condition.get -> int?
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Condition.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Equals(Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.ExpectedVersion.get -> long
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.ExpectedVersion.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Form.get -> Honua.Sdk.Field.Tasks.WorkTaskFormReference?
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Form.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Notes.get -> string?
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Notes.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.ObservedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.ObservedAt.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.SummaryRevision.get -> long?
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.SummaryRevision.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.WorkTaskCompletionRequest() -> void
+Honua.Sdk.Field.Tasks.WorkTaskFormReference
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTaskFormReference!
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.Equals(Honua.Sdk.Field.Tasks.WorkTaskFormReference? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.FormId.get -> string!
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.FormId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.Version.get -> int
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.Version.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskFormReference.WorkTaskFormReference() -> void
+Honua.Sdk.Field.Tasks.WorkTaskPage
+Honua.Sdk.Field.Tasks.WorkTaskPage.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTaskPage!
+Honua.Sdk.Field.Tasks.WorkTaskPage.Equals(Honua.Sdk.Field.Tasks.WorkTaskPage? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskPage.Items.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Tasks.WorkTask!>!
+Honua.Sdk.Field.Tasks.WorkTaskPage.Items.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskPage.NextCursor.get -> string?
+Honua.Sdk.Field.Tasks.WorkTaskPage.NextCursor.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskPage.WorkTaskPage() -> void
+Honua.Sdk.Field.Tasks.WorkTaskReceipt
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTaskReceipt!
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.CommandId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.CommandId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.Equals(Honua.Sdk.Field.Tasks.WorkTaskReceipt? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.InspectionId.get -> System.Guid?
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.InspectionId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.Outcome.get -> string!
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.Outcome.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.ServiceRecordId.get -> System.Guid?
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.ServiceRecordId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.Task.get -> Honua.Sdk.Field.Tasks.WorkTask!
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.Task.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskReceipt.WorkTaskReceipt() -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest!
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Action.get -> string!
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Action.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Assignee.get -> string?
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Assignee.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.CommandId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.CommandId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Equals(Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.ExpectedVersion.get -> long
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.ExpectedVersion.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.ObservedAt.get -> System.DateTimeOffset?
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.ObservedAt.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Reason.get -> string?
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Reason.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.WorkTaskTransitionRequest() -> void
+Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException
+Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException.CurrentVersion.get -> long?
+override Honua.Sdk.Field.Tasks.WorkTaskApiException.HttpStatus.get -> int?
+override Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException.HttpStatus.get -> int?
+override Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.ToString() -> string!
+override Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.operator ==(Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery? left, Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery? right) -> bool
+static Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery.operator !=(Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery? left, Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTaskPage.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTaskPage.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTaskPage.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskPage.operator ==(Honua.Sdk.Field.Tasks.WorkTaskPage? left, Honua.Sdk.Field.Tasks.WorkTaskPage? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskPage.operator !=(Honua.Sdk.Field.Tasks.WorkTaskPage? left, Honua.Sdk.Field.Tasks.WorkTaskPage? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTask.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTask.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTask.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTask.operator ==(Honua.Sdk.Field.Tasks.WorkTask? left, Honua.Sdk.Field.Tasks.WorkTask? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTask.operator !=(Honua.Sdk.Field.Tasks.WorkTask? left, Honua.Sdk.Field.Tasks.WorkTask? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTaskFormReference.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTaskFormReference.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTaskFormReference.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskFormReference.operator ==(Honua.Sdk.Field.Tasks.WorkTaskFormReference? left, Honua.Sdk.Field.Tasks.WorkTaskFormReference? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskFormReference.operator !=(Honua.Sdk.Field.Tasks.WorkTaskFormReference? left, Honua.Sdk.Field.Tasks.WorkTaskFormReference? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.operator ==(Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest? left, Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest.operator !=(Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest? left, Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.operator ==(Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest? left, Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest.operator !=(Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest? left, Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTaskReceipt.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTaskReceipt.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTaskReceipt.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskReceipt.operator ==(Honua.Sdk.Field.Tasks.WorkTaskReceipt? left, Honua.Sdk.Field.Tasks.WorkTaskReceipt? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskReceipt.operator !=(Honua.Sdk.Field.Tasks.WorkTaskReceipt? left, Honua.Sdk.Field.Tasks.WorkTaskReceipt? right) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskVersionConflictException.CommandId.get -> System.Guid

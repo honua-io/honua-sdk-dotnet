@@ -2,8 +2,9 @@
 
 Contracts and pure-.NET helpers for field-data-capture apps built on the Honua
 SDK: form definitions and sections, field types and validation rules, calculated
-expressions, duplicate detection, and a record-state-machine workflow. No server
-client — consume these models from your app and submit captured `FieldRecord`s
+expressions, duplicate detection, and a record-state-machine workflow.
+`WorkTaskClient` reads assigned tasks and submits worker commands on servers
+that expose the work-task API. Submit independent captured `FieldRecord`s
 through the SDK's feature-edit clients.
 
 Part of the [Honua .NET SDK](https://github.com/honua-io/honua-sdk-dotnet) — see the
@@ -164,3 +165,18 @@ validate and buffer the workbook before writing to the caller's stream.
 [Apache 2.0](https://github.com/honua-io/honua-sdk-dotnet/blob/trunk/LICENSE)
 
 Calculated fields may depend on earlier calculated fields in the same scope; forward and cyclic calculated dependencies are rejected.
+
+
+## Assigned work
+
+Use `WorkTaskClient` with an authenticated `HttpClient` configured for the
+server. Supply the current viewer's exact assignee handle and service ID to
+`ListAssignedAsync`. Pass the returned `NextCursor` to read the next page.
+Keep local assignment data partitioned by server, service, and signed-in
+account. If the viewer's assignee handle is unavailable, skip the listing.
+
+Persist each transition or completion with its command ID, expected version,
+and request payload before attempting offline replay. Reuse those values on
+retries. The server decides which actions are permitted and returns an
+`accepted` or `duplicate` receipt. A `WorkTaskVersionConflictException`
+indicates a stale version. Reload before composing a new command.

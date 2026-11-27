@@ -76,6 +76,7 @@ MUTATION_PREFIXES = (
 PAGINATED_OPERATIONS = frozenset(
     {
         "GetFeaturesAsyncEnumerable",
+        "ListAssignedAsync",
         "GetItemsPagesAsync",
         "GetRecordsPagesAsync",
         "PostSearchPagesAsync",
@@ -121,6 +122,7 @@ def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str
         "admin": "Honua Admin REST",
         "catalogs": "catalog REST",
         "consoleshare": "Honua Console Share REST",
+        "field": "Honua Work Tasks REST",
         "processes": "OGC API - Processes core",
         "spec": "Honua Spec REST",
         "studio": "Honua Studio REST",
@@ -252,6 +254,10 @@ def _certification_request_url(
         path = "/ogc/records"
     elif ".Stac." in client:
         path = "/stac"
+    elif operation["surface"] == "field":
+        if method != "ListAssignedAsync":
+            return None
+        path = "/api/v1/tasks"
     elif operation["surface"] == "admin":
         path = {
             "ListServicesAsync": "/api/v1/admin/services/",
@@ -756,7 +762,9 @@ def build_document(src_root: Path = SRC_ROOT) -> dict[str, Any]:
             tiers.remove("release")
 
         facets = []
-        if operation["operation"].startswith(MUTATION_PREFIXES):
+        if operation["operation"].startswith(MUTATION_PREFIXES) or short_id in {
+            "WorkTaskClient.CompleteAsync", "WorkTaskClient.TransitionAsync"
+        }:
             facets.append("mutation")
         else:
             facets.append("read-only")
