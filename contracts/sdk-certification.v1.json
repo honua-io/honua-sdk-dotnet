@@ -5,15 +5,15 @@
   "trackingIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
   "complete": false,
   "summary": {
-    "total": 356,
+    "total": 357,
     "exercised": 60,
-    "gap": 278,
+    "gap": 279,
     "non-addressable": 18
   },
   "releaseProfile": {
     "id": "honua-sdk-dotnet-2026.1",
     "policy": "All concrete public client operations except the explicitly enumerated 2026.1 candidate-fixture exclusions below. Exclusions are unsupported by this release profile, remain owned gaps, and are not passing evidence.",
-    "denominator": 338,
+    "denominator": 339,
     "excluded": []
   },
   "operations": [
@@ -6180,6 +6180,34 @@
       "releaseDenominator": "included",
       "missingImplementations": [
         "Honua.Sdk.ConsoleShare.HonuaConsoleShareOpenDataClient"
+      ],
+      "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
+      "disposition": "Concrete public SDK operation has no canonical live certification test."
+    },
+    {
+      "id": "Honua.Sdk.Field.Forms.PublishedFormSubmissionClient.SubmitAsync(PublishedFormSubmission,CancellationToken)",
+      "surface": "field",
+      "client": "Honua.Sdk.Field.Forms.PublishedFormSubmissionClient",
+      "operation": "SubmitAsync",
+      "signature": "SubmitAsync(PublishedFormSubmission,CancellationToken)",
+      "status": "gap",
+      "requiredTiers": [
+        "nightly",
+        "release"
+      ],
+      "scenarioFacets": [
+        "mutation"
+      ],
+      "tests": [],
+      "implementations": [
+        "Honua.Sdk.Field.Forms.PublishedFormSubmissionClient"
+      ],
+      "implementationTests": {
+        "Honua.Sdk.Field.Forms.PublishedFormSubmissionClient": []
+      },
+      "releaseDenominator": "included",
+      "missingImplementations": [
+        "Honua.Sdk.Field.Forms.PublishedFormSubmissionClient"
       ],
       "ownerIssue": "https://github.com/honua-io/honua-sdk-dotnet/issues/473",
       "disposition": "Concrete public SDK operation has no canonical live certification test."
