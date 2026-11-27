@@ -101,9 +101,9 @@ public sealed class PublishedFormSubmissionClientTests
     }
 
     [Theory]
-    [InlineData("https://test.invalid/honua/")]
-    [InlineData("https://test.invalid/honua")]
-    public async Task SubmitAsync_ReadsServerValidationReceiptFromJsonRequest(string serverUrl)
+    [InlineData("honua/")]
+    [InlineData("honua")]
+    public async Task SubmitAsync_ReadsServerValidationReceiptFromJsonRequest(string deploymentPath)
     {
         using var http = CreateHttp(async (request, ct) =>
         {
@@ -117,7 +117,7 @@ public sealed class PublishedFormSubmissionClientTests
                 """);
         });
 
-        http.BaseAddress = new Uri(serverUrl);
+        http.BaseAddress = new Uri(http.BaseAddress!, deploymentPath);
         var result = await new PublishedFormSubmissionClient(http).SubmitAsync(new() { FormId = "bridge", RequestJson = Frozen });
 
         Assert.Equal(HttpStatusCode.BadRequest, result.HttpStatusCode);
