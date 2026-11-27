@@ -39,7 +39,7 @@ public sealed class ReplicaSyncClient : IReplicaSyncClient
         var parameters = new Dictionary<string, string>
         {
             ["replicaName"] = replicaName,
-            ["syncModel"] = "perLayer",
+            ["syncModel"] = "perReplica",
             ["f"] = "json",
         };
 
