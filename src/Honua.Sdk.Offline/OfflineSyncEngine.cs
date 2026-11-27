@@ -426,9 +426,9 @@ public sealed partial class OfflineSyncEngine : IOfflineSyncRunner
         UploadEvaluation upload,
         CancellationToken cancellationToken)
     {
-        if (upload.Outcome == UploadEvaluationOutcome.Success)
+        if (upload.Response is { } response)
         {
-            await _changeJournal.MarkSucceededAsync(operation.OperationId, cancellationToken).ConfigureAwait(false);
+            await _changeJournal.MarkUploadedAsync(operation.OperationId, response, cancellationToken).ConfigureAwait(false);
             LogPushOperationSucceeded(_logger, operation.PackageId, operation.SourceId, operation.OperationId);
             return UploadApplicationResult.Success;
         }
@@ -507,7 +507,7 @@ public sealed partial class OfflineSyncEngine : IOfflineSyncRunner
         var response = await _editClient.ApplyEditsAsync(requestResult.Request, cancellationToken).ConfigureAwait(false);
         if (response.Succeeded)
         {
-            return UploadEvaluation.Success;
+            return UploadEvaluation.Success(response);
         }
 
         var error = FindFirstError(response);
@@ -817,9 +817,13 @@ public sealed partial class OfflineSyncEngine : IOfflineSyncRunner
         public string? FailureReason { get; }
     }
 
-    private sealed record UploadEvaluation(UploadEvaluationOutcome Outcome, string? Reason, FeatureEditError? Error)
+    private sealed record UploadEvaluation(
+        UploadEvaluationOutcome Outcome, string? Reason, FeatureEditError? Error)
     {
-        public static readonly UploadEvaluation Success = new(UploadEvaluationOutcome.Success, null, null);
+        public FeatureEditResponse? Response { get; init; }
+
+        public static UploadEvaluation Success(FeatureEditResponse response) =>
+            new(UploadEvaluationOutcome.Success, null, null) { Response = response };
 
         public static UploadEvaluation Conflict(string reason, FeatureEditError? error) =>
             new(UploadEvaluationOutcome.Conflict, reason, error);

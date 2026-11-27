@@ -82,6 +82,27 @@ public sealed class OfflineSyncEngineTests
     }
 
     [Fact]
+    public async Task PushAsync_RecordsProviderAssignedIdsWithTheSuccessfulUpload()
+    {
+        var response = new FeatureEditResponse
+        {
+            AddResults = [new FeatureEditResult { Succeeded = true, Id = "provider-42", ObjectId = 42 }],
+        };
+        var editClient = new FakeEditClient();
+        editClient.Responses.Enqueue(response);
+        var journal = new RecordingUploadJournal(CreateOperation(OfflineEditOperationKind.Add));
+        var engine = CreateEngine(new FakeQueryClient(), editClient, new FakeOfflineStore(), journal);
+
+        var result = await engine.PushAsync("field-area-1");
+
+        Assert.Equal(1, result.Succeeded);
+        Assert.Empty(journal.Succeeded);
+        var upload = Assert.Single(journal.Uploads);
+        Assert.Equal("op-1", upload.OperationId);
+        Assert.Same(response, upload.Response);
+    }
+
+    [Fact]
     public async Task PushAsync_ManualReviewConflictStoresConflictEnvelope()
     {
         var editClient = new FakeEditClient();
@@ -140,7 +161,7 @@ public sealed class OfflineSyncEngineTests
             UpdateResults = [new FeatureEditResult { Succeeded = true, ObjectId = 42 }],
         });
 
-        var journal = new FakeChangeJournal([CreateOperation(OfflineEditOperationKind.Update)]);
+        var journal = new RecordingUploadJournal(CreateOperation(OfflineEditOperationKind.Update));
         var engine = CreateEngine(
             new FakeQueryClient(),
             editClient,
@@ -156,6 +177,7 @@ public sealed class OfflineSyncEngineTests
         Assert.Equal(2, editClient.Requests.Count);
         Assert.False(editClient.Requests[0].ForceWrite);
         Assert.True(editClient.Requests[1].ForceWrite);
+        Assert.Equal(42, Assert.Single(Assert.Single(journal.Uploads).Response.UpdateResults).ObjectId);
     }
 
     [Fact]
@@ -500,7 +522,7 @@ public sealed class OfflineSyncEngineTests
         }
     }
 
-    private sealed class FakeChangeJournal : IOfflineChangeJournal
+    private class FakeChangeJournal : IOfflineChangeJournal
     {
         private readonly List<OfflineChangeJournalEntry> _pending;
 
@@ -559,6 +581,18 @@ public sealed class OfflineSyncEngineTests
         public Task MarkConflictAsync(OfflineConflictEnvelope conflict, CancellationToken cancellationToken = default)
         {
             Conflicts.Add(conflict);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class RecordingUploadJournal(OfflineChangeJournalEntry operation)
+        : FakeChangeJournal([operation]), IOfflineChangeJournal
+    {
+        public List<(string OperationId, FeatureEditResponse Response)> Uploads { get; } = [];
+
+        public Task MarkUploadedAsync(string operationId, FeatureEditResponse response, CancellationToken cancellationToken)
+        {
+            Uploads.Add((operationId, response));
             return Task.CompletedTask;
         }
     }
