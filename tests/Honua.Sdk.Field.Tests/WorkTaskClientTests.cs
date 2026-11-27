@@ -15,7 +15,7 @@ public sealed class WorkTaskClientTests
 
     private static string TaskJson => $$"""
         {"taskId":"{{TaskId:D}}","serviceId":"inspection","title":"Inspect","type":"inspection",
-         "status":"in_progress","version":3,"assignee":"worker+1","dueAt":"2026-11-26T05:00:00-10:00",
+         "status":"in_progress","version":3,"profileId":"3b5e740a-4ebc-476d-961a-c1af073301e9","assignee":"worker+1","dueAt":"2026-11-26T05:00:00-10:00",
          "form":{"formId":"inspection","version":2},"permittedActions":["complete"]}
         """;
 
@@ -34,6 +34,7 @@ public sealed class WorkTaskClientTests
         var task = Assert.Single(page.Items);
         Assert.Equal("opaque", page.NextCursor);
         Assert.Equal(2, task.Form!.Version);
+        Assert.Equal(Guid.Parse("3b5e740a-4ebc-476d-961a-c1af073301e9"), task.ProfileId);
         Assert.Equal(TimeSpan.FromHours(-10), task.DueAt!.Value.Offset);
     }
 

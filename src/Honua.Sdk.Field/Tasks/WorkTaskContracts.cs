@@ -55,6 +55,9 @@ public sealed record WorkTask
     /// <summary>Assigned user handle.</summary>
     public string? Assignee { get; init; }
 
+    /// <summary>Associated asset profile identifier.</summary>
+    public Guid? ProfileId { get; init; }
+
     /// <summary>Associated asset identifier.</summary>
     public string? AssetId { get; init; }
 

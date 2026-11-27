@@ -92,6 +92,8 @@ Honua.Sdk.Field.Tasks.WorkTask.PermittedActions.get -> System.Collections.Generi
 Honua.Sdk.Field.Tasks.WorkTask.PermittedActions.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.Priority.get -> string?
 Honua.Sdk.Field.Tasks.WorkTask.Priority.init -> void
+Honua.Sdk.Field.Tasks.WorkTask.ProfileId.get -> System.Guid?
+Honua.Sdk.Field.Tasks.WorkTask.ProfileId.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.ServiceId.get -> string!
 Honua.Sdk.Field.Tasks.WorkTask.ServiceId.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.Status.get -> string!
