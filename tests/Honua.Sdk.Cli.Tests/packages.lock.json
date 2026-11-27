@@ -134,13 +134,13 @@
       "honua.sdk.cli": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Field": "[5.1.0, )"
+          "Honua.Sdk.Field": "[5.2.0, )"
         }
       },
       "honua.sdk.field": {
         "type": "Project",
         "dependencies": {
-          "Honua.Sdk.Abstractions": "[5.1.0, )"
+          "Honua.Sdk.Abstractions": "[5.2.0, )"
         }
       }
     }
