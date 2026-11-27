@@ -89,6 +89,10 @@ public interface IOfflineChangeJournal
     /// <returns>A task that completes when the journal is updated.</returns>
     Task MarkSucceededAsync(string operationId, CancellationToken cancellationToken = default);
 
+    /// <summary>Records a successful provider edit and its response, including any assigned feature identifiers.</summary>
+    Task MarkUploadedAsync(string operationId, FeatureEditResponse response, CancellationToken cancellationToken = default)
+        => MarkSucceededAsync(operationId, cancellationToken);
+
     /// <summary>
     /// Releases a claimed operation back to pending state.
     /// </summary>

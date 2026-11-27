@@ -13,11 +13,13 @@ internal sealed class Parser
     private int _position;
     private int _depth;
     private readonly Action<string, int>? _validateFunction;
+    private readonly Action<string>? _validateBareReference;
 
-    public Parser(IReadOnlyList<Token> tokens, Action<string, int>? validateFunction = null)
+    public Parser(IReadOnlyList<Token> tokens, Action<string, int>? validateFunction = null, Action<string>? validateBareReference = null)
     {
         _tokens = tokens;
         _validateFunction = validateFunction;
+        _validateBareReference = validateBareReference;
     }
 
     public ExpressionNode ParseExpression() => ParseBinary(0);
@@ -130,17 +132,15 @@ internal sealed class Parser
 
     private ExpressionNode ParseIdentifier(Token token)
     {
-        // Keyword literals.
-        if (string.Equals(token.Text, "true", StringComparison.OrdinalIgnoreCase))
+        if (bool.TryParse(token.Text, out var boolean))
         {
             Advance();
-            return new LiteralNode(true);
-        }
-
-        if (string.Equals(token.Text, "false", StringComparison.OrdinalIgnoreCase))
-        {
-            Advance();
-            return new LiteralNode(false);
+            if (Current.Type == TokenType.LeftParen)
+            {
+                Advance();
+                Expect(TokenType.RightParen, ")");
+            }
+            return new LiteralNode(boolean);
         }
 
         if (string.Equals(token.Text, "null", StringComparison.OrdinalIgnoreCase))
@@ -160,7 +160,7 @@ internal sealed class Parser
             return new FunctionNode(name, args);
         }
 
-        // Bare identifier resolves as a field reference (lenient fallback).
+        _validateBareReference?.Invoke(token.Text);
         Advance();
         return new FieldRefNode(token.Text);
     }
@@ -198,15 +198,14 @@ internal sealed class Parser
 
         if (Current.Type == TokenType.Identifier)
         {
-            if (string.Equals(Current.Text, "and", StringComparison.OrdinalIgnoreCase))
+            return Current.Text.ToUpperInvariant() switch
             {
-                return "and";
-            }
-
-            if (string.Equals(Current.Text, "or", StringComparison.OrdinalIgnoreCase))
-            {
-                return "or";
-            }
+                "AND" => "and",
+                "OR" => "or",
+                "DIV" => "/",
+                "MOD" => "%",
+                _ => null,
+            };
         }
 
         return null;

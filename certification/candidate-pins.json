@@ -5,8 +5,8 @@
   "sdkPackageSha512": "HQOGyp1kVwEZjsg/XdyM3hpALKvLbZ85s7QUb3vYRwB01BgoIkVd7a6DMGKaKV//7dIewlsRCC3ON/PBE1iwyQ==",
   "sdkPackageDigest": "sha256:cceb83dc7dc0779f4573bc6a42894e7b71cc5134b479535051a270ba6b07f25b",
   "sdkSourceSha": "1c745cee6ff698988fc0a3f2e6c5c8fae7645df9",
-  "serverSourceSha": "de512e8123bdfbfbe20f692b236e37853b4f8294",
-  "serverImageDigest": "sha256:1eb5a482778bc8aeb349f4a32732580534e3b5b0067bbcc0060e9159bf07ed6b",
+  "serverSourceSha": "83127df70c06d4162fcc11b8d95a8ab466be49e2",
+  "serverImageDigest": "sha256:a084fefa14fd38884c1b12510498d6844f7555f9f29370e037db295a07959613",
   "fixtureRevision": "sha256:522454f3de0247fa5f8044a7bbc906ba57e44c34f2cece602c91688ee0e1cd63",
-  "candidateCut": "2026-11-20T09:23:56Z"
+  "candidateCut": "2026-11-26T13:49:07Z"
 }

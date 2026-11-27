@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Honua.Sdk.Field.Forms.Expressions;
 
 namespace Honua.Sdk.Field.Tests;
@@ -41,10 +42,29 @@ public sealed class ExpressionEvaluatorTests
         => Assert.Equal("it's", ExpressionEvaluator.Evaluate("'it''s'", null));
 
     [Theory]
+    [InlineData("true()", true)]
+    [InlineData("false ( )", false)]
     [InlineData("true", true)]
     [InlineData("false", false)]
     public void Evaluate_BooleanLiterals(string expr, bool expected)
         => Assert.Equal(expected, ExpressionEvaluator.Evaluate(expr, null));
+
+    [Theory]
+    [InlineData("\"crew's div mod true()\"", "crew's div mod true()")]
+    [InlineData("\"say \"\"yes\"\"\"", "say \"yes\"")]
+    public void Evaluate_DoubleQuotedText(string expression, string expected)
+        => Assert.Equal(expected, ExpressionEvaluator.Evaluate(expression, null));
+
+    [Theory]
+    [InlineData("true(1)")]
+    [InlineData("false(false())")]
+    [InlineData("\"unclosed'")]
+    public void Evaluate_InvalidXlsFormSyntaxReportsFailure(string expression)
+        => Assert.False(ExpressionEvaluator.EvaluateDetailed(expression, null).Succeeded);
+
+    [Fact]
+    public void Evaluate_DivAndModRemainValidFieldNames()
+        => Assert.Equal(3d, ExpressionEvaluator.Evaluate("div mod ${mod}", Ctx(("div", 7), ("mod", 4))));
 
     [Fact]
     public void Evaluate_NullLiteral()
@@ -85,6 +105,8 @@ public sealed class ExpressionEvaluatorTests
     [InlineData("6 * 7", 42d)]
     [InlineData("20 / 5", 4d)]
     [InlineData("17 % 5", 2d)]
+    [InlineData("2 + 18 div 3 mod 4", 4d)]
+    [InlineData("18 mod 5 * 2", 6d)]
     [InlineData("2 + 3 * 4", 14d)]
     [InlineData("(2 + 3) * 4", 20d)]
     [InlineData("-3 + 5", 2d)]
@@ -208,6 +230,42 @@ public sealed class ExpressionEvaluatorTests
     {
         Assert.Equal(true, ExpressionEvaluator.Evaluate("contains('hello', 'ell')", null));
         Assert.Equal(false, ExpressionEvaluator.Evaluate("contains('hello', 'z')", null));
+    }
+
+    [Theory]
+    [InlineData("fire\tflood  hail", "flood", true)]
+    [InlineData("wildfire flood", "fire", false)]
+    [InlineData("fire flood", "Fire", false)]
+    [InlineData("fire flood", "", false)]
+    [InlineData("fire flood", "fire flood", false)]
+    [InlineData(null, "fire", false)]
+    public void Selected_MatchesWholeChoiceCodes(string? answer, string code, bool expected)
+    {
+        var context = Ctx(("hazards", answer), ("code", code));
+        Assert.Equal(expected, ExpressionEvaluator.Evaluate("selected(${hazards}, ${code})", context));
+    }
+
+    [Fact]
+    public void Selected_EvaluatesDraftAndPersistedChoices()
+    {
+        string[] draft = ["wildfire", "flood"];
+        using var persisted = JsonDocument.Parse("""{"array":["wildfire",null,1,"flood"],"text":"wildfire flood","code":"flood"}""");
+        var root = persisted.RootElement;
+        foreach (var answer in new object[] { draft, root.GetProperty("array"), root.GetProperty("text") })
+        {
+            var context = Ctx(("hazards", answer), ("code", root.GetProperty("code")));
+            Assert.True(ExpressionEvaluator.EvaluateBoolean("selected(${hazards}, ${code})", context));
+            Assert.False(ExpressionEvaluator.EvaluateBoolean("selected(${hazards}, 'fire')", context));
+            Assert.False(ExpressionEvaluator.EvaluateBoolean("selected(${hazards}, '1')", context));
+        }
+    }
+
+    [Fact]
+    public void Selected_ReportsIncorrectArgumentCount()
+    {
+        var result = ExpressionEvaluator.EvaluateDetailed("selected('fire')", null);
+        Assert.False(result.Succeeded);
+        Assert.Contains("2 arguments", result.Diagnostic, StringComparison.Ordinal);
     }
 
     [Fact]
