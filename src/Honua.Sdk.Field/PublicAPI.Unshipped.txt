@@ -108,8 +108,25 @@ Honua.Sdk.Field.Tasks.WorkTask.Version.get -> long
 Honua.Sdk.Field.Tasks.WorkTask.Version.init -> void
 Honua.Sdk.Field.Tasks.WorkTask.WorkTask() -> void
 Honua.Sdk.Field.Tasks.WorkTaskApiException
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.<Clone>$() -> Honua.Sdk.Field.Tasks.WorkTaskAssetRequest!
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.AssetId.get -> string!
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.AssetId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.CommandId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.CommandId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.Equals(Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? other) -> bool
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.ProfileId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.ProfileId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.ServiceId.get -> string!
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.ServiceId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.TaskId.get -> System.Guid
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.TaskId.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.Title.get -> string!
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.Title.init -> void
+Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.WorkTaskAssetRequest() -> void
 Honua.Sdk.Field.Tasks.WorkTaskClient
 Honua.Sdk.Field.Tasks.WorkTaskClient.CompleteAsync(System.Guid taskId, Honua.Sdk.Field.Tasks.WorkTaskCompletionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskReceipt!>!
+Honua.Sdk.Field.Tasks.WorkTaskClient.CreateAssetRequestAsync(Honua.Sdk.Field.Tasks.WorkTaskAssetRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskReceipt!>!
 Honua.Sdk.Field.Tasks.WorkTaskClient.ListAssignedAsync(Honua.Sdk.Field.Tasks.AssignedWorkTaskQuery! query, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskPage!>!
 Honua.Sdk.Field.Tasks.WorkTaskClient.TransitionAsync(System.Guid taskId, Honua.Sdk.Field.Tasks.WorkTaskTransitionRequest! request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Tasks.WorkTaskReceipt!>!
 Honua.Sdk.Field.Tasks.WorkTaskClient.WorkTaskClient(System.Net.Http.HttpClient! httpClient) -> void
@@ -353,3 +370,8 @@ static Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.operator !=(Honua.Sdk.Fi
 static Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.operator ==(Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? left, Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? right) -> bool
 static Honua.Sdk.Field.Forms.PublishedFormValidationIssue.operator !=(Honua.Sdk.Field.Forms.PublishedFormValidationIssue? left, Honua.Sdk.Field.Forms.PublishedFormValidationIssue? right) -> bool
 static Honua.Sdk.Field.Forms.PublishedFormValidationIssue.operator ==(Honua.Sdk.Field.Forms.PublishedFormValidationIssue? left, Honua.Sdk.Field.Forms.PublishedFormValidationIssue? right) -> bool
+override Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.ToString() -> string!
+override Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.GetHashCode() -> int
+override Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.Equals(object? obj) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.operator ==(Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? left, Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? right) -> bool
+static Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.operator !=(Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? left, Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? right) -> bool
