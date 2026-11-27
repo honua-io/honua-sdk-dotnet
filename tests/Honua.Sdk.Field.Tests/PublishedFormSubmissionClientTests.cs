@@ -28,21 +28,7 @@ public sealed class PublishedFormSubmissionClientTests
         var deadlineLength = 0L;
         using var http = CreateHttp(async (request, ct) =>
         {
-            Assert.Equal(HttpMethod.Post, request.Method);
-            Assert.Equal("/api/v1/forms/bridge%20check/submissions", request.RequestUri!.AbsolutePath);
-            Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
-            var multipart = Assert.IsType<MultipartFormDataContent>(request.Content);
-            Assert.Equal(multipart.Headers.ContentLength, deadlineLength);
-            Assert.True(deadlineLength > bytes.Length + Encoding.UTF8.GetByteCount(Frozen));
-            var parts = multipart.ToArray();
-            Assert.Equal(2, parts.Length);
-            Assert.Equal("submission", parts[0].Headers.ContentDisposition?.Name?.Trim('"'));
-            Assert.Equal("application/json", parts[0].Headers.ContentType?.MediaType);
-            Assert.Equal(Frozen, await parts[0].ReadAsStringAsync(ct));
-            Assert.Equal("photo-file", parts[1].Headers.ContentDisposition?.Name?.Trim('"'));
-            Assert.Equal("photo.png", parts[1].Headers.ContentDisposition?.FileName?.Trim('"'));
-            Assert.Equal("image/png", parts[1].Headers.ContentType?.MediaType);
-            Assert.Equal(bytes, await parts[1].ReadAsByteArrayAsync(ct));
+            await AssertMultipartRequestAsync(request, bytes, deadlineLength, ct);
             return ReplayReceipt(++requests == 2);
         });
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
@@ -79,6 +65,29 @@ public sealed class PublishedFormSubmissionClientTests
         Assert.Equal(19L, replay.TargetFeatureId);
         Assert.True(replay.EditOutcome?.Succeeded);
         Assert.Equal(42L, Assert.Single(replay.AttachmentOutcomes!).AttachmentId);
+    }
+
+    private static async Task AssertMultipartRequestAsync(
+        HttpRequestMessage request,
+        byte[] bytes,
+        long deadlineLength,
+        CancellationToken cancellationToken)
+    {
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.Equal("/api/v1/forms/bridge%20check/submissions", request.RequestUri!.AbsolutePath);
+        Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+        var multipart = Assert.IsType<MultipartFormDataContent>(request.Content);
+        Assert.Equal(multipart.Headers.ContentLength, deadlineLength);
+        Assert.True(deadlineLength > bytes.Length + Encoding.UTF8.GetByteCount(Frozen));
+        var parts = multipart.ToArray();
+        Assert.Equal(2, parts.Length);
+        Assert.Equal("submission", parts[0].Headers.ContentDisposition?.Name?.Trim('"'));
+        Assert.Equal("application/json", parts[0].Headers.ContentType?.MediaType);
+        Assert.Equal(Frozen, await parts[0].ReadAsStringAsync(cancellationToken));
+        Assert.Equal("photo-file", parts[1].Headers.ContentDisposition?.Name?.Trim('"'));
+        Assert.Equal("photo.png", parts[1].Headers.ContentDisposition?.FileName?.Trim('"'));
+        Assert.Equal("image/png", parts[1].Headers.ContentType?.MediaType);
+        Assert.Equal(bytes, await parts[1].ReadAsByteArrayAsync(cancellationToken));
     }
 
     private static HttpResponseMessage ReplayReceipt(bool replayed)
