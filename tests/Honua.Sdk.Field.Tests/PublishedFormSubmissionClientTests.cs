@@ -43,13 +43,7 @@ public sealed class PublishedFormSubmissionClientTests
             Assert.Equal("photo.png", parts[1].Headers.ContentDisposition?.FileName?.Trim('"'));
             Assert.Equal("image/png", parts[1].Headers.ContentType?.MediaType);
             Assert.Equal(bytes, await parts[1].ReadAsByteArrayAsync(ct));
-            var replay = ++requests == 2 ? "true" : "false";
-            return Response(HttpStatusCode.OK, $$"""
-                {"submissionId":"85afc68d-b063-4236-b24c-daed78a6ce2a","formId":"bridge check","formVersion":3,
-                 "status":"accepted","operation":"create","targetFeatureId":19,"editOutcome":{"succeeded":true,"created":1},
-                 "attachmentOutcomes":[{"clientAttachmentId":"evidence-1","fieldId":"photo","status":"accepted","attachmentId":42}],
-                 "validationIssues":[],"idempotentReplay":{{replay}}}
-                """);
+            return ReplayReceipt(++requests == 2);
         });
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "test");
         var client = new PublishedFormSubmissionClient(http);
@@ -85,6 +79,16 @@ public sealed class PublishedFormSubmissionClientTests
         Assert.Equal(19L, replay.TargetFeatureId);
         Assert.True(replay.EditOutcome?.Succeeded);
         Assert.Equal(42L, Assert.Single(replay.AttachmentOutcomes!).AttachmentId);
+    }
+
+    private static HttpResponseMessage ReplayReceipt(bool replayed)
+    {
+        return Response(HttpStatusCode.OK, $$"""
+            {"submissionId":"85afc68d-b063-4236-b24c-daed78a6ce2a","formId":"bridge check","formVersion":3,
+             "status":"accepted","operation":"create","targetFeatureId":19,"editOutcome":{"succeeded":true,"created":1},
+             "attachmentOutcomes":[{"clientAttachmentId":"evidence-1","fieldId":"photo","status":"accepted","attachmentId":42}],
+             "validationIssues":[],"idempotentReplay":{{(replayed ? "true" : "false")}}}
+            """);
     }
 
     [Fact]
