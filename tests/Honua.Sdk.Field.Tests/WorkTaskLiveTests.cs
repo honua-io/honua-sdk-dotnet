@@ -34,9 +34,9 @@ public sealed class WorkTaskLiveTests
             Action = "start",
         };
 
-        var denied = await Assert.ThrowsAsync<HttpRequestException>(
+        var denied = await Assert.ThrowsAsync<WorkTaskApiException>(
             () => new WorkTaskClient(other).TransitionAsync(taskId, command));
-        Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        Assert.Equal((int)HttpStatusCode.Forbidden, denied.HttpStatus);
 
         var receipt = await client.TransitionAsync(taskId, command);
         Assert.Equal("accepted", receipt.Outcome);
