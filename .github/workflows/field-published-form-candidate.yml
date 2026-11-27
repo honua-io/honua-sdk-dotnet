@@ -1,0 +1,45 @@
+name: Field published form SDK candidate
+
+on:
+  push:
+    branches: [codex/field-form-sdk-candidate]
+    paths: [.github/workflows/field-published-form-candidate.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    env:
+      MSBuildEnableWorkloadResolver: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Validate and pack candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=5.1.1-fieldforms.3
+          dotnet test tests/Honua.Sdk.Field.Tests --configuration Release -p:ContinuousIntegrationBuild=true
+          for id in Honua.Sdk.Field Honua.Sdk.Abstractions; do
+            dotnet pack "src/${id}" --configuration Release -o candidate \
+              -p:ContinuousIntegrationBuild=true "-p:HonuaSdkVersion=${version}"
+            test -s "candidate/${id}.${version}.nupkg"
+          done
+          cd candidate
+          git rev-parse HEAD > SOURCE_COMMIT
+          sha256sum -- *.nupkg > SHA256SUMS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: field-published-form-sdk-5.1.1-fieldforms.3
+          path: |
+            candidate/*.nupkg
+            candidate/SHA256SUMS
+            candidate/SOURCE_COMMIT
+          if-no-files-found: error
+          retention-days: 30
