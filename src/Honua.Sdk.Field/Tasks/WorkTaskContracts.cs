@@ -8,7 +8,7 @@ namespace Honua.Sdk.Field.Tasks;
 /// <summary>Filters one page by service and exact assignee.</summary>
 public sealed record AssignedWorkTaskQuery
 {
-    /// <summary>Service identifier.</summary>
+    /// <summary>Canonical service identifier from Server metadata.</summary>
     public required string ServiceId { get; init; }
 
     /// <summary>Exact assignee handle established for the signed-in viewer.</summary>

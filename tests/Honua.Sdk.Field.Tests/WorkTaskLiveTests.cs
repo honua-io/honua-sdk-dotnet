@@ -61,8 +61,8 @@ public sealed class WorkTaskLiveTests
             ?? throw new InvalidOperationException($"Set HONUA_LIVE_WORK_TASK_{suffix} for the isolated Server fixture.");
 }
 
-// Enable with HONUA_LIVE_WORK_TASK=1. Seed one assigned task in SERVICE for exact ASSIGNEE and
-// supply its TASK UUID plus two keys from distinct principals with write permission on SERVICE.
+// Enable with HONUA_LIVE_WORK_TASK=1. Seed one assigned task for exact ASSIGNEE and set SERVICE to the canonical ID.
+// Supply its TASK UUID plus two keys from distinct principals with write permission on SERVICE.
 // The test advances the task to in_progress. Use a fresh task for each run.
 internal sealed class LiveWorkTaskFactAttribute : FactAttribute
 {
