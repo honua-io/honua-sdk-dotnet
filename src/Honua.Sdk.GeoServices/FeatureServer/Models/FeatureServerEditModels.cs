@@ -25,7 +25,11 @@ public sealed record FeatureServerEditRequest
     /// <summary>Whether the server should force conflict-overriding writes when supported.</summary>
     public bool ForceWrite { get; init; }
 
-    /// <summary>Whether to send the GeoServices global ID edit option. For providers that require global IDs for deletes, use this option only with adds and updates.</summary>
+    /// <summary>Whether to send the GeoServices global ID edit option.</summary>
+    /// <remarks>
+    /// Enable this only for layers that advertise <c>supportsApplyEditsWithGlobalIds</c>.
+    /// For providers that require global IDs for deletes, use this option only with adds and updates.
+    /// </remarks>
     public bool UseGlobalIds { get; init; }
 }
 
