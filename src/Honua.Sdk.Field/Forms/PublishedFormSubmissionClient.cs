@@ -32,7 +32,7 @@ public sealed class PublishedFormSubmissionClient
         ArgumentNullException.ThrowIfNull(submission.Files);
         var formVersion = ReadSavedVersion(submission.RequestJson);
         using var request = new HttpRequestMessage(
-            HttpMethod.Post, $"/api/v1/forms/{Uri.EscapeDataString(submission.FormId)}/submissions");
+            HttpMethod.Post, new Uri($"api/v1/forms/{Uri.EscapeDataString(submission.FormId)}/submissions", UriKind.Relative));
         SetRequestContent(request, submission);
 
         using var deadline = submission.Files.Count > 0 && submission.CreateUploadDeadline is not null
@@ -44,15 +44,26 @@ public sealed class PublishedFormSubmissionClient
             : CancellationTokenSource.CreateLinkedTokenSource(deadline.Token, cancellationToken);
         var requestToken = linkedCancellation?.Token ?? cancellationToken;
         using var response = await _httpClient.SendAsync(request, requestToken).ConfigureAwait(false);
+        var receipt = await ReadReceiptAsync(response, requestToken).ConfigureAwait(false);
+        if (receipt.FormId != submission.FormId || receipt.FormVersion != formVersion)
+        {
+            throw new JsonException("The response is not a receipt for the submitted form version.");
+        }
+
+        return receipt;
+    }
+
+    private static async Task<PublishedFormSubmissionReceipt> ReadReceiptAsync(
+        HttpResponseMessage response, CancellationToken cancellationToken)
+    {
         if (response.StatusCode != HttpStatusCode.BadRequest)
         {
             response.EnsureSuccessStatusCode();
         }
 
         var receipt = await response.Content.ReadFromJsonAsync(
-            PublishedFormReceiptJsonContext.Default.PublishedFormSubmissionReceipt, requestToken).ConfigureAwait(false);
-        if (receipt is null || receipt.FormId != submission.FormId || receipt.FormVersion != formVersion
-            || receipt.Status is not ("accepted" or "rejected" or "failed")
+            PublishedFormReceiptJsonContext.Default.PublishedFormSubmissionReceipt, cancellationToken).ConfigureAwait(false);
+        if (receipt is null || receipt.Status is not ("accepted" or "rejected" or "failed")
             || (response.StatusCode == HttpStatusCode.BadRequest && receipt.Status == "accepted"))
         {
             throw new JsonException("The response is not a receipt for the submitted form version.");

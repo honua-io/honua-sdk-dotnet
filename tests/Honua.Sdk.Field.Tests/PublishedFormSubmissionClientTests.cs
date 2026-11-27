@@ -105,6 +105,7 @@ public sealed class PublishedFormSubmissionClientTests
     {
         using var http = CreateHttp(async (request, ct) =>
         {
+            Assert.Equal("/honua/api/v1/forms/bridge/submissions", request.RequestUri!.AbsolutePath);
             var content = Assert.IsType<StringContent>(request.Content);
             Assert.Equal("application/json", content.Headers.ContentType?.MediaType);
             Assert.Equal(Frozen, await content.ReadAsStringAsync(ct));
@@ -114,6 +115,7 @@ public sealed class PublishedFormSubmissionClientTests
                 """);
         });
 
+        http.BaseAddress = new Uri("https://test.invalid/honua/");
         var result = await new PublishedFormSubmissionClient(http).SubmitAsync(new() { FormId = "bridge", RequestJson = Frozen });
 
         Assert.Equal(HttpStatusCode.BadRequest, result.HttpStatusCode);
