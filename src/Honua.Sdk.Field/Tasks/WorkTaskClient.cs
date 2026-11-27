@@ -46,7 +46,7 @@ public sealed class WorkTaskClient
 
         using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Relative));
         using var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
-        var page = await ReadAsync(response, WorkTaskJsonContext.Default.WorkTaskPage, cancellationToken).ConfigureAwait(false);
+        var page = await ReadSuccessAsync(response, WorkTaskJsonContext.Default.WorkTaskPage, cancellationToken).ConfigureAwait(false);
         if (page.Items is null || page.Items.Any(task => task is null || task.ServiceId != serviceId || task.Assignee != assignee))
         {
             throw InvalidResponse(response, "The task listing contains items outside the requested service or assignee.");
@@ -89,7 +89,7 @@ public sealed class WorkTaskClient
             && response.Headers.TryGetValues("Honua-Command-Outcome", out var outcomes)
             && outcomes.Contains("conflict", StringComparer.Ordinal))
         {
-            var conflict = await ReadAsync(response, WorkTaskJsonContext.Default.WorkTaskConflict, cancellationToken, requireSuccess: false).ConfigureAwait(false);
+            var conflict = await ReadBodyAsync(response, WorkTaskJsonContext.Default.WorkTaskConflict, cancellationToken).ConfigureAwait(false);
             if (conflict.CommandId != command.CommandId || string.IsNullOrWhiteSpace(conflict.Reason))
             {
                 throw InvalidResponse(response, "The task conflict does not identify the submitted command and reason.");
@@ -98,7 +98,7 @@ public sealed class WorkTaskClient
             throw new WorkTaskVersionConflictException(conflict.CommandId, conflict.Reason, conflict.CurrentVersion);
         }
 
-        var receipt = await ReadAsync(response, WorkTaskJsonContext.Default.WorkTaskReceipt, cancellationToken).ConfigureAwait(false);
+        var receipt = await ReadSuccessAsync(response, WorkTaskJsonContext.Default.WorkTaskReceipt, cancellationToken).ConfigureAwait(false);
         if (receipt.CommandId != command.CommandId || receipt.Task?.TaskId != command.TaskId
             || receipt.Outcome is not ("accepted" or "duplicate"))
         {
@@ -120,17 +120,28 @@ public sealed class WorkTaskClient
         }
     }
 
-    private static async Task<T> ReadAsync<T>(HttpResponseMessage response, JsonTypeInfo<T> typeInfo,
-        CancellationToken cancellationToken, bool requireSuccess = true)
+    private static Task<T> ReadSuccessAsync<T>(HttpResponseMessage response, JsonTypeInfo<T> typeInfo,
+        CancellationToken cancellationToken)
         where T : class
     {
         try
         {
-            if (requireSuccess)
-            {
-                response.EnsureSuccessStatusCode();
-            }
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new WorkTaskApiException("The task response could not be read.", (int)response.StatusCode, ex);
+        }
 
+        return ReadBodyAsync(response, typeInfo, cancellationToken);
+    }
+
+    private static async Task<T> ReadBodyAsync<T>(HttpResponseMessage response, JsonTypeInfo<T> typeInfo,
+        CancellationToken cancellationToken)
+        where T : class
+    {
+        try
+        {
             return await response.Content.ReadFromJsonAsync(typeInfo, cancellationToken).ConfigureAwait(false)
                 ?? throw new JsonException("The server returned a null task response.");
         }
