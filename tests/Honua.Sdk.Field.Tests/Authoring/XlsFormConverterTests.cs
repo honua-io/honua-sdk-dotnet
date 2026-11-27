@@ -47,6 +47,8 @@ public sealed class XlsFormConverterTests
     [InlineData("type", "unsupported")]
     [InlineData("required", "${other} = 1")]
     [InlineData("relevant", "if(true, true, unsupported())")]
+    [InlineData("relevant", "selected(${answer})")]
+    [InlineData("relevant", "selected(${answer}, 'x', 'y')")]
     [InlineData("constraint", ". >=")]
     [InlineData("relevant", "${missing} = 1")]
     [InlineData("relevant", ". = 1")]
@@ -160,6 +162,34 @@ public sealed class XlsFormConverterTests
         Assert.Equal(first.Version, second.Version);
         Assert.Equal(first.Sections.Select(s => s.Repeatable), second.Sections.Select(s => s.Repeatable));
         Assert.Equal(first.Sections.SelectMany(s => s.Fields), second.Sections.SelectMany(s => s.Fields), new FieldComparer());
+    }
+
+    [Fact]
+    public void ImportExportImport_SelectedControlsRequiredQuestion()
+    {
+        var workbook = Workbook(
+            Row(2, ("type", "select_multiple risks"), ("name", "hazards")),
+            Row(3, ("type", "text"), ("name", "details"), ("required", "yes"),
+                ("relevant", "selected(${hazards}, 'fire')"))) with
+        {
+            Choices = [
+                Row(2, ("list_name", "risks"), ("name", "fire"), ("label", "Fire")),
+                Row(3, ("list_name", "risks"), ("name", "wildfire"), ("label", "Wildfire")),
+            ]
+        };
+        var imported = Assert.IsType<FormDefinition>(XlsFormConverter.Import(workbook).Value);
+        var exported = Assert.IsType<XlsFormWorkbook>(XlsFormConverter.Export(imported).Value);
+        var reimported = Assert.IsType<FormDefinition>(XlsFormConverter.Import(exported).Value);
+        foreach (var form in new[] { imported, reimported })
+        {
+            var record = new FieldRecord { RecordId = "inspection", FormId = form.FormId };
+            record.Values["hazards"] = new[] { "wildfire" };
+            Assert.True(FormValidator.Validate(form, record).IsValid);
+            record.Values["hazards"] = new[] { "fire", "wildfire" };
+            Assert.False(FormValidator.Validate(form, record).IsValid);
+            record.Values["details"] = "Observed";
+            Assert.True(FormValidator.Validate(form, record).IsValid);
+        }
     }
 
     [Fact]

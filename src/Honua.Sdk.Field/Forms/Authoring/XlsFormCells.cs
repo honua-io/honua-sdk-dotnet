@@ -96,11 +96,12 @@ internal static class XlsFormCells
             "concat" => argumentCount >= 1,
             "if" => argumentCount == 3,
             "floor" => argumentCount == 1,
+            "selected" => argumentCount == 2,
             _ => false
         };
         if (!valid)
         {
-            throw new ExpressionEvaluationException("Only concat() with one or more arguments, if() with three, and floor() with one are supported.");
+            throw new ExpressionEvaluationException("Supported functions are concat() with one or more arguments, if() with three, floor() with one, and selected() with two.");
         }
     }
 

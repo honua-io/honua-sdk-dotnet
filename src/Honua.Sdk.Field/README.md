@@ -134,8 +134,10 @@ select_one, select_multiple, geopoint, geotrace, geoshape, image, audio, video,
 barcode and calculate. Flat groups and repeats become form sections. Static
 required values, labels, hints, choice lists, relevance, constraints and
 calculations are preserved. Expressions use the field expression syntax,
-including `${field_name}` references and the `concat`, `if` and `floor`
-functions. Integer questions retain an integer constraint when exported as
+including `${field_name}` references and the `concat`, `if`, `floor` and
+`selected` functions. For example, `selected(${hazards}, 'fire')` matches
+the exact, case-sensitive choice code in a multi-select answer. Integer
+questions retain an integer constraint when exported as
 decimal questions.
 
 Unsupported nonempty columns, dynamic required expressions, nested groups or

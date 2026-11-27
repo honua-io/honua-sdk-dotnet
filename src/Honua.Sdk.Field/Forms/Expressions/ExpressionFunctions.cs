@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root.
 
 using System.Globalization;
+using System.Text.Json;
 
 namespace Honua.Sdk.Field.Forms.Expressions;
 
@@ -66,6 +67,7 @@ internal static class ExpressionFunctions
 #pragma warning restore CA1308
             "TRIM" => Transform(values, static s => s.Trim()),
             "CONTAINS" => Contains(values),
+            "SELECTED" => Selected(values),
             "NUMBER" => ToNumberOrNull(values),
             "STRING" => values.Length >= 1 ? Coercion.ToStringValue(values[0]) : string.Empty,
             "TODAY" => Today(),
@@ -141,6 +143,32 @@ internal static class ExpressionFunctions
         return Coercion.ToStringValue(values[0])
             .Contains(Coercion.ToStringValue(values[1]), StringComparison.Ordinal);
     }
+
+    private static bool Selected(object?[] values)
+    {
+        if (values.Length != 2)
+        {
+            throw new ExpressionEvaluationException("selected() requires exactly 2 arguments.");
+        }
+
+        var choice = UnwrapJsonString(values[1]) as string;
+        if (string.IsNullOrWhiteSpace(choice))
+        {
+            return false;
+        }
+
+        return UnwrapJsonString(values[0]) switch
+        {
+            string text => text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Contains(choice, StringComparer.Ordinal),
+            IEnumerable<string> choices => choices.Contains(choice, StringComparer.Ordinal),
+            JsonElement { ValueKind: JsonValueKind.Array } array => array.EnumerateArray()
+                .Any(item => item.ValueKind == JsonValueKind.String && item.ValueEquals(choice)),
+            _ => false,
+        };
+    }
+
+    private static object? UnwrapJsonString(object? value)
+        => value is JsonElement { ValueKind: JsonValueKind.String } element ? element.GetString() : value;
 
     private static double? ToNumberOrNull(object?[] values)
         => values.Length >= 1 && Coercion.TryToDouble(values[0], out var d) ? d : null;

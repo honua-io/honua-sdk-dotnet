@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Honua.Sdk.Field.Forms.Expressions;
 
 namespace Honua.Sdk.Field.Tests;
@@ -208,6 +209,41 @@ public sealed class ExpressionEvaluatorTests
     {
         Assert.Equal(true, ExpressionEvaluator.Evaluate("contains('hello', 'ell')", null));
         Assert.Equal(false, ExpressionEvaluator.Evaluate("contains('hello', 'z')", null));
+    }
+
+    [Theory]
+    [InlineData("fire\tflood  hail", "flood", true)]
+    [InlineData("wildfire flood", "fire", false)]
+    [InlineData("fire flood", "Fire", false)]
+    [InlineData("fire flood", "", false)]
+    [InlineData(null, "fire", false)]
+    public void Selected_MatchesWholeChoiceCodes(string? answer, string code, bool expected)
+    {
+        var context = Ctx(("hazards", answer), ("code", code));
+        Assert.Equal(expected, ExpressionEvaluator.Evaluate("selected(${hazards}, ${code})", context));
+    }
+
+    [Fact]
+    public void Selected_EvaluatesDraftAndPersistedChoices()
+    {
+        string[] draft = ["wildfire", "flood"];
+        using var persisted = JsonDocument.Parse("""{"array":["wildfire",null,1,"flood"],"text":"wildfire flood","code":"flood"}""");
+        var root = persisted.RootElement;
+        foreach (var answer in new object[] { draft, root.GetProperty("array"), root.GetProperty("text") })
+        {
+            var context = Ctx(("hazards", answer), ("code", root.GetProperty("code")));
+            Assert.True(ExpressionEvaluator.EvaluateBoolean("selected(${hazards}, ${code})", context));
+            Assert.False(ExpressionEvaluator.EvaluateBoolean("selected(${hazards}, 'fire')", context));
+            Assert.False(ExpressionEvaluator.EvaluateBoolean("selected(${hazards}, '1')", context));
+        }
+    }
+
+    [Fact]
+    public void Selected_ReportsIncorrectArgumentCount()
+    {
+        var result = ExpressionEvaluator.EvaluateDetailed("selected('fire')", null);
+        Assert.False(result.Succeeded);
+        Assert.Contains("2 arguments", result.Diagnostic, StringComparison.Ordinal);
     }
 
     [Fact]
