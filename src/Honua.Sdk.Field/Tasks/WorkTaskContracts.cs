@@ -87,6 +87,28 @@ public sealed record WorkTaskFormReference
     public required int Version { get; init; }
 }
 
+/// <summary>Creates an unassigned request for an existing asset.</summary>
+public sealed record WorkTaskAssetRequest
+{
+    /// <summary>Stable command identifier to reuse on replay.</summary>
+    public required Guid CommandId { get; init; }
+
+    /// <summary>Stable client-generated identifier of the requested task.</summary>
+    public required Guid TaskId { get; init; }
+
+    /// <summary>Canonical service identifier of the asset.</summary>
+    public required string ServiceId { get; init; }
+
+    /// <summary>Asset profile identifier.</summary>
+    public required Guid ProfileId { get; init; }
+
+    /// <summary>Canonical asset identifier from the specified profile, as returned by Honua Server.</summary>
+    public required string AssetId { get; init; }
+
+    /// <summary>Title of the request.</summary>
+    public required string Title { get; init; }
+}
+
 /// <summary>A compare-and-set task transition.</summary>
 public sealed record WorkTaskTransitionRequest
 {

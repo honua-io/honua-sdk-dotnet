@@ -55,6 +55,31 @@ public sealed class WorkTaskClient
         return page;
     }
 
+    /// <summary>Creates an asset-linked request with stable client-generated task and command identifiers.</summary>
+    public async Task<WorkTaskReceipt> CreateAssetRequestAsync(WorkTaskAssetRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentOutOfRangeException.ThrowIfEqual(request.TaskId, Guid.Empty);
+        ArgumentOutOfRangeException.ThrowIfEqual(request.CommandId, Guid.Empty);
+        ArgumentOutOfRangeException.ThrowIfEqual(request.ProfileId, Guid.Empty);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.ServiceId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.AssetId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Title);
+
+        var body = new WorkTaskAssetRequestBody
+        {
+            CommandId = request.CommandId,
+            TaskId = request.TaskId,
+            ServiceId = request.ServiceId.Trim(),
+            ProfileId = request.ProfileId,
+            AssetId = request.AssetId.Trim(),
+            Title = request.Title.Trim(),
+        };
+        return await PostAsync((body.TaskId, body.CommandId, TaskRoute, body),
+            JsonContent.Create(body, WorkTaskJsonContext.Default.WorkTaskAssetRequestBody),
+            cancellationToken).ConfigureAwait(false);
+    }
+
     /// <summary>Submits a versioned transition with a caller-generated command identifier.</summary>
     public Task<WorkTaskReceipt> TransitionAsync(Guid taskId, WorkTaskTransitionRequest request, CancellationToken cancellationToken = default)
     {
@@ -62,7 +87,7 @@ public sealed class WorkTaskClient
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Action);
         ValidateCommand(taskId, request.CommandId, request.ExpectedVersion);
         return PostAsync(
-            (taskId, request.CommandId, "transitions"),
+            (taskId, request.CommandId, $"{TaskRoute}/{taskId:D}/transitions", null),
             JsonContent.Create(request, WorkTaskJsonContext.Default.WorkTaskTransitionRequest), cancellationToken);
     }
 
@@ -72,15 +97,16 @@ public sealed class WorkTaskClient
         ArgumentNullException.ThrowIfNull(request);
         ValidateCommand(taskId, request.CommandId, request.ExpectedVersion);
         return PostAsync(
-            (taskId, request.CommandId, "completion"),
+            (taskId, request.CommandId, $"{TaskRoute}/{taskId:D}/completion", null),
             JsonContent.Create(request, WorkTaskJsonContext.Default.WorkTaskCompletionRequest), cancellationToken);
     }
 
     private async Task<WorkTaskReceipt> PostAsync(
-        (Guid TaskId, Guid CommandId, string Operation) command, JsonContent content, CancellationToken cancellationToken)
+        (Guid TaskId, Guid CommandId, string Route, WorkTaskAssetRequestBody? AssetRequest) command,
+        JsonContent content, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(
-            HttpMethod.Post, new Uri($"{TaskRoute}/{command.TaskId:D}/{command.Operation}", UriKind.Relative))
+            HttpMethod.Post, new Uri(command.Route, UriKind.Relative))
         {
             Content = content,
         };
@@ -103,6 +129,13 @@ public sealed class WorkTaskClient
             || receipt.Outcome is not ("accepted" or "duplicate"))
         {
             throw InvalidResponse(response, "The task receipt does not confirm acceptance of the submitted command.");
+        }
+
+        if (command.AssetRequest is { } assetRequest
+            && (receipt.Task.ServiceId != assetRequest.ServiceId || receipt.Task.ProfileId != assetRequest.ProfileId
+                || receipt.Task.AssetId != assetRequest.AssetId || receipt.Task.Type != assetRequest.Type))
+        {
+            throw InvalidResponse(response, "The task receipt does not match the asset-linked request.");
         }
 
         return receipt;
@@ -197,6 +230,17 @@ public sealed class WorkTaskVersionConflictException : HonuaException
     public override int? HttpStatus => (int)HttpStatusCode.Conflict;
 }
 
+internal sealed record WorkTaskAssetRequestBody
+{
+    public required Guid CommandId { get; init; }
+    public required Guid TaskId { get; init; }
+    public required string ServiceId { get; init; }
+    public required Guid ProfileId { get; init; }
+    public required string AssetId { get; init; }
+    public required string Title { get; init; }
+    public string Type { get; } = "request";
+}
+
 internal sealed record WorkTaskConflict(Guid CommandId, string Reason, long? CurrentVersion);
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
@@ -205,4 +249,5 @@ internal sealed record WorkTaskConflict(Guid CommandId, string Reason, long? Cur
 [JsonSerializable(typeof(WorkTaskTransitionRequest))]
 [JsonSerializable(typeof(WorkTaskCompletionRequest))]
 [JsonSerializable(typeof(WorkTaskConflict))]
+[JsonSerializable(typeof(WorkTaskAssetRequestBody))]
 internal sealed partial class WorkTaskJsonContext : JsonSerializerContext;

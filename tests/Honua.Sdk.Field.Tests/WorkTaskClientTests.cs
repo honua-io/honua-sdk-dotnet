@@ -19,6 +19,91 @@ public sealed class WorkTaskClientTests
          "form":{"formId":"inspection","version":2},"permittedActions":["complete"]}
         """;
 
+    private static readonly Guid ProfileId = Guid.Parse("3b5e740a-4ebc-476d-961a-c1af073301e9");
+
+    private static WorkTaskAssetRequest AssetRequest => new()
+    {
+        CommandId = CommandId,
+        TaskId = TaskId,
+        ServiceId = "inspection",
+        ProfileId = ProfileId,
+        AssetId = "hydrant-1",
+        Title = "Check valve",
+    };
+
+    [Fact]
+    public async Task CreateAssetRequestAsync_ReplaysSameBodyAndReadsDuplicateReceipt()
+    {
+        var bodies = new List<string>();
+        using var http = CreateHttp(_ => Response(
+            AssetReceipt(bodies.Count == 1 ? "accepted" : "duplicate", "hydrant-1"), HttpStatusCode.Created),
+            async request =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/api/v1/tasks", request.RequestUri!.AbsolutePath);
+                bodies.Add(await request.Content!.ReadAsStringAsync());
+            });
+
+        var client = new WorkTaskClient(http);
+        var first = await client.CreateAssetRequestAsync(AssetRequest);
+        var replay = await client.CreateAssetRequestAsync(AssetRequest);
+
+        Assert.Equal("accepted", first.Outcome);
+        Assert.Equal("duplicate", replay.Outcome);
+        Assert.Equal(first.Task, replay.Task);
+        Assert.Equal(2, bodies.Count);
+        Assert.Equal(bodies[0], bodies[1]);
+        using var json = JsonDocument.Parse(bodies[0]);
+        var body = json.RootElement;
+        Assert.Equal(7, body.EnumerateObject().Count());
+        Assert.Equal(TaskId, body.GetProperty("taskId").GetGuid());
+        Assert.Equal(CommandId, body.GetProperty("commandId").GetGuid());
+        Assert.Equal(ProfileId, body.GetProperty("profileId").GetGuid());
+        Assert.Equal("inspection", body.GetProperty("serviceId").GetString());
+        Assert.Equal("hydrant-1", body.GetProperty("assetId").GetString());
+        Assert.Equal("Check valve", body.GetProperty("title").GetString());
+        Assert.Equal("request", body.GetProperty("type").GetString());
+    }
+
+    [Theory]
+    [InlineData("007")]
+    [InlineData("3b5e740a-4ebc-476d-961a-c1af073301e9")]
+    public async Task CreateAssetRequestAsync_AcceptsExactAssetId(string assetId)
+    {
+        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", assetId), HttpStatusCode.Created));
+        var receipt = await new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest with { AssetId = assetId });
+        Assert.Equal(assetId, receipt.Task.AssetId);
+    }
+
+    [Theory]
+    [InlineData("hydrant-1", "another-asset")]
+    [InlineData("007", "7")]
+    public async Task CreateAssetRequestAsync_RejectsReceiptForAnotherAsset(string requestedId, string returnedId)
+    {
+        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", returnedId), HttpStatusCode.Created));
+        var error = await Assert.ThrowsAsync<WorkTaskApiException>(
+            () => new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest with { AssetId = requestedId }));
+        Assert.Equal(201, error.HttpStatus);
+    }
+
+    [Fact]
+    public async Task CreateAssetRequestAsync_RequiresStableIdsBeforeSending()
+    {
+        using var http = CreateHttp(_ => throw new InvalidOperationException("Must validate before sending."));
+        var client = new WorkTaskClient(http);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => client.CreateAssetRequestAsync(AssetRequest with { CommandId = Guid.Empty }));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+            () => client.CreateAssetRequestAsync(AssetRequest with { TaskId = Guid.Empty }));
+    }
+
+    private static string AssetReceipt(string outcome, string assetId) => $$"""
+        {"commandId":"{{CommandId:D}}","outcome":"{{outcome}}","task":{
+           "taskId":"{{TaskId:D}}","serviceId":"inspection","title":"Check valve","type":"request",
+           "status":"unassigned","version":1,"profileId":"{{ProfileId:D}}","assetId":"{{assetId}}"}
+        }
+        """;
+
     [Fact]
     public async Task ListAssignedAsync_ReadsExactScopeAndCursor()
     {
