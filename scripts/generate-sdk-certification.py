@@ -122,7 +122,7 @@ def _certification_protocol_context(operation: dict[str, Any]) -> tuple[str, str
         "admin": "Honua Admin REST",
         "catalogs": "catalog REST",
         "consoleshare": "Honua Console Share REST",
-        "field": "Honua Work Tasks REST",
+        "field": "Honua Field REST",
         "processes": "OGC API - Processes core",
         "spec": "Honua Spec REST",
         "studio": "Honua Studio REST",
@@ -763,7 +763,7 @@ def build_document(src_root: Path = SRC_ROOT) -> dict[str, Any]:
 
         facets = []
         if operation["operation"].startswith(MUTATION_PREFIXES) or short_id in {
-            "WorkTaskClient.CompleteAsync", "WorkTaskClient.TransitionAsync"
+            "WorkTaskClient.CompleteAsync", "WorkTaskClient.TransitionAsync", "PublishedFormSubmissionClient.SubmitAsync"
         }:
             facets.append("mutation")
         else:

@@ -241,3 +241,137 @@ override Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.GetHashCode() -> int
 override Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.Equals(object? obj) -> bool
 static Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.operator ==(Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? left, Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? right) -> bool
 static Honua.Sdk.Field.Tasks.WorkTaskAssetRequest.operator !=(Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? left, Honua.Sdk.Field.Tasks.WorkTaskAssetRequest? right) -> bool
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.<Clone>$() -> Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome!
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.AttachmentId.get -> long?
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.AttachmentId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.ClientAttachmentId.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.ClientAttachmentId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Deconstruct(out string? ClientAttachmentId, out string? FieldId, out string? Status, out long? AttachmentId, out string? Reason, out bool PrivacyApplied) -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Equals(Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome? other) -> bool
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.FieldId.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.FieldId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.PrivacyApplied.get -> bool
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.PrivacyApplied.init -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.PublishedFormAttachmentOutcome(string? ClientAttachmentId, string? FieldId, string? Status, long? AttachmentId, string? Reason, bool PrivacyApplied) -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Reason.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Reason.init -> void
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Status.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Status.init -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.<Clone>$() -> Honua.Sdk.Field.Forms.PublishedFormEditOutcome!
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Created.get -> int
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Created.init -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Deconstruct(out bool Succeeded, out int Created, out int Updated, out int Deleted, out string? Error) -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Deleted.get -> int
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Deleted.init -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Equals(Honua.Sdk.Field.Forms.PublishedFormEditOutcome? other) -> bool
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Error.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Error.init -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.PublishedFormEditOutcome(bool Succeeded, int Created, int Updated, int Deleted, string? Error) -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Succeeded.get -> bool
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Succeeded.init -> void
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Updated.get -> int
+Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Updated.init -> void
+Honua.Sdk.Field.Forms.PublishedFormPart
+Honua.Sdk.Field.Forms.PublishedFormPart.<Clone>$() -> Honua.Sdk.Field.Forms.PublishedFormPart!
+Honua.Sdk.Field.Forms.PublishedFormPart.ContentType.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormPart.ContentType.init -> void
+Honua.Sdk.Field.Forms.PublishedFormPart.Deconstruct(out string! PartName, out string! FileName, out string! ContentType, out System.Func<System.IO.Stream!>! OpenRead) -> void
+Honua.Sdk.Field.Forms.PublishedFormPart.Equals(Honua.Sdk.Field.Forms.PublishedFormPart? other) -> bool
+Honua.Sdk.Field.Forms.PublishedFormPart.FileName.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormPart.FileName.init -> void
+Honua.Sdk.Field.Forms.PublishedFormPart.OpenRead.get -> System.Func<System.IO.Stream!>!
+Honua.Sdk.Field.Forms.PublishedFormPart.OpenRead.init -> void
+Honua.Sdk.Field.Forms.PublishedFormPart.PartName.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormPart.PartName.init -> void
+Honua.Sdk.Field.Forms.PublishedFormPart.PublishedFormPart(string! PartName, string! FileName, string! ContentType, System.Func<System.IO.Stream!>! OpenRead) -> void
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.<Clone>$() -> Honua.Sdk.Field.Forms.PublishedFormRetryGuidance!
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Deconstruct(out bool? Retryable, out int? RetryAfterSeconds, out string? Reason) -> void
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Equals(Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? other) -> bool
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.PublishedFormRetryGuidance(bool? Retryable, int? RetryAfterSeconds, string? Reason) -> void
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Reason.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Reason.init -> void
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.RetryAfterSeconds.get -> int?
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.RetryAfterSeconds.init -> void
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Retryable.get -> bool?
+Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Retryable.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionClient
+Honua.Sdk.Field.Forms.PublishedFormSubmissionClient.PublishedFormSubmissionClient(System.Net.Http.HttpClient! httpClient) -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission
+Honua.Sdk.Field.Forms.PublishedFormSubmission.CreateUploadDeadline.get -> System.Func<long, System.Threading.CancellationTokenSource!>?
+Honua.Sdk.Field.Forms.PublishedFormSubmission.CreateUploadDeadline.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.Files.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.PublishedFormPart!>!
+Honua.Sdk.Field.Forms.PublishedFormSubmission.Files.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.FormId.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormSubmission.FormId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.PublishedFormSubmission() -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmission.RequestJson.get -> string!
+Honua.Sdk.Field.Forms.PublishedFormSubmission.RequestJson.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionClient.SubmitAsync(Honua.Sdk.Field.Forms.PublishedFormSubmission! submission, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt!>!
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.AttachmentOutcomes.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome!>?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.AttachmentOutcomes.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.EditOutcome.get -> Honua.Sdk.Field.Forms.PublishedFormEditOutcome?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.EditOutcome.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.FormId.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.FormId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.FormVersion.get -> int
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.FormVersion.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.HttpStatusCode.get -> System.Net.HttpStatusCode
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.IdempotentReplay.get -> bool
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.IdempotentReplay.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.Operation.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.Operation.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.PublishedFormSubmissionReceipt() -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.Retry.get -> Honua.Sdk.Field.Forms.PublishedFormRetryGuidance?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.Retry.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.Status.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.Status.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.SubmissionId.get -> System.Guid?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.SubmissionId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.TargetFeatureId.get -> long?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.TargetFeatureId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.ValidationIssues.get -> System.Collections.Generic.IReadOnlyList<Honua.Sdk.Field.Forms.PublishedFormValidationIssue!>?
+Honua.Sdk.Field.Forms.PublishedFormSubmissionReceipt.ValidationIssues.init -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.<Clone>$() -> Honua.Sdk.Field.Forms.PublishedFormValidationIssue!
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Code.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Code.init -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Deconstruct(out string? Code, out string? Severity, out string? FieldId, out string? Path, out string? Message) -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Equals(Honua.Sdk.Field.Forms.PublishedFormValidationIssue? other) -> bool
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.FieldId.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.FieldId.init -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Message.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Message.init -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Path.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Path.init -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.PublishedFormValidationIssue(string? Code, string? Severity, string? FieldId, string? Path, string? Message) -> void
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Severity.get -> string?
+Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Severity.init -> void
+override Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.ToString() -> string!
+override Honua.Sdk.Field.Forms.PublishedFormEditOutcome.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.PublishedFormEditOutcome.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.PublishedFormEditOutcome.ToString() -> string!
+override Honua.Sdk.Field.Forms.PublishedFormPart.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.PublishedFormPart.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.PublishedFormPart.ToString() -> string!
+override Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.ToString() -> string!
+override Honua.Sdk.Field.Forms.PublishedFormValidationIssue.Equals(object? obj) -> bool
+override Honua.Sdk.Field.Forms.PublishedFormValidationIssue.GetHashCode() -> int
+override Honua.Sdk.Field.Forms.PublishedFormValidationIssue.ToString() -> string!
+static Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.operator !=(Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome? left, Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome.operator ==(Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome? left, Honua.Sdk.Field.Forms.PublishedFormAttachmentOutcome? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormEditOutcome.operator !=(Honua.Sdk.Field.Forms.PublishedFormEditOutcome? left, Honua.Sdk.Field.Forms.PublishedFormEditOutcome? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormEditOutcome.operator ==(Honua.Sdk.Field.Forms.PublishedFormEditOutcome? left, Honua.Sdk.Field.Forms.PublishedFormEditOutcome? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormPart.operator !=(Honua.Sdk.Field.Forms.PublishedFormPart? left, Honua.Sdk.Field.Forms.PublishedFormPart? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormPart.operator ==(Honua.Sdk.Field.Forms.PublishedFormPart? left, Honua.Sdk.Field.Forms.PublishedFormPart? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.operator !=(Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? left, Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormRetryGuidance.operator ==(Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? left, Honua.Sdk.Field.Forms.PublishedFormRetryGuidance? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormValidationIssue.operator !=(Honua.Sdk.Field.Forms.PublishedFormValidationIssue? left, Honua.Sdk.Field.Forms.PublishedFormValidationIssue? right) -> bool
+static Honua.Sdk.Field.Forms.PublishedFormValidationIssue.operator ==(Honua.Sdk.Field.Forms.PublishedFormValidationIssue? left, Honua.Sdk.Field.Forms.PublishedFormValidationIssue? right) -> bool
