@@ -65,9 +65,15 @@ jobs:
                 exit 1
               fi
               tag_object="$(git rev-parse "${GITHUB_REF}")"
-              if [[ "$(git cat-file -t "${tag_object}")" != tag ]] ||
-                [[ "$(gh api "repos/${GITHUB_REPOSITORY}/git/tags/${tag_object}" --jq '.verification.verified')" != true ]]; then
-                echo "::error::Release tag ${GITHUB_REF_NAME} must be annotated and carry a GitHub-verified signature."
+              if [[ "$(git cat-file -t "${tag_object}")" != tag ]]; then
+                echo "::error::Release tag ${GITHUB_REF_NAME} must be annotated."
+                exit 1
+              fi
+              tag_record="$(gh api "repos/${GITHUB_REPOSITORY}/git/tags/${tag_object}")"
+              if ! jq -e --arg tag "${GITHUB_REF_NAME}" --arg commit "${checked_out_sha}" \
+                '.verification.verified == true and .tag == $tag and .object.type == "commit" and .object.sha == $commit' \
+                <<< "${tag_record}" > /dev/null; then
+                echo "::error::Release tag ${GITHUB_REF_NAME} must carry a GitHub-verified signature for this name and commit."
                 exit 1
               fi
               exit 0

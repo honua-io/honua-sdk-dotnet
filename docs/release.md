@@ -64,14 +64,19 @@ and browser sample on .NET 11. Release build and publish jobs use the exact
 
 `dotnet-sdk-v1.10.5` is reserved for the replica sync fix on the .NET 10
 release line. Only the tip of `release/dotnet-sdk-1.10` is eligible, and the
-annotated tag must carry a GitHub-verified signature.
+annotated tag must carry a GitHub-verified signature for the tag name and its
+direct commit target.
 
 1. Confirm the active `release/*` branch rules and the immutable
    `dotnet-sdk-v*` tag rules apply. A repository maintainer must configure
    the required checks for `release/dotnet-sdk-1.10` and bootstrap it from
    `dotnet-sdk-v1.10.4`. The historical CI targets `trunk`, and that tag
-   lacks most of the check names required by the current release branch
-   rules. Keep the branch and tag protections in force during the release.
+   lacks checks required by the current release branch rules. Before creating
+   the tag, a repository maintainer must restrict creation of the exact tag
+   `dotnet-sdk-v1.10.5` to the trusted release signer or release team through
+   repository tag rules. A tag push selects the workflow source, so this
+   restriction must apply in GitHub before the workflow runs. Keep the branch,
+   immutable tag, and production environment protections in force.
 2. Apply the reviewed replica fix and this workflow's source-binding change
    to the maintenance line. Keep the historical .NET 10 build and staging
    configuration. Set the package version to `1.10.5`.
