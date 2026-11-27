@@ -13,7 +13,7 @@ public sealed record FeatureServerEditRequest
     /// <summary>Features to add.</summary>
     public IReadOnlyList<FeatureServerFeature>? Adds { get; init; }
 
-    /// <summary>Features to update. Each feature must include the layer object ID field.</summary>
+    /// <summary>Features to update. Include the layer object ID unless using global IDs.</summary>
     public IReadOnlyList<FeatureServerFeature>? Updates { get; init; }
 
     /// <summary>Object IDs of features to delete.</summary>
@@ -24,6 +24,9 @@ public sealed record FeatureServerEditRequest
 
     /// <summary>Whether the server should force conflict-overriding writes when supported.</summary>
     public bool ForceWrite { get; init; }
+
+    /// <summary>Whether to send the GeoServices global ID edit option. For providers that require global IDs for deletes, use this option only with adds and updates.</summary>
+    public bool UseGlobalIds { get; init; }
 }
 
 /// <summary>

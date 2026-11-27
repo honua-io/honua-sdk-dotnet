@@ -31,6 +31,8 @@ Honua.Sdk.GeoServices.FeatureServer.GeoServicesSourceCredentialHandler.GeoServic
 Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.RetryAfter.get -> System.TimeSpan?
 Honua.Sdk.GeoServices.FeatureServer.Exceptions.HonuaFeatureServerException.RetryAfter.init -> void
 Honua.Sdk.GeoServices.FeatureServer.IHonuaFeatureServerClient.QueryAllFeaturesByObjectIdBatchesAsync(string! serviceId, int layerId, Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryParams! query, int batchSize = 1000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerQueryResponse!>!
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.UseGlobalIds.get -> bool
+Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerEditRequest.UseGlobalIds.init -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.AdditionalProperties.set -> void
 Honua.Sdk.GeoServices.FeatureServer.Models.FeatureServerField.IsEditable.get -> bool?
