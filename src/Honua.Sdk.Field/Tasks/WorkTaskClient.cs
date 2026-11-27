@@ -68,9 +68,9 @@ public sealed class WorkTaskClient
 
         var body = new WorkTaskAssetRequestBody(request.CommandId, request.TaskId, request.ServiceId.Trim(),
             request.ProfileId, request.AssetId.Trim(), request.Title.Trim(), "request");
-        return await PostAsync((body.TaskId, body.CommandId, TaskRoute),
+        return await PostAsync((body.TaskId, body.CommandId, TaskRoute, body),
             JsonContent.Create(body, WorkTaskJsonContext.Default.WorkTaskAssetRequestBody),
-            cancellationToken, body).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Submits a versioned transition with a caller-generated command identifier.</summary>
@@ -80,7 +80,7 @@ public sealed class WorkTaskClient
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Action);
         ValidateCommand(taskId, request.CommandId, request.ExpectedVersion);
         return PostAsync(
-            (taskId, request.CommandId, $"{TaskRoute}/{taskId:D}/transitions"),
+            (taskId, request.CommandId, $"{TaskRoute}/{taskId:D}/transitions", null),
             JsonContent.Create(request, WorkTaskJsonContext.Default.WorkTaskTransitionRequest), cancellationToken);
     }
 
@@ -90,13 +90,13 @@ public sealed class WorkTaskClient
         ArgumentNullException.ThrowIfNull(request);
         ValidateCommand(taskId, request.CommandId, request.ExpectedVersion);
         return PostAsync(
-            (taskId, request.CommandId, $"{TaskRoute}/{taskId:D}/completion"),
+            (taskId, request.CommandId, $"{TaskRoute}/{taskId:D}/completion", null),
             JsonContent.Create(request, WorkTaskJsonContext.Default.WorkTaskCompletionRequest), cancellationToken);
     }
 
     private async Task<WorkTaskReceipt> PostAsync(
-        (Guid TaskId, Guid CommandId, string Route) command, JsonContent content, CancellationToken cancellationToken,
-        WorkTaskAssetRequestBody? assetRequest = null)
+        (Guid TaskId, Guid CommandId, string Route, WorkTaskAssetRequestBody? AssetRequest) command,
+        JsonContent content, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post, new Uri(command.Route, UriKind.Relative))
@@ -124,23 +124,14 @@ public sealed class WorkTaskClient
             throw InvalidResponse(response, "The task receipt does not confirm acceptance of the submitted command.");
         }
 
-        if (assetRequest is not null
+        if (command.AssetRequest is { } assetRequest
             && (receipt.Task.ServiceId != assetRequest.ServiceId || receipt.Task.ProfileId != assetRequest.ProfileId
-                || !MatchesAssetId(assetRequest.AssetId, receipt.Task.AssetId) || receipt.Task.Type != assetRequest.Type))
+                || receipt.Task.AssetId != assetRequest.AssetId || receipt.Task.Type != assetRequest.Type))
         {
             throw InvalidResponse(response, "The task receipt does not match the asset-linked request.");
         }
 
         return receipt;
-    }
-
-    private static bool MatchesAssetId(string requested, string? returned)
-    {
-        // The Server preserves text IDs and canonicalizes integer and UUID identity fields.
-        return requested == returned
-            || (long.TryParse(requested, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number)
-                && number.ToString(CultureInfo.InvariantCulture) == returned)
-            || (Guid.TryParse(requested, out var id) && id.ToString("D") == returned);
     }
 
     private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

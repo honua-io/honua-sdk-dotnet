@@ -66,21 +66,23 @@ public sealed class WorkTaskClientTests
     }
 
     [Theory]
-    [InlineData("007", "7")]
-    [InlineData("{3B5E740A-4EBC-476D-961A-C1AF073301E9}", "3b5e740a-4ebc-476d-961a-c1af073301e9")]
-    public async Task CreateAssetRequestAsync_AcceptsServerCanonicalAssetId(string suppliedId, string canonicalId)
+    [InlineData("007")]
+    [InlineData("3b5e740a-4ebc-476d-961a-c1af073301e9")]
+    public async Task CreateAssetRequestAsync_AcceptsExactAssetId(string assetId)
     {
-        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", canonicalId), HttpStatusCode.Created));
-        var receipt = await new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest with { AssetId = suppliedId });
-        Assert.Equal(canonicalId, receipt.Task.AssetId);
+        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", assetId), HttpStatusCode.Created));
+        var receipt = await new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest with { AssetId = assetId });
+        Assert.Equal(assetId, receipt.Task.AssetId);
     }
 
-    [Fact]
-    public async Task CreateAssetRequestAsync_RejectsReceiptForAnotherAsset()
+    [Theory]
+    [InlineData("hydrant-1", "another-asset")]
+    [InlineData("007", "7")]
+    public async Task CreateAssetRequestAsync_RejectsReceiptForAnotherAsset(string requestedId, string returnedId)
     {
-        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", "another-asset"), HttpStatusCode.Created));
+        using var http = CreateHttp(_ => Response(AssetReceipt("accepted", returnedId), HttpStatusCode.Created));
         var error = await Assert.ThrowsAsync<WorkTaskApiException>(
-            () => new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest));
+            () => new WorkTaskClient(http).CreateAssetRequestAsync(AssetRequest with { AssetId = requestedId }));
         Assert.Equal(201, error.HttpStatus);
     }
 

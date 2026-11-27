@@ -102,7 +102,7 @@ public sealed record WorkTaskAssetRequest
     /// <summary>Asset profile identifier.</summary>
     public required Guid ProfileId { get; init; }
 
-    /// <summary>Asset identifier in the specified profile.</summary>
+    /// <summary>Canonical asset identifier from the specified profile, as returned by Honua Server.</summary>
     public required string AssetId { get; init; }
 
     /// <summary>Title of the request.</summary>
