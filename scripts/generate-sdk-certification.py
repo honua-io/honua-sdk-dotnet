@@ -76,6 +76,7 @@ MUTATION_PREFIXES = (
 PAGINATED_OPERATIONS = frozenset(
     {
         "GetFeaturesAsyncEnumerable",
+        "ListAssignedAsync",
         "GetItemsPagesAsync",
         "GetRecordsPagesAsync",
         "PostSearchPagesAsync",
@@ -756,7 +757,9 @@ def build_document(src_root: Path = SRC_ROOT) -> dict[str, Any]:
             tiers.remove("release")
 
         facets = []
-        if operation["operation"].startswith(MUTATION_PREFIXES):
+        if operation["operation"].startswith(MUTATION_PREFIXES) or short_id in {
+            "WorkTaskClient.CompleteAsync", "WorkTaskClient.TransitionAsync"
+        }:
             facets.append("mutation")
         else:
             facets.append("read-only")
