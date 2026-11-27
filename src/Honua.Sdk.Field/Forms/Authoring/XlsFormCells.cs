@@ -43,16 +43,8 @@ internal static class XlsFormCells
             }
 
             var tokens = Tokenizer.Tokenize(expression);
-            for (var i = 0; i + 1 < tokens.Count; i++)
-            {
-                if (tokens[i].Type == TokenType.Identifier && tokens[i + 1].Type != TokenType.LeftParen
-                    && tokens[i].Text is not ("true" or "false" or "null" or "and" or "or" or "not"))
-                {
-                    throw new ExpressionEvaluationException("Field references must use ${name} syntax.");
-                }
-            }
-
-            var parser = new Parser(tokens, ValidateFunction);
+            var parser = new Parser(tokens, ValidateFunction,
+                name => throw new ExpressionEvaluationException($"Field reference '{name}' must use ${{name}} syntax."));
             var tree = parser.ParseExpression();
             if (tree.TreeDepth > ExpressionEvaluator.MaxDepth)
             {
@@ -96,11 +88,12 @@ internal static class XlsFormCells
             "concat" => argumentCount >= 1,
             "if" => argumentCount == 3,
             "floor" => argumentCount == 1,
+            "selected" => argumentCount == 2,
             _ => false
         };
         if (!valid)
         {
-            throw new ExpressionEvaluationException("Only concat() with one or more arguments, if() with three, and floor() with one are supported.");
+            throw new ExpressionEvaluationException("Supported functions are concat() with one or more arguments, if() with three, floor() with one, and selected() with two.");
         }
     }
 
